@@ -6,10 +6,34 @@ import {
 }
 
 // Values
+pub fn is_leap_year(Int) -> Bool
 
 // Errors
 
 // Types and methods
+pub(all) enum Month {
+  Jan
+  Feb
+  Mar
+  Apr
+  May
+  Jun
+  Jul
+  Aug
+  Sep
+  Oct
+  Nov
+  Dec
+} derive(Eq, @debug.Debug)
+pub fn Month::equal(Self, Self) -> Bool
+pub fn Month::name(Self) -> String
+pub fn Month::not_equal(Self, Self) -> Bool
+pub fn Month::num_days(Self, Int) -> Int
+pub fn Month::number_from_month(Self) -> Int
+pub fn Month::pred(Self) -> Self
+pub fn Month::succ(Self) -> Self
+pub fn Month::to_repr(Self) -> @debug.Repr
+
 pub(all) enum Weekday {
   Mon
   Tue
