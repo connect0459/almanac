@@ -81,6 +81,8 @@ test "tokenize raises UnknownSpecifier for an unrecognized specifier character" 
       fail("wrong char carried by UnknownSpecifier")
     @format.TrailingPercent =>
       fail("expected UnknownSpecifier, got TrailingPercent")
+    @format.MissingField(_) =>
+      fail("expected UnknownSpecifier, got MissingField")
   } noraise {
     _ => fail("expected tokenize to raise UnknownSpecifier")
   }
@@ -92,6 +94,8 @@ test "tokenize raises TrailingPercent when the format string ends with a lone pe
     @format.TrailingPercent => ()
     @format.UnknownSpecifier(_) =>
       fail("expected TrailingPercent, got UnknownSpecifier")
+    @format.MissingField(_) =>
+      fail("expected TrailingPercent, got MissingField")
   } noraise {
     _ => fail("expected tokenize to raise TrailingPercent")
   }

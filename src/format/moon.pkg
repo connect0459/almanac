@@ -1,3 +1,4 @@
 import {
+  "connect0459/chrono/core",
   "moonbitlang/core/debug",
 }

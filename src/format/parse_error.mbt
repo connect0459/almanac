@@ -3,6 +3,7 @@
 pub suberror ParseError {
   UnknownSpecifier(Char)
   TrailingPercent
+  MissingField(Item)
 } derive(Eq, @debug.Debug)
 
 ///|
