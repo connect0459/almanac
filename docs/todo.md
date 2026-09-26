@@ -45,22 +45,30 @@ Coverage target (confirmed with the user): 100%. These are pure, low-branching f
 
 Reference: chrono's naive time-of-day type.
 
-- [ ] `NaiveTime` value object: hour/minute/second/nanosecond, internal representation as nanoseconds-since-midnight (or seconds + nanos)
-- [ ] Constructors: `from_hms`, `from_hms_milli`, `from_hms_micro`, `from_hms_nano`, `from_num_seconds_from_midnight`, all `Option`-returning
-- [ ] Accessors: `hour`, `minute`, `second`, `nanosecond`, `hour12`
-- [ ] Arithmetic with day overflow: `add_signed`/`sub_signed` against a `TimeDelta`, returning both the wrapped time and the number of days overflowed (chrono's `overflowing_add_signed` pattern) — needed by `NaiveDateTime` to carry day rollover
-- [ ] Decide whether leap seconds (second value 60) are representable at this layer; if not, document why and where the constraint is enforced
-- [ ] Tests: midnight/end-of-day boundary arithmetic, nanosecond precision round-trip, day-overflow reporting on add/sub
+Coverage target (confirmed with the user): 100%.
+
+Implementation order note (confirmed with the user): `NaiveTime`'s day-overflow
+arithmetic depends on `TimeDelta`, so Phase 3 was implemented first, and this
+phase's arithmetic bullet was completed afterward using it.
+
+- [x] `NaiveTime` value object: hour/minute/second/nanosecond, internal representation as seconds-since-midnight (`0..=86399`) plus a nanosecond component (`0..=1_999_999_999`, see leap-second note below)
+- [x] Constructors: `from_hms`, `from_hms_milli`, `from_hms_micro`, `from_hms_nano`, `from_num_seconds_from_midnight`, all `Option`-returning
+- [x] Accessors: `hour`, `minute`, `second`, `nanosecond`, `hour12`, `num_seconds_from_midnight`
+- [x] Arithmetic with day overflow: `overflowing_add_signed`/`overflowing_sub_signed` against a `TimeDelta`, returning both the wrapped time and the number of days overflowed (chrono's `overflowing_add_signed` pattern) — needed by `NaiveDateTime` to carry day rollover
+- [x] Leap seconds (confirmed with the user, full chrono-style support): representable via a nanosecond component `>= 1_000_000_000` at `second() == 59` (`second()` never reports `60`; use `nanosecond()` to detect it, matching chrono). Arithmetic rule (derived and confirmed with the user after finding the naive "always fold forward" approach was not monotonic): a zero `TimeDelta` returns the time unchanged, exactly preserving a leap second; any nonzero `TimeDelta` resolves the arithmetic assuming no day has a leap second, since `NaiveTime` has no calendar context to know which day actually has one — the leap second's extra elapsed second is treated as consumed once time moves away from it in either direction.
+- [x] Tests: midnight/end-of-day boundary arithmetic, nanosecond precision round-trip, day-overflow reporting on add/sub, leap-second construction/accessors/arithmetic
 
 ## Phase 3: Duration (`src/core`)
 
 Reference: chrono's `TimeDelta`, Go's `Duration`.
 
-- [ ] `TimeDelta` value object: signed duration, `{seconds, nanoseconds}` or a single `i64` nanosecond count — decide range needed (chrono uses `i64` seconds + `u32` nanos to exceed a pure-nanosecond `i64`'s range; confirm whether this project needs that range before choosing)
-- [ ] Constructors: `weeks`, `days`, `hours`, `minutes`, `seconds`, `milliseconds`, `microseconds`, `nanoseconds`, each with a checked (`Option`-returning) variant
-- [ ] Accessors: `num_weeks`, `num_days`, `num_hours`, `num_minutes`, `num_seconds`, `num_milliseconds`, `num_microseconds`, `num_nanoseconds`, `subsec_*`
-- [ ] Arithmetic: `add`, `sub`, `mul`, `div` (checked, `Option`-returning), `abs`, `is_zero`, `min_value`/`max_value`/`zero`
-- [ ] Tests: overflow at range boundaries, sign handling for `abs`/negative durations, round-trip through each unit constructor
+Coverage target (confirmed with the user): 100%.
+
+- [x] `TimeDelta` value object: `{seconds: Int64, nanoseconds: Int}` (confirmed with the user — needed to cover `NaiveDate`'s existing day-count range, which a single `Int64` nanosecond count cannot). `nanoseconds` is always normalized to `0..=999_999_999`; sign is carried entirely by `seconds`. The representable `seconds` range is `±9_223_372_036_854_774` (`Int64::max_value / 1000`, with headroom): chosen so `num_milliseconds` always fits in `Int64` while still exceeding `NaiveDate`'s range by several orders of magnitude, and so the range is symmetric (making `abs`/`neg` total, never `Option`).
+- [x] Constructors: `weeks`, `days`, `hours`, `minutes`, `seconds`, `milliseconds`, `microseconds`, `nanoseconds` — all uniformly `Option`-returning (diverges from this bullet's original "checked variant" phrasing in favor of the `Option`-everywhere convention already established by `NaiveDate` et al.)
+- [x] Accessors: `num_weeks`, `num_days`, `num_hours`, `num_minutes`, `num_seconds`, `num_milliseconds`, `num_microseconds`, `num_nanoseconds`, `subsec_nanoseconds`/`subsec_milliseconds`/`subsec_microseconds`. `num_microseconds`/`num_nanoseconds` are `Option`-returning (can overflow `Int64` at the type's range boundaries); the rest are total.
+- [x] Arithmetic: `add`, `sub`, `mul`, `div` (checked, `Option`-returning; `mul`/`div` take an `Int` scalar, matching chrono's own `i32`-scalar choice, which also keeps `div`'s remainder-folding arithmetic overflow-free), `abs`, `neg`, `is_zero`, `min_value`/`max_value`/`zero` (the latter group and `abs`/`neg` are total, not `Option`, given the symmetric range above)
+- [x] Tests: overflow at range boundaries, sign handling for `abs`/negative durations, round-trip through each unit constructor
 
 ## Phase 4: Naive DateTime (`src/core`)
 
