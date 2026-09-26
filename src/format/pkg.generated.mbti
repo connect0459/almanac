@@ -1,11 +1,55 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "connect0459/chrono/format"
 
+import {
+  "moonbitlang/core/debug",
+}
+
 // Values
+pub fn tokenize(String) -> Array[Item] raise ParseError
 
 // Errors
+pub suberror ParseError {
+  UnknownSpecifier(Char)
+  TrailingPercent
+} derive(Eq, @debug.Debug)
+pub fn ParseError::equal(Self, Self) -> Bool
+pub fn ParseError::not_equal(Self, Self) -> Bool
+pub fn ParseError::to_repr(Self) -> @debug.Repr
 
 // Types and methods
+pub(all) enum Fixed {
+  LongWeekdayName
+  ShortWeekdayName
+  TimezoneName
+  TimezoneOffset
+} derive(Eq, @debug.Debug)
+pub fn Fixed::equal(Self, Self) -> Bool
+pub fn Fixed::not_equal(Self, Self) -> Bool
+pub fn Fixed::to_repr(Self) -> @debug.Repr
+
+pub(all) enum Item {
+  Literal(String)
+  Numeric(Numeric)
+  Fixed(Fixed)
+} derive(Eq, @debug.Debug)
+pub fn Item::equal(Self, Self) -> Bool
+pub fn Item::not_equal(Self, Self) -> Bool
+pub fn Item::to_repr(Self) -> @debug.Repr
+
+pub(all) enum Numeric {
+  Year
+  Month
+  Day
+  Ordinal
+  Hour
+  Minute
+  Second
+  Nanosecond
+} derive(Eq, @debug.Debug)
+pub fn Numeric::equal(Self, Self) -> Bool
+pub fn Numeric::not_equal(Self, Self) -> Bool
+pub fn Numeric::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 
