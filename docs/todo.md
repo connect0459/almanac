@@ -36,7 +36,7 @@ Coverage target (confirmed with the user): 100%. These are pure, low-branching f
 - [x] `NaiveDate` value object: internal representation as a day count since an epoch (e.g. proleptic Gregorian day number)
 - [x] `NaiveDate` constructors: `from_ymd`, `from_yo` (ordinal date), `from_isoywd` (ISO week date), all `Option`-returning for invalid input
 - [x] `NaiveDate` accessors: `year`, `month`, `day`, `ordinal`, `weekday`, `iso_week`, `leap_year`
-- [ ] `NaiveDate` "with" methods (clamp-or-fail semantics, not silent clamp): `with_year`, `with_month`, `with_day`, `with_ordinal`
+- [x] `NaiveDate` "with" methods (clamp-or-fail semantics, not silent clamp): `with_year`, `with_month`, `with_day`, `with_ordinal`
 - [ ] `NaiveDate` arithmetic: `succ`/`pred`, `add_days`/`sub_days`, `add_months`/`sub_months` (day-of-month clamped to the target month's length when it doesn't exist, e.g. Jan 31 + 1 month)
 - [x] `IsoWeek` value object: `year`, `week`, `week0`
 - [ ] Tests: leap-year sweep across 4-, 100-, 400-year boundaries (1900 non-leap, 2000 leap, 2100 non-leap); `with_year` rejecting Feb 29 into a non-leap year; `with_month`/`with_day` across varying month lengths
