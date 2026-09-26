@@ -29,9 +29,10 @@ Reference: `Weekday`/`Month` types, the naive-date internal algorithm module, Go
 
 Coverage target (confirmed with the user): 100%. These are pure, low-branching functions (enums, leap-year predicate, day-count conversion), so full coverage is realistic; `moon coverage analyze` gaps block moving to Phase 2.
 
-- [ ] `Weekday` enum (Mon..Sun) with `succ`/`pred`, `number_from_monday`/`number_from_sunday` (1-based), `num_days_from_monday`/`num_days_from_sunday` (0-based), `days_since`
-- [ ] `Month` enum (Jan..Dec) with `succ`/`pred`, `number_from_month`, `name()`, `num_days(year)`
-- [ ] Leap-year predicate and day-count ↔ (year, month, day) conversion using the Neri–Schneider closed-form algorithm (Go's approach — no static lookup table, prefer this over chrono's 400-entry `YearFlags` table for simpler porting)
+- [x] `Weekday` enum (Mon..Sun) with `succ`/`pred`, `number_from_monday`/`number_from_sunday` (1-based), `num_days_from_monday`/`num_days_from_sunday` (0-based), `days_since`
+- [x] `Month` enum (Jan..Dec) with `succ`/`pred`, `number_from_month`, `name()`, `num_days(year)`
+- [x] Leap-year predicate (`is_leap_year`, standard 4/100/400 rule)
+- [ ] Day-count ↔ (year, month, day) conversion using the Neri–Schneider closed-form algorithm (Go's approach — no static lookup table, prefer this over chrono's 400-entry `YearFlags` table for simpler porting)
 - [ ] `NaiveDate` value object: internal representation as a day count since an epoch (e.g. proleptic Gregorian day number)
 - [ ] `NaiveDate` constructors: `from_ymd`, `from_yo` (ordinal date), `from_isoywd` (ISO week date), all `Option`-returning for invalid input
 - [ ] `NaiveDate` accessors: `year`, `month`, `day`, `ordinal`, `weekday`, `iso_week`, `leap_year`
