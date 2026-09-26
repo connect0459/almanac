@@ -74,11 +74,13 @@ Coverage target (confirmed with the user): 100%.
 
 Reference: chrono's `NaiveDateTime`.
 
-- [ ] `NaiveDateTime` value object composing `NaiveDate` + `NaiveTime`
-- [ ] Constructors: `new(date, time)`, `from_timestamp` (Unix seconds + nanos), `from_timestamp_millis`/`_micros`/`_nanos`
-- [ ] Accessors: `date()`, `time()`, `timestamp()`, `timestamp_millis`/`_micros`/`_nanos`, `timestamp_subsec_*`
-- [ ] Arithmetic: `add_signed`/`sub_signed` (`TimeDelta`, propagating day overflow from `NaiveTime` into `NaiveDate`), `add_months`/`sub_months`, `add_days`/`sub_days`, `signed_duration_since`
-- [ ] Tests: arithmetic crossing a day boundary (both directions), arithmetic crossing a month/year boundary, `signed_duration_since` symmetry (`a.signed_duration_since(b) == -b.signed_duration_since(a)`)
+Coverage target (confirmed with the user): 100%.
+
+- [x] `NaiveDateTime` value object composing `NaiveDate` + `NaiveTime`
+- [x] Constructors: `new(date, time)` (total), `from_timestamp` (Unix seconds + nanos, `Option`-returning — nanos outside `0..=1_999_999_999` is rejected), `from_timestamp_millis`/`_micros`/`_nanos` (all `Option`-returning). Reuse the existing public `days_from_civil`/`civil_from_days` functions for the epoch-day conversion rather than adding a raw day-count constructor to `NaiveDate`'s public API.
+- [x] Accessors: `date()`, `time()`, `timestamp()`, `timestamp_millis` (total — stays within `Int64` across `NaiveDate`'s full range), `timestamp_micros`/`timestamp_nanos` (`Option`-returning — can overflow `Int64` for a date far from the epoch, mirroring `TimeDelta::num_microseconds`/`num_nanoseconds`), `timestamp_subsec_nanos`/`_millis`/`_micros`
+- [x] Arithmetic: `add_signed`/`sub_signed` (`TimeDelta`, propagating day overflow from `NaiveTime` into `NaiveDate`), `add_months`/`sub_months`, `add_days`/`sub_days`, `signed_duration_since` — all total (not `Option`): each composes operations already proven total on `NaiveDate`/`NaiveTime`, and `signed_duration_since`'s `TimeDelta` construction is proven to never overflow given `NaiveDate`'s much narrower day range than `TimeDelta`'s representable range.
+- [x] Tests: arithmetic crossing a day boundary (both directions), arithmetic crossing a month/year boundary, `signed_duration_since` symmetry (`a.signed_duration_since(b) == b.signed_duration_since(a).neg()`)
 
 ## Phase 5: Offset & UTC (`src/tz`, part 1)
 
