@@ -3,6 +3,7 @@ package "connect0459/chrono/format"
 
 import {
   "connect0459/chrono/core",
+  "connect0459/chrono/tz",
   "moonbitlang/core/debug",
 }
 
@@ -10,6 +11,8 @@ import {
 pub fn format_date(@core.NaiveDate, String) -> String raise ParseError
 
 pub fn format_date_time(@core.NaiveDateTime, String) -> String raise ParseError
+
+pub fn[Tz : @tz.TimeZone] format_date_time_tz(@tz.DateTime[Tz], String) -> String raise ParseError
 
 pub fn format_time(@core.NaiveTime, String) -> String raise ParseError
 

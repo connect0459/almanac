@@ -38,10 +38,23 @@ fn weekday_short_name(w : @core.Weekday) -> String {
 }
 
 ///|
+/// Renders a signed offset (in seconds) as strftime's `%z`: a sign
+/// followed by a zero-padded `HHMM`, with no colon and no sub-minute
+/// seconds component.
+fn format_offset_no_colon(secs : Int) -> String {
+  let sign = if secs < 0 { "-" } else { "+" }
+  let magnitude = if secs < 0 { -secs } else { secs }
+  let hours = magnitude / 3600
+  let minutes = magnitude % 3600 / 60
+  sign + pad_int(hours, 2) + pad_int(minutes, 2)
+}
+
+///|
 fn render(
   items : Array[Item],
   date : @core.NaiveDate?,
   time : @core.NaiveTime?,
+  tz_info : (Int, String)?,
 ) -> String raise ParseError {
   let out = StringBuilder()
   for item in items {
@@ -101,8 +114,16 @@ fn render(
           Some(d) => out.write_string(weekday_short_name(d.weekday()))
           None => raise MissingField(item)
         }
-      Fixed(TimezoneName) => raise MissingField(item)
-      Fixed(TimezoneOffset) => raise MissingField(item)
+      Fixed(TimezoneName) =>
+        match tz_info {
+          Some((_, name)) => out.write_string(name)
+          None => raise MissingField(item)
+        }
+      Fixed(TimezoneOffset) =>
+        match tz_info {
+          Some((offset, _)) => out.write_string(format_offset_no_colon(offset))
+          None => raise MissingField(item)
+        }
     }
   }
   out.to_string()
@@ -113,7 +134,7 @@ pub fn format_date(
   date : @core.NaiveDate,
   fmt : String,
 ) -> String raise ParseError {
-  render(tokenize(fmt), Some(date), None)
+  render(tokenize(fmt), Some(date), None, None)
 }
 
 ///|
@@ -121,7 +142,7 @@ pub fn format_time(
   time : @core.NaiveTime,
   fmt : String,
 ) -> String raise ParseError {
-  render(tokenize(fmt), None, Some(time))
+  render(tokenize(fmt), None, Some(time), None)
 }
 
 ///|
@@ -129,5 +150,24 @@ pub fn format_date_time(
   dt : @core.NaiveDateTime,
   fmt : String,
 ) -> String raise ParseError {
-  render(tokenize(fmt), Some(dt.date()), Some(dt.time()))
+  render(tokenize(fmt), Some(dt.date()), Some(dt.time()), None)
+}
+
+///|
+/// Renders a zone-aware `DateTime[Tz]` against `fmt`, in its local
+/// (wall-clock) representation. `%Z` renders `tz.tz_name()`; `%z` renders
+/// the numeric offset, strftime-style (`+HHMM`, no colon).
+pub fn[Tz : @tz.TimeZone] format_date_time_tz(
+  dt : @tz.DateTime[Tz],
+  fmt : String,
+) -> String raise ParseError {
+  let wall_clock = dt.naive_local()
+  let name = dt.timezone().tz_name(dt.naive_utc())
+  let offset = dt.offset().local_minus_utc()
+  render(
+    tokenize(fmt),
+    Some(wall_clock.date()),
+    Some(wall_clock.time()),
+    Some((offset, name)),
+  )
 }

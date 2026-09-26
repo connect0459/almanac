@@ -107,6 +107,58 @@ test "format_date_time renders date, time, and weekday fields together via %F %T
 }
 
 ///|
+test "format_date_time_tz renders the local wall-clock time shifted by the zone's offset" {
+  let dt = @tz.DateTime::from_utc(
+    @core.NaiveDateTime::new(
+      @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+      @core.NaiveTime::from_hms(9, 30, 0).unwrap(),
+    ),
+    @tz.FixedOffset::east(9 * 3600).unwrap(),
+  )
+  assert_eq(@format.format_date_time_tz(dt, "%F %T"), "2024-03-05 18:30:00")
+}
+
+///|
+test "format_date_time_tz renders %z as the zone's numeric offset, with no colon" {
+  let dt = @tz.DateTime::from_utc(
+    @core.NaiveDateTime::new(
+      @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+      @core.NaiveTime::from_hms(9, 30, 0).unwrap(),
+    ),
+    @tz.FixedOffset::east(9 * 3600).unwrap(),
+  )
+  assert_eq(@format.format_date_time_tz(dt, "%z"), "+0900")
+  let west = @tz.DateTime::from_utc(
+    dt.naive_utc(),
+    @tz.FixedOffset::west(5 * 3600).unwrap(),
+  )
+  assert_eq(@format.format_date_time_tz(west, "%z"), "-0500")
+}
+
+///|
+test "format_date_time_tz renders %Z as \"UTC\" for the Utc zone and as the offset string for a bare FixedOffset" {
+  let naive = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+    @core.NaiveTime::from_hms(9, 30, 0).unwrap(),
+  )
+  let utc_dt = @tz.DateTime::from_utc(naive, @tz.Utc::new())
+  assert_eq(@format.format_date_time_tz(utc_dt, "%Z"), "UTC")
+  let fixed_dt = @tz.DateTime::from_utc(
+    naive,
+    @tz.FixedOffset::east(9 * 3600).unwrap(),
+  )
+  assert_eq(@format.format_date_time_tz(fixed_dt, "%Z"), "+09:00")
+}
+
+///|
+test "format_date_time_tz renders %Z as an IANA zone's abbreviation in effect at that instant" {
+  let ny = @tz.Location::load("America/New_York").unwrap()
+  let dst_start_2024 = @core.NaiveDateTime::from_timestamp(1_710_054_000L, 0).unwrap()
+  let dt = @tz.DateTime::from_utc(dst_start_2024, ny)
+  assert_eq(@format.format_date_time_tz(dt, "%Z"), "EDT")
+}
+
+///|
 test "format_date_time raises MissingField for a timezone specifier, since it carries no offset" {
   let dt = @core.NaiveDateTime::new(
     @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
