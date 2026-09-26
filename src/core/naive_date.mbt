@@ -160,3 +160,51 @@ pub fn NaiveDate::with_ordinal(self : NaiveDate, ordinal : Int) -> NaiveDate? {
   let (year, _, _) = civil_from_days(self.days)
   NaiveDate::from_yo(year, ordinal)
 }
+
+///|
+/// The next calendar day.
+pub fn NaiveDate::succ(self : NaiveDate) -> NaiveDate {
+  self.add_days(1)
+}
+
+///|
+/// The previous calendar day.
+pub fn NaiveDate::pred(self : NaiveDate) -> NaiveDate {
+  self.sub_days(1)
+}
+
+///|
+/// The date `days` days after this one (or before it, if `days` is
+/// negative).
+pub fn NaiveDate::add_days(self : NaiveDate, days : Int) -> NaiveDate {
+  NaiveDate::{ days: self.days + days, }
+}
+
+///|
+/// The date `days` days before this one (or after it, if `days` is
+/// negative).
+pub fn NaiveDate::sub_days(self : NaiveDate, days : Int) -> NaiveDate {
+  NaiveDate::{ days: self.days - days, }
+}
+
+///|
+/// The date `months` months after this one (or before it, if `months` is
+/// negative). The day-of-month is clamped to the target month's length
+/// when it doesn't exist there (e.g. Jan 31 + 1 month becomes Feb 28 or
+/// Feb 29).
+pub fn NaiveDate::add_months(self : NaiveDate, months : Int) -> NaiveDate {
+  let (year, month, day) = civil_from_days(self.days)
+  let total = year * 12 + (month - 1) + months
+  let new_year = floor_div(total, 12)
+  let new_month = floor_mod(total, 12) + 1
+  let max_day = month_from_number(new_month).unwrap().num_days(new_year)
+  let clamped_day = if day > max_day { max_day } else { day }
+  NaiveDate::{ days: days_from_civil(new_year, new_month, clamped_day), }
+}
+
+///|
+/// The date `months` months before this one (or after it, if `months` is
+/// negative). See `add_months` for the day-of-month clamping rule.
+pub fn NaiveDate::sub_months(self : NaiveDate, months : Int) -> NaiveDate {
+  self.add_months(-months)
+}

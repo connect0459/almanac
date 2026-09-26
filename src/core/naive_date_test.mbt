@@ -223,3 +223,118 @@ test "with_ordinal rejects ordinal day 366 in a year that is not a leap year" {
   assert_eq(date.with_ordinal(366), None)
   assert_eq(date.with_ordinal(365), @core.NaiveDate::from_yo(2023, 365))
 }
+
+///|
+test "succ advances to the next calendar day, rolling over month and year boundaries" {
+  let cases = [
+    ((2023, 6, 14), (2023, 6, 15)),
+    ((2023, 12, 31), (2024, 1, 1)),
+    ((2023, 2, 28), (2023, 3, 1)),
+    ((2024, 2, 28), (2024, 2, 29)),
+  ]
+  for case in cases {
+    let (from, to) = case
+    let (fy, fm, fd) = from
+    let (ty, tm, td) = to
+    assert_eq(
+      @core.NaiveDate::from_ymd(fy, fm, fd).unwrap().succ(),
+      @core.NaiveDate::from_ymd(ty, tm, td).unwrap(),
+    )
+  }
+}
+
+///|
+test "pred goes back to the previous calendar day, rolling over month and year boundaries" {
+  let cases = [
+    ((2023, 6, 15), (2023, 6, 14)),
+    ((2024, 1, 1), (2023, 12, 31)),
+    ((2023, 3, 1), (2023, 2, 28)),
+    ((2024, 2, 29), (2024, 2, 28)),
+  ]
+  for case in cases {
+    let (from, to) = case
+    let (fy, fm, fd) = from
+    let (ty, tm, td) = to
+    assert_eq(
+      @core.NaiveDate::from_ymd(fy, fm, fd).unwrap().pred(),
+      @core.NaiveDate::from_ymd(ty, tm, td).unwrap(),
+    )
+  }
+}
+
+///|
+test "add_days moves forward by an arbitrary number of days, crossing month and year boundaries" {
+  let date = @core.NaiveDate::from_ymd(2023, 1, 25).unwrap()
+  assert_eq(date.add_days(10), @core.NaiveDate::from_ymd(2023, 2, 4).unwrap())
+  assert_eq(
+    date.add_days(340),
+    @core.NaiveDate::from_ymd(2023, 12, 31).unwrap(),
+  )
+}
+
+///|
+test "sub_days moves backward by an arbitrary number of days, crossing month and year boundaries" {
+  let date = @core.NaiveDate::from_ymd(2023, 2, 4).unwrap()
+  assert_eq(date.sub_days(10), @core.NaiveDate::from_ymd(2023, 1, 25).unwrap())
+  assert_eq(date.sub_days(35), @core.NaiveDate::from_ymd(2022, 12, 31).unwrap())
+}
+
+///|
+test "add_days and sub_days by the same count round-trip back to the original date" {
+  let date = @core.NaiveDate::from_ymd(2023, 6, 15).unwrap()
+  assert_eq(date.add_days(100).sub_days(100), date)
+}
+
+///|
+test "add_months keeps the day when the target month is long enough" {
+  let date = @core.NaiveDate::from_ymd(2023, 1, 15).unwrap()
+  assert_eq(date.add_months(1), @core.NaiveDate::from_ymd(2023, 2, 15).unwrap())
+}
+
+///|
+test "add_months clamps the day to the target month's length when it doesn't exist" {
+  assert_eq(
+    @core.NaiveDate::from_ymd(2023, 1, 31).unwrap().add_months(1),
+    @core.NaiveDate::from_ymd(2023, 2, 28).unwrap(),
+  )
+  assert_eq(
+    @core.NaiveDate::from_ymd(2024, 1, 31).unwrap().add_months(1),
+    @core.NaiveDate::from_ymd(2024, 2, 29).unwrap(),
+  )
+}
+
+///|
+test "add_months crosses a year boundary when the month count overflows 12" {
+  assert_eq(
+    @core.NaiveDate::from_ymd(2023, 11, 15).unwrap().add_months(3),
+    @core.NaiveDate::from_ymd(2024, 2, 15).unwrap(),
+  )
+}
+
+///|
+test "add_months with a negative count moves backward, crossing a year boundary" {
+  assert_eq(
+    @core.NaiveDate::from_ymd(2023, 1, 15).unwrap().add_months(-2),
+    @core.NaiveDate::from_ymd(2022, 11, 15).unwrap(),
+  )
+}
+
+///|
+test "sub_months clamps the day to the target month's length and crosses a year boundary" {
+  assert_eq(
+    @core.NaiveDate::from_ymd(2023, 3, 31).unwrap().sub_months(1),
+    @core.NaiveDate::from_ymd(2023, 2, 28).unwrap(),
+  )
+  assert_eq(
+    @core.NaiveDate::from_ymd(2023, 1, 15).unwrap().sub_months(2),
+    @core.NaiveDate::from_ymd(2022, 11, 15).unwrap(),
+  )
+}
+
+///|
+test "add_months is consistent across a proleptic year-zero boundary" {
+  assert_eq(
+    @core.NaiveDate::from_ymd(1, 1, 15).unwrap().sub_months(1),
+    @core.NaiveDate::from_ymd(0, 12, 15).unwrap(),
+  )
+}

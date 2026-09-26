@@ -51,6 +51,8 @@ pub fn Month::to_repr(Self) -> @debug.Repr
 pub struct NaiveDate {
   // private fields
 } derive(Eq, @debug.Debug)
+pub fn NaiveDate::add_days(Self, Int) -> Self
+pub fn NaiveDate::add_months(Self, Int) -> Self
 pub fn NaiveDate::day(Self) -> Int
 pub fn NaiveDate::equal(Self, Self) -> Bool
 pub fn NaiveDate::from_isoywd(Int, Int, Weekday) -> Self?
@@ -61,6 +63,10 @@ pub fn NaiveDate::leap_year(Self) -> Bool
 pub fn NaiveDate::month(Self) -> Month
 pub fn NaiveDate::not_equal(Self, Self) -> Bool
 pub fn NaiveDate::ordinal(Self) -> Int
+pub fn NaiveDate::pred(Self) -> Self
+pub fn NaiveDate::sub_days(Self, Int) -> Self
+pub fn NaiveDate::sub_months(Self, Int) -> Self
+pub fn NaiveDate::succ(Self) -> Self
 pub fn NaiveDate::to_repr(Self) -> @debug.Repr
 pub fn NaiveDate::weekday(Self) -> Weekday
 pub fn NaiveDate::with_day(Self, Int) -> Self?
