@@ -101,6 +101,27 @@ pub fn Month::name(self : Month) -> String {
 }
 
 ///|
+/// The month for a 1-based month-of-year number, or `None` if `n` is
+/// outside `1..=12`.
+fn month_from_number(n : Int) -> Month? {
+  match n {
+    1 => Some(Jan)
+    2 => Some(Feb)
+    3 => Some(Mar)
+    4 => Some(Apr)
+    5 => Some(May)
+    6 => Some(Jun)
+    7 => Some(Jul)
+    8 => Some(Aug)
+    9 => Some(Sep)
+    10 => Some(Oct)
+    11 => Some(Nov)
+    12 => Some(Dec)
+    _ => None
+  }
+}
+
+///|
 /// The number of days in the month for the given (proleptic Gregorian)
 /// `year`, accounting for leap years in `Feb`.
 pub fn Month::num_days(self : Month, year : Int) -> Int {

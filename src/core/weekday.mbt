@@ -95,3 +95,18 @@ pub fn Weekday::number_from_sunday(self : Weekday) -> Int {
 pub fn Weekday::days_since(self : Weekday, other : Weekday) -> Int {
   (self.index() - other.index() + 7) % 7
 }
+
+///|
+/// The weekday of the given day count relative to the Unix epoch
+/// (`1970-01-01`, day `0`, was a `Thu`).
+fn weekday_from_days(days : Int) -> Weekday {
+  match floor_mod(days + 3, 7) {
+    0 => Mon
+    1 => Tue
+    2 => Wed
+    3 => Thu
+    4 => Fri
+    5 => Sat
+    _ => Sun
+  }
+}

@@ -15,6 +15,16 @@ pub fn is_leap_year(Int) -> Bool
 // Errors
 
 // Types and methods
+pub struct IsoWeek {
+  // private fields
+} derive(Eq, @debug.Debug)
+pub fn IsoWeek::equal(Self, Self) -> Bool
+pub fn IsoWeek::not_equal(Self, Self) -> Bool
+pub fn IsoWeek::to_repr(Self) -> @debug.Repr
+pub fn IsoWeek::week(Self) -> Int
+pub fn IsoWeek::week0(Self) -> Int
+pub fn IsoWeek::year(Self) -> Int
+
 pub(all) enum Month {
   Jan
   Feb
@@ -37,6 +47,23 @@ pub fn Month::number_from_month(Self) -> Int
 pub fn Month::pred(Self) -> Self
 pub fn Month::succ(Self) -> Self
 pub fn Month::to_repr(Self) -> @debug.Repr
+
+pub struct NaiveDate {
+  // private fields
+} derive(Eq, @debug.Debug)
+pub fn NaiveDate::day(Self) -> Int
+pub fn NaiveDate::equal(Self, Self) -> Bool
+pub fn NaiveDate::from_isoywd(Int, Int, Weekday) -> Self?
+pub fn NaiveDate::from_ymd(Int, Int, Int) -> Self?
+pub fn NaiveDate::from_yo(Int, Int) -> Self?
+pub fn NaiveDate::iso_week(Self) -> IsoWeek
+pub fn NaiveDate::leap_year(Self) -> Bool
+pub fn NaiveDate::month(Self) -> Month
+pub fn NaiveDate::not_equal(Self, Self) -> Bool
+pub fn NaiveDate::ordinal(Self) -> Int
+pub fn NaiveDate::to_repr(Self) -> @debug.Repr
+pub fn NaiveDate::weekday(Self) -> Weekday
+pub fn NaiveDate::year(Self) -> Int
 
 pub(all) enum Weekday {
   Mon
