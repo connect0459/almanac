@@ -86,11 +86,15 @@ Coverage target (confirmed with the user): 100%.
 
 Reference: chrono's `Utc`/`FixedOffset`/`TimeZone`/`Offset` traits, Go's `Location`/`FixedZone`.
 
-- [ ] `Offset`/`TimeZone` abstract interface (MoonBit trait): given a naive datetime, resolve to a concrete UTC offset; must be able to represent the three DST-transition outcomes (single valid offset / ambiguous — DST fold / none — DST gap), matching chrono's `MappedLocalTime`
-- [ ] `Utc` zero-sized implementation of the offset interface
-- [ ] `FixedOffset` implementation: constant offset in seconds, ±23:59:59 range, `east`/`west` constructors
-- [ ] `DateTime` wrapper generic over an offset-provider: `NaiveDateTime` + resolved offset, `with_timezone`, delegates arithmetic to the inner naive datetime
-- [ ] Tests: `FixedOffset` range validation (reject offsets outside ±23:59:59), `DateTime<Utc>` arithmetic parity with plain `NaiveDateTime`
+Coverage target (confirmed with the user): 100%.
+
+`tz`'s dependency on `core` is now declared in `moon.pkg` (see Architecture Decisions above).
+
+- [x] `TimeZone` abstract interface (MoonBit trait, no associated type — MoonBit traits don't have Rust-style associated types, so every implementor resolves directly to `FixedOffset` rather than to a per-implementor `Offset` type): given a naive datetime, resolve to a concrete UTC offset; represents the three DST-transition outcomes (single valid offset / ambiguous — DST fold / none — DST gap) via a monomorphic `MappedLocalTime` enum (`Single`/`Ambiguous`/`Absent`; `Absent` rather than chrono's `None` to avoid colliding with `Option`'s `None`), matching chrono's `MappedLocalTime`. `offset_from_utc` is plain (`FixedOffset`, never ambiguous — UTC has no daylight saving); `offset_from_local` returns `MappedLocalTime`.
+- [x] `Utc` zero-sized implementation of `TimeZone`, always offset zero
+- [x] `FixedOffset` implementation: constant offset in seconds, ±23:59:59 range, `east`/`west` constructors (`Option`-returning)
+- [x] `DateTime[Tz]` wrapper generic over `Tz : TimeZone`: stores the UTC `NaiveDateTime` plus the `Tz` value; `offset()`/`naive_local()` are derived on demand (not stored redundantly), `with_timezone` re-expresses the same UTC instant in a different zone, and `add_signed`/`sub_signed`/`signed_duration_since` delegate to the inner naive datetime
+- [x] Tests: `FixedOffset` range validation (reject offsets outside ±23:59:59), `DateTime<Utc>` arithmetic parity with plain `NaiveDateTime`
 
 ## Phase 6: IANA Timezone Database (`src/tz`, part 2)
 
