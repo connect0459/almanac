@@ -1,4 +1,5 @@
 import {
   "connect0459/chrono/core",
   "moonbitlang/core/debug",
+  "moonbitlang/core/encoding/utf8",
 }
