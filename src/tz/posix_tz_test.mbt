@@ -1,9 +1,25 @@
 ///|
+test "type_at reports the standard/DST abbreviation and flag alongside the offset" {
+  let tz = @tz.parse_posix_tz("EST5EDT,M3.2.0,M11.1.0").unwrap()
+  let dst_start = 2_152_162_800L
+  let std_type = tz.type_at(dst_start - 1L)
+  assert_eq(std_type.utc_offset(), -18000)
+  assert_eq(std_type.is_dst(), false)
+  assert_eq(std_type.abbreviation(), "EST")
+  let dst_type = tz.type_at(dst_start)
+  assert_eq(dst_type.utc_offset(), -14400)
+  assert_eq(dst_type.is_dst(), true)
+  assert_eq(dst_type.abbreviation(), "EDT")
+}
+
+///|
 test "parse_posix_tz parses a zone with no DST rule, offset_at is constant regardless of instant" {
   let tz = @tz.parse_posix_tz("UTC0").unwrap()
   assert_eq(tz.offset_at(0L), 0)
   assert_eq(tz.offset_at(1_700_000_000L), 0)
   assert_eq(tz.offset_at(-1_700_000_000L), 0)
+  assert_eq(tz.type_at(0L).abbreviation(), "UTC")
+  assert_eq(tz.type_at(0L).is_dst(), false)
   let dt = @core.NaiveDateTime::new(
     @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),
     @core.NaiveTime::from_hms(12, 0, 0).unwrap(),

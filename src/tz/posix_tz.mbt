@@ -33,7 +33,9 @@ priv struct DstRule {
 /// past a TZif file's last recorded transition.
 pub struct PosixTz {
   priv std_offset : Int
+  priv std_name : String
   priv dst_offset : Int?
+  priv dst_name : String?
   priv rule : DstRule?
 }
 
@@ -214,17 +216,23 @@ pub fn parse_posix_tz(s : String) -> PosixTz? {
   let chars = s.to_array()
   match parse_name(chars, 0) {
     None => None
-    Some((_std_name, p1)) =>
+    Some((std_name, p1)) =>
       match parse_offset_seconds(chars, p1) {
         None => None
         Some((std_posix_offset, p2)) => {
           let std_offset = -std_posix_offset
           if p2 >= chars.length() {
-            Some(PosixTz::{ std_offset, dst_offset: None, rule: None, })
+            Some(PosixTz::{
+              std_offset,
+              std_name,
+              dst_offset: None,
+              dst_name: None,
+              rule: None,
+            })
           } else {
             match parse_name(chars, p2) {
               None => None
-              Some((_dst_name, p3)) => {
+              Some((dst_name, p3)) => {
                 let (dst_posix_offset, p4) = match
                   parse_offset_seconds(chars, p3) {
                   None => (std_posix_offset - 3600, p3)
@@ -240,7 +248,9 @@ pub fn parse_posix_tz(s : String) -> PosixTz? {
                       if p5 == chars.length() {
                         Some(PosixTz::{
                           std_offset,
+                          std_name,
                           dst_offset: Some(dst_offset),
+                          dst_name: Some(dst_name),
                           rule: Some(rule),
                         })
                       } else {
@@ -342,13 +352,24 @@ fn PosixTz::is_dst_at(self : PosixTz, utc_instant : Int64) -> Bool {
 }
 
 ///|
+/// The local time type (offset, DST flag, and abbreviation) in effect at
+/// the given UTC instant.
+///
+/// Unwrapping `dst_name`/`dst_offset` is safe: `parse_posix_tz` only ever
+/// produces a `PosixTz` with `rule` present exactly when both are
+/// present too.
+pub fn PosixTz::type_at(self : PosixTz, utc_instant : Int64) -> LocalTimeType {
+  if self.is_dst_at(utc_instant) {
+    LocalTimeType::new(self.dst_offset.unwrap(), true, self.dst_name.unwrap())
+  } else {
+    LocalTimeType::new(self.std_offset, false, self.std_name)
+  }
+}
+
+///|
 /// The UTC offset in effect at the given UTC instant.
 pub fn PosixTz::offset_at(self : PosixTz, utc_instant : Int64) -> Int {
-  if self.is_dst_at(utc_instant) {
-    self.dst_offset.unwrap()
-  } else {
-    self.std_offset
-  }
+  self.type_at(utc_instant).utc_offset()
 }
 
 ///|

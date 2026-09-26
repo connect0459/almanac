@@ -4,6 +4,20 @@ test "from_tzif_bytes rejects malformed TZif data" {
 }
 
 ///|
+test "type_at reports the abbreviation and DST flag from the table, and from the POSIX rule past the last transition" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let dst_start_2024 = @core.NaiveDateTime::from_timestamp(1_710_054_000L, 0).unwrap()
+  let via_table = ny.type_at(dst_start_2024)
+  assert_eq(via_table.abbreviation(), "EDT")
+  assert_eq(via_table.is_dst(), true)
+  let summer_2040 = @core.NaiveDateTime::from_timestamp(2_224_713_600L, 0).unwrap()
+  let via_posix = ny.type_at(summer_2040)
+  assert_eq(via_posix.abbreviation(), "EDT")
+  assert_eq(via_posix.is_dst(), true)
+  assert_eq(via_posix.utc_offset(), -14400)
+}
+
+///|
 test "offset_from_utc uses the first non-DST local time type before the first recorded transition" {
   let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
   let just_before = @core.NaiveDateTime::from_timestamp(-2_717_650_801L, 0).unwrap()

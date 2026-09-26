@@ -79,25 +79,29 @@ fn Location::type_at_segment(self : Location, segment : Int) -> LocalTimeType {
 }
 
 ///|
-pub impl TimeZone for Location with fn offset_from_utc(self, utc) {
+/// The local time type (offset, DST flag, and abbreviation) in effect at
+/// the given UTC instant.
+pub fn Location::type_at(
+  self : Location,
+  utc : @core.NaiveDateTime,
+) -> LocalTimeType {
   let target = utc.timestamp()
   if self.past_last_transition(target) {
     match self.posix_tz {
-      Some(p) => FixedOffset::east(p.offset_at(target)).unwrap()
-      None =>
-        FixedOffset::east(
-          self
-          .type_at_segment(self.tzif.transitions().length() - 1)
-          .utc_offset(),
-        ).unwrap()
+      Some(p) => p.type_at(target)
+      None => self.type_at_segment(self.tzif.transitions().length() - 1)
     }
   } else {
     match self.segment_at(target) {
-      None => FixedOffset::east(self.initial_type().utc_offset()).unwrap()
-      Some(segment) =>
-        FixedOffset::east(self.type_at_segment(segment).utc_offset()).unwrap()
+      None => self.initial_type()
+      Some(segment) => self.type_at_segment(segment)
     }
   }
+}
+
+///|
+pub impl TimeZone for Location with fn offset_from_utc(self, utc) {
+  FixedOffset::east(self.type_at(utc).utc_offset()).unwrap()
 }
 
 ///|

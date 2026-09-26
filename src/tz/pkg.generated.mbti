@@ -60,6 +60,7 @@ pub struct Location {
 pub fn Location::from_tzif_bytes(Bytes) -> Self?
 pub fn Location::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime
 pub fn Location::offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
+pub fn Location::type_at(Self, @core.NaiveDateTime) -> LocalTimeType
 pub impl TimeZone for Location
 
 pub(all) enum MappedLocalTime {
@@ -76,6 +77,7 @@ pub struct PosixTz {
 }
 pub fn PosixTz::offset_at(Self, Int64) -> Int
 pub fn PosixTz::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime
+pub fn PosixTz::type_at(Self, Int64) -> LocalTimeType
 
 pub struct TzifData {
   // private fields
