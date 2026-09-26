@@ -75,6 +75,42 @@ pub fn NaiveDate::with_ordinal(Self, Int) -> Self?
 pub fn NaiveDate::with_year(Self, Int) -> Self?
 pub fn NaiveDate::year(Self) -> Int
 
+pub struct TimeDelta {
+  // private fields
+} derive(Eq, @debug.Debug)
+pub fn TimeDelta::abs(Self) -> Self
+pub fn TimeDelta::add(Self, Self) -> Self?
+pub fn TimeDelta::days(Int64) -> Self?
+pub fn TimeDelta::div(Self, Int) -> Self?
+pub fn TimeDelta::equal(Self, Self) -> Bool
+pub fn TimeDelta::hours(Int64) -> Self?
+pub fn TimeDelta::is_zero(Self) -> Bool
+pub fn TimeDelta::max_value() -> Self
+pub fn TimeDelta::microseconds(Int64) -> Self?
+pub fn TimeDelta::milliseconds(Int64) -> Self?
+pub fn TimeDelta::min_value() -> Self
+pub fn TimeDelta::minutes(Int64) -> Self?
+pub fn TimeDelta::mul(Self, Int) -> Self?
+pub fn TimeDelta::nanoseconds(Int64) -> Self?
+pub fn TimeDelta::neg(Self) -> Self
+pub fn TimeDelta::not_equal(Self, Self) -> Bool
+pub fn TimeDelta::num_days(Self) -> Int64
+pub fn TimeDelta::num_hours(Self) -> Int64
+pub fn TimeDelta::num_microseconds(Self) -> Int64?
+pub fn TimeDelta::num_milliseconds(Self) -> Int64
+pub fn TimeDelta::num_minutes(Self) -> Int64
+pub fn TimeDelta::num_nanoseconds(Self) -> Int64?
+pub fn TimeDelta::num_seconds(Self) -> Int64
+pub fn TimeDelta::num_weeks(Self) -> Int64
+pub fn TimeDelta::seconds(Int64) -> Self?
+pub fn TimeDelta::sub(Self, Self) -> Self?
+pub fn TimeDelta::subsec_microseconds(Self) -> Int
+pub fn TimeDelta::subsec_milliseconds(Self) -> Int
+pub fn TimeDelta::subsec_nanoseconds(Self) -> Int
+pub fn TimeDelta::to_repr(Self) -> @debug.Repr
+pub fn TimeDelta::weeks(Int64) -> Self?
+pub fn TimeDelta::zero() -> Self
+
 pub(all) enum Weekday {
   Mon
   Tue
