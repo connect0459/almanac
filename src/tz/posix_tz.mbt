@@ -352,42 +352,6 @@ pub fn PosixTz::offset_at(self : PosixTz, utc_instant : Int64) -> Int {
 }
 
 ///|
-/// Resolves whether `local_ts` (a local wall-clock reading, as a naive
-/// Unix instant) falls in the gap or fold around a single transition from
-/// `offset_before` to `offset_after` at `transition_utc`. Returns `None`
-/// if this transition is not relevant to `local_ts` (a normal single
-/// resolution should be used instead).
-fn resolve_transition(
-  local_ts : Int64,
-  transition_utc : Int64,
-  offset_before : Int,
-  offset_after : Int,
-) -> MappedLocalTime? {
-  let local_start = transition_utc + offset_before.to_int64()
-  let local_end = transition_utc + offset_after.to_int64()
-  if offset_after > offset_before {
-    if local_ts >= local_start && local_ts < local_end {
-      Some(Absent)
-    } else {
-      None
-    }
-  } else if offset_after < offset_before {
-    if local_ts >= local_end && local_ts < local_start {
-      Some(
-        Ambiguous(
-          FixedOffset::east(offset_before).unwrap(),
-          FixedOffset::east(offset_after).unwrap(),
-        ),
-      )
-    } else {
-      None
-    }
-  } else {
-    None
-  }
-}
-
-///|
 /// Resolves the given local (wall-clock) naive datetime to its UTC
 /// offset(s) under this POSIX TZ rule.
 pub fn PosixTz::offset_from_local(

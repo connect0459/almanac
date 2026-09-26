@@ -54,6 +54,14 @@ pub fn LocalTimeType::not_equal(Self, Self) -> Bool
 pub fn LocalTimeType::to_repr(Self) -> @debug.Repr
 pub fn LocalTimeType::utc_offset(Self) -> Int
 
+pub struct Location {
+  // private fields
+}
+pub fn Location::from_tzif_bytes(Bytes) -> Self?
+pub fn Location::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime
+pub fn Location::offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
+pub impl TimeZone for Location
+
 pub(all) enum MappedLocalTime {
   Single(FixedOffset)
   Ambiguous(FixedOffset, FixedOffset)
