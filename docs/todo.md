@@ -13,18 +13,21 @@ Reference target: **chrono/time**-equivalent functionality (calendar arithmetic,
   - `src/format` — strftime-style formatting and parsing engine
 - **Timezone strategy**: not yet decided — gated on a spike (first task of Phase 6) confirming whether MoonBit has, or can be given, a mechanism for embedding a binary asset at compile time (Go `time/tzdata`-style). The embedded-only vs. embedded-plus-OS-read choice is made after that spike reports back, not before.
 - **Format/parse design**: strftime-style `%`-specifier engine (chrono-style), not Go's reference-time-layout style. Rationale: a `%`-token scanner is simpler to implement correctly than reference-layout matching (which must disambiguate numeric substrings like `1` as month vs. day by position in the reference string).
+- **Cross-package `moon.pkg` imports**: declared only when a package's code actually references the dependency (`tz` importing `core` at the start of Phase 5, `format` importing `core`/`tz` at the start of Phase 7), not upfront when the package layout is created. Rationale: `moon check --deny-warn` (used by `just verify`) treats an unused import as an error, so declaring a dependency before any symbol from it is used would break CI immediately.
 
 ## Phase 0: Project Setup
 
 - [x] Establish `src/` as the library package (`connect0459/chrono`)
 - [x] Define package layout — see Architecture Decisions above
 - [ ] Discuss coverage targets and test strategy with the user before each phase below begins implementation (recurring gate, not a one-time task)
-- [ ] Create the `core`, `tz`, `format` sub-packages with `moon.pkg` dependency declarations matching the layering: `core` has no internal dependencies; `tz` depends on `core`; `format` depends on `core` + `tz`
-- [ ] Remove the placeholder `src/chrono.mbt`, `src/chrono_test.mbt`, `src/chrono_wbtest.mbt` once real packages exist
+- [x] Create the `core`, `tz`, `format` sub-packages under `src/` (`moon.pkg` dependency declarations added per-phase as each package starts consuming another — see Architecture Decisions above)
+- [x] Remove the placeholder `src/chrono.mbt`, `src/chrono_test.mbt`, `src/chrono_wbtest.mbt` once real packages exist
 
 ## Phase 1: Calendar Primitives (`src/core`)
 
 Reference: `Weekday`/`Month` types, the naive-date internal algorithm module, Go's `time.go` (`dateToAbsDays`/`absDays.date`/`absDays.split`).
+
+Coverage target (confirmed with the user): 100%. These are pure, low-branching functions (enums, leap-year predicate, day-count conversion), so full coverage is realistic; `moon coverage analyze` gaps block moving to Phase 2.
 
 - [ ] `Weekday` enum (Mon..Sun) with `succ`/`pred`, `number_from_monday`/`number_from_sunday` (1-based), `num_days_from_monday`/`num_days_from_sunday` (0-based), `days_since`
 - [ ] `Month` enum (Jan..Dec) with `succ`/`pred`, `number_from_month`, `name()`, `num_days(year)`
