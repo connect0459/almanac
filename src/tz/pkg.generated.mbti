@@ -33,6 +33,16 @@ pub fn MappedLocalTime::equal(Self, Self) -> Bool
 pub fn MappedLocalTime::not_equal(Self, Self) -> Bool
 pub fn MappedLocalTime::to_repr(Self) -> @debug.Repr
 
+pub struct Utc {
+} derive(Eq, @debug.Debug)
+pub fn Utc::equal(Self, Self) -> Bool
+pub fn Utc::new() -> Self
+pub fn Utc::not_equal(Self, Self) -> Bool
+pub fn Utc::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime
+pub fn Utc::offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
+pub fn Utc::to_repr(Self) -> @debug.Repr
+pub impl TimeZone for Utc
+
 // Type aliases
 
 // Traits
