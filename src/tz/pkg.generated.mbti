@@ -1,12 +1,42 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "connect0459/chrono/tz"
 
+import {
+  "connect0459/chrono/core",
+  "moonbitlang/core/debug",
+}
+
 // Values
 
 // Errors
 
 // Types and methods
+pub struct FixedOffset {
+  // private fields
+} derive(Eq, @debug.Debug)
+pub fn FixedOffset::east(Int) -> Self?
+pub fn FixedOffset::equal(Self, Self) -> Bool
+pub fn FixedOffset::local_minus_utc(Self) -> Int
+pub fn FixedOffset::not_equal(Self, Self) -> Bool
+pub fn FixedOffset::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime
+pub fn FixedOffset::offset_from_utc(Self, @core.NaiveDateTime) -> Self
+pub fn FixedOffset::to_repr(Self) -> @debug.Repr
+pub fn FixedOffset::west(Int) -> Self?
+pub impl TimeZone for FixedOffset
+
+pub(all) enum MappedLocalTime {
+  Single(FixedOffset)
+  Ambiguous(FixedOffset, FixedOffset)
+  Absent
+} derive(Eq, @debug.Debug)
+pub fn MappedLocalTime::equal(Self, Self) -> Bool
+pub fn MappedLocalTime::not_equal(Self, Self) -> Bool
+pub fn MappedLocalTime::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 
 // Traits
+pub trait TimeZone {
+  fn offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
+  fn offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime
+}
