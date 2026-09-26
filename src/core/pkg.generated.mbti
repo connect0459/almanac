@@ -63,6 +63,10 @@ pub fn NaiveDate::not_equal(Self, Self) -> Bool
 pub fn NaiveDate::ordinal(Self) -> Int
 pub fn NaiveDate::to_repr(Self) -> @debug.Repr
 pub fn NaiveDate::weekday(Self) -> Weekday
+pub fn NaiveDate::with_day(Self, Int) -> Self?
+pub fn NaiveDate::with_month(Self, Int) -> Self?
+pub fn NaiveDate::with_ordinal(Self, Int) -> Self?
+pub fn NaiveDate::with_year(Self, Int) -> Self?
 pub fn NaiveDate::year(Self) -> Int
 
 pub(all) enum Weekday {

@@ -164,3 +164,62 @@ test "from_isoywd rejects a week number that does not exist in that ISO year" {
   assert_eq(@core.NaiveDate::from_isoywd(2014, 53, @core.Mon), None)
   assert_eq(@core.NaiveDate::from_isoywd(2015, 0, @core.Sun), None)
 }
+
+///|
+test "with_year replaces the year while keeping month and day" {
+  let date = @core.NaiveDate::from_ymd(2023, 6, 15).unwrap()
+  assert_eq(date.with_year(2030), @core.NaiveDate::from_ymd(2030, 6, 15))
+}
+
+///|
+test "with_year rejects moving February 29 into a year that is not a leap year" {
+  let date = @core.NaiveDate::from_ymd(2024, 2, 29).unwrap()
+  assert_eq(date.with_year(2023), None)
+  assert_eq(date.with_year(2000), @core.NaiveDate::from_ymd(2000, 2, 29))
+}
+
+///|
+test "with_month replaces the month while keeping year and day" {
+  let date = @core.NaiveDate::from_ymd(2023, 1, 15).unwrap()
+  assert_eq(date.with_month(6), @core.NaiveDate::from_ymd(2023, 6, 15))
+}
+
+///|
+test "with_month rejects a day that does not exist in the target month" {
+  let date = @core.NaiveDate::from_ymd(2023, 1, 31).unwrap()
+  assert_eq(date.with_month(4), None)
+  assert_eq(date.with_month(3), @core.NaiveDate::from_ymd(2023, 3, 31))
+}
+
+///|
+test "with_month rejects a month number outside 1..=12" {
+  let date = @core.NaiveDate::from_ymd(2023, 6, 15).unwrap()
+  assert_eq(date.with_month(0), None)
+  assert_eq(date.with_month(13), None)
+}
+
+///|
+test "with_day replaces the day while keeping year and month" {
+  let date = @core.NaiveDate::from_ymd(2023, 6, 1).unwrap()
+  assert_eq(date.with_day(15), @core.NaiveDate::from_ymd(2023, 6, 15))
+}
+
+///|
+test "with_day rejects a day outside the current month's length" {
+  let date = @core.NaiveDate::from_ymd(2023, 4, 1).unwrap()
+  assert_eq(date.with_day(31), None)
+  assert_eq(date.with_day(30), @core.NaiveDate::from_ymd(2023, 4, 30))
+}
+
+///|
+test "with_ordinal replaces the ordinal day while keeping the year" {
+  let date = @core.NaiveDate::from_ymd(2023, 1, 1).unwrap()
+  assert_eq(date.with_ordinal(60), @core.NaiveDate::from_yo(2023, 60))
+}
+
+///|
+test "with_ordinal rejects ordinal day 366 in a year that is not a leap year" {
+  let date = @core.NaiveDate::from_ymd(2023, 1, 1).unwrap()
+  assert_eq(date.with_ordinal(366), None)
+  assert_eq(date.with_ordinal(365), @core.NaiveDate::from_yo(2023, 365))
+}

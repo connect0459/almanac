@@ -127,3 +127,36 @@ pub fn NaiveDate::iso_week(self : NaiveDate) -> IsoWeek {
   let yday = thursday_days - days_from_civil(thursday_year, 1, 1) + 1
   IsoWeek::{ year: thursday_year, week: (yday - 1) / 7 + 1, }
 }
+
+///|
+/// The date with the year replaced by `year`, or `None` if the current
+/// month and day do not exist in `year` (e.g. moving February 29 into a
+/// year that is not a leap year).
+pub fn NaiveDate::with_year(self : NaiveDate, year : Int) -> NaiveDate? {
+  let (_, month, day) = civil_from_days(self.days)
+  NaiveDate::from_ymd(year, month, day)
+}
+
+///|
+/// The date with the month replaced by `month`, or `None` if `month` is
+/// outside `1..=12` or the current day does not exist in that month.
+pub fn NaiveDate::with_month(self : NaiveDate, month : Int) -> NaiveDate? {
+  let (year, _, day) = civil_from_days(self.days)
+  NaiveDate::from_ymd(year, month, day)
+}
+
+///|
+/// The date with the day-of-month replaced by `day`, or `None` if `day` is
+/// outside the current month's length.
+pub fn NaiveDate::with_day(self : NaiveDate, day : Int) -> NaiveDate? {
+  let (year, month, _) = civil_from_days(self.days)
+  NaiveDate::from_ymd(year, month, day)
+}
+
+///|
+/// The date with the day-of-year replaced by `ordinal`, or `None` if
+/// `ordinal` is outside `1..=365` (`1..=366` in a leap year).
+pub fn NaiveDate::with_ordinal(self : NaiveDate, ordinal : Int) -> NaiveDate? {
+  let (year, _, _) = civil_from_days(self.days)
+  NaiveDate::from_yo(year, ordinal)
+}
