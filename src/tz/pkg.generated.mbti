@@ -42,6 +42,7 @@ pub fn FixedOffset::not_equal(Self, Self) -> Bool
 pub fn FixedOffset::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime
 pub fn FixedOffset::offset_from_utc(Self, @core.NaiveDateTime) -> Self
 pub fn FixedOffset::to_repr(Self) -> @debug.Repr
+pub fn FixedOffset::tz_name(Self, @core.NaiveDateTime) -> String
 pub fn FixedOffset::west(Int) -> Self?
 pub impl TimeZone for FixedOffset
 
@@ -64,6 +65,7 @@ pub fn Location::load(String) -> Self?
 pub fn Location::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime
 pub fn Location::offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
 pub fn Location::type_at(Self, @core.NaiveDateTime) -> LocalTimeType
+pub fn Location::tz_name(Self, @core.NaiveDateTime) -> String
 pub impl TimeZone for Location
 
 pub(all) enum MappedLocalTime {
@@ -99,6 +101,7 @@ pub fn Utc::not_equal(Self, Self) -> Bool
 pub fn Utc::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime
 pub fn Utc::offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
 pub fn Utc::to_repr(Self) -> @debug.Repr
+pub fn Utc::tz_name(Self, @core.NaiveDateTime) -> String
 pub impl TimeZone for Utc
 
 // Type aliases
@@ -107,4 +110,5 @@ pub impl TimeZone for Utc
 pub trait TimeZone {
   fn offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
   fn offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime
+  fn tz_name(Self, @core.NaiveDateTime) -> String
 }

@@ -38,3 +38,43 @@ test "offset_from_local reports a single unambiguous offset, matching offset_fro
   )
   assert_eq(offset.offset_from_local(dt), @tz.Single(offset))
 }
+
+///|
+test "tz_name renders a positive offset as a colon-separated sign, hour, and minute" {
+  let offset = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let dt = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 1, 1).unwrap(),
+    @core.NaiveTime::from_hms(0, 0, 0).unwrap(),
+  )
+  assert_eq(offset.tz_name(dt), "+09:00")
+}
+
+///|
+test "tz_name renders a negative offset with the same colon-separated form" {
+  let offset = @tz.FixedOffset::west(5 * 3600).unwrap()
+  let dt = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 1, 1).unwrap(),
+    @core.NaiveTime::from_hms(0, 0, 0).unwrap(),
+  )
+  assert_eq(offset.tz_name(dt), "-05:00")
+}
+
+///|
+test "tz_name renders a zero offset as \"+00:00\"" {
+  let offset = @tz.FixedOffset::east(0).unwrap()
+  let dt = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 1, 1).unwrap(),
+    @core.NaiveTime::from_hms(0, 0, 0).unwrap(),
+  )
+  assert_eq(offset.tz_name(dt), "+00:00")
+}
+
+///|
+test "tz_name includes a seconds component when the offset is not a whole minute" {
+  let offset = @tz.FixedOffset::east(-17762).unwrap()
+  let dt = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 1, 1).unwrap(),
+    @core.NaiveTime::from_hms(0, 0, 0).unwrap(),
+  )
+  assert_eq(offset.tz_name(dt), "-04:56:02")
+}

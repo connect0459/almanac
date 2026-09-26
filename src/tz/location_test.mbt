@@ -18,6 +18,15 @@ test "type_at reports the abbreviation and DST flag from the table, and from the
 }
 
 ///|
+test "tz_name reports the abbreviation in effect at the given instant, matching type_at" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let dst_start_2024 = @core.NaiveDateTime::from_timestamp(1_710_054_000L, 0).unwrap()
+  assert_eq(ny.tz_name(dst_start_2024), "EDT")
+  let summer_2040 = @core.NaiveDateTime::from_timestamp(2_224_713_600L, 0).unwrap()
+  assert_eq(ny.tz_name(summer_2040), "EDT")
+}
+
+///|
 test "offset_from_utc uses the first non-DST local time type before the first recorded transition" {
   let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
   let just_before = @core.NaiveDateTime::from_timestamp(-2_717_650_801L, 0).unwrap()

@@ -67,4 +67,9 @@ pub trait TimeZone {
   /// The offset(s) in effect for the given local (wall-clock) naive
   /// datetime. See `MappedLocalTime`.
   fn offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime
+  /// The name in effect for the given UTC naive datetime: an IANA zone's
+  /// abbreviation (e.g. `"EDT"`), `Utc`'s fixed `"UTC"`, or a bare
+  /// `FixedOffset`'s own offset string (e.g. `"+09:00"`), since a fixed
+  /// offset carries no name distinct from its offset.
+  fn tz_name(Self, @core.NaiveDateTime) -> String
 }

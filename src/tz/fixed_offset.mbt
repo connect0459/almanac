@@ -41,6 +41,32 @@ pub fn FixedOffset::local_minus_utc(self : FixedOffset) -> Int {
 }
 
 ///|
+fn pad2(n : Int) -> String {
+  if n < 10 {
+    "0" + n.to_string()
+  } else {
+    n.to_string()
+  }
+}
+
+///|
+/// Renders `secs` as a signed `HH:MM` string, extended to `HH:MM:SS` when
+/// the offset is not a whole minute (e.g. a pre-standardization local mean
+/// time zone).
+fn format_offset_colon(secs : Int) -> String {
+  let sign = if secs < 0 { "-" } else { "+" }
+  let magnitude = if secs < 0 { -secs } else { secs }
+  let hours = magnitude / 3600
+  let minutes = magnitude % 3600 / 60
+  let seconds = magnitude % 60
+  if seconds == 0 {
+    sign + pad2(hours) + ":" + pad2(minutes)
+  } else {
+    sign + pad2(hours) + ":" + pad2(minutes) + ":" + pad2(seconds)
+  }
+}
+
+///|
 pub impl TimeZone for FixedOffset with fn offset_from_utc(self, _dt) {
   self
 }
@@ -51,4 +77,13 @@ pub impl TimeZone for FixedOffset with fn offset_from_local(self, _dt) {
 }
 
 ///|
-pub extend FixedOffset with TimeZone::{offset_from_utc, offset_from_local}
+pub impl TimeZone for FixedOffset with fn tz_name(self, _dt) {
+  format_offset_colon(self.local_minus_utc)
+}
+
+///|
+pub extend FixedOffset with TimeZone::{
+  offset_from_utc,
+  offset_from_local,
+  tz_name,
+}

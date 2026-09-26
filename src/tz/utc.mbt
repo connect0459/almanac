@@ -28,4 +28,9 @@ pub impl TimeZone for Utc with fn offset_from_local(_self, _dt) {
 }
 
 ///|
-pub extend Utc with TimeZone::{offset_from_utc, offset_from_local}
+pub impl TimeZone for Utc with fn tz_name(_self, _dt) {
+  "UTC"
+}
+
+///|
+pub extend Utc with TimeZone::{offset_from_utc, offset_from_local, tz_name}
