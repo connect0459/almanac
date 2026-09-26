@@ -79,10 +79,7 @@ test "tokenize raises UnknownSpecifier for an unrecognized specifier character" 
     @format.UnknownSpecifier('Q') => ()
     @format.UnknownSpecifier(_) =>
       fail("wrong char carried by UnknownSpecifier")
-    @format.TrailingPercent =>
-      fail("expected UnknownSpecifier, got TrailingPercent")
-    @format.MissingField(_) =>
-      fail("expected UnknownSpecifier, got MissingField")
+    _ => fail("expected UnknownSpecifier")
   } noraise {
     _ => fail("expected tokenize to raise UnknownSpecifier")
   }
@@ -92,10 +89,7 @@ test "tokenize raises UnknownSpecifier for an unrecognized specifier character" 
 test "tokenize raises TrailingPercent when the format string ends with a lone percent" {
   try @format.tokenize("abc%") |> ignore catch {
     @format.TrailingPercent => ()
-    @format.UnknownSpecifier(_) =>
-      fail("expected TrailingPercent, got UnknownSpecifier")
-    @format.MissingField(_) =>
-      fail("expected TrailingPercent, got MissingField")
+    _ => fail("expected TrailingPercent")
   } noraise {
     _ => fail("expected tokenize to raise TrailingPercent")
   }

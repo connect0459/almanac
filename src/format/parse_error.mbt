@@ -4,6 +4,7 @@ pub suberror ParseError {
   UnknownSpecifier(Char)
   TrailingPercent
   MissingField(Item)
+  InvalidRfc3339
 } derive(Eq, @debug.Debug)
 
 ///|

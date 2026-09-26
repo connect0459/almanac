@@ -45,10 +45,7 @@ test "format_date raises MissingField for a time-of-day or timezone specifier" {
     let (fmt, expected_item) = case
     try @format.format_date(date, fmt) |> ignore catch {
       @format.MissingField(item) => assert_eq(item, expected_item)
-      @format.UnknownSpecifier(_) =>
-        fail("expected MissingField, got UnknownSpecifier")
-      @format.TrailingPercent =>
-        fail("expected MissingField, got TrailingPercent")
+      _ => fail("expected MissingField")
     } noraise {
       _ => fail("expected format_date to raise MissingField")
     }
@@ -84,10 +81,7 @@ test "format_time raises MissingField for a date, weekday, or timezone specifier
     let (fmt, expected_item) = case
     try @format.format_time(time, fmt) |> ignore catch {
       @format.MissingField(item) => assert_eq(item, expected_item)
-      @format.UnknownSpecifier(_) =>
-        fail("expected MissingField, got UnknownSpecifier")
-      @format.TrailingPercent =>
-        fail("expected MissingField, got TrailingPercent")
+      _ => fail("expected MissingField")
     } noraise {
       _ => fail("expected format_time to raise MissingField")
     }
@@ -172,10 +166,7 @@ test "format_date_time raises MissingField for a timezone specifier, since it ca
     let (fmt, expected_item) = case
     try @format.format_date_time(dt, fmt) |> ignore catch {
       @format.MissingField(item) => assert_eq(item, expected_item)
-      @format.UnknownSpecifier(_) =>
-        fail("expected MissingField, got UnknownSpecifier")
-      @format.TrailingPercent =>
-        fail("expected MissingField, got TrailingPercent")
+      _ => fail("expected MissingField")
     } noraise {
       _ => fail("expected format_date_time to raise MissingField")
     }
