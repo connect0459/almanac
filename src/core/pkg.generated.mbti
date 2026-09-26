@@ -1,11 +1,34 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "connect0459/chrono/core"
 
+import {
+  "moonbitlang/core/debug",
+}
+
 // Values
 
 // Errors
 
 // Types and methods
+pub(all) enum Weekday {
+  Mon
+  Tue
+  Wed
+  Thu
+  Fri
+  Sat
+  Sun
+} derive(Eq, @debug.Debug)
+pub fn Weekday::days_since(Self, Self) -> Int
+pub fn Weekday::equal(Self, Self) -> Bool
+pub fn Weekday::not_equal(Self, Self) -> Bool
+pub fn Weekday::num_days_from_monday(Self) -> Int
+pub fn Weekday::num_days_from_sunday(Self) -> Int
+pub fn Weekday::number_from_monday(Self) -> Int
+pub fn Weekday::number_from_sunday(Self) -> Int
+pub fn Weekday::pred(Self) -> Self
+pub fn Weekday::succ(Self) -> Self
+pub fn Weekday::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 
