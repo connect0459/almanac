@@ -75,6 +75,26 @@ pub fn NaiveDate::with_ordinal(Self, Int) -> Self?
 pub fn NaiveDate::with_year(Self, Int) -> Self?
 pub fn NaiveDate::year(Self) -> Int
 
+pub struct NaiveTime {
+  // private fields
+} derive(Eq, @debug.Debug)
+pub fn NaiveTime::equal(Self, Self) -> Bool
+pub fn NaiveTime::from_hms(Int, Int, Int) -> Self?
+pub fn NaiveTime::from_hms_micro(Int, Int, Int, Int) -> Self?
+pub fn NaiveTime::from_hms_milli(Int, Int, Int, Int) -> Self?
+pub fn NaiveTime::from_hms_nano(Int, Int, Int, Int) -> Self?
+pub fn NaiveTime::from_num_seconds_from_midnight(Int, Int) -> Self?
+pub fn NaiveTime::hour(Self) -> Int
+pub fn NaiveTime::hour12(Self) -> (Bool, Int)
+pub fn NaiveTime::minute(Self) -> Int
+pub fn NaiveTime::nanosecond(Self) -> Int
+pub fn NaiveTime::not_equal(Self, Self) -> Bool
+pub fn NaiveTime::num_seconds_from_midnight(Self) -> Int
+pub fn NaiveTime::overflowing_add_signed(Self, TimeDelta) -> (Self, Int64)
+pub fn NaiveTime::overflowing_sub_signed(Self, TimeDelta) -> (Self, Int64)
+pub fn NaiveTime::second(Self) -> Int
+pub fn NaiveTime::to_repr(Self) -> @debug.Repr
+
 pub struct TimeDelta {
   // private fields
 } derive(Eq, @debug.Debug)
