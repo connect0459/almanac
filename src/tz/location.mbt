@@ -26,6 +26,36 @@ pub fn Location::from_tzif_bytes(data : Bytes) -> Location? {
 }
 
 ///|
+/// The bytes for `name` in `zones`, following `name` through `aliases`
+/// (to its canonical name) when it is not itself a key of `zones`. `None`
+/// if `name` is not a key of either map.
+pub fn resolve_tzdata_bytes(
+  zones : Map[String, Bytes],
+  aliases : Map[String, String],
+  name : String,
+) -> Bytes? {
+  match zones.get(name) {
+    Some(bytes) => Some(bytes)
+    None =>
+      match aliases.get(name) {
+        None => None
+        Some(canonical) => zones.get(canonical)
+      }
+  }
+}
+
+///|
+/// Loads the `Location` for the given embedded IANA zone name (e.g.
+/// `"America/New_York"`), or `None` if `name` is not a known zone or its
+/// embedded TZif bytes are malformed.
+pub fn Location::load(name : String) -> Location? {
+  match resolve_tzdata_bytes(tzdata_zones, tzdata_aliases, name) {
+    None => None
+    Some(bytes) => Location::from_tzif_bytes(bytes)
+  }
+}
+
+///|
 /// The local time type in effect before this zone's first recorded
 /// transition (or for its entire timeline, if it has none): the first
 /// non-DST type, or the first type if every type observes DST (RFC

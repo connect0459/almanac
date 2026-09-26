@@ -13,6 +13,9 @@ repos:
       - id: check-yaml
       - id: check-added-large-files
         args: ["--maxkb=2048"]
+        exclude: |
+          (?x)
+          ^src/tz/tzdata_generated\.mbt$                  # generated embedded IANA tzdata (scripts/gen_tzdata.py)
 
   - repo: https://github.com/DavidAnson/markdownlint-cli2
     rev: v0.23.2

@@ -220,3 +220,33 @@ test "a zone with no POSIX footer clamps to its last recorded transition's type 
     @tz.Single(@tz.FixedOffset::east(3600).unwrap()),
   )
 }
+
+///|
+test "resolve_tzdata_bytes finds an exact zone name, follows an alias, and rejects an unknown name" {
+  let zones : Map[String, Bytes] = Map::from_array([
+    ("America/New_York", tzif_new_york),
+  ])
+  let aliases : Map[String, String] = Map::from_array([
+    ("US/Eastern", "America/New_York"),
+  ])
+  assert_eq(
+    @tz.resolve_tzdata_bytes(zones, aliases, "America/New_York"),
+    Some(tzif_new_york),
+  )
+  assert_eq(
+    @tz.resolve_tzdata_bytes(zones, aliases, "US/Eastern"),
+    Some(tzif_new_york),
+  )
+  assert_true(@tz.resolve_tzdata_bytes(zones, aliases, "Not/A/Zone") is None)
+}
+
+///|
+test "Location::load loads a real embedded zone by name and rejects an unknown name" {
+  let ny = @tz.Location::load("America/New_York").unwrap()
+  let dst_start_2024 = @core.NaiveDateTime::from_timestamp(1_710_054_000L, 0).unwrap()
+  assert_eq(
+    ny.offset_from_utc(dst_start_2024),
+    @tz.FixedOffset::east(-14400).unwrap(),
+  )
+  assert_true(@tz.Location::load("Not/A/Real/Zone") is None)
+}
