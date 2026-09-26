@@ -5,6 +5,19 @@ pub suberror ParseError {
   TrailingPercent
   MissingField(Item)
   InvalidRfc3339
+  /// A required field (e.g. no date field at all, or an offset missing
+  /// when `%z` isn't in the format) was never populated while walking
+  /// the token sequence.
+  IncompleteFields
+  /// Two populated fields disagree (a parsed `%A`/`%a` weekday, or a
+  /// redundant `%j`, doesn't match the date built from `%Y`/`%m`/`%d`),
+  /// or a field's value doesn't form a valid date/time/offset (e.g. an
+  /// out-of-range hour).
+  InconsistentFields
+  /// The input text didn't match a literal or specifier at some
+  /// position, including `%Z`, which is never parseable (see
+  /// `parse_date`/`parse_time`/`parse_date_time`/`parse_date_time_tz`).
+  InputMismatch
 } derive(Eq, @debug.Debug)
 
 ///|
