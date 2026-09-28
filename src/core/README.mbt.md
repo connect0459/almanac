@@ -12,6 +12,7 @@ Calendar and clock primitives with no time zone awareness. Import `connect0459/c
 | `IsoWeek` | ISO 8601 week-numbering year and week |
 | `NaiveDate` | A proleptic Gregorian calendar date, no time zone |
 | `NaiveWeek` | The week containing a date, under a configurable first day of the week |
+| `NaiveDateDaysIterator` / `NaiveDateWeeksIterator` | Lazy, bounded, double-ended iterators over successive dates from `NaiveDate::iter_days`/`iter_weeks` |
 | `NaiveTime` | A time of day, precise to the nanosecond, with leap-second support |
 | `TimeDelta` | A signed duration, precise to the nanosecond |
 | `NaiveDateTime` | A `NaiveDate` and `NaiveTime` combined into one zone-less instant |
@@ -152,6 +153,7 @@ A proleptic Gregorian calendar date. Constructors are `Option`-returning: an inv
 | `NaiveDate::from_ymd(Int, Int, Int)` | `-> Self?` | From year, month, day |
 | `NaiveDate::from_yo(Int, Int)` | `-> Self?` | From year and ordinal day (`1..=365`/`366`) |
 | `NaiveDate::from_isoywd(Int, Int, Weekday)` | `-> Self?` | From ISO week-numbering year, week, and weekday |
+| `NaiveDate::from_weekday_of_month(Int, Int, Weekday, Int)` | `-> Self?` | The `n`-th (1-indexed) occurrence of a weekday in a month, e.g. the 2nd Friday of March 2017; `None` if `n` isn't positive or that occurrence doesn't exist |
 | `year()` | `-> Int` | Calendar year |
 | `month()` | `-> Month` | Calendar month |
 | `day()` | `-> Int` | Day of month |
@@ -170,8 +172,24 @@ A proleptic Gregorian calendar date. Constructors are `Option`-returning: an inv
 | `add_months(Int)` | `-> Self` | Shift by whole months, clamping the day of month to the target month's length |
 | `sub_months(Int)` | `-> Self` | Shift backward by whole months, with the same clamping |
 | `week(Weekday)` | `-> NaiveWeek` | The calendar week containing this date, with weeks starting on the given weekday |
+| `years_since(Self)` | `-> Int?` | Full elapsed calendar years from `other` to `self` (a year counts once the month and day have both recurred); `None` if `self` is before `other` |
+| `quarter()` | `-> Int` | Calendar quarter, `1..=4` |
+| `iter_days()` | `-> NaiveDateDaysIterator` | Lazy, bounded, double-ended iterator over successive dates one day apart, starting from `self` |
+| `iter_weeks()` | `-> NaiveDateWeeksIterator` | Lazy, bounded, double-ended iterator over successive dates one week apart, starting from `self` |
 
 `NaiveDate` also implements `Eq` and `Compare` (`<`/`<=`/`>`/`>=` via `compare`).
+
+---
+
+### `NaiveDateDaysIterator` / `NaiveDateWeeksIterator`
+
+Returned by `NaiveDate::iter_days`/`iter_weeks`. Both are lazy and double-ended: `next()` advances from the front, `next_back()` from the back, and they converge without skipping or repeating a date. Both are bounded above by a conservative, round practical limit, `+275760-09-13` (matching the well-known ECMAScript `Date` representable range) — not `NaiveDate`'s actual much larger overflow-safe range — reaching and including that bound if the iterator gets that far; a date already past it yields nothing.
+
+| Method | Signature | Description |
+| :--- | :--- | :--- |
+| `next()` | `-> NaiveDate?` | The next date from the front, or `None` once exhausted |
+| `next_back()` | `-> NaiveDate?` | The next date from the back, or `None` once exhausted |
+| `length()` | `-> Int` | The number of dates (`NaiveDateDaysIterator`) or weekly steps (`NaiveDateWeeksIterator`) remaining |
 
 ---
 

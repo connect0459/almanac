@@ -356,3 +356,81 @@ test "equal dates compare as neither less nor greater" {
   assert_true(d1 >= d2)
   assert_eq(d1.compare(d2), 0)
 }
+
+///|
+test "years_since counts a full elapsed year once the month and day have both passed" {
+  let base = @core.NaiveDate::from_ymd(2014, 1, 1).unwrap()
+  let date = @core.NaiveDate::from_ymd(2016, 1, 1).unwrap()
+  assert_eq(date.years_since(base), Some(2))
+}
+
+///|
+test "years_since does not count the current year until the base month and day recur" {
+  let base = @core.NaiveDate::from_ymd(2020, 6, 15).unwrap()
+  let just_before = @core.NaiveDate::from_ymd(2023, 6, 14).unwrap()
+  let just_after = @core.NaiveDate::from_ymd(2023, 6, 16).unwrap()
+  assert_eq(just_before.years_since(base), Some(2))
+  assert_eq(just_after.years_since(base), Some(3))
+}
+
+///|
+test "years_since is zero for the same date" {
+  let date = @core.NaiveDate::from_ymd(2020, 6, 15).unwrap()
+  assert_eq(date.years_since(date), Some(0))
+}
+
+///|
+test "years_since is none when self is before base" {
+  let base = @core.NaiveDate::from_ymd(2020, 6, 15).unwrap()
+  let earlier = @core.NaiveDate::from_ymd(2019, 6, 15).unwrap()
+  assert_eq(earlier.years_since(base), None)
+}
+
+///|
+test "from_weekday_of_month finds the nth occurrence of a weekday in a month" {
+  assert_eq(
+    @core.NaiveDate::from_weekday_of_month(2017, 3, @core.Fri, 2),
+    @core.NaiveDate::from_ymd(2017, 3, 10),
+  )
+}
+
+///|
+test "from_weekday_of_month finds the first occurrence when n is 1" {
+  assert_eq(
+    @core.NaiveDate::from_weekday_of_month(2017, 3, @core.Fri, 1),
+    @core.NaiveDate::from_ymd(2017, 3, 3),
+  )
+}
+
+///|
+test "from_weekday_of_month rejects a non-positive n" {
+  assert_eq(@core.NaiveDate::from_weekday_of_month(2017, 3, @core.Fri, 0), None)
+  assert_eq(
+    @core.NaiveDate::from_weekday_of_month(2017, 3, @core.Fri, -1),
+    None,
+  )
+}
+
+///|
+test "from_weekday_of_month rejects an occurrence that doesn't exist in the month" {
+  assert_eq(@core.NaiveDate::from_weekday_of_month(2023, 4, @core.Mon, 5), None)
+}
+
+///|
+test "from_weekday_of_month rejects an invalid month" {
+  assert_eq(
+    @core.NaiveDate::from_weekday_of_month(2017, 13, @core.Fri, 1),
+    None,
+  )
+}
+
+///|
+test "quarter reports 1 through 4 across the year" {
+  for case in [(1, 1), (3, 1), (4, 2), (6, 2), (7, 3), (9, 3), (10, 4), (12, 4)] {
+    let (month, expected) = case
+    assert_eq(
+      @core.NaiveDate::from_ymd(2024, month, 1).unwrap().quarter(),
+      expected,
+    )
+  }
+}

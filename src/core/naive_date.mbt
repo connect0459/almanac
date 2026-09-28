@@ -222,3 +222,83 @@ pub fn NaiveDate::week(self : NaiveDate, start : Weekday) -> NaiveWeek {
     (if start_days > ref_days { 7 } else { 0 })
   NaiveWeek::{ first_day: self.add_days(offset), start, }
 }
+
+///|
+/// The number of full calendar years elapsed from `base` to `self` (e.g.
+/// someone born on `base` turns this many years old on `self`), or `None`
+/// if `self` is before `base`. A year only counts once `self`'s month and
+/// day have both reached (or passed) `base`'s.
+pub fn NaiveDate::years_since(self : NaiveDate, base : NaiveDate) -> Int? {
+  let mut years = self.year() - base.year()
+  if self.month().number_from_month() < base.month().number_from_month() ||
+    (self.month() == base.month() && self.day() < base.day()) {
+    years -= 1
+  }
+  if years >= 0 {
+    Some(years)
+  } else {
+    None
+  }
+}
+
+///|
+/// The `n`-th occurrence (1-indexed) of `weekday` within the given month,
+/// e.g. `NaiveDate::from_weekday_of_month(2017, 3, Fri, 2)` is the 2nd
+/// Friday of March 2017. `None` if `n` is not positive, `year`/`month` is
+/// invalid, or that occurrence doesn't exist in the month (e.g. a 5th
+/// Monday in a month that only has four).
+pub fn NaiveDate::from_weekday_of_month(
+  year : Int,
+  month : Int,
+  weekday : Weekday,
+  n : Int,
+) -> NaiveDate? {
+  if n <= 0 {
+    None
+  } else {
+    match NaiveDate::from_ymd(year, month, 1) {
+      None => None
+      Some(first) => {
+        let first_to_dow = (
+            7 +
+            weekday.number_from_monday() -
+            first.weekday().number_from_monday()
+          ) %
+          7
+        let day = (n - 1) * 7 + first_to_dow + 1
+        NaiveDate::from_ymd(year, month, day)
+      }
+    }
+  }
+}
+
+///|
+/// The calendar quarter, `1..=4`.
+pub fn NaiveDate::quarter(self : NaiveDate) -> Int {
+  (self.month().number_from_month() - 1) / 3 + 1
+}
+
+///|
+/// A lazy, bounded, double-ended iterator over successive dates starting
+/// from this one, stepping by one day, up to and including a conservative
+/// practical upper bound (`+275760-09-13`, matching the well-known
+/// ECMAScript `Date` representable range). See `NaiveDateDaysIterator`.
+pub fn NaiveDate::iter_days(self : NaiveDate) -> NaiveDateDaysIterator {
+  NaiveDateDaysIterator::{
+    value: self,
+    end: NaiveDate::{ days: ITER_BOUND_DAYS, },
+  }
+}
+
+///|
+/// A lazy, bounded, double-ended iterator over successive dates starting
+/// from this one, stepping by one week, aligned so its upper bound is the
+/// last date of the form `self + 7k` that doesn't exceed `iter_days`'s own
+/// practical upper bound. See `NaiveDateWeeksIterator`.
+pub fn NaiveDate::iter_weeks(self : NaiveDate) -> NaiveDateWeeksIterator {
+  let weeks = floor_div(ITER_BOUND_DAYS - self.days, 7)
+  NaiveDateWeeksIterator::{
+    value: self,
+    end: NaiveDate::{ days: self.days + weeks * 7, },
+  }
+}

@@ -62,9 +62,12 @@ pub fn NaiveDate::compare(Self, Self) -> Int
 pub fn NaiveDate::day(Self) -> Int
 pub fn NaiveDate::equal(Self, Self) -> Bool
 pub fn NaiveDate::from_isoywd(Int, Int, Weekday) -> Self?
+pub fn NaiveDate::from_weekday_of_month(Int, Int, Weekday, Int) -> Self?
 pub fn NaiveDate::from_ymd(Int, Int, Int) -> Self?
 pub fn NaiveDate::from_yo(Int, Int) -> Self?
 pub fn NaiveDate::iso_week(Self) -> IsoWeek
+pub fn NaiveDate::iter_days(Self) -> NaiveDateDaysIterator
+pub fn NaiveDate::iter_weeks(Self) -> NaiveDateWeeksIterator
 pub fn NaiveDate::leap_year(Self) -> Bool
 pub fn NaiveDate::month(Self) -> Month
 pub fn NaiveDate::not_equal(Self, Self) -> Bool
@@ -74,6 +77,7 @@ pub fn NaiveDate::op_le(Self, Self) -> Bool
 pub fn NaiveDate::op_lt(Self, Self) -> Bool
 pub fn NaiveDate::ordinal(Self) -> Int
 pub fn NaiveDate::pred(Self) -> Self
+pub fn NaiveDate::quarter(Self) -> Int
 pub fn NaiveDate::sub_days(Self, Int) -> Self
 pub fn NaiveDate::sub_months(Self, Int) -> Self
 pub fn NaiveDate::succ(Self) -> Self
@@ -85,6 +89,15 @@ pub fn NaiveDate::with_month(Self, Int) -> Self?
 pub fn NaiveDate::with_ordinal(Self, Int) -> Self?
 pub fn NaiveDate::with_year(Self, Int) -> Self?
 pub fn NaiveDate::year(Self) -> Int
+pub fn NaiveDate::years_since(Self, Self) -> Int?
+
+pub struct NaiveDateDaysIterator {
+  // private fields
+} derive(@debug.Debug)
+pub fn NaiveDateDaysIterator::length(Self) -> Int
+pub fn NaiveDateDaysIterator::next(Self) -> NaiveDate?
+pub fn NaiveDateDaysIterator::next_back(Self) -> NaiveDate?
+pub fn NaiveDateDaysIterator::to_repr(Self) -> @debug.Repr
 
 pub struct NaiveDateTime {
   // private fields
@@ -120,6 +133,14 @@ pub fn NaiveDateTime::timestamp_subsec_millis(Self) -> Int
 pub fn NaiveDateTime::timestamp_subsec_nanos(Self) -> Int
 pub fn NaiveDateTime::to_repr(Self) -> @debug.Repr
 pub fn NaiveDateTime::truncate(Self, TimeDelta) -> Self?
+
+pub struct NaiveDateWeeksIterator {
+  // private fields
+} derive(@debug.Debug)
+pub fn NaiveDateWeeksIterator::length(Self) -> Int
+pub fn NaiveDateWeeksIterator::next(Self) -> NaiveDate?
+pub fn NaiveDateWeeksIterator::next_back(Self) -> NaiveDate?
+pub fn NaiveDateWeeksIterator::to_repr(Self) -> @debug.Repr
 
 pub struct NaiveTime {
   // private fields
