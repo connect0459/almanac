@@ -161,7 +161,7 @@ Coverage target: 100%, consistent with Phase 1–8 (confirmed with the user), ex
 
 ### `src/core`
 
-- [ ] `WeekdaySet`: bitset of `Weekday` values (`from_array`, `single`, `insert`/`remove`/`contains`, subset checks, `first`/`last`, iteration) — mirrors chrono's `weekday_set.rs`
+- [x] `WeekdaySet`: bitset of `Weekday` values (`from_array`, `single`, `insert`/`remove`/`contains`, subset checks, `first`/`last`, iteration) — mirrors chrono's `weekday_set.rs`. Deviates from chrono in two confirmed ways: `insert`/`remove` are pure (return a new `WeekdaySet` instead of mutating `self` and reporting a `Bool`, matching this project's Immutable First principle), and iteration is a fixed `Mon..Sun`-order `to_array()` rather than chrono's `start`-day, bidirectional `WeekdaySetIter` (not called for by this bullet's own wording, and MoonBit has no native double-ended iterator to model it on)
 - [x] Ordering/comparison (`compare`/`<`/`<=`/etc.) on `NaiveDate`, `NaiveTime`, `NaiveDateTime`, `TimeDelta`, `IsoWeek`. Each type's existing field layout already matches chronological/magnitude order lexicographically (e.g. `TimeDelta`'s `(seconds, nanoseconds)` with the sign carried entirely by `seconds`), so `derive(Compare)` alone (plus the same `pub extend X with Compare::{compare, op_lt, op_gt, op_le, op_ge}` pattern already used for `Eq`) is correct without a hand-written `compare`
 - [ ] `NaiveWeek`: "the week containing this date," parameterized by a configurable first-day-of-week, exposing `first_day()`/`last_day()`/a days range — distinct from `IsoWeek`
 - [ ] `NaiveTime` component setters: `with_hour`/`with_minute`/`with_second`/`with_nanosecond`, mirroring `NaiveDate`'s existing `with_year`/`with_month`/`with_day`/`with_ordinal`
