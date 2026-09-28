@@ -190,3 +190,70 @@ pub fn NaiveTime::overflowing_sub_signed(
 ) -> (NaiveTime, Int64) {
   self.overflowing_add_signed(delta.neg())
 }
+
+///|
+/// Same minute, second, and nanosecond, with the hour changed to `hour`, or
+/// `None` if `hour` is outside `0..=23`.
+pub fn NaiveTime::with_hour(self : NaiveTime, hour : Int) -> NaiveTime? {
+  if hour < 0 || hour > 23 {
+    None
+  } else {
+    Some(NaiveTime::{ secs: hour * 3600 + self.secs % 3600, frac: self.frac, })
+  }
+}
+
+///|
+/// Same hour, second, and nanosecond, with the minute changed to `min`, or
+/// `None` if `min` is outside `0..=59`.
+pub fn NaiveTime::with_minute(self : NaiveTime, min : Int) -> NaiveTime? {
+  if min < 0 || min > 59 {
+    None
+  } else {
+    Some(NaiveTime::{
+      secs: self.secs / 3600 * 3600 + min * 60 + self.secs % 60,
+      frac: self.frac,
+    })
+  }
+}
+
+///|
+/// Same hour, minute, and nanosecond, with the second changed to `sec`, or
+/// `None` if `sec` is outside `0..=59`. As with `second`, this never
+/// represents a leap second itself; use `with_nanosecond` for that.
+pub fn NaiveTime::with_second(self : NaiveTime, sec : Int) -> NaiveTime? {
+  if sec < 0 || sec > 59 {
+    None
+  } else {
+    Some(NaiveTime::{ secs: self.secs / 60 * 60 + sec, frac: self.frac, })
+  }
+}
+
+///|
+/// Same hour, minute, and second, with the nanosecond component changed to
+/// `nano`, or `None` if `nano` is outside `0..=1_999_999_999`. See
+/// `nanosecond` for how a value `>= 1_000_000_000` represents a leap second.
+pub fn NaiveTime::with_nanosecond(self : NaiveTime, nano : Int) -> NaiveTime? {
+  if nano < 0 || nano >= 2_000_000_000 {
+    None
+  } else {
+    Some(NaiveTime::{ secs: self.secs, frac: nano, })
+  }
+}
+
+///|
+/// The signed duration from `other` to `self`, treating a leap second as
+/// coinciding with the prior non-leap second: its extra elapsed second is
+/// only counted once time moves away from it, in whichever direction.
+pub fn NaiveTime::signed_duration_since(
+  self : NaiveTime,
+  other : NaiveTime,
+) -> TimeDelta {
+  let mut secs = self.secs.to_int64() - other.secs.to_int64()
+  let frac = (self.frac - other.frac).to_int64()
+  if self.secs > other.secs && other.frac >= 1_000_000_000 {
+    secs += 1L
+  } else if self.secs < other.secs && self.frac >= 1_000_000_000 {
+    secs -= 1L
+  }
+  from_secs_nanos(secs, frac).unwrap()
+}

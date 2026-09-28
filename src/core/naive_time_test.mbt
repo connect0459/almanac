@@ -163,3 +163,120 @@ test "equal times of day compare as neither less nor greater" {
   assert_true(t1 >= t2)
   assert_eq(t1.compare(t2), 0)
 }
+
+///|
+test "with_hour changes only the hour, keeping minute, second, and nanosecond" {
+  let t = @core.NaiveTime::from_hms_nano(23, 56, 4, 12_345_678).unwrap()
+  assert_eq(
+    t.with_hour(6),
+    Some(@core.NaiveTime::from_hms_nano(6, 56, 4, 12_345_678).unwrap()),
+  )
+}
+
+///|
+test "with_hour rejects an hour outside 0..=23" {
+  let t = @core.NaiveTime::from_hms(12, 0, 0).unwrap()
+  assert_eq(t.with_hour(-1), None)
+  assert_eq(t.with_hour(24), None)
+}
+
+///|
+test "with_minute changes only the minute, keeping hour, second, and nanosecond" {
+  let t = @core.NaiveTime::from_hms_nano(23, 56, 4, 12_345_678).unwrap()
+  assert_eq(
+    t.with_minute(45),
+    Some(@core.NaiveTime::from_hms_nano(23, 45, 4, 12_345_678).unwrap()),
+  )
+}
+
+///|
+test "with_minute rejects a minute outside 0..=59" {
+  let t = @core.NaiveTime::from_hms(12, 0, 0).unwrap()
+  assert_eq(t.with_minute(-1), None)
+  assert_eq(t.with_minute(60), None)
+}
+
+///|
+test "with_second changes only the second, keeping hour, minute, and nanosecond" {
+  let t = @core.NaiveTime::from_hms_nano(23, 56, 4, 12_345_678).unwrap()
+  assert_eq(
+    t.with_second(17),
+    Some(@core.NaiveTime::from_hms_nano(23, 56, 17, 12_345_678).unwrap()),
+  )
+}
+
+///|
+test "with_second rejects a second outside 0..=59" {
+  let t = @core.NaiveTime::from_hms(12, 0, 0).unwrap()
+  assert_eq(t.with_second(-1), None)
+  assert_eq(t.with_second(60), None)
+}
+
+///|
+test "with_nanosecond changes only the nanosecond, keeping hour, minute, and second" {
+  let t = @core.NaiveTime::from_hms_nano(23, 56, 4, 12_345_678).unwrap()
+  assert_eq(
+    t.with_nanosecond(333_333_333),
+    Some(@core.NaiveTime::from_hms_nano(23, 56, 4, 333_333_333).unwrap()),
+  )
+}
+
+///|
+test "with_nanosecond accepts a leap-second value regardless of the current second" {
+  let t = @core.NaiveTime::from_hms_nano(23, 56, 4, 12_345_678).unwrap()
+  let leap = t.with_nanosecond(1_333_333_333).unwrap()
+  assert_eq(leap.nanosecond(), 1_333_333_333)
+}
+
+///|
+test "with_nanosecond rejects a value at or beyond twice a second" {
+  let t = @core.NaiveTime::from_hms(12, 0, 0).unwrap()
+  assert_eq(t.with_nanosecond(-1), None)
+  assert_eq(t.with_nanosecond(2_000_000_000), None)
+}
+
+///|
+test "signed_duration_since is zero for the same time of day" {
+  let t = @core.NaiveTime::from_hms(9, 30, 0).unwrap()
+  assert_true(t.signed_duration_since(t).is_zero())
+}
+
+///|
+test "signed_duration_since measures the elapsed time between two ordinary times" {
+  let earlier = @core.NaiveTime::from_hms(9, 0, 0).unwrap()
+  let later = @core.NaiveTime::from_hms(10, 30, 0).unwrap()
+  assert_eq(
+    later.signed_duration_since(earlier),
+    @core.TimeDelta::hours(1L)
+    .unwrap()
+    .add(@core.TimeDelta::minutes(30L).unwrap())
+    .unwrap(),
+  )
+}
+
+///|
+test "signed_duration_since is antisymmetric" {
+  let a = @core.NaiveTime::from_hms_nano(9, 0, 0, 250_000_000).unwrap()
+  let b = @core.NaiveTime::from_hms(10, 30, 15).unwrap()
+  assert_eq(a.signed_duration_since(b), b.signed_duration_since(a).neg())
+}
+
+///|
+test "signed_duration_since treats a leap second as coinciding with the prior non-leap second" {
+  let after_leap = @core.NaiveTime::from_hms_milli(3, 6, 0, 200).unwrap()
+  let leap = @core.NaiveTime::from_hms_milli(3, 5, 59, 1_800).unwrap()
+  assert_eq(
+    after_leap.signed_duration_since(leap),
+    @core.TimeDelta::milliseconds(400L).unwrap(),
+  )
+}
+
+///|
+test "signed_duration_since from a leap second matches the negation of the reverse difference" {
+  let after_leap = @core.NaiveTime::from_hms_milli(3, 6, 0, 200).unwrap()
+  let leap = @core.NaiveTime::from_hms_milli(3, 5, 59, 1_800).unwrap()
+  assert_eq(
+    leap.signed_duration_since(after_leap),
+    @core.TimeDelta::milliseconds(-400L).unwrap(),
+  )
+}

@@ -208,6 +208,11 @@ A time of day, precise to the nanosecond. Constructors are `Option`-returning. S
 | `num_seconds_from_midnight()` | `-> Int` | Seconds elapsed since midnight |
 | `overflowing_add_signed(TimeDelta)` | `-> (Self, Int64)` | Add a duration, wrapping at midnight; also reports the number of days crossed |
 | `overflowing_sub_signed(TimeDelta)` | `-> (Self, Int64)` | Subtract a duration, with the same wrapping and day-count report |
+| `with_hour(Int)` | `-> Self?` | Same minute/second/nanosecond in a different hour; `None` if outside `0..=23` |
+| `with_minute(Int)` | `-> Self?` | Same hour/second/nanosecond in a different minute; `None` if outside `0..=59` |
+| `with_second(Int)` | `-> Self?` | Same hour/minute/nanosecond in a different second; `None` if outside `0..=59` |
+| `with_nanosecond(Int)` | `-> Self?` | Same hour/minute/second with a different nanosecond component; `None` if outside `0..=1_999_999_999` |
+| `signed_duration_since(Self)` | `-> TimeDelta` | The signed duration from `other` to `self`, with no day carry; a leap second is treated as coinciding with the prior non-leap second until time moves away from it |
 
 `NaiveTime` also implements `Eq` and `Compare` (`<`/`<=`/`>`/`>=` via `compare`).
 
