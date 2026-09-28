@@ -78,6 +78,7 @@ pub fn NaiveDate::sub_days(Self, Int) -> Self
 pub fn NaiveDate::sub_months(Self, Int) -> Self
 pub fn NaiveDate::succ(Self) -> Self
 pub fn NaiveDate::to_repr(Self) -> @debug.Repr
+pub fn NaiveDate::week(Self, Weekday) -> NaiveWeek
 pub fn NaiveDate::weekday(Self) -> Weekday
 pub fn NaiveDate::with_day(Self, Int) -> Self?
 pub fn NaiveDate::with_month(Self, Int) -> Self?
@@ -144,6 +145,23 @@ pub fn NaiveTime::overflowing_add_signed(Self, TimeDelta) -> (Self, Int64)
 pub fn NaiveTime::overflowing_sub_signed(Self, TimeDelta) -> (Self, Int64)
 pub fn NaiveTime::second(Self) -> Int
 pub fn NaiveTime::to_repr(Self) -> @debug.Repr
+
+pub struct NaiveWeek {
+  // private fields
+} derive(@debug.Debug)
+pub fn NaiveWeek::compare(Self, Self) -> Int
+pub fn NaiveWeek::days(Self) -> Array[NaiveDate]
+pub fn NaiveWeek::equal(Self, Self) -> Bool
+pub fn NaiveWeek::first_day(Self) -> NaiveDate
+pub fn NaiveWeek::last_day(Self) -> NaiveDate
+pub fn NaiveWeek::not_equal(Self, Self) -> Bool
+pub fn NaiveWeek::op_ge(Self, Self) -> Bool
+pub fn NaiveWeek::op_gt(Self, Self) -> Bool
+pub fn NaiveWeek::op_le(Self, Self) -> Bool
+pub fn NaiveWeek::op_lt(Self, Self) -> Bool
+pub fn NaiveWeek::to_repr(Self) -> @debug.Repr
+pub impl Compare for NaiveWeek
+pub impl Eq for NaiveWeek
 
 pub struct TimeDelta {
   // private fields

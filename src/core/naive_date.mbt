@@ -211,3 +211,14 @@ pub fn NaiveDate::add_months(self : NaiveDate, months : Int) -> NaiveDate {
 pub fn NaiveDate::sub_months(self : NaiveDate, months : Int) -> NaiveDate {
   self.add_months(-months)
 }
+
+///|
+/// The calendar week containing this date, with weeks starting on `start`.
+pub fn NaiveDate::week(self : NaiveDate, start : Weekday) -> NaiveWeek {
+  let start_days = start.num_days_from_monday()
+  let ref_days = self.weekday().num_days_from_monday()
+  let offset = start_days -
+    ref_days -
+    (if start_days > ref_days { 7 } else { 0 })
+  NaiveWeek::{ first_day: self.add_days(offset), start, }
+}

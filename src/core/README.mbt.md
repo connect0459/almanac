@@ -1,6 +1,6 @@
 # `core` package
 
-Calendar and clock primitives with no time zone awareness. Import `connect0459/chrono/core` for `Weekday`, `WeekdaySet`, `Month`, `IsoWeek`, `NaiveDate`, `NaiveTime`, `TimeDelta`, and `NaiveDateTime`. The `tz` package layers a time zone on top of `NaiveDateTime`.
+Calendar and clock primitives with no time zone awareness. Import `connect0459/chrono/core` for `Weekday`, `WeekdaySet`, `Month`, `IsoWeek`, `NaiveWeek`, `NaiveDate`, `NaiveTime`, `TimeDelta`, and `NaiveDateTime`. The `tz` package layers a time zone on top of `NaiveDateTime`.
 
 ## Key types
 
@@ -11,6 +11,7 @@ Calendar and clock primitives with no time zone awareness. Import `connect0459/c
 | `Month` | Cyclic month enum (`Jan`..`Dec`) |
 | `IsoWeek` | ISO 8601 week-numbering year and week |
 | `NaiveDate` | A proleptic Gregorian calendar date, no time zone |
+| `NaiveWeek` | The week containing a date, under a configurable first day of the week |
 | `NaiveTime` | A time of day, precise to the nanosecond, with leap-second support |
 | `TimeDelta` | A signed duration, precise to the nanosecond |
 | `NaiveDateTime` | A `NaiveDate` and `NaiveTime` combined into one zone-less instant |
@@ -168,8 +169,23 @@ A proleptic Gregorian calendar date. Constructors are `Option`-returning: an inv
 | `sub_days(Int)` | `-> Self` | Shift backward by a day count |
 | `add_months(Int)` | `-> Self` | Shift by whole months, clamping the day of month to the target month's length |
 | `sub_months(Int)` | `-> Self` | Shift backward by whole months, with the same clamping |
+| `week(Weekday)` | `-> NaiveWeek` | The calendar week containing this date, with weeks starting on the given weekday |
 
 `NaiveDate` also implements `Eq` and `Compare` (`<`/`<=`/`>`/`>=` via `compare`).
+
+---
+
+### `NaiveWeek`
+
+The week containing a `NaiveDate`, under a configurable first day of the week (via `NaiveDate::week`). Distinct from `IsoWeek`, which is always Monday-based and tied to the ISO 8601 week-numbering year. Two `NaiveWeek`s are equal (and compare) by the calendar week they denote — `first_day()` alone — regardless of which date within it was used to construct them.
+
+| Method | Signature | Description |
+| :--- | :--- | :--- |
+| `first_day()` | `-> NaiveDate` | The first day of the week |
+| `last_day()` | `-> NaiveDate` | The last day of the week, six days after `first_day()` |
+| `days()` | `-> Array[NaiveDate]` | All seven days of the week, from `first_day()` to `last_day()` |
+
+`NaiveWeek` also implements `Eq` and `Compare` (`<`/`<=`/`>`/`>=` via `compare`).
 
 ---
 
