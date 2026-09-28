@@ -338,3 +338,21 @@ test "add_months is consistent across a proleptic year-zero boundary" {
     @core.NaiveDate::from_ymd(0, 12, 15).unwrap(),
   )
 }
+
+///|
+test "a later date compares greater than an earlier one" {
+  let d1 = @core.NaiveDate::from_ymd(2024, 1, 1).unwrap()
+  let d2 = @core.NaiveDate::from_ymd(2024, 6, 15).unwrap()
+  assert_true(d1 < d2)
+  assert_true(d2 > d1)
+  assert_true(d1.compare(d2) < 0)
+}
+
+///|
+test "equal dates compare as neither less nor greater" {
+  let d1 = @core.NaiveDate::from_ymd(2024, 1, 1).unwrap()
+  let d2 = @core.NaiveDate::from_ymd(2024, 1, 1).unwrap()
+  assert_true(d1 <= d2)
+  assert_true(d1 >= d2)
+  assert_eq(d1.compare(d2), 0)
+}

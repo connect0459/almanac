@@ -26,3 +26,30 @@ test "week0 is one less than the 1-based week number" {
   assert_eq(week.week(), 1)
   assert_eq(week.week0(), 0)
 }
+
+///|
+test "a later week in the same ISO year compares greater than an earlier one" {
+  let w1 = @core.NaiveDate::from_ymd(2024, 1, 1).unwrap().iso_week()
+  let w2 = @core.NaiveDate::from_ymd(2024, 6, 1).unwrap().iso_week()
+  assert_true(w1 < w2)
+  assert_true(w2 > w1)
+  assert_true(w1.compare(w2) < 0)
+}
+
+///|
+test "a week in a later ISO year compares greater regardless of week number" {
+  let w1 = @core.NaiveDate::from_ymd(2024, 12, 1).unwrap().iso_week()
+  let w2 = @core.NaiveDate::from_ymd(2025, 1, 8).unwrap().iso_week()
+  assert_true(w1 < w2)
+  assert_true(w1.compare(w2) < 0)
+}
+
+///|
+test "equal ISO weeks compare as neither less nor greater" {
+  let w1 = @core.NaiveDate::from_ymd(2024, 1, 1).unwrap().iso_week()
+  let w2 = @core.NaiveDate::from_ymd(2024, 1, 3).unwrap().iso_week()
+  assert_eq(w1, w2)
+  assert_true(w1 <= w2)
+  assert_true(w1 >= w2)
+  assert_eq(w1.compare(w2), 0)
+}

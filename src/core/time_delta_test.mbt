@@ -257,3 +257,35 @@ test "round and truncate reject a zero or negative granularity" {
   assert_eq(delta.round(@core.TimeDelta::seconds(-1L).unwrap()), None)
   assert_eq(delta.truncate(@core.TimeDelta::seconds(-1L).unwrap()), None)
 }
+
+///|
+test "a longer duration compares greater than a shorter one" {
+  let d1 = @core.TimeDelta::seconds(5L).unwrap()
+  let d2 = @core.TimeDelta::seconds(10L).unwrap()
+  assert_true(d1 < d2)
+  assert_true(d2 > d1)
+  assert_true(d1.compare(d2) < 0)
+}
+
+///|
+test "a negative duration compares less than a positive one" {
+  let neg = @core.TimeDelta::seconds(-5L).unwrap()
+  let pos = @core.TimeDelta::seconds(5L).unwrap()
+  assert_true(neg < pos)
+}
+
+///|
+test "sub-second precision is reflected in ordering for negative durations" {
+  let more_negative = @core.TimeDelta::milliseconds(-900L).unwrap()
+  let less_negative = @core.TimeDelta::milliseconds(-100L).unwrap()
+  assert_true(more_negative < less_negative)
+}
+
+///|
+test "equal durations compare as neither less nor greater" {
+  let d1 = @core.TimeDelta::seconds(5L).unwrap()
+  let d2 = @core.TimeDelta::seconds(5L).unwrap()
+  assert_true(d1 <= d2)
+  assert_true(d1 >= d2)
+  assert_eq(d1.compare(d2), 0)
+}

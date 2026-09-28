@@ -236,3 +236,46 @@ test "round and truncate reject an unsupported granularity that mixes whole seco
   assert_eq(dt.round(mixed), None)
   assert_eq(dt.truncate(mixed), None)
 }
+
+///|
+test "a datetime on a later date compares greater regardless of time of day" {
+  let d1 = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 1, 1).unwrap(),
+    @core.NaiveTime::from_hms(23, 0, 0).unwrap(),
+  )
+  let d2 = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 1, 2).unwrap(),
+    @core.NaiveTime::from_hms(0, 0, 0).unwrap(),
+  )
+  assert_true(d1 < d2)
+  assert_true(d2 > d1)
+  assert_true(d1.compare(d2) < 0)
+}
+
+///|
+test "a datetime on the same date compares by time of day" {
+  let d1 = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 1, 1).unwrap(),
+    @core.NaiveTime::from_hms(9, 0, 0).unwrap(),
+  )
+  let d2 = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 1, 1).unwrap(),
+    @core.NaiveTime::from_hms(17, 0, 0).unwrap(),
+  )
+  assert_true(d1 < d2)
+}
+
+///|
+test "equal datetimes compare as neither less nor greater" {
+  let d1 = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 1, 1).unwrap(),
+    @core.NaiveTime::from_hms(9, 0, 0).unwrap(),
+  )
+  let d2 = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 1, 1).unwrap(),
+    @core.NaiveTime::from_hms(9, 0, 0).unwrap(),
+  )
+  assert_true(d1 <= d2)
+  assert_true(d1 >= d2)
+  assert_eq(d1.compare(d2), 0)
+}

@@ -22,13 +22,16 @@ const MIN_SECS : Int64 = -9_223_372_036_854_774L
 pub struct TimeDelta {
   priv seconds : Int64
   priv nanoseconds : Int
-} derive(Eq, @debug.Debug)
+} derive(Eq, Compare, @debug.Debug)
 
 ///|
 pub extend TimeDelta with Eq::{equal}
 
 ///|
 pub extend TimeDelta with Eq::{not_equal}
+
+///|
+pub extend TimeDelta with Compare::{compare, op_lt, op_gt, op_le, op_ge}
 
 ///|
 pub extend TimeDelta with @debug.Debug::{to_repr}

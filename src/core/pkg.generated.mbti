@@ -17,9 +17,14 @@ pub fn is_leap_year(Int) -> Bool
 // Types and methods
 pub struct IsoWeek {
   // private fields
-} derive(Eq, @debug.Debug)
+} derive(Compare, Eq, @debug.Debug)
+pub fn IsoWeek::compare(Self, Self) -> Int
 pub fn IsoWeek::equal(Self, Self) -> Bool
 pub fn IsoWeek::not_equal(Self, Self) -> Bool
+pub fn IsoWeek::op_ge(Self, Self) -> Bool
+pub fn IsoWeek::op_gt(Self, Self) -> Bool
+pub fn IsoWeek::op_le(Self, Self) -> Bool
+pub fn IsoWeek::op_lt(Self, Self) -> Bool
 pub fn IsoWeek::to_repr(Self) -> @debug.Repr
 pub fn IsoWeek::week(Self) -> Int
 pub fn IsoWeek::week0(Self) -> Int
@@ -50,9 +55,10 @@ pub fn Month::to_repr(Self) -> @debug.Repr
 
 pub struct NaiveDate {
   // private fields
-} derive(Eq, @debug.Debug)
+} derive(Compare, Eq, @debug.Debug)
 pub fn NaiveDate::add_days(Self, Int) -> Self
 pub fn NaiveDate::add_months(Self, Int) -> Self
+pub fn NaiveDate::compare(Self, Self) -> Int
 pub fn NaiveDate::day(Self) -> Int
 pub fn NaiveDate::equal(Self, Self) -> Bool
 pub fn NaiveDate::from_isoywd(Int, Int, Weekday) -> Self?
@@ -62,6 +68,10 @@ pub fn NaiveDate::iso_week(Self) -> IsoWeek
 pub fn NaiveDate::leap_year(Self) -> Bool
 pub fn NaiveDate::month(Self) -> Month
 pub fn NaiveDate::not_equal(Self, Self) -> Bool
+pub fn NaiveDate::op_ge(Self, Self) -> Bool
+pub fn NaiveDate::op_gt(Self, Self) -> Bool
+pub fn NaiveDate::op_le(Self, Self) -> Bool
+pub fn NaiveDate::op_lt(Self, Self) -> Bool
 pub fn NaiveDate::ordinal(Self) -> Int
 pub fn NaiveDate::pred(Self) -> Self
 pub fn NaiveDate::sub_days(Self, Int) -> Self
@@ -77,10 +87,11 @@ pub fn NaiveDate::year(Self) -> Int
 
 pub struct NaiveDateTime {
   // private fields
-} derive(Eq, @debug.Debug)
+} derive(Compare, Eq, @debug.Debug)
 pub fn NaiveDateTime::add_days(Self, Int) -> Self
 pub fn NaiveDateTime::add_months(Self, Int) -> Self
 pub fn NaiveDateTime::add_signed(Self, TimeDelta) -> Self
+pub fn NaiveDateTime::compare(Self, Self) -> Int
 pub fn NaiveDateTime::date(Self) -> NaiveDate
 pub fn NaiveDateTime::equal(Self, Self) -> Bool
 pub fn NaiveDateTime::from_timestamp(Int64, Int) -> Self?
@@ -89,6 +100,10 @@ pub fn NaiveDateTime::from_timestamp_millis(Int64) -> Self?
 pub fn NaiveDateTime::from_timestamp_nanos(Int64) -> Self?
 pub fn NaiveDateTime::new(NaiveDate, NaiveTime) -> Self
 pub fn NaiveDateTime::not_equal(Self, Self) -> Bool
+pub fn NaiveDateTime::op_ge(Self, Self) -> Bool
+pub fn NaiveDateTime::op_gt(Self, Self) -> Bool
+pub fn NaiveDateTime::op_le(Self, Self) -> Bool
+pub fn NaiveDateTime::op_lt(Self, Self) -> Bool
 pub fn NaiveDateTime::round(Self, TimeDelta) -> Self?
 pub fn NaiveDateTime::signed_duration_since(Self, Self) -> TimeDelta
 pub fn NaiveDateTime::sub_days(Self, Int) -> Self
@@ -107,7 +122,8 @@ pub fn NaiveDateTime::truncate(Self, TimeDelta) -> Self?
 
 pub struct NaiveTime {
   // private fields
-} derive(Eq, @debug.Debug)
+} derive(Compare, Eq, @debug.Debug)
+pub fn NaiveTime::compare(Self, Self) -> Int
 pub fn NaiveTime::equal(Self, Self) -> Bool
 pub fn NaiveTime::from_hms(Int, Int, Int) -> Self?
 pub fn NaiveTime::from_hms_micro(Int, Int, Int, Int) -> Self?
@@ -120,6 +136,10 @@ pub fn NaiveTime::minute(Self) -> Int
 pub fn NaiveTime::nanosecond(Self) -> Int
 pub fn NaiveTime::not_equal(Self, Self) -> Bool
 pub fn NaiveTime::num_seconds_from_midnight(Self) -> Int
+pub fn NaiveTime::op_ge(Self, Self) -> Bool
+pub fn NaiveTime::op_gt(Self, Self) -> Bool
+pub fn NaiveTime::op_le(Self, Self) -> Bool
+pub fn NaiveTime::op_lt(Self, Self) -> Bool
 pub fn NaiveTime::overflowing_add_signed(Self, TimeDelta) -> (Self, Int64)
 pub fn NaiveTime::overflowing_sub_signed(Self, TimeDelta) -> (Self, Int64)
 pub fn NaiveTime::second(Self) -> Int
@@ -127,9 +147,10 @@ pub fn NaiveTime::to_repr(Self) -> @debug.Repr
 
 pub struct TimeDelta {
   // private fields
-} derive(Eq, @debug.Debug)
+} derive(Compare, Eq, @debug.Debug)
 pub fn TimeDelta::abs(Self) -> Self
 pub fn TimeDelta::add(Self, Self) -> Self?
+pub fn TimeDelta::compare(Self, Self) -> Int
 pub fn TimeDelta::days(Int64) -> Self?
 pub fn TimeDelta::div(Self, Int) -> Self?
 pub fn TimeDelta::equal(Self, Self) -> Bool
@@ -152,6 +173,10 @@ pub fn TimeDelta::num_minutes(Self) -> Int64
 pub fn TimeDelta::num_nanoseconds(Self) -> Int64?
 pub fn TimeDelta::num_seconds(Self) -> Int64
 pub fn TimeDelta::num_weeks(Self) -> Int64
+pub fn TimeDelta::op_ge(Self, Self) -> Bool
+pub fn TimeDelta::op_gt(Self, Self) -> Bool
+pub fn TimeDelta::op_le(Self, Self) -> Bool
+pub fn TimeDelta::op_lt(Self, Self) -> Bool
 pub fn TimeDelta::round(Self, Self) -> Self?
 pub fn TimeDelta::seconds(Int64) -> Self?
 pub fn TimeDelta::sub(Self, Self) -> Self?

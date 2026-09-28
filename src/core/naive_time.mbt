@@ -8,13 +8,16 @@
 pub struct NaiveTime {
   priv secs : Int
   priv frac : Int
-} derive(Eq, @debug.Debug)
+} derive(Eq, Compare, @debug.Debug)
 
 ///|
 pub extend NaiveTime with Eq::{equal}
 
 ///|
 pub extend NaiveTime with Eq::{not_equal}
+
+///|
+pub extend NaiveTime with Compare::{compare, op_lt, op_gt, op_le, op_ge}
 
 ///|
 pub extend NaiveTime with @debug.Debug::{to_repr}

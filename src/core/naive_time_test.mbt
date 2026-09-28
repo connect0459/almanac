@@ -131,3 +131,35 @@ test "overflowing_add_signed carries a multi-day duration into the returned day 
   assert_eq(result, @core.NaiveTime::from_hms(7, 0, 0).unwrap())
   assert_eq(days, 3L)
 }
+
+///|
+test "a later time of day compares greater than an earlier one" {
+  let t1 = @core.NaiveTime::from_hms(9, 0, 0).unwrap()
+  let t2 = @core.NaiveTime::from_hms(17, 30, 0).unwrap()
+  assert_true(t1 < t2)
+  assert_true(t2 > t1)
+  assert_true(t1.compare(t2) < 0)
+}
+
+///|
+test "nanosecond precision is reflected in ordering" {
+  let t1 = @core.NaiveTime::from_hms_nano(9, 0, 0, 500).unwrap()
+  let t2 = @core.NaiveTime::from_hms_nano(9, 0, 0, 501).unwrap()
+  assert_true(t1 < t2)
+}
+
+///|
+test "a leap second orders after the same second's maximum ordinary reading" {
+  let ordinary = @core.NaiveTime::from_hms_nano(23, 59, 59, 999_999_999).unwrap()
+  let leap = @core.NaiveTime::from_hms_nano(23, 59, 59, 1_500_000_000).unwrap()
+  assert_true(ordinary < leap)
+}
+
+///|
+test "equal times of day compare as neither less nor greater" {
+  let t1 = @core.NaiveTime::from_hms(9, 0, 0).unwrap()
+  let t2 = @core.NaiveTime::from_hms(9, 0, 0).unwrap()
+  assert_true(t1 <= t2)
+  assert_true(t1 >= t2)
+  assert_eq(t1.compare(t2), 0)
+}

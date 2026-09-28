@@ -4,13 +4,16 @@
 pub struct IsoWeek {
   priv year : Int
   priv week : Int
-} derive(Eq, @debug.Debug)
+} derive(Eq, Compare, @debug.Debug)
 
 ///|
 pub extend IsoWeek with Eq::{equal}
 
 ///|
 pub extend IsoWeek with Eq::{not_equal}
+
+///|
+pub extend IsoWeek with Compare::{compare, op_lt, op_gt, op_le, op_ge}
 
 ///|
 pub extend IsoWeek with @debug.Debug::{to_repr}

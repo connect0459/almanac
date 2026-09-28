@@ -108,7 +108,7 @@ test {
 | `week()` | `-> Int` | 1-based week number within that year |
 | `week0()` | `-> Int` | 0-based week number |
 
-`IsoWeek` also implements `Eq`.
+`IsoWeek` also implements `Eq` and `Compare` (`<`/`<=`/`>`/`>=` via `compare`).
 
 ---
 
@@ -139,7 +139,7 @@ A proleptic Gregorian calendar date. Constructors are `Option`-returning: an inv
 | `add_months(Int)` | `-> Self` | Shift by whole months, clamping the day of month to the target month's length |
 | `sub_months(Int)` | `-> Self` | Shift backward by whole months, with the same clamping |
 
-`NaiveDate` also implements `Eq`.
+`NaiveDate` also implements `Eq` and `Compare` (`<`/`<=`/`>`/`>=` via `compare`).
 
 ---
 
@@ -163,7 +163,7 @@ A time of day, precise to the nanosecond. Constructors are `Option`-returning. S
 | `overflowing_add_signed(TimeDelta)` | `-> (Self, Int64)` | Add a duration, wrapping at midnight; also reports the number of days crossed |
 | `overflowing_sub_signed(TimeDelta)` | `-> (Self, Int64)` | Subtract a duration, with the same wrapping and day-count report |
 
-`NaiveTime` also implements `Eq`.
+`NaiveTime` also implements `Eq` and `Compare` (`<`/`<=`/`>`/`>=` via `compare`).
 
 ---
 
@@ -205,7 +205,7 @@ A signed duration, precise to the nanosecond. Constructors and checked arithmeti
 | `round(TimeDelta)` | `-> Self?` | Round to the nearest multiple of a granularity, ties breaking away from zero; `None` if the granularity is zero, negative, or mixes a whole-second part with a sub-second remainder (e.g. 1.5 seconds — every named duration unit is either purely sub-second or a whole-second-or-larger multiple) |
 | `truncate(TimeDelta)` | `-> Self?` | Truncate toward zero to the nearest multiple of a granularity; same granularity restriction as `round` |
 
-`TimeDelta` also implements `Eq`.
+`TimeDelta` also implements `Eq` and `Compare` (`<`/`<=`/`>`/`>=` via `compare`).
 
 ---
 
@@ -239,4 +239,4 @@ A `NaiveDate` and `NaiveTime` combined into one zone-less instant.
 | `round(TimeDelta)` | `-> Self?` | Round to the nearest multiple of a granularity since the Unix epoch, ties breaking away from the epoch; see `TimeDelta::round` for which granularities are supported |
 | `truncate(TimeDelta)` | `-> Self?` | Truncate toward the Unix epoch to the nearest multiple of a granularity; a datetime before the epoch is truncated *forward* in time (see Quick start above), never further into the past |
 
-`NaiveDateTime` also implements `Eq`.
+`NaiveDateTime` also implements `Eq` and `Compare` (`<`/`<=`/`>`/`>=` via `compare`).
