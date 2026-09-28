@@ -147,3 +147,47 @@ Design decisions (confirmed with the user before implementation):
 - [x] `moon fmt` and `pre-commit run --all-files` clean
 - [x] `just verify` green across `js`, `wasm`, `wasm-gc`, `native`
 - [x] Update the top-level `moon.mod` `description` and `keywords` once the public API stabilizes (`apm.yml` is the unrelated APM/skills tool manifest for this repo, not the library's registry metadata — left as-is)
+
+## Phase 10: API Surface Gap Follow-ups
+
+Reference: a feature-level gap survey against the Rust `chrono` crate and Go's `time` package (see `CLAUDE.local.md` for where the reference implementations are kept locally), covering all three packages (`src/core`, `src/tz`, `src/format`).
+
+Two items require a design decision before any implementation work starts, since they touch this library's core design premise that every operation is a pure function of caller-supplied instants, with no hidden wall-clock or OS access:
+
+- [ ] **Design decision needed**: whether to add a wall-clock "now" entry point (`Utc::now()`/`time.Now()`-equivalent) at all, and if so, how to reconcile it with the existing pure/no-hidden-I/O design and with backend parity (`native` has OS clock access; `js`/`wasm-gc` do not)
+- [ ] **Design decision needed**: whether to add a `Local`-equivalent (read the OS-configured local timezone via `$TZ`/`/etc/localtime`/the Windows registry), which has the same native-vs-`js`/`wasm-gc` asymmetry as above, and depends on the "now" decision
+
+Coverage target: to be confirmed with the user before implementation begins, per package/sub-item, following the existing per-phase gate.
+
+### `src/core`
+
+- [ ] `WeekdaySet`: bitset of `Weekday` values (`from_array`, `single`, `insert`/`remove`/`contains`, subset checks, `first`/`last`, iteration) — mirrors chrono's `weekday_set.rs`
+- [ ] Ordering/comparison (`compare`/`<`/`<=`/etc.) on `NaiveDate`, `NaiveTime`, `NaiveDateTime`, `TimeDelta`, `IsoWeek` — currently only `equal`/`not_equal` exist
+- [ ] `NaiveWeek`: "the week containing this date," parameterized by a configurable first-day-of-week, exposing `first_day()`/`last_day()`/a days range — distinct from `IsoWeek`
+- [ ] `NaiveTime` component setters: `with_hour`/`with_minute`/`with_second`/`with_nanosecond`, mirroring `NaiveDate`'s existing `with_year`/`with_month`/`with_day`/`with_ordinal`
+- [ ] `NaiveTime::signed_duration_since`: time-of-day-only duration difference (no day carry), distinct from the existing `NaiveDateTime` version
+- [ ] `NaiveDate::years_since(base)`: full elapsed calendar years between two dates
+- [ ] `iter_days`/`iter_weeks`: lazy iterator of successive dates from a starting `NaiveDate`
+- [ ] `NaiveDate::from_weekday_of_month`: construct e.g. "3rd Monday of March 2024"
+- [ ] Float-based `TimeDelta` accessors: `as_seconds_f64`/`as_seconds_f32`-equivalents alongside the existing integer `num_*` accessors
+- [ ] `NaiveDate::quarter()`: 1..=4 quarter number
+
+### `src/tz`
+
+- [ ] `MappedLocalTime` combinators: `.single()`/`.earliest()`/`.latest()`/`.map()`-equivalents, so callers don't have to hand-write a pattern match every time
+- [ ] `TimeZone`-mediated `DateTime[Tz]` construction: build from local y/m/d/h/m/s or from a Unix timestamp through a given zone (resolving DST ambiguity via `MappedLocalTime`), not just `DateTime::from_utc` wrapping an already-UTC naive datetime
+- [ ] `DateTime[Tz]` calendar arithmetic: expose `add_months`/`sub_months`/`add_days`/`sub_days` (already on `NaiveDateTime`) without requiring the caller to manually unwrap to `naive_utc()` and rebuild
+- [ ] `Location` zone-identifier accessor: return the loaded IANA name (e.g. `"Asia/Tokyo"`), distinct from the existing instant-specific abbreviation (`"JST"`) returned by `tz_name`
+- [ ] `Location` transition-boundary query: expose the validity window (start/end) of the segment covering a given instant, mirroring Go's `Location.Lookup` — the underlying transition table already exists in `TzifData`
+- [ ] (blocked on the design decision above) `Local`: OS-configured local timezone lookup
+
+### `src/format`
+
+- [ ] Specifiers wired to already-existing `core`/`tz` primitives (low cost): `%b`/`%B`/`%h` (month name, via `Month::name()`), `%I`/`%l`/`%P`/`%p` (12-hour clock, via `NaiveTime::hour12()`), `%s` (Unix timestamp, via `timestamp()`), `%G`/`%g`/`%V` (ISO week-date, via `IsoWeek`)
+- [ ] Remaining year/day/weekday/week-number specifiers: `%C`, `%y`, `%q`, `%e`, `%w`, `%u`, `%U`, `%W`
+- [ ] Compound specifiers: `%D`, `%x`, `%v`, `%R`, `%X`, `%r`, `%c`, `%+`
+- [ ] Variable-width/dot-prefixed fractional seconds: `%.f`, `%3f`, `%6f`, `%9f` (only the fixed 9-digit `%f` exists today)
+- [ ] TZ colon-offset variants: `%:z`, `%::z`, `%:::z`, `%#z` (only bare `%z` exists today)
+- [ ] Padding-flag modifiers: `%-?`/`%_?`/`%0?`
+- [ ] RFC 2822 fast path: `to_rfc2822`/`parse_from_rfc2822`, mirroring the existing RFC 3339 fast path
+- [ ] Named convenience format-string constants (Go-style `RFC1123`/`Kitchen`/`Stamp*`/`DateOnly`/`TimeOnly`-equivalents), once the specifiers they depend on exist
