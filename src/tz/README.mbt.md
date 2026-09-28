@@ -199,6 +199,20 @@ The offset, DST flag, and abbreviation for one segment of a `Location`'s timelin
 
 `LocalTimeType` also implements `Eq`.
 
+### `Local` (native only)
+
+The OS-configured local time zone, resolved from `$TZ` or, when unset, `/etc/localtime`. Only compiled for the `native` backend: resolving it requires file I/O that `js`/`wasm`/`wasm-gc` have no host-provided access to.
+
+| Method | Signature | Description |
+| :--- | :--- | :--- |
+| `Local::new()` | `-> Self?` | Resolves the host's configured time zone; `None` if it could not be determined. Reads live OS state — not a pure function of its arguments. |
+| `Local::resolve(String?, Bytes?)` | `-> Self?` | The pure resolution logic `new()` wraps: given the `TZ` environment variable and `/etc/localtime`'s bytes, applies POSIX `TZ` precedence (empty `TZ` → UTC, a named zone via `Location::load`, otherwise the given bytes via `Location::from_tzif_bytes`) |
+| `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | Delegates to the resolved zone |
+| `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime` | Delegates to the resolved zone |
+| `tz_name(NaiveDateTime)` | `-> String` | Delegates to the resolved zone |
+
+`Local` also implements `TimeZone`. A bare POSIX TZ rule string in `$TZ` (e.g. `"EST5EDT"`) is not supported by `Local::resolve`; only an IANA zone name or an empty string are recognized.
+
 ---
 
 ### Advanced: low-level TZif and POSIX TZ parsing

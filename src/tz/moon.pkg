@@ -4,3 +4,13 @@ import {
   "moonbitlang/core/encoding/utf8",
   "moonbitlang/core/env",
 }
+
+options(
+  targets: {
+    "local.mbt": [ "native" ],
+    "local_test.mbt": [ "native" ],
+    "local_native.mbt": [ "native" ],
+    "local_native_test.mbt": [ "native" ],
+  },
+  "native-stub": [ "local_native_stub.c" ],
+)
