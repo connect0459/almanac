@@ -19,10 +19,10 @@ repository = ""
 
 license = "Apache-2.0"
 
-keywords = [ ]
+keywords = [ "date", "time", "datetime", "timezone", "duration", "iana-tzdata" ]
 
 preferred_target = "wasm"
 
-description = ""
+description = "A chrono/time-inspired date and time library for MoonBit"
 
 source = "src"

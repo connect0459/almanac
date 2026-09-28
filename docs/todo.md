@@ -142,8 +142,8 @@ Design decisions (confirmed with the user before implementation):
 
 ## Phase 9: Documentation & Release Polish
 
-- [ ] `README.mbt.md` per package: API reference tables, key types, usage examples (kept in sync with each phase as it lands, not deferred to the end)
-- [ ] Run `moon info` after each phase; review the `.mbti` diff for unintended public-surface changes
-- [ ] `moon fmt` and `pre-commit run --all-files` clean
-- [ ] `just verify` green across `js`, `wasm`, `wasm-gc`, `native`
-- [ ] Update the top-level `apm.yml`/`moon.mod` `description` and `keywords` once the public API stabilizes
+- [x] `README.mbt.md` per package: API reference tables, key types, usage examples (kept in sync with each phase as it lands, not deferred to the end)
+- [x] Run `moon info` after each phase; review the `.mbti` diff for unintended public-surface changes
+- [x] `moon fmt` and `pre-commit run --all-files` clean
+- [x] `just verify` green across `js`, `wasm`, `wasm-gc`, `native`
+- [x] Update the top-level `moon.mod` `description` and `keywords` once the public API stabilizes (`apm.yml` is the unrelated APM/skills tool manifest for this repo, not the library's registry metadata — left as-is)
