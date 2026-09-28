@@ -323,3 +323,175 @@ pub fn TimeDelta::abs(self : TimeDelta) -> TimeDelta {
 pub fn TimeDelta::is_zero(self : TimeDelta) -> Bool {
   self.seconds == 0L && self.nanoseconds == 0
 }
+
+///|
+/// A rounding/truncation granularity, classified into the only two shapes
+/// `TimeDelta::round`/`truncate` support: a whole number of sub-second
+/// nanoseconds, or a whole-second-or-larger multiple. A granularity
+/// combining both (e.g. 1.5 seconds) is rejected by `classify_granularity`
+/// rather than represented here: supporting it in general would require
+/// arbitrary-precision arithmetic, since `TimeDelta`'s `seconds` component
+/// is far too large to convert to a single nanosecond count (see
+/// `num_nanoseconds`, which is already `Option`-returning for exactly this
+/// reason).
+priv enum Granularity {
+  SubSecond(Int)
+  WholeSeconds(Int64)
+}
+
+///|
+/// Classifies `granularity` for `TimeDelta::round`/`truncate`, or reports
+/// `None` if it is zero, negative, or mixes a whole-second part with a
+/// sub-second remainder (see `Granularity`).
+fn classify_granularity(granularity : TimeDelta) -> Granularity? {
+  if granularity.seconds < 0L {
+    None
+  } else if granularity.seconds == 0L {
+    if granularity.nanoseconds > 0 {
+      Some(SubSecond(granularity.nanoseconds))
+    } else {
+      None
+    }
+  } else if granularity.nanoseconds == 0 {
+    Some(WholeSeconds(granularity.seconds))
+  } else {
+    None
+  }
+}
+
+///|
+/// The remainder of dividing the non-negative magnitude `mag` by the
+/// granularity `kind`, itself non-negative and strictly less than the
+/// granularity. Computed without ever converting `mag` to a single
+/// nanosecond count, which could overflow `Int64` for a `TimeDelta` far
+/// from zero.
+fn remainder_magnitude(mag : TimeDelta, kind : Granularity) -> TimeDelta {
+  match kind {
+    SubSecond(nanos_per_unit) => {
+      let unit = nanos_per_unit.to_int64()
+      // `mag.seconds % unit` is bounded by `unit < NANOS_PER_SEC`, so
+      // multiplying it back out by `NANOS_PER_SEC` stays well within
+      // Int64's range regardless of how large `mag.seconds` itself is.
+      let seconds_remainder = mag.seconds % unit
+      let combined = (
+          seconds_remainder * NANOS_PER_SEC + mag.nanoseconds.to_int64()
+        ) %
+        unit
+      TimeDelta::{ seconds: 0L, nanoseconds: combined.to_int(), }
+    }
+    WholeSeconds(seconds_per_unit) =>
+      TimeDelta::{
+        seconds: mag.seconds % seconds_per_unit,
+        nanoseconds: mag.nanoseconds,
+      }
+  }
+}
+
+///|
+/// The signed remainder of dividing `td` by the granularity `kind`,
+/// carrying the same sign as `td` (or zero). Its magnitude is always
+/// strictly less than `td`'s own, so subtracting it from `td` can never
+/// push the result outside `TimeDelta`'s representable range.
+fn signed_remainder(td : TimeDelta, kind : Granularity) -> TimeDelta {
+  let remainder = remainder_magnitude(td.abs(), kind)
+  if td.seconds < 0L {
+    remainder.neg()
+  } else {
+    remainder
+  }
+}
+
+///|
+/// The granularity `kind` itself, expressed as a `TimeDelta` magnitude.
+fn granularity_magnitude(kind : Granularity) -> TimeDelta {
+  match kind {
+    SubSecond(nanos_per_unit) =>
+      TimeDelta::{ seconds: 0L, nanoseconds: nanos_per_unit, }
+    WholeSeconds(seconds_per_unit) =>
+      TimeDelta::{ seconds: seconds_per_unit, nanoseconds: 0, }
+  }
+}
+
+///|
+/// Twice a non-negative `TimeDelta` magnitude, carrying any nanosecond
+/// overflow into `seconds`. Never overflows `Int64`: `seconds` is already
+/// far below `Int64`'s range at `TimeDelta`'s own bounds (`MAX_SECS`), and
+/// doubling it once more still is.
+fn double_magnitude(mag : TimeDelta) -> TimeDelta {
+  let doubled_nanos = mag.nanoseconds.to_int64() * 2L
+  if doubled_nanos >= NANOS_PER_SEC {
+    TimeDelta::{
+      seconds: mag.seconds * 2L + 1L,
+      nanoseconds: (doubled_nanos - NANOS_PER_SEC).to_int(),
+    }
+  } else {
+    TimeDelta::{
+      seconds: mag.seconds * 2L,
+      nanoseconds: doubled_nanos.to_int(),
+    }
+  }
+}
+
+///|
+/// Lexicographic comparison of two non-negative `TimeDelta` magnitudes:
+/// negative if `a < b`, positive if `a > b`, zero if equal.
+fn compare_magnitude(a : TimeDelta, b : TimeDelta) -> Int {
+  if a.seconds != b.seconds {
+    if a.seconds < b.seconds {
+      -1
+    } else {
+      1
+    }
+  } else if a.nanoseconds != b.nanoseconds {
+    if a.nanoseconds < b.nanoseconds {
+      -1
+    } else {
+      1
+    }
+  } else {
+    0
+  }
+}
+
+///|
+/// This duration truncated toward zero to the nearest multiple of
+/// `granularity`. Returns `None` if `granularity` is zero, negative, or
+/// mixes a whole-second part with a sub-second remainder (e.g. 1.5
+/// seconds) — see `Granularity`.
+pub fn TimeDelta::truncate(
+  self : TimeDelta,
+  granularity : TimeDelta,
+) -> TimeDelta? {
+  match classify_granularity(granularity) {
+    None => None
+    Some(kind) => self.sub(signed_remainder(self, kind))
+  }
+}
+
+///|
+/// This duration rounded to the nearest multiple of `granularity`, ties
+/// (an exact half-multiple) breaking away from zero. See `truncate` for the
+/// conditions under which `granularity` is rejected.
+pub fn TimeDelta::round(
+  self : TimeDelta,
+  granularity : TimeDelta,
+) -> TimeDelta? {
+  match classify_granularity(granularity) {
+    None => None
+    Some(kind) => {
+      let remainder = signed_remainder(self, kind)
+      let truncated = self.sub(remainder)
+      if compare_magnitude(
+          double_magnitude(remainder.abs()),
+          granularity_magnitude(kind),
+        ) <
+        0 {
+        truncated
+      } else if self.seconds < 0L {
+        truncated.bind(t => t.sub(granularity_magnitude(kind)))
+      } else {
+        truncated.bind(t => t.add(granularity_magnitude(kind)))
+      }
+    }
+  }
+}

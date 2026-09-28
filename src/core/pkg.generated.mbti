@@ -150,12 +150,14 @@ pub fn TimeDelta::num_minutes(Self) -> Int64
 pub fn TimeDelta::num_nanoseconds(Self) -> Int64?
 pub fn TimeDelta::num_seconds(Self) -> Int64
 pub fn TimeDelta::num_weeks(Self) -> Int64
+pub fn TimeDelta::round(Self, Self) -> Self?
 pub fn TimeDelta::seconds(Int64) -> Self?
 pub fn TimeDelta::sub(Self, Self) -> Self?
 pub fn TimeDelta::subsec_microseconds(Self) -> Int
 pub fn TimeDelta::subsec_milliseconds(Self) -> Int
 pub fn TimeDelta::subsec_nanoseconds(Self) -> Int
 pub fn TimeDelta::to_repr(Self) -> @debug.Repr
+pub fn TimeDelta::truncate(Self, Self) -> Self?
 pub fn TimeDelta::weeks(Int64) -> Self?
 pub fn TimeDelta::zero() -> Self
 
