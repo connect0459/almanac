@@ -126,9 +126,19 @@ Coverage target (confirmed with the user): 100%.
 
 Reference: chrono's `Round`/`SubsecRound` traits, Go's `Time.Round`/`Time.Truncate`/`Duration.Round`/`Duration.Truncate`.
 
-- [ ] Round/truncate a `NaiveDateTime`/`DateTime` to an arbitrary `TimeDelta` granularity since the epoch (prefer Go's general single-`div`-helper approach over chrono's two-trait split — simpler, and not limited to decimal subsecond digits)
-- [ ] Round/truncate a `TimeDelta` itself to a multiple of another `TimeDelta`
-- [ ] Tests: half-value rounds away from zero; truncation always rounds toward the epoch; round/truncate by a duration larger than the value itself
+Coverage target (confirmed with the user): 100%.
+
+Design decisions (confirmed with the user before implementation):
+
+- **Reference point**: the Unix epoch (`1970-01-01T00:00:00`), not Go's year-1 zero time — consistent with this codebase's existing `timestamp()` family, unlike Go's `Time` internal representation. `NaiveDateTime::round`/`truncate` compute the `TimeDelta` since the epoch via the already-total `signed_duration_since`/`add_signed`, rather than converting through `timestamp_nanos()` (which is `Option`-returning and can overflow for a date far from the epoch) — this keeps the date side of rounding/truncation free of spurious overflow.
+- **`granularity` is restricted to two shapes**: purely sub-second (a whole number of nanoseconds, no whole-second component) or a whole-second-or-larger multiple (no sub-second remainder). A "mixed" granularity (e.g. 1.5 seconds) returns `None`. Rationale: `TimeDelta`'s `seconds` component is far too large to convert to a single nanosecond count in the general case (mirrors why `num_nanoseconds` is already `Option`-returning), and supporting arbitrary mixed granularities in general would require arbitrary-precision arithmetic (Go's own `Duration`-vs-`Time` general case falls back to manual 128-bit arithmetic for exactly this reason). Every named duration unit (ns/µs/ms/s/min/hour/day/week/...) falls into one of the two supported shapes, so this is not a practical limitation.
+- **Invalid `granularity` (zero or negative) returns `None`**, not Go's silent no-op passthrough — consistent with this codebase's existing `TimeDelta::div` convention of rejecting invalid input via `Option` rather than a silent identity result.
+- **Half-value ties round away from zero** (matches Go's `Duration.Round`); **truncation always rounds toward zero/the epoch**, never toward negative infinity — verified explicitly for a pre-epoch `NaiveDateTime`, where truncating moves the datetime *forward* in time.
+- **`DateTime[Tz]::round`/`truncate` operate on the underlying UTC instant**, not the offset-shifted local presentation (matches Go's and chrono's documented behavior): truncating to an hour boundary in UTC may still report a non-zero local minute under a non-whole-hour `FixedOffset`.
+
+- [x] Round/truncate a `NaiveDateTime`/`DateTime` to an arbitrary `TimeDelta` granularity since the epoch (prefer Go's general single-`div`-helper approach over chrono's two-trait split — simpler, and not limited to decimal subsecond digits)
+- [x] Round/truncate a `TimeDelta` itself to a multiple of another `TimeDelta`
+- [x] Tests: half-value rounds away from zero; truncation always rounds toward the epoch; round/truncate by a duration larger than the value itself
 
 ## Phase 9: Documentation & Release Polish
 
