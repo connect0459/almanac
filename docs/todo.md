@@ -162,7 +162,7 @@ Coverage target: 100%, consistent with Phase 1–8 (confirmed with the user), ex
 ### `src/core`
 
 - [ ] `WeekdaySet`: bitset of `Weekday` values (`from_array`, `single`, `insert`/`remove`/`contains`, subset checks, `first`/`last`, iteration) — mirrors chrono's `weekday_set.rs`
-- [ ] Ordering/comparison (`compare`/`<`/`<=`/etc.) on `NaiveDate`, `NaiveTime`, `NaiveDateTime`, `TimeDelta`, `IsoWeek` — currently only `equal`/`not_equal` exist
+- [x] Ordering/comparison (`compare`/`<`/`<=`/etc.) on `NaiveDate`, `NaiveTime`, `NaiveDateTime`, `TimeDelta`, `IsoWeek`. Each type's existing field layout already matches chronological/magnitude order lexicographically (e.g. `TimeDelta`'s `(seconds, nanoseconds)` with the sign carried entirely by `seconds`), so `derive(Compare)` alone (plus the same `pub extend X with Compare::{compare, op_lt, op_gt, op_le, op_ge}` pattern already used for `Eq`) is correct without a hand-written `compare`
 - [ ] `NaiveWeek`: "the week containing this date," parameterized by a configurable first-day-of-week, exposing `first_day()`/`last_day()`/a days range — distinct from `IsoWeek`
 - [ ] `NaiveTime` component setters: `with_hour`/`with_minute`/`with_second`/`with_nanosecond`, mirroring `NaiveDate`'s existing `with_year`/`with_month`/`with_day`/`with_ordinal`
 - [ ] `NaiveTime::signed_duration_since`: time-of-day-only duration difference (no day carry), distinct from the existing `NaiveDateTime` version
