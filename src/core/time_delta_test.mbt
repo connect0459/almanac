@@ -259,6 +259,58 @@ test "round and truncate reject a zero or negative granularity" {
 }
 
 ///|
+test "as_seconds_double reports a whole-second duration exactly" {
+  assert_eq(@core.TimeDelta::seconds(90L).unwrap().as_seconds_double(), 90.0)
+}
+
+///|
+test "as_seconds_double reports the fractional part of a positive duration" {
+  assert_eq(
+    @core.TimeDelta::milliseconds(1500L).unwrap().as_seconds_double(),
+    1.5,
+  )
+}
+
+///|
+test "as_seconds_double reports the fractional part of a negative duration" {
+  assert_eq(
+    @core.TimeDelta::milliseconds(-1750L).unwrap().as_seconds_double(),
+    -1.75,
+  )
+}
+
+///|
+test "as_seconds_double is zero for the zero duration" {
+  assert_eq(@core.TimeDelta::zero().as_seconds_double(), 0.0)
+}
+
+///|
+test "as_seconds_float reports a whole-second duration exactly" {
+  assert_eq(@core.TimeDelta::seconds(90L).unwrap().as_seconds_float(), 90.0)
+}
+
+///|
+test "as_seconds_float reports the fractional part of a positive duration" {
+  assert_eq(
+    @core.TimeDelta::milliseconds(1500L).unwrap().as_seconds_float(),
+    1.5,
+  )
+}
+
+///|
+test "as_seconds_float reports the fractional part of a negative duration" {
+  assert_eq(
+    @core.TimeDelta::milliseconds(-1250L).unwrap().as_seconds_float(),
+    -1.25,
+  )
+}
+
+///|
+test "as_seconds_float is zero for the zero duration" {
+  assert_eq(@core.TimeDelta::zero().as_seconds_float(), 0.0)
+}
+
+///|
 test "a longer duration compares greater than a shorter one" {
   let d1 = @core.TimeDelta::seconds(5L).unwrap()
   let d2 = @core.TimeDelta::seconds(10L).unwrap()

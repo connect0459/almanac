@@ -264,6 +264,8 @@ A signed duration, precise to the nanosecond. Constructors and checked arithmeti
 | `subsec_nanoseconds()` | `-> Int` | Nanosecond remainder, signed to match the overall duration |
 | `subsec_milliseconds()` | `-> Int` | `subsec_nanoseconds()` in whole milliseconds |
 | `subsec_microseconds()` | `-> Int` | `subsec_nanoseconds()` in whole microseconds |
+| `as_seconds_double()` | `-> Double` | Total length in fractional seconds, as a 64-bit float; loses precision for a very large duration, never fails |
+| `as_seconds_float()` | `-> Float` | Total length in fractional seconds, as a 32-bit float; same precision caveat |
 | `add(TimeDelta)` | `-> Self?` | Sum; `None` on overflow |
 | `sub(TimeDelta)` | `-> Self?` | Difference; `None` on overflow |
 | `mul(Int)` | `-> Self?` | Scale by an integer scalar; `None` on overflow |

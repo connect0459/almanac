@@ -185,6 +185,21 @@ pub fn TimeDelta::subsec_microseconds(self : TimeDelta) -> Int {
 }
 
 ///|
+/// This duration's total length in fractional seconds, as a 64-bit float.
+/// Loses precision for a very large duration; never fails.
+pub fn TimeDelta::as_seconds_double(self : TimeDelta) -> Double {
+  self.seconds.to_double() + self.nanoseconds.to_double() / 1_000_000_000.0
+}
+
+///|
+/// This duration's total length in fractional seconds, as a 32-bit float.
+/// Loses precision for a very large duration; never fails.
+pub fn TimeDelta::as_seconds_float(self : TimeDelta) -> Float {
+  Float::from_int64(self.seconds) +
+  Float::from_int(self.nanoseconds) / 1_000_000_000.0
+}
+
+///|
 /// The number of whole weeks in this duration, truncated toward zero.
 pub fn TimeDelta::num_weeks(self : TimeDelta) -> Int64 {
   self.num_seconds() / 604800L
