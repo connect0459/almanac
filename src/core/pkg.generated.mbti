@@ -208,6 +208,36 @@ pub fn Weekday::pred(Self) -> Self
 pub fn Weekday::succ(Self) -> Self
 pub fn Weekday::to_repr(Self) -> @debug.Repr
 
+pub struct WeekdaySet {
+  // private fields
+} derive(Compare, Eq, @debug.Debug)
+pub fn WeekdaySet::all() -> Self
+pub fn WeekdaySet::compare(Self, Self) -> Int
+pub fn WeekdaySet::contains(Self, Weekday) -> Bool
+pub fn WeekdaySet::difference(Self, Self) -> Self
+pub fn WeekdaySet::empty() -> Self
+pub fn WeekdaySet::equal(Self, Self) -> Bool
+pub fn WeekdaySet::first(Self) -> Weekday?
+pub fn WeekdaySet::from_array(Array[Weekday]) -> Self
+pub fn WeekdaySet::insert(Self, Weekday) -> Self
+pub fn WeekdaySet::intersection(Self, Self) -> Self
+pub fn WeekdaySet::is_empty(Self) -> Bool
+pub fn WeekdaySet::is_subset(Self, Self) -> Bool
+pub fn WeekdaySet::last(Self) -> Weekday?
+pub fn WeekdaySet::length(Self) -> Int
+pub fn WeekdaySet::not_equal(Self, Self) -> Bool
+pub fn WeekdaySet::op_ge(Self, Self) -> Bool
+pub fn WeekdaySet::op_gt(Self, Self) -> Bool
+pub fn WeekdaySet::op_le(Self, Self) -> Bool
+pub fn WeekdaySet::op_lt(Self, Self) -> Bool
+pub fn WeekdaySet::remove(Self, Weekday) -> Self
+pub fn WeekdaySet::single(Weekday) -> Self
+pub fn WeekdaySet::single_day(Self) -> Weekday?
+pub fn WeekdaySet::symmetric_difference(Self, Self) -> Self
+pub fn WeekdaySet::to_array(Self) -> Array[Weekday]
+pub fn WeekdaySet::to_repr(Self) -> @debug.Repr
+pub fn WeekdaySet::union(Self, Self) -> Self
+
 // Type aliases
 
 // Traits

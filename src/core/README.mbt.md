@@ -1,12 +1,13 @@
 # `core` package
 
-Calendar and clock primitives with no time zone awareness. Import `connect0459/chrono/core` for `Weekday`, `Month`, `IsoWeek`, `NaiveDate`, `NaiveTime`, `TimeDelta`, and `NaiveDateTime`. The `tz` package layers a time zone on top of `NaiveDateTime`.
+Calendar and clock primitives with no time zone awareness. Import `connect0459/chrono/core` for `Weekday`, `WeekdaySet`, `Month`, `IsoWeek`, `NaiveDate`, `NaiveTime`, `TimeDelta`, and `NaiveDateTime`. The `tz` package layers a time zone on top of `NaiveDateTime`.
 
 ## Key types
 
 | Type | Description |
 | :--- | :--- |
 | `Weekday` | Cyclic day-of-week enum (`Mon`..`Sun`) |
+| `WeekdaySet` | An immutable set of `Weekday` values, stored as a bitset |
 | `Month` | Cyclic month enum (`Jan`..`Dec`) |
 | `IsoWeek` | ISO 8601 week-numbering year and week |
 | `NaiveDate` | A proleptic Gregorian calendar date, no time zone |
@@ -81,6 +82,35 @@ test {
 | `days_since(Weekday)` | `-> Int` | Days elapsed since `other`, counting forward |
 
 `Weekday` also implements `Eq`.
+
+---
+
+### `WeekdaySet`
+
+An immutable set of `Weekday` values. Every mutating-looking operation (`insert`, `remove`) returns a new set rather than changing `self` in place.
+
+| Method | Signature | Description |
+| :--- | :--- | :--- |
+| `WeekdaySet::empty()` | `-> Self` | The empty set |
+| `WeekdaySet::all()` | `-> Self` | The set containing all seven weekdays |
+| `WeekdaySet::single(Weekday)` | `-> Self` | A set containing exactly one weekday |
+| `WeekdaySet::from_array(Array[Weekday])` | `-> Self` | A set containing exactly the given weekdays |
+| `single_day()` | `-> Weekday?` | The one member, if the set has exactly one; `None` otherwise |
+| `insert(Weekday)` | `-> Self` | The set with a weekday added |
+| `remove(Weekday)` | `-> Self` | The set with a weekday removed |
+| `contains(Weekday)` | `-> Bool` | Whether a weekday is a member |
+| `is_subset(Self)` | `-> Bool` | Whether every member of `self` is also in `other` |
+| `union(Self)` | `-> Self` | Members in either set |
+| `intersection(Self)` | `-> Self` | Members in both sets |
+| `difference(Self)` | `-> Self` | Members in `self` but not in `other` |
+| `symmetric_difference(Self)` | `-> Self` | Members in exactly one of the two sets |
+| `first()` | `-> Weekday?` | The earliest member, starting from `Mon`; `None` if empty |
+| `last()` | `-> Weekday?` | The latest member, starting from `Sun`; `None` if empty |
+| `is_empty()` | `-> Bool` | Whether the set has no members |
+| `length()` | `-> Int` | The number of members |
+| `to_array()` | `-> Array[Weekday]` | Members in `Mon..Sun` order |
+
+`WeekdaySet` also implements `Eq` and `Compare` (`<`/`<=`/`>`/`>=` via `compare`).
 
 ---
 
