@@ -152,12 +152,12 @@ Design decisions (confirmed with the user before implementation):
 
 Reference: a feature-level gap survey against the Rust `chrono` crate and Go's `time` package (see `CLAUDE.local.md` for where the reference implementations are kept locally), covering all three packages (`src/core`, `src/tz`, `src/format`).
 
-Two items require a design decision before any implementation work starts, since they touch this library's core design premise that every operation is a pure function of caller-supplied instants, with no hidden wall-clock or OS access:
+Two items originally required a design decision before any implementation work started, since they touch this library's core design premise that every operation is a pure function of caller-supplied instants, with no hidden wall-clock or OS access. Both are now resolved (confirmed with the user):
 
-- [ ] **Design decision needed**: whether to add a wall-clock "now" entry point (`Utc::now()`/`time.Now()`-equivalent) at all, and if so, how to reconcile it with the existing pure/no-hidden-I/O design and with backend parity (`native` has OS clock access; `js`/`wasm-gc` do not)
-- [ ] **Design decision needed**: whether to add a `Local`-equivalent (read the OS-configured local timezone via `$TZ`/`/etc/localtime`/the Windows registry), which has the same native-vs-`js`/`wasm-gc` asymmetry as above, and depends on the "now" decision
+- [x] **Design decision (resolved)**: `Utc::now()` is added. The original premise ("`native` has OS clock access; `js`/`wasm-gc` do not") was checked against `moonbitlang/core`'s actual sources (`~/.moon/lib/core/env`) and found to be wrong: `@env.now()` (ms since the Unix epoch) is implemented symmetrically across all four backends (`native` via C FFI, `js` via `Date.now()`, `wasm`/`wasm-gc` via the `__moonbit_time_unstable` host import). `Utc::now() -> DateTime[Utc]` is implemented in its own file (`src/tz/now.mbt`), isolated from the package's otherwise-pure functions, wrapping `@env.now()`.
+- [x] **Design decision (resolved)**: `Local` is added, scoped to `native` only. Unlike `now()`, a real asymmetry does exist here: `$TZ` is readable symmetrically via `@env.get_env_var`, but reading the `/etc/localtime` fallback (the common case when `$TZ` is unset) requires file I/O, which `moonbitlang/core` does not provide on any backend — `native` can add its own C stub (`native-stub` in `moon.pkg`, confirmed as a real MoonBit mechanism), but `js`/`wasm-gc` cannot without a host-provided file-read import that doesn't exist. `Local` is therefore compiled only for `native` (via `moon.pkg`'s per-file `targets`, the same mechanism `moonbitlang/core/bench`'s `monotonic_clock_*.mbt` uses), not present at all on other backends. Scoped to `$TZ` as an IANA zone name (via `Location::load`) falling back to `/etc/localtime` bytes (via `Location::from_tzif_bytes`); a bare POSIX rule string in `$TZ` (e.g. `EST5EDT`) is out of scope for this item — see the `PosixTz`-as-`TimeZone` item below, which would need to land first.
 
-Coverage target: to be confirmed with the user before implementation begins, per package/sub-item, following the existing per-phase gate.
+Coverage target: 100%, consistent with Phase 1–8 (confirmed with the user), except for the thin OS-facing shim functions (`Utc::now()`, `Local::new()`) which read live host state and are covered only by a sanity check, not exhaustive branch coverage — the resolution logic itself is factored into pure, fully-covered functions tested with fixture data (`Local::resolve`).
 
 ### `src/core`
 
@@ -179,7 +179,7 @@ Coverage target: to be confirmed with the user before implementation begins, per
 - [ ] `DateTime[Tz]` calendar arithmetic: expose `add_months`/`sub_months`/`add_days`/`sub_days` (already on `NaiveDateTime`) without requiring the caller to manually unwrap to `naive_utc()` and rebuild
 - [ ] `Location` zone-identifier accessor: return the loaded IANA name (e.g. `"Asia/Tokyo"`), distinct from the existing instant-specific abbreviation (`"JST"`) returned by `tz_name`
 - [ ] `Location` transition-boundary query: expose the validity window (start/end) of the segment covering a given instant, mirroring Go's `Location.Lookup` — the underlying transition table already exists in `TzifData`
-- [ ] (blocked on the design decision above) `Local`: OS-configured local timezone lookup
+- [ ] `Local`: OS-configured local timezone lookup, `native`-only (design resolved above; not yet implemented)
 
 ### `src/format`
 
