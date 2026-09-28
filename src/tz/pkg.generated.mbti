@@ -100,6 +100,7 @@ pub struct Utc {
 pub fn Utc::equal(Self, Self) -> Bool
 pub fn Utc::new() -> Self
 pub fn Utc::not_equal(Self, Self) -> Bool
+pub fn Utc::now() -> DateTime[Self]
 pub fn Utc::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime
 pub fn Utc::offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
 pub fn Utc::to_repr(Self) -> @debug.Repr

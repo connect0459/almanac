@@ -123,6 +123,7 @@ The UTC zone, always offset zero.
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `Utc::new()` | `-> Self` | Construct the (zero-sized) UTC zone value |
+| `Utc::now()` | `-> DateTime[Utc]` | The current UTC instant, read from the host's wall clock. Unlike every other function in this package, not a pure function of its arguments. |
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | Always `FixedOffset::east(0)` |
 | `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime` | Always `Single(FixedOffset::east(0))` |
 | `tz_name(NaiveDateTime)` | `-> String` | Always `"UTC"` |
