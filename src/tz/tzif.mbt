@@ -78,7 +78,7 @@ pub fn TzifData::local_time_types(self : TzifData) -> Array[LocalTimeType] {
 
 ///|
 /// Leap-second records `(transition, correction)`, parsed for fidelity but
-/// not applied to civil-time arithmetic (matches Go's approach).
+/// not applied to civil-time arithmetic.
 pub fn TzifData::leap_seconds(self : TzifData) -> Array[(Int64, Int)] {
   self.leap_seconds
 }
@@ -218,9 +218,9 @@ fn parse_block(data : Bytes, header_offset : Int, time_size : Int) -> RawBlock? 
 /// malformed or truncated.
 ///
 /// For a version 2/3/4 file, only the 64-bit second data block (and the
-/// POSIX TZ footer that follows it) is returned, matching Go's approach:
-/// the initial 32-bit block exists solely for backward compatibility with
-/// readers that predate 64-bit `time_t`.
+/// POSIX TZ footer that follows it) is returned: the initial 32-bit block
+/// exists solely for backward compatibility with readers that predate
+/// 64-bit `time_t`.
 pub fn parse_tzif(data : Bytes) -> TzifData? {
   match parse_block(data, 0, 4) {
     None => None

@@ -148,10 +148,10 @@ pub fn NaiveTime::hour12(self : NaiveTime) -> (Bool, Int) {
 ///
 /// A zero `delta` returns this time unchanged, exactly preserving a leap
 /// second. Any other `delta` resolves the arithmetic assuming no day has a
-/// leap second — matching chrono's own stated assumption — since
-/// `NaiveTime` carries no calendar context to know whether a nearby day
-/// actually has one; a leap second's extra elapsed second is treated as
-/// consumed once time moves away from it in either direction.
+/// leap second, since `NaiveTime` carries no calendar context to know
+/// whether a nearby day actually has one; a leap second's extra elapsed
+/// second is treated as consumed once time moves away from it in either
+/// direction.
 pub fn NaiveTime::overflowing_add_signed(
   self : NaiveTime,
   delta : TimeDelta,

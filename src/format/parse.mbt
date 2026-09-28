@@ -166,8 +166,7 @@ fn apply_weekday_specifier(
 /// Applies a single token against `input` at `pos`, returning the
 /// updated accumulator and the new position. `%Z` always raises
 /// `InputMismatch`: a zone name (an IANA abbreviation, `"UTC"`, or a bare
-/// offset's own string) has no generically parseable shape, matching
-/// chrono's own documented behavior for the same specifier.
+/// offset's own string) has no generically parseable shape.
 fn apply_item(
   item : Item,
   parsed : Parsed,

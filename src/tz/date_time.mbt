@@ -105,8 +105,7 @@ pub fn[Tz, Tz2] DateTime::signed_duration_since(
 /// to the nearest multiple of `granularity`, keeping the same time zone.
 /// Operates on the absolute UTC instant, not the offset-shifted local
 /// presentation: truncating to an hour granularity may still report a
-/// non-zero local minute, depending on the time zone's offset (mirrors
-/// Go's `Time.Truncate` and chrono's `DurationRound`). See
+/// non-zero local minute, depending on the time zone's offset. See
 /// `@core.NaiveDateTime::truncate` for the conditions under which
 /// `granularity` is rejected (returning `None`).
 pub fn[Tz] DateTime::truncate(

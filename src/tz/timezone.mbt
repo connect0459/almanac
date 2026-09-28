@@ -1,10 +1,9 @@
 ///|
 /// The result of resolving a local (wall-clock) `NaiveDateTime` to a UTC
-/// offset. Mirrors chrono's `MappedLocalTime`: a local time can map to a
-/// single offset, to two offsets (the "fold" at a backward DST
-/// transition, where the same wall-clock time occurs twice), or to no
-/// offset at all (the "gap" at a forward DST transition, where that
-/// wall-clock time never occurs).
+/// offset: a local time can map to a single offset, to two offsets (the
+/// "fold" at a backward DST transition, where the same wall-clock time
+/// occurs twice), or to no offset at all (the "gap" at a forward DST
+/// transition, where that wall-clock time never occurs).
 pub(all) enum MappedLocalTime {
   Single(FixedOffset)
   Ambiguous(FixedOffset, FixedOffset)
