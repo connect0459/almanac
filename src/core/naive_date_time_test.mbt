@@ -180,3 +180,59 @@ test "signed_duration_since is antisymmetric: a since b is the negation of b sin
   )
   assert_eq(a.signed_duration_since(b), b.signed_duration_since(a).neg())
 }
+
+///|
+test "truncate rounds a datetime after the Unix epoch down to a whole-hour granularity" {
+  let dt = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 3, 15).unwrap(),
+    @core.NaiveTime::from_hms(9, 45, 30).unwrap(),
+  )
+  let truncated = dt.truncate(@core.TimeDelta::hours(1L).unwrap()).unwrap()
+  assert_eq(truncated.date(), dt.date())
+  assert_eq(truncated.time(), @core.NaiveTime::from_hms(9, 0, 0).unwrap())
+}
+
+///|
+test "truncate rounds a datetime before the Unix epoch forward, toward the epoch rather than toward negative infinity" {
+  let dt = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(1969, 12, 31).unwrap(),
+    @core.NaiveTime::from_hms(14, 45, 30).unwrap(),
+  )
+  let truncated = dt.truncate(@core.TimeDelta::hours(1L).unwrap()).unwrap()
+  assert_eq(truncated.date(), dt.date())
+  assert_eq(truncated.time(), @core.NaiveTime::from_hms(15, 0, 0).unwrap())
+}
+
+///|
+test "round breaks an exact tie by moving away from the Unix epoch" {
+  let dt = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 3, 15).unwrap(),
+    @core.NaiveTime::from_hms(9, 30, 0).unwrap(),
+  )
+  let rounded = dt.round(@core.TimeDelta::hours(1L).unwrap()).unwrap()
+  assert_eq(rounded.date(), dt.date())
+  assert_eq(rounded.time(), @core.NaiveTime::from_hms(10, 0, 0).unwrap())
+}
+
+///|
+test "round and truncate collapse to the Unix epoch when the granularity exceeds the datetime's distance from it" {
+  let dt = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(1970, 1, 1).unwrap(),
+    @core.NaiveTime::from_hms(0, 0, 30).unwrap(),
+  )
+  let day = @core.TimeDelta::days(1L).unwrap()
+  let epoch = @core.NaiveDateTime::from_timestamp(0L, 0).unwrap()
+  assert_eq(dt.truncate(day), Some(epoch))
+  assert_eq(dt.round(day), Some(epoch))
+}
+
+///|
+test "round and truncate reject an unsupported granularity that mixes whole seconds with a sub-second remainder" {
+  let dt = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 3, 15).unwrap(),
+    @core.NaiveTime::from_hms(9, 30, 0).unwrap(),
+  )
+  let mixed = @core.TimeDelta::milliseconds(1500L).unwrap()
+  assert_eq(dt.round(mixed), None)
+  assert_eq(dt.truncate(mixed), None)
+}

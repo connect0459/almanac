@@ -15,6 +15,13 @@ fn from_epoch_days(days : Int) -> NaiveDate {
 }
 
 ///|
+/// The Unix epoch instant, `1970-01-01T00:00:00`: the reference point
+/// `NaiveDateTime::round`/`truncate` measure a granularity against.
+fn epoch() -> NaiveDateTime {
+  NaiveDateTime::from_timestamp(0L, 0).unwrap()
+}
+
+///|
 /// A date and time of day, without a time zone.
 pub struct NaiveDateTime {
   priv date : NaiveDate
@@ -238,4 +245,33 @@ pub fn NaiveDateTime::signed_duration_since(
   .unwrap()
   .add(TimeDelta::nanoseconds(self_nanos - other_nanos).unwrap())
   .unwrap()
+}
+
+///|
+/// This datetime truncated toward the Unix epoch to the nearest multiple of
+/// `granularity`. See `TimeDelta::truncate` for the conditions under which
+/// `granularity` is rejected (returning `None`).
+pub fn NaiveDateTime::truncate(
+  self : NaiveDateTime,
+  granularity : TimeDelta,
+) -> NaiveDateTime? {
+  self
+  .signed_duration_since(epoch())
+  .truncate(granularity)
+  .map(delta => epoch().add_signed(delta))
+}
+
+///|
+/// This datetime rounded to the nearest multiple of `granularity` since the
+/// Unix epoch, ties breaking away from the epoch. See `TimeDelta::round`
+/// for the conditions under which `granularity` is rejected (returning
+/// `None`).
+pub fn NaiveDateTime::round(
+  self : NaiveDateTime,
+  granularity : TimeDelta,
+) -> NaiveDateTime? {
+  self
+  .signed_duration_since(epoch())
+  .round(granularity)
+  .map(delta => epoch().add_signed(delta))
 }

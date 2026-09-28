@@ -89,6 +89,7 @@ pub fn NaiveDateTime::from_timestamp_millis(Int64) -> Self?
 pub fn NaiveDateTime::from_timestamp_nanos(Int64) -> Self?
 pub fn NaiveDateTime::new(NaiveDate, NaiveTime) -> Self
 pub fn NaiveDateTime::not_equal(Self, Self) -> Bool
+pub fn NaiveDateTime::round(Self, TimeDelta) -> Self?
 pub fn NaiveDateTime::signed_duration_since(Self, Self) -> TimeDelta
 pub fn NaiveDateTime::sub_days(Self, Int) -> Self
 pub fn NaiveDateTime::sub_months(Self, Int) -> Self
@@ -102,6 +103,7 @@ pub fn NaiveDateTime::timestamp_subsec_micros(Self) -> Int
 pub fn NaiveDateTime::timestamp_subsec_millis(Self) -> Int
 pub fn NaiveDateTime::timestamp_subsec_nanos(Self) -> Int
 pub fn NaiveDateTime::to_repr(Self) -> @debug.Repr
+pub fn NaiveDateTime::truncate(Self, TimeDelta) -> Self?
 
 pub struct NaiveTime {
   // private fields
