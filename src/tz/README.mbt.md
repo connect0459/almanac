@@ -193,6 +193,7 @@ A time zone backed by parsed IANA tzdata (TZif binary format, plus a POSIX TZ st
 | :--- | :--- | :--- |
 | `Location::load(String)` | `-> Self?` | Look up an embedded IANA zone by name (e.g. `"Asia/Tokyo"`), following aliases; `None` if the name is unknown |
 | `Location::from_tzif_bytes(Bytes)` | `-> Self?` | Parse a zone directly from raw TZif bytes; `None` if malformed |
+| `name()` | `-> String?` | The IANA identifier this `Location` was loaded with (the name as given to `Location::load`, not canonicalized through an alias); `None` for one built via `from_tzif_bytes` |
 | `type_at(NaiveDateTime)` | `-> LocalTimeType` | The offset, DST flag, and abbreviation in effect at a given UTC instant |
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | The offset in effect at a given UTC instant |
 | `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | The offset(s) for a given local instant, resolving DST folds and gaps |

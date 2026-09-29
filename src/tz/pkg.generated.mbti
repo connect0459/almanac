@@ -71,6 +71,7 @@ pub struct Location {
 }
 pub fn Location::from_tzif_bytes(Bytes) -> Self?
 pub fn Location::load(String) -> Self?
+pub fn Location::name(Self) -> String?
 pub fn Location::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[FixedOffset]
 pub fn Location::offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
 pub fn Location::type_at(Self, @core.NaiveDateTime) -> LocalTimeType

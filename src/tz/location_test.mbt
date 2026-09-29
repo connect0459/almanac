@@ -4,6 +4,18 @@ test "from_tzif_bytes rejects malformed TZif data" {
 }
 
 ///|
+test "name reports the identifier a Location was loaded with" {
+  let tokyo = @tz.Location::load("Asia/Tokyo").unwrap()
+  assert_eq(tokyo.name(), Some("Asia/Tokyo"))
+}
+
+///|
+test "name is None for a Location built directly from raw TZif bytes" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  assert_eq(ny.name(), None)
+}
+
+///|
 test "type_at reports the abbreviation and DST flag from the table, and from the POSIX rule past the last transition" {
   let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
   let dst_start_2024 = @core.NaiveDateTime::from_timestamp(1_710_054_000L, 0).unwrap()

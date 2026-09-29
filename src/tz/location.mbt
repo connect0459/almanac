@@ -5,24 +5,38 @@
 pub struct Location {
   priv tzif : TzifData
   priv posix_tz : PosixTz?
+  priv name : String?
 }
 
 ///|
 /// Constructs a `Location` from raw TZif bytes, or `None` if the bytes
 /// are malformed, or its POSIX TZ footer (when present) is malformed.
+/// `name()` reports `None`, since raw bytes carry no IANA identifier; use
+/// `Location::load` to construct a `Location` whose `name()` is known.
 pub fn Location::from_tzif_bytes(data : Bytes) -> Location? {
   match parse_tzif(data) {
     None => None
     Some(tzif) =>
       match tzif.posix_tz() {
-        None => Some(Location::{ tzif, posix_tz: None, })
+        None => Some(Location::{ tzif, posix_tz: None, name: None, })
         Some(s) =>
           match parse_posix_tz(s) {
             None => None
-            Some(p) => Some(Location::{ tzif, posix_tz: Some(p), })
+            Some(p) => Some(Location::{ tzif, posix_tz: Some(p), name: None, })
           }
       }
   }
+}
+
+///|
+/// The IANA zone identifier this `Location` was loaded with (e.g.
+/// `"Asia/Tokyo"`), or `None` if it was constructed via
+/// `Location::from_tzif_bytes` instead. Distinct from `tz_name`, which
+/// reports the instant-specific abbreviation (e.g. `"JST"`). Reports the
+/// name exactly as given to `Location::load`, not the canonical name an
+/// alias resolves to (mirrors Go's `time.LoadLocation`).
+pub fn Location::name(self : Location) -> String? {
+  self.name
 }
 
 ///|
@@ -51,7 +65,11 @@ pub fn resolve_tzdata_bytes(
 pub fn Location::load(name : String) -> Location? {
   match resolve_tzdata_bytes(tzdata_zones, tzdata_aliases, name) {
     None => None
-    Some(bytes) => Location::from_tzif_bytes(bytes)
+    Some(bytes) =>
+      Location::from_tzif_bytes(bytes).map(loc => Location::{
+        ..loc,
+        name: Some(name),
+      })
   }
 }
 
