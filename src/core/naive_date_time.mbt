@@ -522,7 +522,8 @@ pub fn NaiveDateTime::truncate(
 /// This datetime rounded to the nearest multiple of `granularity` since the
 /// Unix epoch, ties breaking away from the epoch. See `TimeDelta::round`
 /// for the conditions under which `granularity` is rejected (returning
-/// `None`).
+/// `None`); also `None` if rounding away from the epoch would leave
+/// `NaiveDate`'s representable range.
 pub fn NaiveDateTime::round(
   self : NaiveDateTime,
   granularity : TimeDelta,
@@ -530,7 +531,7 @@ pub fn NaiveDateTime::round(
   self
   .signed_duration_since(epoch())
   .round(granularity)
-  .map(delta => epoch().add_signed(delta))
+  .bind(delta => epoch().checked_add_signed(delta))
 }
 
 ///|

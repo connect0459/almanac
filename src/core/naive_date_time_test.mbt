@@ -668,3 +668,12 @@ test "round_up returns None instead of aborting when the result leaves the repre
     Some(max_datetime()),
   )
 }
+
+///|
+test "round returns None instead of aborting when rounding would leave the representable date range" {
+  assert_eq(max_datetime().round(@core.TimeDelta::days(1L).unwrap()), None)
+  assert_eq(
+    min_datetime().round(@core.TimeDelta::days(1L).unwrap()),
+    Some(min_datetime()),
+  )
+}
