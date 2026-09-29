@@ -25,6 +25,28 @@ pub extend Weekday with Eq::{not_equal}
 pub extend Weekday with @debug.Debug::{to_repr}
 
 ///|
+/// The English name of the weekday.
+pub fn Weekday::name(self : Weekday) -> String {
+  match self {
+    Mon => "Monday"
+    Tue => "Tuesday"
+    Wed => "Wednesday"
+    Thu => "Thursday"
+    Fri => "Friday"
+    Sat => "Saturday"
+    Sun => "Sunday"
+  }
+}
+
+///|
+pub impl Show for Weekday with fn output(self, logger) {
+  logger.write_string(self.name())
+}
+
+///|
+pub extend Weekday with Show::{to_string, output}
+
+///|
 fn Weekday::index(self : Weekday) -> Int {
   match self {
     Mon => 0

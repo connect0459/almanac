@@ -161,3 +161,25 @@ test "days_since from Sunday agrees with num_days_from_sunday" {
     assert_eq(day.days_since(@core.Sun), day.num_days_from_sunday())
   }
 }
+
+///|
+test "name returns the English weekday name" {
+  for
+    case in [
+      (@core.Mon, "Monday"),
+      (@core.Tue, "Tuesday"),
+      (@core.Wed, "Wednesday"),
+      (@core.Thu, "Thursday"),
+      (@core.Fri, "Friday"),
+      (@core.Sat, "Saturday"),
+      (@core.Sun, "Sunday"),
+    ] {
+    let (day, expected) = case
+    assert_eq(day.name(), expected)
+  }
+}
+
+///|
+test "to_string renders the English weekday name" {
+  assert_eq(@core.Wed.to_string(), "Wednesday")
+}

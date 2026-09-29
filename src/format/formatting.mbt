@@ -12,19 +12,6 @@ fn pad_int(n : Int, width : Int) -> String {
 }
 
 ///|
-fn weekday_long_name(w : @core.Weekday) -> String {
-  match w {
-    Mon => "Monday"
-    Tue => "Tuesday"
-    Wed => "Wednesday"
-    Thu => "Thursday"
-    Fri => "Friday"
-    Sat => "Saturday"
-    Sun => "Sunday"
-  }
-}
-
-///|
 fn weekday_short_name(w : @core.Weekday) -> String {
   match w {
     Mon => "Mon"
@@ -349,7 +336,7 @@ fn render(
         }
       Fixed(LongWeekdayName) =>
         match date {
-          Some(d) => out.write_string(weekday_long_name(d.weekday()))
+          Some(d) => out.write_string(d.weekday().name())
           None => raise MissingField(item)
         }
       Fixed(ShortWeekdayName) =>

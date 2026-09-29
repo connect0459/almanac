@@ -116,3 +116,8 @@ test "num_days for February depends on whether the year is a leap year" {
   assert_eq(@core.Feb.num_days(1900), 28)
   assert_eq(@core.Feb.num_days(2000), 29)
 }
+
+///|
+test "to_string renders the English month name" {
+  assert_eq(@core.Sep.to_string(), "September")
+}

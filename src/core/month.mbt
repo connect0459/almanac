@@ -101,6 +101,14 @@ pub fn Month::name(self : Month) -> String {
 }
 
 ///|
+pub impl Show for Month with fn output(self, logger) {
+  logger.write_string(self.name())
+}
+
+///|
+pub extend Month with Show::{to_string, output}
+
+///|
 /// The month for a 1-based month-of-year number, or `None` if `n` is
 /// outside `1..=12`.
 fn month_from_number(n : Int) -> Month? {

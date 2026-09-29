@@ -49,9 +49,12 @@ pub fn Month::name(Self) -> String
 pub fn Month::not_equal(Self, Self) -> Bool
 pub fn Month::num_days(Self, Int) -> Int
 pub fn Month::number_from_month(Self) -> Int
+pub fn Month::output(Self, &Logger) -> Unit
 pub fn Month::pred(Self) -> Self
 pub fn Month::succ(Self) -> Self
 pub fn Month::to_repr(Self) -> @debug.Repr
+pub fn Month::to_string(Self) -> String
+pub impl Show for Month
 
 pub struct NaiveDate {
   // private fields
@@ -245,14 +248,18 @@ pub(all) enum Weekday {
 } derive(Eq, @debug.Debug)
 pub fn Weekday::days_since(Self, Self) -> Int
 pub fn Weekday::equal(Self, Self) -> Bool
+pub fn Weekday::name(Self) -> String
 pub fn Weekday::not_equal(Self, Self) -> Bool
 pub fn Weekday::num_days_from_monday(Self) -> Int
 pub fn Weekday::num_days_from_sunday(Self) -> Int
 pub fn Weekday::number_from_monday(Self) -> Int
 pub fn Weekday::number_from_sunday(Self) -> Int
+pub fn Weekday::output(Self, &Logger) -> Unit
 pub fn Weekday::pred(Self) -> Self
 pub fn Weekday::succ(Self) -> Self
 pub fn Weekday::to_repr(Self) -> @debug.Repr
+pub fn Weekday::to_string(Self) -> String
+pub impl Show for Weekday
 
 pub struct WeekdaySet {
   // private fields

@@ -82,8 +82,9 @@ test {
 | `num_days_from_monday()` | `-> Int` | 0-based, `Mon` is `0` |
 | `num_days_from_sunday()` | `-> Int` | 0-based, `Sun` is `0` |
 | `days_since(Weekday)` | `-> Int` | Days elapsed since `other`, counting forward |
+| `name()` | `-> String` | English name, e.g. `"Monday"` |
 
-`Weekday` also implements `Eq`.
+`Weekday` also implements `Eq` and `Show` (renders `name()`).
 
 ---
 
@@ -128,7 +129,7 @@ An immutable set of `Weekday` values. Every mutating-looking operation (`insert`
 | `name()` | `-> String` | Full English name, e.g. `"February"` |
 | `num_days(Int)` | `-> Int` | Number of days in this month for the given year |
 
-`Month` also implements `Eq`.
+`Month` also implements `Eq` and `Show` (renders `name()`).
 
 ---
 
