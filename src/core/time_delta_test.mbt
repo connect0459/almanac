@@ -415,3 +415,71 @@ test "to_string renders the extreme representable durations" {
   )
   assert_eq(@core.TimeDelta::min_value().to_string(), "-2562047788015h12m54s")
 }
+
+///|
+test "milliseconds represents a duration far beyond what a nanosecond count could hold" {
+  assert_eq(
+    @core.TimeDelta::milliseconds(10_000_000_000_000L),
+    @core.TimeDelta::seconds(10_000_000_000L),
+  )
+  assert_eq(
+    @core.TimeDelta::milliseconds(-10_000_000_000_000L),
+    @core.TimeDelta::seconds(-10_000_000_000L),
+  )
+}
+
+///|
+test "milliseconds round-trips through num_milliseconds across the representable range" {
+  for
+    n in [
+      0L, 1L, -1L, 1_500L, -1_500L, 10_000_000_000_000L, -10_000_000_000_000L, 9_223_372_036_854_774_999L,
+      -9_223_372_036_854_774_000L,
+    ] {
+    assert_eq(
+      @core.TimeDelta::milliseconds(n).map(fn(d) { d.num_milliseconds() }),
+      Some(n),
+    )
+  }
+}
+
+///|
+test "milliseconds rejects a count whose seconds exceed the representable range" {
+  assert_eq(@core.TimeDelta::milliseconds(9_223_372_036_854_775_807L), None)
+  assert_eq(@core.TimeDelta::milliseconds(9_223_372_036_854_775_000L), None)
+  assert_eq(@core.TimeDelta::milliseconds(-9_223_372_036_854_775_807L), None)
+  assert_eq(
+    @core.TimeDelta::milliseconds(-9_223_372_036_854_775_807L - 1L),
+    None,
+  )
+}
+
+///|
+test "microseconds represents a duration beyond a nanosecond count's range" {
+  assert_eq(
+    @core.TimeDelta::microseconds(10_000_000_000_000_000L),
+    @core.TimeDelta::seconds(10_000_000_000L),
+  )
+  assert_eq(
+    @core.TimeDelta::microseconds(-10_000_000_000_000_000L),
+    @core.TimeDelta::seconds(-10_000_000_000L),
+  )
+}
+
+///|
+test "microseconds accepts every Int64 count and preserves its value" {
+  for
+    n in [
+      0L,
+      1L,
+      -1L,
+      1_500L,
+      -1_500L,
+      9_223_372_036_854_775_807L,
+      -9_223_372_036_854_775_807L - 1L,
+    ] {
+    assert_eq(
+      @core.TimeDelta::microseconds(n).map(fn(d) { d.num_microseconds() }),
+      Some(Some(n)),
+    )
+  }
+}

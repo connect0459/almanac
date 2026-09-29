@@ -176,14 +176,17 @@ pub fn TimeDelta::seconds(n : Int64) -> TimeDelta? {
 /// The duration of the given number of whole milliseconds, or `None` if it
 /// does not fit in the representable range.
 pub fn TimeDelta::milliseconds(n : Int64) -> TimeDelta? {
-  from_secs_nanos(0L, n * 1_000_000L)
+  from_secs_nanos(floor_div64(n, 1_000L), floor_mod64(n, 1_000L) * 1_000_000L)
 }
 
 ///|
 /// The duration of the given number of whole microseconds, or `None` if it
 /// does not fit in the representable range.
 pub fn TimeDelta::microseconds(n : Int64) -> TimeDelta? {
-  from_secs_nanos(0L, n * 1_000L)
+  from_secs_nanos(
+    floor_div64(n, 1_000_000L),
+    floor_mod64(n, 1_000_000L) * 1_000L,
+  )
 }
 
 ///|
