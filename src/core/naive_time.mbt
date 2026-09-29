@@ -206,15 +206,20 @@ fn NaiveTime::fold_leap_second(self : NaiveTime) -> NaiveTime {
 }
 
 ///|
-/// This time truncated to `digits` fractional-second digits (`0..=9`). A leap
-/// second is treated as its elapsed instant and folded into the following
-/// second first, so the result is never a leap second, even for `9`.
+/// This time truncated to `digits` fractional-second digits (`0..=9`). A time
+/// with no digits beyond `digits` is returned unchanged, leap second
+/// included (so `9` is always the identity). Otherwise a leap second is
+/// treated as its elapsed instant and folded into the following second, so
+/// the result is not a leap second.
 ///
 /// Aborts if `digits` is outside `0..=9`.
 pub fn NaiveTime::truncate_subsecs(self : NaiveTime, digits : Int) -> NaiveTime {
   let granularity = subsec_granularity_nanos(
     digits, "NaiveTime::truncate_subsecs",
   )
+  if self.frac % granularity == 0 {
+    return self
+  }
   let time = self.fold_leap_second()
   NaiveTime::{ secs: time.secs, frac: time.frac - time.frac % granularity, }
 }
@@ -222,13 +227,18 @@ pub fn NaiveTime::truncate_subsecs(self : NaiveTime, digits : Int) -> NaiveTime 
 ///|
 /// This time rounded to the nearest of `digits` fractional-second digits
 /// (`0..=9`), a tie rounding up. A carry moves into the next second, minute,
-/// or hour and wraps from the end of the day to midnight. A leap second is
-/// treated as its elapsed instant and folded into the following second
-/// first, so the result is never a leap second, even for `9`.
+/// or hour and wraps from the end of the day to midnight. A time with no
+/// digits beyond `digits` is returned unchanged, leap second included (so
+/// `9` is always the identity). Otherwise a leap second is treated as its
+/// elapsed instant and folded into the following second, so the result is
+/// not a leap second.
 ///
 /// Aborts if `digits` is outside `0..=9`.
 pub fn NaiveTime::round_subsecs(self : NaiveTime, digits : Int) -> NaiveTime {
   let granularity = subsec_granularity_nanos(digits, "NaiveTime::round_subsecs")
+  if self.frac % granularity == 0 {
+    return self
+  }
   let time = self.fold_leap_second()
   let remainder = time.frac % granularity
   let floor = time.frac - remainder

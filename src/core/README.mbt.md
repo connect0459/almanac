@@ -264,7 +264,7 @@ A time of day, precise to the nanosecond. Constructors are `Option`-returning. S
 | `hms()` | `-> (Int, Int, Int)` | Hour, minute and second together (a leap second reports second `59`, as `second()` does) |
 | `nanosecond()` | `-> Int` | Nanosecond component, `0..=1_999_999_999` |
 | `hour12()` | `-> (Bool, Int)` | 12-hour clock hour and PM flag, wrapping midnight/noon to `12` |
-| `round_subsecs(Int)` / `truncate_subsecs(Int)` | `-> Self` | Round (ties up) or truncate to a number of fractional-second digits (`0..=9`; other values abort). A carry wraps past the end of the day to midnight; a leap second is folded into the following second first, so the result is never a leap second |
+| `round_subsecs(Int)` / `truncate_subsecs(Int)` | `-> Self` | Round (ties up) or truncate to a number of fractional-second digits (`0..=9`; other values abort). A carry wraps past the end of the day to midnight. A time with no digits beyond that count is returned unchanged, leap second included (`9` is the identity); otherwise a leap second is folded into the following second |
 | `num_seconds_from_midnight()` | `-> Int` | Seconds elapsed since midnight |
 | `overflowing_add_signed(TimeDelta)` | `-> (Self, Int64)` | Add a duration, wrapping at midnight; also reports the number of days crossed |
 | `overflowing_sub_signed(TimeDelta)` | `-> (Self, Int64)` | Subtract a duration, with the same wrapping and day-count report |
@@ -378,7 +378,7 @@ The non-`checked` arithmetic on `NaiveDate` and `NaiveDateTime` (`succ`, `pred`,
 | `signed_duration_since(Self)` | `-> TimeDelta` | The signed duration from `other` to `self` |
 | `round(TimeDelta)` | `-> Self?` | Round to the nearest multiple of a granularity since the Unix epoch, ties breaking away from the epoch; see `TimeDelta::round` for which granularities are supported |
 | `truncate(TimeDelta)` | `-> Self?` | Truncate toward the Unix epoch to the nearest multiple of a granularity; a datetime before the epoch is truncated *forward* in time (see Quick start above), never further into the past |
-| `round_subsecs(Int)` / `truncate_subsecs(Int)` | `-> Self?` / `-> Self` | Round or truncate to a number of fractional-second digits (`0..=9`; other values abort), with the tie-breaking and epoch direction of `round`/`truncate`; a leap second folds into the following second |
+| `round_subsecs(Int)` / `truncate_subsecs(Int)` | `-> Self?` / `-> Self` | Round or truncate to a number of fractional-second digits (`0..=9`; other values abort), with the tie-breaking and epoch direction of `round`/`truncate`. A datetime with no digits beyond that count is returned unchanged, leap second included; otherwise a leap second folds into the following second |
 | `round_up(TimeDelta)` | `-> Self?` | Round up (toward positive infinity) to the next multiple of a granularity since the Unix epoch, unchanged if already a multiple; a datetime before the epoch moves toward the epoch; `None` for a rejected granularity or if the result would leave `NaiveDate`'s range |
 
 `NaiveDateTime` also implements `Eq`, `Compare` (`<`/`<=`/`>`/`>=` via `compare`) and `Show`, rendering the date and time joined by a space (`2024-01-02 13:45:06.500`).

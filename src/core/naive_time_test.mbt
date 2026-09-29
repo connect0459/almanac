@@ -529,8 +529,8 @@ test "round_subsecs wraps past the end of the day to midnight" {
 }
 
 ///|
-test "truncate_subsecs treats a leap second as its elapsed instant, folding it into the next second" {
-  let leap = @core.NaiveTime::from_hms_nano(23, 59, 59, 1_500_000_000).unwrap()
+test "truncate_subsecs folds a leap second into the next second when digits are dropped" {
+  let leap = @core.NaiveTime::from_hms_nano(23, 59, 59, 1_550_000_000).unwrap()
   assert_eq(leap.truncate_subsecs(0), @core.NaiveTime::midnight())
   assert_eq(
     leap.truncate_subsecs(1),
@@ -539,7 +539,7 @@ test "truncate_subsecs treats a leap second as its elapsed instant, folding it i
 }
 
 ///|
-test "round_subsecs treats a leap second as its elapsed instant, folding it into the next second" {
+test "round_subsecs folds a leap second into the next second when digits are dropped" {
   let early = @core.NaiveTime::from_hms_nano(23, 59, 59, 1_400_000_000).unwrap()
   assert_eq(early.round_subsecs(0), @core.NaiveTime::midnight())
   let late = @core.NaiveTime::from_hms_nano(23, 59, 59, 1_500_000_000).unwrap()
@@ -547,11 +547,15 @@ test "round_subsecs treats a leap second as its elapsed instant, folding it into
 }
 
 ///|
-test "a leap second is folded even when the digit count leaves the fraction unchanged" {
+test "truncate_subsecs and round_subsecs leave a leap second that has no digits to drop unchanged" {
   let leap = @core.NaiveTime::from_hms_nano(12, 34, 59, 1_500_000_000).unwrap()
-  let folded = @core.NaiveTime::from_hms_nano(12, 35, 0, 500_000_000).unwrap()
-  assert_eq(leap.truncate_subsecs(9), folded)
-  assert_eq(leap.round_subsecs(9), folded)
+  assert_eq(leap.truncate_subsecs(1), leap)
+  assert_eq(leap.round_subsecs(1), leap)
+  assert_eq(leap.truncate_subsecs(9), leap)
+  assert_eq(leap.round_subsecs(9), leap)
+  let start = @core.NaiveTime::from_hms_nano(12, 34, 59, 1_000_000_000).unwrap()
+  assert_eq(start.truncate_subsecs(0), start)
+  assert_eq(start.round_subsecs(0), start)
 }
 
 ///|

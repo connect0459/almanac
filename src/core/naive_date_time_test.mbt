@@ -1049,3 +1049,15 @@ test "round_subsecs and truncate_subsecs treat a leap second as the elapsed inst
   assert_eq(leap.truncate_subsecs(0), next_midnight)
   assert_eq(leap.round_subsecs(0), Some(next_midnight.add_seconds(1)))
 }
+
+///|
+test "round_subsecs and truncate_subsecs leave a leap second that has no digits to drop unchanged" {
+  let leap = @core.NaiveDate::from_ymd(2024, 6, 15)
+    .unwrap()
+    .and_hms_nano(23, 59, 59, 1_500_000_000)
+    .unwrap()
+  assert_eq(leap.truncate_subsecs(1), leap)
+  assert_eq(leap.round_subsecs(1), Some(leap))
+  assert_eq(leap.truncate_subsecs(9), leap)
+  assert_eq(leap.round_subsecs(9), Some(leap))
+}
