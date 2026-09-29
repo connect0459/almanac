@@ -143,6 +143,144 @@ fn parse_offset_no_colon(chars : Array[Char], pos : Int) -> (Int, Int)? {
 }
 
 ///|
+/// Parses `%:z`'s `±HH:MM`, colon mandatory (exactly this project's own
+/// rendered shape — unlike chrono's shared offset parser, which tolerates
+/// a missing or space colon across every `%z` variant).
+fn parse_offset_colon(chars : Array[Char], pos : Int) -> (Int, Int)? {
+  if pos >= chars.length() {
+    None
+  } else if chars[pos] != '+' && chars[pos] != '-' {
+    None
+  } else {
+    let sign = if chars[pos] == '-' { -1 } else { 1 }
+    match parse_fixed_digits(chars, pos + 1, 2) {
+      None => None
+      Some((hour, p1)) =>
+        match expect_char(chars, p1, ':') {
+          None => None
+          Some(p2) =>
+            match parse_fixed_digits(chars, p2, 2) {
+              None => None
+              Some((minute, p3)) =>
+                if minute > 59 {
+                  None
+                } else {
+                  Some((sign * (hour * 3600 + minute * 60), p3))
+                }
+            }
+        }
+    }
+  }
+}
+
+///|
+/// Parses `%::z`'s `±HH:MM:SS`, seconds mandatory.
+fn parse_offset_double_colon(chars : Array[Char], pos : Int) -> (Int, Int)? {
+  if pos >= chars.length() {
+    None
+  } else if chars[pos] != '+' && chars[pos] != '-' {
+    None
+  } else {
+    let sign = if chars[pos] == '-' { -1 } else { 1 }
+    match parse_fixed_digits(chars, pos + 1, 2) {
+      None => None
+      Some((hour, p1)) =>
+        match expect_char(chars, p1, ':') {
+          None => None
+          Some(p2) =>
+            match parse_fixed_digits(chars, p2, 2) {
+              None => None
+              Some((minute, p3)) =>
+                if minute > 59 {
+                  None
+                } else {
+                  match expect_char(chars, p3, ':') {
+                    None => None
+                    Some(p4) =>
+                      match parse_fixed_digits(chars, p4, 2) {
+                        None => None
+                        Some((second, p5)) =>
+                          if second > 59 {
+                            None
+                          } else {
+                            Some(
+                              (sign * (hour * 3600 + minute * 60 + second), p5),
+                            )
+                          }
+                      }
+                  }
+                }
+            }
+        }
+    }
+  }
+}
+
+///|
+/// Parses `%:::z`'s `±HH`, hours only — no minutes or seconds field at
+/// all (matching its own rendered shape).
+fn parse_offset_triple_colon(chars : Array[Char], pos : Int) -> (Int, Int)? {
+  if pos >= chars.length() {
+    None
+  } else if chars[pos] != '+' && chars[pos] != '-' {
+    None
+  } else {
+    let sign = if chars[pos] == '-' { -1 } else { 1 }
+    match parse_fixed_digits(chars, pos + 1, 2) {
+      None => None
+      Some((hour, p1)) => Some((sign * hour * 3600, p1))
+    }
+  }
+}
+
+///|
+/// Skips a run of zero or more `:`/space/tab characters (`%#z`'s
+/// permissive hour/minute separator — mirrors chrono's `colon_or_space`).
+fn skip_offset_separator(chars : Array[Char], pos : Int) -> Int {
+  for i = pos {
+    if i < chars.length() &&
+      (chars[i] == ':' || chars[i] == ' ' || chars[i] == '\t') {
+      continue i + 1
+    } else {
+      break i
+    }
+  }
+}
+
+///|
+/// Parses `%#z`'s permissive offset: `Z`/`z` for zero, else a sign (`+`,
+/// `-`, or U+2212 MINUS SIGN, matching chrono) plus 2-digit hours, then
+/// optionally (after any run of `:`/space/tab) 2-digit minutes — absent
+/// minutes default to `0`. No seconds field, matching chrono's own `%#z`
+/// (its shared parsing engine doesn't read one either).
+fn parse_offset_permissive(chars : Array[Char], pos : Int) -> (Int, Int)? {
+  if pos < chars.length() && (chars[pos] == 'Z' || chars[pos] == 'z') {
+    Some((0, pos + 1))
+  } else if pos >= chars.length() {
+    None
+  } else if chars[pos] != '+' && chars[pos] != '-' && chars[pos] != '\u{2212}' {
+    None
+  } else {
+    let sign = if chars[pos] == '+' { 1 } else { -1 }
+    match parse_fixed_digits(chars, pos + 1, 2) {
+      None => None
+      Some((hour, p1)) => {
+        let p2 = skip_offset_separator(chars, p1)
+        match parse_fixed_digits(chars, p2, 2) {
+          Some((minute, p3)) =>
+            if minute > 59 {
+              None
+            } else {
+              Some((sign * (hour * 3600 + minute * 60), p3))
+            }
+          None => Some((sign * hour * 3600, p2))
+        }
+      }
+    }
+  }
+}
+
+///|
 fn weekday_names() -> Array[(@core.Weekday, String, String)] {
   [
     (@core.Mon, "Monday", "Mon"),
@@ -454,6 +592,42 @@ fn apply_item(
     Fixed(TimezoneName) => raise InputMismatch
     Fixed(TimezoneOffset) =>
       match parse_offset_no_colon(chars, pos) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          (
+            { ..parsed, offset_secs: merge_field(parsed.offset_secs, value), },
+            p,
+          )
+      }
+    Fixed(TimezoneOffsetColonMinutes) =>
+      match parse_offset_colon(chars, pos) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          (
+            { ..parsed, offset_secs: merge_field(parsed.offset_secs, value), },
+            p,
+          )
+      }
+    Fixed(TimezoneOffsetColonSeconds) =>
+      match parse_offset_double_colon(chars, pos) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          (
+            { ..parsed, offset_secs: merge_field(parsed.offset_secs, value), },
+            p,
+          )
+      }
+    Fixed(TimezoneOffsetColonHours) =>
+      match parse_offset_triple_colon(chars, pos) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          (
+            { ..parsed, offset_secs: merge_field(parsed.offset_secs, value), },
+            p,
+          )
+      }
+    Fixed(TimezoneOffsetPermissive) =>
+      match parse_offset_permissive(chars, pos) {
         None => raise InputMismatch
         Some((value, p)) =>
           (

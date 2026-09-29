@@ -54,6 +54,10 @@ pub(all) enum Fixed {
   ShortMonthName
   AmPmLower
   AmPmUpper
+  TimezoneOffsetColonMinutes
+  TimezoneOffsetColonSeconds
+  TimezoneOffsetColonHours
+  TimezoneOffsetPermissive
 } derive(Eq, @debug.Debug)
 pub fn Fixed::equal(Self, Self) -> Bool
 pub fn Fixed::not_equal(Self, Self) -> Bool

@@ -183,6 +183,46 @@ test "tokenize raises UnknownSpecifier for a bare %3, %6, or %9 not followed by 
 }
 
 ///|
+test "tokenize recognizes %:z, %::z, %:::z, and %#z as timezone-offset variants" {
+  for
+    case in [
+      ("%:z", @format.TimezoneOffsetColonMinutes),
+      ("%::z", @format.TimezoneOffsetColonSeconds),
+      ("%:::z", @format.TimezoneOffsetColonHours),
+      ("%#z", @format.TimezoneOffsetPermissive),
+    ] {
+    let (spec, expected) = case
+    assert_eq(@format.tokenize(spec), [@format.Fixed(expected)])
+  }
+}
+
+///|
+test "tokenize raises UnknownSpecifier for a colon count outside 1..=3 before z" {
+  try @format.tokenize("%::::z") |> ignore catch {
+    @format.UnknownSpecifier(':') => ()
+    _ => fail("expected UnknownSpecifier(':')")
+  } noraise {
+    _ => fail("expected tokenize to reject %::::z")
+  }
+}
+
+///|
+test "tokenize raises UnknownSpecifier when a colon run or # isn't followed by z" {
+  try @format.tokenize("%:x") |> ignore catch {
+    @format.UnknownSpecifier(':') => ()
+    _ => fail("expected UnknownSpecifier(':')")
+  } noraise {
+    _ => fail("expected tokenize to reject %:x")
+  }
+  try @format.tokenize("%#x") |> ignore catch {
+    @format.UnknownSpecifier('#') => ()
+    _ => fail("expected UnknownSpecifier('#')")
+  } noraise {
+    _ => fail("expected tokenize to reject %#x")
+  }
+}
+
+///|
 test "tokenize interprets %% as a literal percent sign" {
   assert_eq(@format.tokenize("100%%"), [@format.Literal("100%")])
 }

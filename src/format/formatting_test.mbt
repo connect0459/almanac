@@ -332,6 +332,51 @@ test "format_date_time_tz renders %z as the zone's numeric offset, with no colon
 }
 
 ///|
+test "format_date_time_tz renders %:z as ±HH:MM, %::z as ±HH:MM:SS, and %:::z as ±HH only" {
+  let naive = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+    @core.NaiveTime::from_hms(9, 30, 0).unwrap(),
+  )
+  let east = @tz.DateTime::from_utc(
+    naive,
+    @tz.FixedOffset::east(9 * 3600).unwrap(),
+  )
+  assert_eq(@format.format_date_time_tz(east, "%:z"), "+09:00")
+  assert_eq(@format.format_date_time_tz(east, "%::z"), "+09:00:00")
+  assert_eq(@format.format_date_time_tz(east, "%:::z"), "+09")
+  let west = @tz.DateTime::from_utc(
+    naive,
+    @tz.FixedOffset::west(5 * 3600).unwrap(),
+  )
+  assert_eq(@format.format_date_time_tz(west, "%:z"), "-05:00")
+  assert_eq(@format.format_date_time_tz(west, "%::z"), "-05:00:00")
+  assert_eq(@format.format_date_time_tz(west, "%:::z"), "-05")
+  // A non-whole-minute historical offset: only %::z can represent it exactly.
+  let sub_minute = @tz.DateTime::from_utc(
+    naive,
+    @tz.FixedOffset::east(9 * 3600 + 30 * 60 + 15).unwrap(),
+  )
+  assert_eq(@format.format_date_time_tz(sub_minute, "%::z"), "+09:30:15")
+}
+
+///|
+test "format_date_time_tz raises MissingField for %#z, which is parse-only" {
+  let dt = @tz.DateTime::from_utc(
+    @core.NaiveDateTime::new(
+      @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+      @core.NaiveTime::from_hms(9, 30, 0).unwrap(),
+    ),
+    @tz.FixedOffset::east(9 * 3600).unwrap(),
+  )
+  try @format.format_date_time_tz(dt, "%#z") |> ignore catch {
+    @format.MissingField(@format.Fixed(@format.TimezoneOffsetPermissive)) => ()
+    _ => fail("expected MissingField(Fixed(TimezoneOffsetPermissive))")
+  } noraise {
+    _ => fail("expected format_date_time_tz to reject %#z")
+  }
+}
+
+///|
 test "format_date_time_tz renders %Z as \"UTC\" for the Utc zone and as the offset string for a bare FixedOffset" {
   let naive = @core.NaiveDateTime::new(
     @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
@@ -430,6 +475,9 @@ test "format_date_time raises MissingField for a timezone specifier, since it ca
     case in [
       ("%Z", @format.Fixed(@format.TimezoneName)),
       ("%z", @format.Fixed(@format.TimezoneOffset)),
+      ("%:z", @format.Fixed(@format.TimezoneOffsetColonMinutes)),
+      ("%::z", @format.Fixed(@format.TimezoneOffsetColonSeconds)),
+      ("%:::z", @format.Fixed(@format.TimezoneOffsetColonHours)),
     ] {
     let (fmt, expected_item) = case
     try @format.format_date_time(dt, fmt) |> ignore catch {

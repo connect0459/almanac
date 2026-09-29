@@ -93,6 +93,33 @@ fn format_offset_no_colon(secs : Int) -> String {
 }
 
 ///|
+/// Renders `%::z`'s `±HH:MM:SS`, always including seconds (unlike
+/// `FixedOffset::tz_name`, in `tz`, which only extends past minutes when
+/// they're nonzero).
+fn format_offset_colon_seconds(secs : Int) -> String {
+  let sign = if secs < 0 { "-" } else { "+" }
+  let magnitude = if secs < 0 { -secs } else { secs }
+  let hours = magnitude / 3600
+  let minutes = magnitude % 3600 / 60
+  let seconds = magnitude % 60
+  sign +
+  pad_int(hours, 2) +
+  ":" +
+  pad_int(minutes, 2) +
+  ":" +
+  pad_int(seconds, 2)
+}
+
+///|
+/// Renders `%:::z`'s `±HH`: minutes and seconds are dropped entirely, not
+/// just omitted when zero.
+fn format_offset_hours_only(secs : Int) -> String {
+  let sign = if secs < 0 { "-" } else { "+" }
+  let magnitude = if secs < 0 { -secs } else { secs }
+  sign + pad_int(magnitude / 3600, 2)
+}
+
+///|
 fn render(
   items : Array[Item],
   date : @core.NaiveDate?,
@@ -196,6 +223,26 @@ fn render(
           Some((offset, _)) => out.write_string(format_offset_no_colon(offset))
           None => raise MissingField(item)
         }
+      Fixed(TimezoneOffsetColonMinutes) =>
+        match tz_info {
+          Some((offset, _)) => out.write_string(format_offset_colon(offset))
+          None => raise MissingField(item)
+        }
+      Fixed(TimezoneOffsetColonSeconds) =>
+        match tz_info {
+          Some((offset, _)) =>
+            out.write_string(format_offset_colon_seconds(offset))
+          None => raise MissingField(item)
+        }
+      Fixed(TimezoneOffsetColonHours) =>
+        match tz_info {
+          Some((offset, _)) =>
+            out.write_string(format_offset_hours_only(offset))
+          None => raise MissingField(item)
+        }
+      Fixed(TimezoneOffsetPermissive) =>
+        // Parse-only, like chrono's %#z (which panics if used to format).
+        raise MissingField(item)
       Fixed(LongMonthName) =>
         match date {
           Some(d) => out.write_string(d.month().name())

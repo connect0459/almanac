@@ -81,6 +81,22 @@ pub(all) enum Fixed {
   AmPmLower
   /// `%p`: `"AM"`/`"PM"`, uppercase.
   AmPmUpper
+  /// `%:z`: `±HH:MM`, always with minutes, never seconds.
+  TimezoneOffsetColonMinutes
+  /// `%::z`: `±HH:MM:SS`, always with seconds (unlike `TimezoneOffset`'s
+  /// `tz`-package sibling `FixedOffset::tz_name`, which only extends to
+  /// seconds when they're nonzero).
+  TimezoneOffsetColonSeconds
+  /// `%:::z`: `±HH`, hours only — minutes and seconds are dropped, not
+  /// just omitted when zero.
+  TimezoneOffsetColonHours
+  /// `%#z`: parse-only (mirrors chrono, which panics if used to format).
+  /// Accepts whichever shape is present: `±HHMM`, `±HH:MM`, hours-only
+  /// `±HH`, or `Z`/`z` for a zero offset, with any run of `:`/space/tab
+  /// allowed (or omitted) between the hour and minute digits. No
+  /// seconds component — matches chrono's own `%#z`, whose shared
+  /// parsing engine doesn't read one either.
+  TimezoneOffsetPermissive
 } derive(Eq, @debug.Debug)
 
 ///|

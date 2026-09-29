@@ -77,6 +77,35 @@ pub fn tokenize(fmt : String) -> Array[Item] raise ParseError {
         flush_literal()
         items.push(Fixed(TimezoneOffset))
       }
+      ':' => {
+        let colon_end = for j = i + 1 {
+          if j < n && chars[j] == ':' {
+            continue j + 1
+          } else {
+            break j
+          }
+        }
+        if colon_end < n && chars[colon_end] == 'z' {
+          flush_literal()
+          match colon_end - (i + 1) {
+            1 => items.push(Fixed(TimezoneOffsetColonMinutes))
+            2 => items.push(Fixed(TimezoneOffsetColonSeconds))
+            3 => items.push(Fixed(TimezoneOffsetColonHours))
+            _ => raise UnknownSpecifier(':')
+          }
+          continue colon_end + 1
+        } else {
+          raise UnknownSpecifier(':')
+        }
+      }
+      '#' =>
+        if i + 2 < n && chars[i + 2] == 'z' {
+          flush_literal()
+          items.push(Fixed(TimezoneOffsetPermissive))
+          continue i + 3
+        } else {
+          raise UnknownSpecifier('#')
+        }
       'B' => {
         flush_literal()
         items.push(Fixed(LongMonthName))

@@ -302,6 +302,193 @@ test "parse_date_time_tz rejects a format with no offset field" {
 }
 
 ///|
+test "parse_date_time_tz round-trips %:z, %::z, and %:::z, including a non-whole-minute offset for %::z" {
+  let naive = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+    @core.NaiveTime::from_hms(9, 30, 0).unwrap(),
+  )
+  let east = @tz.DateTime::from_utc(
+    naive,
+    @tz.FixedOffset::east(9 * 3600).unwrap(),
+  )
+  for fmt in ["%F %T%:z", "%F %T%::z", "%F %T%:::z"] {
+    assert_eq(
+      @format.parse_date_time_tz(@format.format_date_time_tz(east, fmt), fmt),
+      east,
+    )
+  }
+  let sub_minute = @tz.DateTime::from_utc(
+    naive,
+    @tz.FixedOffset::east(9 * 3600 + 30 * 60 + 15).unwrap(),
+  )
+  let fmt = "%F %T%::z"
+  assert_eq(
+    @format.parse_date_time_tz(
+      @format.format_date_time_tz(sub_minute, fmt),
+      fmt,
+    ),
+    sub_minute,
+  )
+}
+
+///|
+test "parsing %:z, %::z, and %:::z rejects input that doesn't exactly match their own rendered shape (no lenient colon/space tolerance)" {
+  for
+    case in [
+      ("%:z", "2024-03-05 09:30:00+0900"), // no colon
+      ("%::z", "2024-03-05 09:30:00+09:00"), // missing seconds
+      ("%:::z", "2024-03-05 09:30:00+09:00"), // has a colon/minutes, %:::z wants hours only
+    ] {
+    let (fmt, bad) = case
+    try @format.parse_date_time_tz(bad, "%F %T" + fmt) |> ignore catch {
+      @format.InputMismatch => ()
+      _ => fail("expected InputMismatch for \{fmt}")
+    } noraise {
+      _ => fail("expected rejection for \{fmt}")
+    }
+  }
+}
+
+///|
+test "parse_date_time_tz round-trips %#z across every shape it accepts: no colon, colon, hours only, and Z" {
+  // The input's date/time is the local (wall-clock) reading; the UTC
+  // instant is that reading minus the offset.
+  let date = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
+  assert_eq(
+    @format.parse_date_time_tz("2024-03-05 09:30:00+0900", "%F %T%#z"),
+    @tz.DateTime::from_utc(
+      @core.NaiveDateTime::new(
+        date,
+        @core.NaiveTime::from_hms(0, 30, 0).unwrap(),
+      ),
+      @tz.FixedOffset::east(9 * 3600).unwrap(),
+    ),
+  )
+  assert_eq(
+    @format.parse_date_time_tz("2024-03-05 09:30:00+09:00", "%F %T%#z"),
+    @tz.DateTime::from_utc(
+      @core.NaiveDateTime::new(
+        date,
+        @core.NaiveTime::from_hms(0, 30, 0).unwrap(),
+      ),
+      @tz.FixedOffset::east(9 * 3600).unwrap(),
+    ),
+  )
+  assert_eq(
+    @format.parse_date_time_tz("2024-03-05 09:30:00+09", "%F %T%#z"),
+    @tz.DateTime::from_utc(
+      @core.NaiveDateTime::new(
+        date,
+        @core.NaiveTime::from_hms(0, 30, 0).unwrap(),
+      ),
+      @tz.FixedOffset::east(9 * 3600).unwrap(),
+    ),
+  )
+  assert_eq(
+    @format.parse_date_time_tz("2024-03-05 09:30:00Z", "%F %T%#z"),
+    @tz.DateTime::from_utc(
+      @core.NaiveDateTime::new(
+        date,
+        @core.NaiveTime::from_hms(9, 30, 0).unwrap(),
+      ),
+      @tz.FixedOffset::east(0).unwrap(),
+    ),
+  )
+  assert_eq(
+    @format.parse_date_time_tz("2024-03-05 09:30:00-05:30", "%F %T%#z"),
+    @tz.DateTime::from_utc(
+      @core.NaiveDateTime::new(
+        date,
+        @core.NaiveTime::from_hms(15, 0, 0).unwrap(),
+      ),
+      @tz.FixedOffset::west(5 * 3600 + 30 * 60).unwrap(),
+    ),
+  )
+}
+
+///|
+test "parsing %#z rejects malformed input" {
+  for
+    bad in [
+      "2024-03-05 09:30:00", // absent entirely
+       "2024-03-05 09:30:00+9", // only 1 digit hour
+       "2024-03-05 09:30:00+09:99", // out-of-range minute
+    ] {
+    try @format.parse_date_time_tz(bad, "%F %T%#z") |> ignore catch {
+      @format.InputMismatch => ()
+      _ => fail("expected InputMismatch for \{bad}")
+    } noraise {
+      _ => fail("expected rejection for \{bad}")
+    }
+  }
+}
+
+///|
+test "parsing %:z, %::z, %:::z, and %#z rejects malformed input at every failure point" {
+  for
+    case in [
+      // %:z (parse_offset_colon)
+      ("%:z", ""),
+      ("%:z", "X"),
+      ("%:z", "+XX:00"),
+      ("%:z", "+09:XX"),
+      ("%:z", "+09:99"),
+      // %::z (parse_offset_double_colon)
+      ("%::z", ""),
+      ("%::z", "X"),
+      ("%::z", "+XX:00:00"),
+      ("%::z", "+0900:00"),
+      ("%::z", "+09:XX:00"),
+      ("%::z", "+09:99:00"),
+      ("%::z", "+09:00:XX"),
+      ("%::z", "+09:00:99"),
+      // %:::z (parse_offset_triple_colon)
+      ("%:::z", ""),
+      ("%:::z", "X"),
+      ("%:::z", "+XX"),
+      // %#z (parse_offset_permissive)
+      ("%#z", "X0900"),
+    ] {
+    let (fmt, bad_offset) = case
+    try
+      @format.parse_date_time_tz(
+        "2024-03-05 09:30:00" + bad_offset,
+        "%F %T" + fmt,
+      )
+      |> ignore
+    catch {
+      @format.InputMismatch => ()
+      _ => fail("expected InputMismatch for \{fmt} / \{bad_offset}")
+    } noraise {
+      _ => fail("expected rejection for \{fmt} / \{bad_offset}")
+    }
+  }
+}
+
+///|
+test "parsing %:z/%::z/%:::z/%#z cross-checks against a redundantly-present %z, accepting agreement and rejecting disagreement" {
+  assert_eq(
+    @format.parse_date_time_tz("2024-03-05 09:30:00+09:00+0900", "%F %T%:z%z"),
+    @tz.DateTime::from_utc(
+      @core.NaiveDateTime::new(
+        @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+        @core.NaiveTime::from_hms(0, 30, 0).unwrap(),
+      ),
+      @tz.FixedOffset::east(9 * 3600).unwrap(),
+    ),
+  )
+  try
+    @format.parse_date_time_tz("2024-03-05 09:30:00+09:00+0800", "%F %T%:z%z")
+    |> ignore
+  catch {
+    @format.InconsistentFields => ()
+    _ => fail("expected InconsistentFields")
+  } noraise {
+    _ => fail("expected parse_date_time_tz to reject a %:z/%z disagreement")
+  }
+}
+
+///|
 test "parsing %Z always raises InputMismatch, since a zone name can't be resolved generically" {
   try @format.parse_date_time("anything", "%Z") |> ignore catch {
     @format.InputMismatch => ()
