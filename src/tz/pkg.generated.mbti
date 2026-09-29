@@ -74,6 +74,7 @@ pub fn Location::load(String) -> Self?
 pub fn Location::name(Self) -> String?
 pub fn Location::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[FixedOffset]
 pub fn Location::offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
+pub fn Location::transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds
 pub fn Location::type_at(Self, @core.NaiveDateTime) -> LocalTimeType
 pub fn Location::tz_name(Self, @core.NaiveDateTime) -> String
 pub impl TimeZone for Location
@@ -94,9 +95,19 @@ pub fn[T : @debug.Debug] MappedLocalTime::to_repr(Self[T]) -> @debug.Repr
 pub struct PosixTz {
   // private fields
 }
+pub fn PosixTz::bounds_at(Self, Int64) -> (Int64, Int64)?
 pub fn PosixTz::offset_at(Self, Int64) -> Int
 pub fn PosixTz::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[FixedOffset]
 pub fn PosixTz::type_at(Self, Int64) -> LocalTimeType
+
+pub struct TransitionBounds {
+  // private fields
+} derive(Eq, @debug.Debug)
+pub fn TransitionBounds::end(Self) -> @core.NaiveDateTime?
+pub fn TransitionBounds::equal(Self, Self) -> Bool
+pub fn TransitionBounds::not_equal(Self, Self) -> Bool
+pub fn TransitionBounds::start(Self) -> @core.NaiveDateTime?
+pub fn TransitionBounds::to_repr(Self) -> @debug.Repr
 
 pub struct TzifData {
   // private fields

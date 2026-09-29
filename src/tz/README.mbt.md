@@ -12,6 +12,7 @@ Time zone support layered on top of `core`'s `NaiveDateTime`. Import `connect045
 | `FixedOffset` | A constant UTC offset, `±23:59:59` |
 | `DateTime[Tz]` | A `NaiveDateTime` paired with a time zone `Tz` |
 | `Location` | A time zone backed by parsed IANA tzdata, resolving historical transitions and DST |
+| `TransitionBounds` | The validity window (start/end) of a `Location`'s segment covering a given instant |
 
 ## Quick start
 
@@ -198,8 +199,22 @@ A time zone backed by parsed IANA tzdata (TZif binary format, plus a POSIX TZ st
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | The offset in effect at a given UTC instant |
 | `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | The offset(s) for a given local instant, resolving DST folds and gaps |
 | `tz_name(NaiveDateTime)` | `-> String` | The abbreviation in effect at a given instant, e.g. `"EDT"` |
+| `transition_bounds(NaiveDateTime)` | `-> TransitionBounds` | The validity window of the segment covering a given instant; see `TransitionBounds` |
 
 `Location` also implements `TimeZone`.
+
+### `TransitionBounds`
+
+The validity window of a `Location`'s segment covering a given instant, as returned by `Location::transition_bounds`: the local time type `type_at` reports is in effect from `start()` (inclusive) until `end()` (exclusive). Mirrors Go's `Time.ZoneBounds`, using `Option` instead of a zero-value sentinel for "unbounded."
+
+| Method | Signature | Description |
+| :--- | :--- | :--- |
+| `start()` | `-> NaiveDateTime?` | The instant this segment began; `None` if unbounded (before the zone's first recorded transition, or for a zone with no transitions at all) |
+| `end()` | `-> NaiveDateTime?` | The instant the next segment begins; `None` if unbounded (past the zone's last recorded transition, when no POSIX rule extrapolates further) |
+
+Past the last recorded transition, the POSIX rule's own bounds are computed exactly (not approximated near a year boundary, unlike Go's own `tzset`, which documents itself as doing so).
+
+`TransitionBounds` also implements `Eq`.
 
 ### `LocalTimeType`
 

@@ -352,6 +352,65 @@ fn PosixTz::is_dst_at(self : PosixTz, utc_instant : Int64) -> Bool {
 }
 
 ///|
+/// The exact validity window `(start, end)` of the DST/standard-time
+/// interval containing `utc_instant`, or `None` if this rule has no DST
+/// component at all (`self.rule` is `None`: every instant then belongs to
+/// the same unbounded interval, which this type alone cannot bound — the
+/// caller knows where that interval actually began, e.g. a TZif file's
+/// last recorded transition).
+///
+/// Recomputed exactly by bracketing `utc_instant` against the DST
+/// start/end instants of the surrounding three calendar years (ample
+/// margin regardless of hemisphere: a wraparound rule's two same-year
+/// instants are not chronologically adjacent), rather than approximated
+/// near a year boundary the way Go's own `tzset` documents itself as
+/// doing.
+pub fn PosixTz::bounds_at(
+  self : PosixTz,
+  utc_instant : Int64,
+) -> (Int64, Int64)? {
+  match self.rule {
+    None => None
+    Some(rule) => {
+      let dst_offset = self.dst_offset.unwrap()
+      let year = @core.NaiveDateTime::from_timestamp(utc_instant, 0)
+        .unwrap()
+        .date()
+        .year()
+      let (a0, b0) = compute_transitions(
+        rule,
+        self.std_offset,
+        dst_offset,
+        year - 1,
+      )
+      let (a1, b1) = compute_transitions(
+        rule,
+        self.std_offset,
+        dst_offset,
+        year,
+      )
+      let (a2, b2) = compute_transitions(
+        rule,
+        self.std_offset,
+        dst_offset,
+        year + 1,
+      )
+      let mut start = b0
+      let mut end = a2
+      for candidate in [a0, b0, a1, b1, a2, b2] {
+        if candidate <= utc_instant && candidate > start {
+          start = candidate
+        }
+        if candidate > utc_instant && candidate < end {
+          end = candidate
+        }
+      }
+      Some((start, end))
+    }
+  }
+}
+
+///|
 /// The local time type (offset, DST flag, and abbreviation) in effect at
 /// the given UTC instant.
 ///

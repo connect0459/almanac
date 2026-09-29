@@ -141,6 +141,46 @@ test "offset_at resolves a wraparound DST rule (Australia/Sydney) that spans the
 }
 
 ///|
+test "bounds_at reports None when the rule has no DST component" {
+  let tz = @tz.parse_posix_tz("JST-9").unwrap()
+  assert_eq(tz.bounds_at(0L), None)
+}
+
+///|
+test "bounds_at computes the exact DST interval bounds for a non-wraparound rule (America/New_York)" {
+  let tz = @tz.parse_posix_tz("EST5EDT,M3.2.0,M11.1.0").unwrap()
+  let dst_start = 2_152_162_800L
+  let dst_end = 2_172_722_400L
+  assert_eq(tz.bounds_at(dst_start), Some((dst_start, dst_end)))
+}
+
+///|
+test "bounds_at computes the exact standard-time interval bounds spanning a year boundary (America/New_York)" {
+  let tz = @tz.parse_posix_tz("EST5EDT,M3.2.0,M11.1.0").unwrap()
+  let dst_end_2038 = 2_172_722_400L
+  let dst_start_2039 = 2_183_612_400L
+  assert_eq(tz.bounds_at(dst_end_2038), Some((dst_end_2038, dst_start_2039)))
+}
+
+///|
+test "bounds_at computes the exact DST interval bounds for a wraparound rule spanning a year boundary (Australia/Sydney)" {
+  let tz = @tz.parse_posix_tz("AEST-10AEDT,M10.1.0,M4.1.0/3").unwrap()
+  let southern_summer = 2_208_988_800L
+  let dst_start_2039 = 2_201_097_600L
+  let dst_end_2040 = 2_216_822_400L
+  assert_eq(tz.bounds_at(southern_summer), Some((dst_start_2039, dst_end_2040)))
+}
+
+///|
+test "bounds_at computes the exact standard-time interval bounds for a wraparound rule (Australia/Sydney)" {
+  let tz = @tz.parse_posix_tz("AEST-10AEDT,M10.1.0,M4.1.0/3").unwrap()
+  let southern_winter = 2_224_713_600L
+  let dst_end_2040 = 2_216_822_400L
+  let dst_start_2040 = 2_233_152_000L
+  assert_eq(tz.bounds_at(southern_winter), Some((dst_end_2040, dst_start_2040)))
+}
+
+///|
 test "offset_from_local reports Absent within the spring-forward gap and Single either side of it" {
   let tz = @tz.parse_posix_tz("EST5EDT,M3.2.0,M11.1.0").unwrap()
   let dst_start = 2_152_162_800L

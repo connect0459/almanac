@@ -16,6 +16,95 @@ test "name is None for a Location built directly from raw TZif bytes" {
 }
 
 ///|
+test "transition_bounds reports the exact recorded transition window within the table (America/New_York, 2024)" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let dst_start_2024 = 1_710_054_000L
+  let dst_end_2024 = 1_730_613_600L
+  let bounds = ny.transition_bounds(
+    @core.NaiveDateTime::from_timestamp(dst_start_2024, 0).unwrap(),
+  )
+  assert_eq(
+    bounds.start(),
+    Some(@core.NaiveDateTime::from_timestamp(dst_start_2024, 0).unwrap()),
+  )
+  assert_eq(
+    bounds.end(),
+    Some(@core.NaiveDateTime::from_timestamp(dst_end_2024, 0).unwrap()),
+  )
+}
+
+///|
+test "transition_bounds reports an unbounded start before the zone's first recorded transition (America/New_York)" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let just_before = @core.NaiveDateTime::from_timestamp(-2_717_650_801L, 0).unwrap()
+  let bounds = ny.transition_bounds(just_before)
+  assert_eq(bounds.start(), None)
+  assert_eq(
+    bounds.end(),
+    Some(@core.NaiveDateTime::from_timestamp(-2_717_650_800L, 0).unwrap()),
+  )
+}
+
+///|
+test "transition_bounds computes the exact (not approximated) POSIX-extrapolated window past the last recorded transition (America/New_York, 2040)" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let summer_2040 = @core.NaiveDateTime::from_timestamp(2_224_713_600L, 0).unwrap()
+  let bounds = ny.transition_bounds(summer_2040)
+  assert_eq(
+    bounds.start(),
+    Some(@core.NaiveDateTime::from_timestamp(2_215_062_000L, 0).unwrap()),
+  )
+  assert_eq(
+    bounds.end(),
+    Some(@core.NaiveDateTime::from_timestamp(2_235_621_600L, 0).unwrap()),
+  )
+}
+
+///|
+test "transition_bounds reports an unbounded end past the last recorded transition when the POSIX footer has no DST rule (Asia/Tokyo)" {
+  let tokyo = @tz.Location::load("Asia/Tokyo").unwrap()
+  let far_future = @core.NaiveDateTime::from_timestamp(2_000_000_000L, 0).unwrap()
+  let bounds = tokyo.transition_bounds(far_future)
+  assert_eq(
+    bounds.start(),
+    Some(@core.NaiveDateTime::from_timestamp(-577_962_000L, 0).unwrap()),
+  )
+  assert_eq(bounds.end(), None)
+}
+
+///|
+test "transition_bounds reports an unbounded end at the last recorded transition itself, within the table" {
+  let loc = @tz.Location::from_tzif_bytes(tzif_v1_only_with_transitions).unwrap()
+  let at_last_transition = @core.NaiveDateTime::from_timestamp(
+    1_000_000_000L, 0,
+  ).unwrap()
+  let bounds = loc.transition_bounds(at_last_transition)
+  assert_eq(bounds.start(), Some(at_last_transition))
+  assert_eq(bounds.end(), None)
+}
+
+///|
+test "transition_bounds reports both sides unbounded for a zone with no transitions (UTC)" {
+  let utc = @tz.Location::from_tzif_bytes(tzif_utc).unwrap()
+  let dt = @core.NaiveDateTime::from_timestamp(1_700_000_000L, 0).unwrap()
+  let bounds = utc.transition_bounds(dt)
+  assert_eq(bounds.start(), None)
+  assert_eq(bounds.end(), None)
+}
+
+///|
+test "transition_bounds reports an unbounded end past the last recorded transition when there is no POSIX footer" {
+  let loc = @tz.Location::from_tzif_bytes(tzif_v1_only_with_transitions).unwrap()
+  let far_future = @core.NaiveDateTime::from_timestamp(2_000_000_000L, 0).unwrap()
+  let bounds = loc.transition_bounds(far_future)
+  assert_eq(
+    bounds.start(),
+    Some(@core.NaiveDateTime::from_timestamp(1_000_000_000L, 0).unwrap()),
+  )
+  assert_eq(bounds.end(), None)
+}
+
+///|
 test "type_at reports the abbreviation and DST flag from the table, and from the POSIX rule past the last transition" {
   let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
   let dst_start_2024 = @core.NaiveDateTime::from_timestamp(1_710_054_000L, 0).unwrap()

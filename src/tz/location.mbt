@@ -148,6 +148,95 @@ pub fn Location::type_at(
 }
 
 ///|
+/// The validity window of the time-zone segment covering a given instant:
+/// the local time type `type_at` reports is in effect from `start`
+/// (inclusive) until `end` (exclusive). `None` on either side means
+/// unbounded in that direction. Mirrors Go's `Time.ZoneBounds` (which
+/// instead uses a zero-value `Time` sentinel for "unbounded").
+pub struct TransitionBounds {
+  priv start : @core.NaiveDateTime?
+  priv end : @core.NaiveDateTime?
+} derive(Eq, @debug.Debug)
+
+///|
+pub extend TransitionBounds with Eq::{equal}
+
+///|
+pub extend TransitionBounds with Eq::{not_equal}
+
+///|
+pub extend TransitionBounds with @debug.Debug::{to_repr}
+
+///|
+/// The instant this segment began, or `None` if it extends back
+/// indefinitely (before the zone's first recorded transition, or for a
+/// zone with no transitions at all).
+pub fn TransitionBounds::start(self : TransitionBounds) -> @core.NaiveDateTime? {
+  self.start
+}
+
+///|
+/// The instant the next segment begins, or `None` if this segment
+/// extends forward indefinitely (past the zone's last recorded
+/// transition, when no POSIX rule extrapolates further).
+pub fn TransitionBounds::end(self : TransitionBounds) -> @core.NaiveDateTime? {
+  self.end
+}
+
+///|
+/// The validity window of the segment covering `utc`. See
+/// `TransitionBounds`.
+pub fn Location::transition_bounds(
+  self : Location,
+  utc : @core.NaiveDateTime,
+) -> TransitionBounds {
+  let target = utc.timestamp()
+  let transitions = self.tzif.transitions()
+  fn at(secs : Int64) -> @core.NaiveDateTime {
+    @core.NaiveDateTime::from_timestamp(secs, 0).unwrap()
+  }
+
+  if self.past_last_transition(target) {
+    let unbounded_forward = TransitionBounds::{
+      start: Some(at(transitions[transitions.length() - 1])),
+      end: None,
+    }
+    match self.posix_tz {
+      None => unbounded_forward
+      Some(p) =>
+        match p.bounds_at(target) {
+          None => unbounded_forward
+          Some((start, end)) =>
+            TransitionBounds::{ start: Some(at(start)), end: Some(at(end)), }
+        }
+    }
+  } else {
+    match self.segment_at(target) {
+      None =>
+        TransitionBounds::{
+          start: None,
+          end: if transitions.is_empty() {
+            None
+          } else {
+            Some(at(transitions[0]))
+          },
+        }
+      Some(segment) => {
+        let n = transitions.length()
+        TransitionBounds::{
+          start: Some(at(transitions[segment])),
+          end: if segment + 1 < n {
+            Some(at(transitions[segment + 1]))
+          } else {
+            None
+          },
+        }
+      }
+    }
+  }
+}
+
+///|
 pub impl TimeZone for Location with fn offset_from_utc(self, utc) {
   FixedOffset::east(self.type_at(utc).utc_offset()).unwrap()
 }
