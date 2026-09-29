@@ -225,6 +225,39 @@ pub fn tokenize(fmt : String) -> Array[Item] raise ParseError {
         flush_literal()
         items.push(Rfc3339)
       }
+      '.' =>
+        if i + 2 < n && chars[i + 2] == 'f' {
+          flush_literal()
+          items.push(Numeric(DotFraction))
+          continue i + 3
+        } else {
+          raise UnknownSpecifier('.')
+        }
+      '3' =>
+        if i + 2 < n && chars[i + 2] == 'f' {
+          flush_literal()
+          items.push(Numeric(Nanosecond3))
+          continue i + 3
+        } else {
+          raise UnknownSpecifier('3')
+        }
+      '6' =>
+        if i + 2 < n && chars[i + 2] == 'f' {
+          flush_literal()
+          items.push(Numeric(Nanosecond6))
+          continue i + 3
+        } else {
+          raise UnknownSpecifier('6')
+        }
+      '9' =>
+        if i + 2 < n && chars[i + 2] == 'f' {
+          flush_literal()
+          // %9f is the same fixed 9-digit fraction as bare %f.
+          items.push(Numeric(Nanosecond))
+          continue i + 3
+        } else {
+          raise UnknownSpecifier('9')
+        }
       c => raise UnknownSpecifier(c)
     }
     continue i + 2

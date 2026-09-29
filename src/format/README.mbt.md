@@ -24,6 +24,10 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%M` | Minute | Zero-padded, `00`..`59` |
 | `%S` | Second | Zero-padded, `00`..`60` (`60` on parse maps to a leap second) |
 | `%f` | Nanosecond | Zero-padded to 9 digits |
+| `%.f` | Dot-prefixed fractional second | Trimmed to its minimal significant digits, matching `to_rfc3339`'s fraction rendering; renders nothing when zero. On parse, optional — unlike every other specifier, absent input (no leading dot) leaves the nanosecond field untouched rather than raising |
+| `%3f` | Fractional second, milliseconds | 3 digits, no leading dot, truncated (not rounded); mandatory on parse |
+| `%6f` | Fractional second, microseconds | 6 digits, no leading dot; see `%3f` |
+| `%9f` | Fractional second | 9 digits, no leading dot; identical to `%f` |
 | `%A` | Long weekday name | e.g. `"Monday"` |
 | `%a` | Short weekday name | e.g. `"Mon"` |
 | `%B` | Long month name | e.g. `"March"`; on parse, resolves `%m`'s field directly |
@@ -172,6 +176,9 @@ pub(all) enum Numeric {
   WeekdayNumberMonday1
   WeekSunday
   WeekMonday
+  DotFraction
+  Nanosecond3
+  Nanosecond6
 }
 
 ///|

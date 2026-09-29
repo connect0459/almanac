@@ -419,6 +419,36 @@ fn apply_item(
         Some((value, p)) =>
           ({ ..parsed, nanosecond: merge_field(parsed.nanosecond, value), }, p)
       }
+    Numeric(DotFraction) =>
+      match parse_rfc3339_fraction(chars, pos) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          ({ ..parsed, nanosecond: merge_field(parsed.nanosecond, value), }, p)
+      }
+    Numeric(Nanosecond3) =>
+      match parse_fixed_digits(chars, pos, 3) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          (
+            {
+              ..parsed,
+              nanosecond: merge_field(parsed.nanosecond, value * 1_000_000),
+            },
+            p,
+          )
+      }
+    Numeric(Nanosecond6) =>
+      match parse_fixed_digits(chars, pos, 6) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          (
+            {
+              ..parsed,
+              nanosecond: merge_field(parsed.nanosecond, value * 1_000),
+            },
+            p,
+          )
+      }
     Fixed(LongWeekdayName) => apply_weekday_specifier(chars, pos, parsed)
     Fixed(ShortWeekdayName) => apply_weekday_specifier(chars, pos, parsed)
     Fixed(TimezoneName) => raise InputMismatch

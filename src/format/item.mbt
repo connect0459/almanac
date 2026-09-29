@@ -42,6 +42,18 @@ pub(all) enum Numeric {
   /// `%W`: the week number of the year, Monday-based (`00`..=`53`); days
   /// before the year's first Monday are week `00`.
   WeekMonday
+  /// `%.f`: a dot-prefixed fractional second, trimmed to its minimal
+  /// significant digits (mirrors `to_rfc3339`'s fraction rendering); on
+  /// parse, optional — absent input (no leading dot) simply leaves the
+  /// nanosecond field untouched rather than raising, unlike every other
+  /// specifier.
+  DotFraction
+  /// `%3f`: a fractional second truncated to 3 digits (milliseconds), no
+  /// leading dot. Unlike `DotFraction`, mandatory on parse.
+  Nanosecond3
+  /// `%6f`: a fractional second truncated to 6 digits (microseconds), no
+  /// leading dot. Mandatory on parse, like `Nanosecond3`.
+  Nanosecond6
 } derive(Eq, @debug.Debug)
 
 ///|

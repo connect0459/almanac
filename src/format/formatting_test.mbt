@@ -39,6 +39,9 @@ test "format_date raises MissingField for a time-of-day or timezone specifier" {
       ("%M", @format.Numeric(@format.Minute)),
       ("%S", @format.Numeric(@format.Second)),
       ("%f", @format.Numeric(@format.Nanosecond)),
+      ("%.f", @format.Numeric(@format.DotFraction)),
+      ("%3f", @format.Numeric(@format.Nanosecond3)),
+      ("%6f", @format.Numeric(@format.Nanosecond6)),
       ("%I", @format.Numeric(@format.Hour12)),
       ("%l", @format.Numeric(@format.Hour12Blank)),
       ("%P", @format.Fixed(@format.AmPmLower)),
@@ -175,6 +178,34 @@ test "format_time renders hour, minute, second, and nanosecond via %H %M %S %f" 
 test "format_time renders a leap second as 60 while %f keeps only the sub-second fraction" {
   let leap = @core.NaiveTime::from_hms_nano(23, 59, 59, 1_500_000_000).unwrap()
   assert_eq(@format.format_time(leap, "%H:%M:%S.%f"), "23:59:60.500000000")
+}
+
+///|
+test "format_time renders %.f trimmed to its minimal significant digits, or nothing when zero" {
+  for
+    case in [
+      (0, ""),
+      (500000000, ".5"),
+      (120000000, ".12"),
+      (123456000, ".123456"),
+      (123456789, ".123456789"),
+    ] {
+    let (nanos, expected) = case
+    let time = @core.NaiveTime::from_hms_nano(9, 30, 0, nanos).unwrap()
+    assert_eq(@format.format_time(time, "%.f"), expected)
+  }
+}
+
+///|
+test "format_time renders %3f, %6f, and %9f as always-present, fixed-width truncated fractions" {
+  let time = @core.NaiveTime::from_hms_nano(9, 30, 0, 123456789).unwrap()
+  assert_eq(@format.format_time(time, "%3f"), "123")
+  assert_eq(@format.format_time(time, "%6f"), "123456")
+  assert_eq(@format.format_time(time, "%9f"), "123456789")
+  let zero = @core.NaiveTime::from_hms(9, 30, 0).unwrap()
+  assert_eq(@format.format_time(zero, "%3f"), "000")
+  assert_eq(@format.format_time(zero, "%6f"), "000000")
+  assert_eq(@format.format_time(zero, "%9f"), "000000000")
 }
 
 ///|

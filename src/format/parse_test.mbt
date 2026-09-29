@@ -745,6 +745,81 @@ test "parsing %+ reconstructs a leap second into the same second/nanosecond fiel
 }
 
 ///|
+test "parse_time round-trips %.f across zero, trimmed, and full-precision fractions" {
+  for nanos in [0, 500000000, 120000000, 123456000, 123456789] {
+    let time = @core.NaiveTime::from_hms_nano(9, 30, 0, nanos).unwrap()
+    let fmt = "%H:%M:%S%.f"
+    assert_eq(@format.parse_time(@format.format_time(time, fmt), fmt), time)
+  }
+}
+
+///|
+test "parse_time succeeds when %.f has nothing to consume (no dot in the input)" {
+  assert_eq(
+    @format.parse_time("09:30:00", "%H:%M:%S%.f"),
+    @core.NaiveTime::from_hms(9, 30, 0).unwrap(),
+  )
+}
+
+///|
+test "parsing %.f rejects a dot with no digits following it" {
+  try @format.parse_time("09:30:00.", "%H:%M:%S%.f") |> ignore catch {
+    @format.InputMismatch => ()
+    _ => fail("expected InputMismatch")
+  } noraise {
+    _ => fail("expected rejection for a dot with no digits")
+  }
+}
+
+///|
+test "parse_time round-trips %3f, %6f, and %9f, all mandatory and fixed-width (each truncated to its own precision)" {
+  let time = @core.NaiveTime::from_hms_nano(9, 30, 0, 123456789).unwrap()
+  for
+    case in [
+      ("%H:%M:%S.%3f", 123000000),
+      ("%H:%M:%S.%6f", 123456000),
+      ("%H:%M:%S.%9f", 123456789),
+    ] {
+    let (fmt, expected_nanos) = case
+    assert_eq(
+      @format.parse_time(@format.format_time(time, fmt), fmt),
+      @core.NaiveTime::from_hms_nano(9, 30, 0, expected_nanos).unwrap(),
+    )
+  }
+}
+
+///|
+test "parse_time rejects %3f, %6f, and %9f when too few digits are present" {
+  for case in [("%3f", "12"), ("%6f", "12345"), ("%9f", "12345678")] {
+    let (fmt, bad) = case
+    try
+      @format.parse_time("09:30:00." + bad, "%H:%M:%S." + fmt) |> ignore
+    catch {
+      @format.InputMismatch => ()
+      _ => fail("expected InputMismatch for \{fmt}")
+    } noraise {
+      _ => fail("expected rejection for \{fmt}")
+    }
+  }
+}
+
+///|
+test "parsing %.f cross-checks against a redundantly-present %f, accepting agreement and rejecting disagreement" {
+  assert_eq(
+    @format.parse_time("09:30:00.5 500000000", "%H:%M:%S%.f %f"),
+    @core.NaiveTime::from_hms_nano(9, 30, 0, 500000000).unwrap(),
+  )
+  try
+    @format.parse_time("09:30:00.5 600000000", "%H:%M:%S%.f %f") |> ignore
+  catch {
+    @format.InconsistentFields => ()
+    _ => fail("expected InconsistentFields")
+  } noraise {
+    _ => fail("expected parse_time to reject a %.f/%f disagreement")
+  }
+}
+
+///|
 test "parsing %s, %G, %g, and %V always raise InputMismatch, since parsing them is not yet supported" {
   for spec in ["%s", "%G", "%g", "%V"] {
     try @format.parse_date_time("anything", spec) |> ignore catch {

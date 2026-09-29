@@ -152,6 +152,37 @@ test "tokenize recognizes %+ as a dedicated RFC 3339 item" {
 }
 
 ///|
+test "tokenize recognizes %.f, %3f, %6f, and %9f as fractional-second specifiers" {
+  assert_eq(@format.tokenize("%.f"), [@format.Numeric(@format.DotFraction)])
+  assert_eq(@format.tokenize("%3f"), [@format.Numeric(@format.Nanosecond3)])
+  assert_eq(@format.tokenize("%6f"), [@format.Numeric(@format.Nanosecond6)])
+  assert_eq(@format.tokenize("%9f"), @format.tokenize("%f"))
+}
+
+///|
+test "tokenize raises UnknownSpecifier for %.x (an unsupported dot-prefixed specifier)" {
+  try @format.tokenize("%.x") |> ignore catch {
+    @format.UnknownSpecifier('.') => ()
+    _ => fail("expected UnknownSpecifier('.')")
+  } noraise {
+    _ => fail("expected tokenize to reject %.x")
+  }
+}
+
+///|
+test "tokenize raises UnknownSpecifier for a bare %3, %6, or %9 not followed by f" {
+  for case in [("%3x", '3'), ("%6x", '6'), ("%9x", '9')] {
+    let (spec, expected_char) = case
+    try @format.tokenize(spec) |> ignore catch {
+      @format.UnknownSpecifier(c) => assert_eq(c, expected_char)
+      _ => fail("expected UnknownSpecifier for \{spec}")
+    } noraise {
+      _ => fail("expected tokenize to reject \{spec}")
+    }
+  }
+}
+
+///|
 test "tokenize interprets %% as a literal percent sign" {
   assert_eq(@format.tokenize("100%%"), [@format.Literal("100%")])
 }

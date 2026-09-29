@@ -154,6 +154,28 @@ fn render(
             out.write_string(pad_int(t.nanosecond() % 1_000_000_000, 9))
           None => raise MissingField(item)
         }
+      Numeric(DotFraction) =>
+        match time {
+          Some(t) =>
+            out.write_string(
+              format_fraction_trimmed(t.nanosecond() % 1_000_000_000),
+            )
+          None => raise MissingField(item)
+        }
+      Numeric(Nanosecond3) =>
+        match time {
+          Some(t) =>
+            out.write_string(
+              pad_int(t.nanosecond() % 1_000_000_000 / 1_000_000, 3),
+            )
+          None => raise MissingField(item)
+        }
+      Numeric(Nanosecond6) =>
+        match time {
+          Some(t) =>
+            out.write_string(pad_int(t.nanosecond() % 1_000_000_000 / 1_000, 6))
+          None => raise MissingField(item)
+        }
       Fixed(LongWeekdayName) =>
         match date {
           Some(d) => out.write_string(weekday_long_name(d.weekday()))
