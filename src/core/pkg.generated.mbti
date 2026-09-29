@@ -281,6 +281,7 @@ pub fn TimeDelta::op_ge(Self, Self) -> Bool
 pub fn TimeDelta::op_gt(Self, Self) -> Bool
 pub fn TimeDelta::op_le(Self, Self) -> Bool
 pub fn TimeDelta::op_lt(Self, Self) -> Bool
+pub fn TimeDelta::output(Self, &Logger) -> Unit
 pub fn TimeDelta::round(Self, Self) -> Self?
 pub fn TimeDelta::seconds(Int64) -> Self?
 pub fn TimeDelta::sub(Self, Self) -> Self?
@@ -288,9 +289,11 @@ pub fn TimeDelta::subsec_microseconds(Self) -> Int
 pub fn TimeDelta::subsec_milliseconds(Self) -> Int
 pub fn TimeDelta::subsec_nanoseconds(Self) -> Int
 pub fn TimeDelta::to_repr(Self) -> @debug.Repr
+pub fn TimeDelta::to_string(Self) -> String
 pub fn TimeDelta::truncate(Self, Self) -> Self?
 pub fn TimeDelta::weeks(Int64) -> Self?
 pub fn TimeDelta::zero() -> Self
+pub impl Show for TimeDelta
 
 pub(all) enum Weekday {
   Mon

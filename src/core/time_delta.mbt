@@ -37,6 +37,72 @@ pub extend TimeDelta with Compare::{compare, op_lt, op_gt, op_le, op_ge}
 pub extend TimeDelta with @debug.Debug::{to_repr}
 
 ///|
+/// Renders the duration in Go's `time.Duration` style: an optional leading
+/// `-`, then hours, minutes and seconds (`1h2m3.5s`) with hours as the
+/// largest unit, no fractional part's trailing zeros, and every unit between
+/// the largest and the seconds kept even when zero (`1h0m0s`). A duration
+/// under one second uses `ns`, `us` or `ms` instead (`1.5ms`), and zero is
+/// `0s`.
+pub impl Show for TimeDelta with fn output(self, logger) {
+  let magnitude = self.abs()
+  if self.seconds < 0L {
+    logger.write_char('-')
+  }
+  if magnitude.seconds == 0L {
+    write_subsecond(magnitude.nanoseconds, logger)
+  } else {
+    let secs = magnitude.seconds
+    let hours = secs / 3600L
+    let minutes = secs % 3600L / 60L
+    if hours > 0L {
+      logger.write_string(hours.to_string() + "h")
+    }
+    if hours > 0L || minutes > 0L {
+      logger.write_string(minutes.to_string() + "m")
+    }
+    logger.write_string((secs % 60L).to_string())
+    write_fraction(magnitude.nanoseconds, 9, logger)
+    logger.write_char('s')
+  }
+}
+
+///|
+pub extend TimeDelta with Show::{to_string, output}
+
+///|
+fn write_subsecond(nanos : Int, logger : &Logger) -> Unit {
+  if nanos == 0 {
+    logger.write_string("0s")
+  } else if nanos < 1_000 {
+    logger.write_string(nanos.to_string() + "ns")
+  } else if nanos < 1_000_000 {
+    logger.write_string((nanos / 1_000).to_string())
+    write_fraction(nanos % 1_000, 3, logger)
+    logger.write_string("us")
+  } else {
+    logger.write_string((nanos / 1_000_000).to_string())
+    write_fraction(nanos % 1_000_000, 6, logger)
+    logger.write_string("ms")
+  }
+}
+
+///|
+fn write_fraction(value : Int, width : Int, logger : &Logger) -> Unit {
+  if value != 0 {
+    let mut digits = value.to_string()
+    while digits.length() < width {
+      digits = "0" + digits
+    }
+    let mut end = digits.length()
+    while digits[end - 1] == '0' {
+      end -= 1
+    }
+    logger.write_char('.')
+    logger.write_string(digits[:end].to_owned())
+  }
+}
+
+///|
 /// Builds a `TimeDelta` from a whole-seconds component and a nanosecond
 /// component of arbitrary sign and magnitude, normalizing the nanoseconds
 /// into the `0..=999_999_999` range and carrying the excess into `seconds`.

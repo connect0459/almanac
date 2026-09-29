@@ -341,3 +341,77 @@ test "equal durations compare as neither less nor greater" {
   assert_true(d1 >= d2)
   assert_eq(d1.compare(d2), 0)
 }
+
+///|
+test "to_string renders a zero duration as 0s" {
+  assert_eq(@core.TimeDelta::zero().to_string(), "0s")
+}
+
+///|
+test "to_string renders sub-second durations in the largest unit that keeps the integer part nonzero" {
+  assert_eq(@core.TimeDelta::nanoseconds(1L).unwrap().to_string(), "1ns")
+  assert_eq(@core.TimeDelta::nanoseconds(999L).unwrap().to_string(), "999ns")
+  assert_eq(@core.TimeDelta::microseconds(1L).unwrap().to_string(), "1us")
+  assert_eq(@core.TimeDelta::nanoseconds(1_500L).unwrap().to_string(), "1.5us")
+  assert_eq(@core.TimeDelta::milliseconds(1L).unwrap().to_string(), "1ms")
+  assert_eq(@core.TimeDelta::microseconds(1_500L).unwrap().to_string(), "1.5ms")
+  assert_eq(
+    @core.TimeDelta::nanoseconds(999_999_999L).unwrap().to_string(),
+    "999.999999ms",
+  )
+  assert_eq(@core.TimeDelta::milliseconds(300L).unwrap().to_string(), "300ms")
+}
+
+///|
+test "to_string renders durations of a second or more with an s suffix and a trimmed fraction" {
+  assert_eq(@core.TimeDelta::seconds(1L).unwrap().to_string(), "1s")
+  assert_eq(@core.TimeDelta::milliseconds(1_500L).unwrap().to_string(), "1.5s")
+  assert_eq(@core.TimeDelta::seconds(59L).unwrap().to_string(), "59s")
+  assert_eq(
+    @core.TimeDelta::nanoseconds(59_999_999_999L).unwrap().to_string(),
+    "59.999999999s",
+  )
+  assert_eq(
+    @core.TimeDelta::nanoseconds(1_000_000_001L).unwrap().to_string(),
+    "1.000000001s",
+  )
+}
+
+///|
+test "to_string includes minutes and hours, keeping zero components between them" {
+  assert_eq(@core.TimeDelta::minutes(1L).unwrap().to_string(), "1m0s")
+  assert_eq(@core.TimeDelta::seconds(61L).unwrap().to_string(), "1m1s")
+  assert_eq(@core.TimeDelta::hours(1L).unwrap().to_string(), "1h0m0s")
+  assert_eq(@core.TimeDelta::seconds(3_723L).unwrap().to_string(), "1h2m3s")
+  assert_eq(
+    @core.TimeDelta::milliseconds(3_723_500L).unwrap().to_string(),
+    "1h2m3.5s",
+  )
+  assert_eq(@core.TimeDelta::seconds(3_601L).unwrap().to_string(), "1h0m1s")
+}
+
+///|
+test "to_string uses hours as the largest unit without introducing days" {
+  assert_eq(@core.TimeDelta::hours(100L).unwrap().to_string(), "100h0m0s")
+  assert_eq(@core.TimeDelta::days(2L).unwrap().to_string(), "48h0m0s")
+}
+
+///|
+test "to_string prefixes a negative duration with a minus sign" {
+  assert_eq(
+    @core.TimeDelta::milliseconds(-1_500L).unwrap().to_string(),
+    "-1.5s",
+  )
+  assert_eq(@core.TimeDelta::hours(-1L).unwrap().to_string(), "-1h0m0s")
+  assert_eq(@core.TimeDelta::milliseconds(-300L).unwrap().to_string(), "-300ms")
+  assert_eq(@core.TimeDelta::nanoseconds(-1L).unwrap().to_string(), "-1ns")
+}
+
+///|
+test "to_string renders the extreme representable durations" {
+  assert_eq(
+    @core.TimeDelta::max_value().to_string(),
+    "2562047788015h12m54.999999999s",
+  )
+  assert_eq(@core.TimeDelta::min_value().to_string(), "-2562047788015h12m54s")
+}

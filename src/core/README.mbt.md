@@ -301,7 +301,7 @@ A signed duration, precise to the nanosecond. Constructors and checked arithmeti
 | `round(TimeDelta)` | `-> Self?` | Round to the nearest multiple of a granularity, ties breaking away from zero; `None` if the granularity is zero, negative, or mixes a whole-second part with a sub-second remainder (e.g. 1.5 seconds — every named duration unit is either purely sub-second or a whole-second-or-larger multiple) |
 | `truncate(TimeDelta)` | `-> Self?` | Truncate toward zero to the nearest multiple of a granularity; same granularity restriction as `round` |
 
-`TimeDelta` also implements `Eq` and `Compare` (`<`/`<=`/`>`/`>=` via `compare`).
+`TimeDelta` also implements `Eq`, `Compare` (`<`/`<=`/`>`/`>=` via `compare`) and `Show`. `Show` renders Go's `time.Duration` style: a leading `-` for a negative value, then hours/minutes/seconds (`1h2m3.5s`) with hours as the largest unit (never days) and trailing fractional zeros trimmed; units between the largest and the seconds are kept even when zero (`1h0m0s`); a duration under one second uses `ns`/`us`/`ms` (`1.5ms`); zero is `0s`. `format`'s `parse_duration` reads this form back.
 
 ---
 
