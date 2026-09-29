@@ -77,6 +77,81 @@ test "tokenize expands %T into hour-minute-second numeric items joined by litera
 }
 
 ///|
+test "tokenize expands %D and %x into month-day-year (2-digit year) joined by literal slashes" {
+  for spec in ["%D", "%x"] {
+    assert_eq(@format.tokenize(spec), [
+      @format.Numeric(@format.Month),
+      @format.Literal("/"),
+      @format.Numeric(@format.Day),
+      @format.Literal("/"),
+      @format.Numeric(@format.YearMod100),
+    ])
+  }
+}
+
+///|
+test "tokenize expands %v into VMS-style day-month-year" {
+  assert_eq(@format.tokenize("%v"), [
+    @format.Numeric(@format.DayBlank),
+    @format.Literal("-"),
+    @format.Fixed(@format.ShortMonthName),
+    @format.Literal("-"),
+    @format.Numeric(@format.Year),
+  ])
+}
+
+///|
+test "tokenize expands %R into hour-minute joined by a literal colon" {
+  assert_eq(@format.tokenize("%R"), [
+    @format.Numeric(@format.Hour),
+    @format.Literal(":"),
+    @format.Numeric(@format.Minute),
+  ])
+}
+
+///|
+test "tokenize expands %X the same as %T (hour-minute-second)" {
+  assert_eq(@format.tokenize("%X"), @format.tokenize("%T"))
+}
+
+///|
+test "tokenize expands %r into the 12-hour clock with seconds and an am/pm marker" {
+  assert_eq(@format.tokenize("%r"), [
+    @format.Numeric(@format.Hour12),
+    @format.Literal(":"),
+    @format.Numeric(@format.Minute),
+    @format.Literal(":"),
+    @format.Numeric(@format.Second),
+    @format.Literal(" "),
+    @format.Fixed(@format.AmPmUpper),
+  ])
+}
+
+///|
+test "tokenize expands %c into a ctime-style weekday, month, day, time, and year sequence" {
+  assert_eq(@format.tokenize("%c"), [
+    @format.Fixed(@format.ShortWeekdayName),
+    @format.Literal(" "),
+    @format.Fixed(@format.ShortMonthName),
+    @format.Literal(" "),
+    @format.Numeric(@format.DayBlank),
+    @format.Literal(" "),
+    @format.Numeric(@format.Hour),
+    @format.Literal(":"),
+    @format.Numeric(@format.Minute),
+    @format.Literal(":"),
+    @format.Numeric(@format.Second),
+    @format.Literal(" "),
+    @format.Numeric(@format.Year),
+  ])
+}
+
+///|
+test "tokenize recognizes %+ as a dedicated RFC 3339 item" {
+  assert_eq(@format.tokenize("%+"), [@format.Rfc3339])
+}
+
+///|
 test "tokenize interprets %% as a literal percent sign" {
   assert_eq(@format.tokenize("100%%"), [@format.Literal("100%")])
 }

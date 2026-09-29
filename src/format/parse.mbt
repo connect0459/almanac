@@ -349,6 +349,28 @@ fn apply_item(
         None => raise InputMismatch
         Some(p) => (parsed, p)
       }
+    Rfc3339 =>
+      match parse_rfc3339_datetime(chars, pos) {
+        None => raise InputMismatch
+        Some((date, time, offset_secs, p)) => {
+          let seconds = time.second() + time.nanosecond() / 1_000_000_000
+          let nanos = time.nanosecond() % 1_000_000_000
+          (
+            {
+              ..parsed,
+              year: merge_field(parsed.year, date.year()),
+              month: merge_field(parsed.month, date.month().number_from_month()),
+              day: merge_field(parsed.day, date.day()),
+              hour: merge_field(parsed.hour, time.hour()),
+              minute: merge_field(parsed.minute, time.minute()),
+              second: merge_field(parsed.second, seconds),
+              nanosecond: merge_field(parsed.nanosecond, nanos),
+              offset_secs: merge_field(parsed.offset_secs, offset_secs),
+            },
+            p,
+          )
+        }
+      }
     Numeric(Year) =>
       match parse_signed_greedy_digits(chars, pos) {
         None => raise InputMismatch

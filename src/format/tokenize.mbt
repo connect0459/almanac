@@ -165,6 +165,66 @@ pub fn tokenize(fmt : String) -> Array[Item] raise ParseError {
         items.push(Literal(":"))
         items.push(Numeric(Second))
       }
+      'D' | 'x' => {
+        flush_literal()
+        items.push(Numeric(Month))
+        items.push(Literal("/"))
+        items.push(Numeric(Day))
+        items.push(Literal("/"))
+        items.push(Numeric(YearMod100))
+      }
+      'v' => {
+        flush_literal()
+        items.push(Numeric(DayBlank))
+        items.push(Literal("-"))
+        items.push(Fixed(ShortMonthName))
+        items.push(Literal("-"))
+        items.push(Numeric(Year))
+      }
+      'R' => {
+        flush_literal()
+        items.push(Numeric(Hour))
+        items.push(Literal(":"))
+        items.push(Numeric(Minute))
+      }
+      'X' => {
+        flush_literal()
+        items.push(Numeric(Hour))
+        items.push(Literal(":"))
+        items.push(Numeric(Minute))
+        items.push(Literal(":"))
+        items.push(Numeric(Second))
+      }
+      'r' => {
+        flush_literal()
+        items.push(Numeric(Hour12))
+        items.push(Literal(":"))
+        items.push(Numeric(Minute))
+        items.push(Literal(":"))
+        items.push(Numeric(Second))
+        items.push(Literal(" "))
+        items.push(Fixed(AmPmUpper))
+      }
+      'c' => {
+        flush_literal()
+        items.push(Fixed(ShortWeekdayName))
+        items.push(Literal(" "))
+        items.push(Fixed(ShortMonthName))
+        items.push(Literal(" "))
+        items.push(Numeric(DayBlank))
+        items.push(Literal(" "))
+        items.push(Numeric(Hour))
+        items.push(Literal(":"))
+        items.push(Numeric(Minute))
+        items.push(Literal(":"))
+        items.push(Numeric(Second))
+        items.push(Literal(" "))
+        items.push(Numeric(Year))
+      }
+      '+' => {
+        flush_literal()
+        items.push(Rfc3339)
+      }
       c => raise UnknownSpecifier(c)
     }
     continue i + 2

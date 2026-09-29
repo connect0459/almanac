@@ -181,9 +181,15 @@ fn parse_rfc3339_offset(chars : Array[Char], pos : Int) -> (Int, Int)? {
 }
 
 ///|
-fn try_parse_rfc3339(s : String) -> @tz.DateTime[@tz.FixedOffset]? {
-  let chars = s.to_array()
-  match parse_rfc3339_date(chars, 0) {
+/// Parses an RFC 3339 date-time starting at `pos`, stopping wherever it
+/// ends (unlike `try_parse_rfc3339`, does not require consuming the rest
+/// of `chars`) — shared by `try_parse_rfc3339` and `%+`'s handling in the
+/// general token engine (`apply_item`, in `parse.mbt`).
+fn parse_rfc3339_datetime(
+  chars : Array[Char],
+  pos : Int,
+) -> (@core.NaiveDate, @core.NaiveTime, Int, Int)? {
+  match parse_rfc3339_date(chars, pos) {
     None => None
     Some((date, p1)) =>
       match expect_char_ci(chars, p1, 'T', 't') {
@@ -197,43 +203,44 @@ fn try_parse_rfc3339(s : String) -> @tz.DateTime[@tz.FixedOffset]? {
                 Some((frac_nanos, p4)) =>
                   match parse_rfc3339_offset(chars, p4) {
                     None => None
-                    Some((offset_secs, p5)) =>
-                      if p5 != chars.length() {
-                        None
+                    Some((offset_secs, p5)) => {
+                      let (clock_second, nano) = if second == 60 {
+                        (59, frac_nanos + 1_000_000_000)
                       } else {
-                        let (clock_second, nano) = if second == 60 {
-                          (59, frac_nanos + 1_000_000_000)
-                        } else {
-                          (second, frac_nanos)
-                        }
-                        match
-                          @core.NaiveTime::from_hms_nano(
-                            hour, minute, clock_second, nano,
-                          ) {
-                          None => None
-                          Some(time) =>
-                            match @tz.FixedOffset::east(offset_secs) {
-                              None => None
-                              Some(offset) => {
-                                let local_naive = @core.NaiveDateTime::new(
-                                  date, time,
-                                )
-                                let shift = @core.TimeDelta::seconds(
-                                  offset_secs.to_int64(),
-                                ).unwrap()
-                                Some(
-                                  @tz.DateTime::from_utc(
-                                    local_naive.sub_signed(shift),
-                                    offset,
-                                  ),
-                                )
-                              }
-                            }
-                        }
+                        (second, frac_nanos)
                       }
+                      match
+                        @core.NaiveTime::from_hms_nano(
+                          hour, minute, clock_second, nano,
+                        ) {
+                        None => None
+                        Some(time) => Some((date, time, offset_secs, p5))
+                      }
+                    }
                   }
               }
           }
+      }
+  }
+}
+
+///|
+fn try_parse_rfc3339(s : String) -> @tz.DateTime[@tz.FixedOffset]? {
+  let chars = s.to_array()
+  match parse_rfc3339_datetime(chars, 0) {
+    None => None
+    Some((date, time, offset_secs, p5)) =>
+      if p5 != chars.length() {
+        None
+      } else {
+        match @tz.FixedOffset::east(offset_secs) {
+          None => None
+          Some(offset) => {
+            let local_naive = @core.NaiveDateTime::new(date, time)
+            let shift = @core.TimeDelta::seconds(offset_secs.to_int64()).unwrap()
+            Some(@tz.DateTime::from_utc(local_naive.sub_signed(shift), offset))
+          }
+        }
       }
   }
 }
@@ -285,18 +292,19 @@ fn format_fraction_trimmed(nanos : Int) -> String {
 }
 
 ///|
-/// Renders `dt` as RFC 3339
-/// (`YYYY-MM-DDTHH:MM:SS[.fraction](Z|±HH:MM)`), bypassing the general
-/// token engine. A zero offset renders as `Z`. A leap second renders as
-/// `:60`, matching `NaiveTime`'s existing leap-second convention
-/// (`second() + nanosecond() / 1_000_000_000`).
-pub fn[Tz : @tz.TimeZone] to_rfc3339(dt : @tz.DateTime[Tz]) -> String {
-  let wall_clock = dt.naive_local()
-  let date = wall_clock.date()
-  let time = wall_clock.time()
+/// Renders `date`/`time`/`offset_secs` as RFC 3339
+/// (`YYYY-MM-DDTHH:MM:SS[.fraction](Z|±HH:MM)`). A zero offset renders as
+/// `Z`. A leap second renders as `:60`, matching `NaiveTime`'s existing
+/// leap-second convention (`second() + nanosecond() / 1_000_000_000`).
+/// Shared by `to_rfc3339` and `%+`'s handling in the general token engine
+/// (`render`, in `formatting.mbt`).
+fn render_rfc3339(
+  date : @core.NaiveDate,
+  time : @core.NaiveTime,
+  offset_secs : Int,
+) -> String {
   let seconds = time.second() + time.nanosecond() / 1_000_000_000
   let fraction_nanos = time.nanosecond() % 1_000_000_000
-  let offset_secs = dt.offset().local_minus_utc()
   let offset_str = if offset_secs == 0 {
     "Z"
   } else {
@@ -315,4 +323,16 @@ pub fn[Tz : @tz.TimeZone] to_rfc3339(dt : @tz.DateTime[Tz]) -> String {
   pad_int(seconds, 2) +
   format_fraction_trimmed(fraction_nanos) +
   offset_str
+}
+
+///|
+/// Renders `dt` as RFC 3339, bypassing the general token engine. See
+/// `render_rfc3339`.
+pub fn[Tz : @tz.TimeZone] to_rfc3339(dt : @tz.DateTime[Tz]) -> String {
+  let wall_clock = dt.naive_local()
+  render_rfc3339(
+    wall_clock.date(),
+    wall_clock.time(),
+    dt.offset().local_minus_utc(),
+  )
 }

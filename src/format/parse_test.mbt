@@ -643,6 +643,108 @@ test "parse_date rejects a weekday with no month/day/ordinal and no %U/%W to com
 }
 
 ///|
+test "parse_date round-trips through the compound date specifiers %D, %x, and %v" {
+  let date = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
+  for fmt in ["%D", "%x", "%v"] {
+    assert_eq(@format.parse_date(@format.format_date(date, fmt), fmt), date)
+  }
+}
+
+///|
+test "parse_time round-trips through the compound time specifiers %X and %r" {
+  for
+    case in [
+      @core.NaiveTime::from_hms(9, 5, 0).unwrap(),
+      @core.NaiveTime::from_hms(9, 5, 30).unwrap(),
+      @core.NaiveTime::from_hms(21, 45, 30).unwrap(),
+    ] {
+    assert_eq(@format.parse_time(@format.format_time(case, "%X"), "%X"), case)
+    assert_eq(@format.parse_time(@format.format_time(case, "%r"), "%r"), case)
+  }
+}
+
+///|
+test "parse_time parses %R's hour and minute fields, but rejects it alone since %R carries no seconds" {
+  assert_eq(
+    @format.parse_time("09:05 30", "%R %S"),
+    @core.NaiveTime::from_hms(9, 5, 30).unwrap(),
+  )
+  try @format.parse_time("09:05", "%R") |> ignore catch {
+    @format.IncompleteFields => ()
+    _ => fail("expected IncompleteFields")
+  } noraise {
+    _ => fail("expected parse_time to reject a bare %R with no seconds field")
+  }
+}
+
+///|
+test "parse_date_time round-trips through the ctime-style compound specifier %c" {
+  let dt = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+    @core.NaiveTime::from_hms(9, 5, 30).unwrap(),
+  )
+  assert_eq(
+    @format.parse_date_time(@format.format_date_time(dt, "%c"), "%c"),
+    dt,
+  )
+}
+
+///|
+test "parse_date_time_tz round-trips through %+ identically to parse_rfc3339" {
+  let dt = @tz.DateTime::from_utc(
+    @core.NaiveDateTime::new(
+      @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+      @core.NaiveTime::from_hms_nano(9, 30, 0, 123000000).unwrap(),
+    ),
+    @tz.FixedOffset::east(9 * 3600).unwrap(),
+  )
+  let rendered = @format.format_date_time_tz(dt, "%+")
+  assert_eq(@format.parse_date_time_tz(rendered, "%+"), dt)
+  assert_eq(
+    @format.parse_date_time_tz(rendered, "%+"),
+    @format.parse_rfc3339(rendered),
+  )
+}
+
+///|
+test "parsing %+ rejects malformed RFC 3339 text" {
+  try @format.parse_date_time_tz("not-a-datetime", "%+") |> ignore catch {
+    @format.InputMismatch => ()
+    _ => fail("expected InputMismatch")
+  } noraise {
+    _ => fail("expected rejection for malformed %+ input")
+  }
+}
+
+///|
+test "parsing %+ cross-checks its fields against a redundantly-present specifier, accepting agreement and rejecting disagreement" {
+  assert_eq(
+    @format.parse_date_time("2024-03-05T09:30:00Z 2024", "%+ %Y"),
+    @core.NaiveDateTime::new(
+      @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+      @core.NaiveTime::from_hms(9, 30, 0).unwrap(),
+    ),
+  )
+  try
+    @format.parse_date_time("2024-03-05T09:30:00Z 2025", "%+ %Y") |> ignore
+  catch {
+    @format.InconsistentFields => ()
+    _ => fail("expected InconsistentFields")
+  } noraise {
+    _ => fail("expected parse_date_time to reject a %+/%Y disagreement")
+  }
+}
+
+///|
+test "parsing %+ reconstructs a leap second into the same second/nanosecond fields %S/%f would produce" {
+  let via_plus = @format.parse_date_time("2024-03-05T09:30:60Z", "%+")
+  let via_specifiers = @format.parse_date_time(
+    "2024-03-05 09:30:60", "%Y-%m-%d %H:%M:%S",
+  )
+  assert_eq(via_plus, via_specifiers)
+}
+
+///|
 test "parsing %s, %G, %g, and %V always raise InputMismatch, since parsing them is not yet supported" {
   for spec in ["%s", "%G", "%g", "%V"] {
     try @format.parse_date_time("anything", spec) |> ignore catch {

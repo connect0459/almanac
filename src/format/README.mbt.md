@@ -48,6 +48,13 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%z` | Timezone offset | `±HHMM`, no colon |
 | `%F` | `%Y-%m-%d` | Expands to that specifier sequence |
 | `%T` | `%H:%M:%S` | Expands to that specifier sequence |
+| `%D`, `%x` | `%m/%d/%y` | Expands to that specifier sequence (no locale support, so `%x` is identical to `%D`) |
+| `%v` | `%e-%b-%Y` | VMS-style date, e.g. `" 5-Mar-2024"`; expands to that specifier sequence |
+| `%R` | `%H:%M` | Expands to that specifier sequence; carries no seconds, so `parse_time` needs a separate `%S` to fully resolve a time (see `%r`/`%X` for a self-sufficient alternative) |
+| `%X` | `%H:%M:%S` | Expands to that specifier sequence (identical to `%T`) |
+| `%r` | `%I:%M:%S %p` | Expands to that specifier sequence |
+| `%c` | `%a %b %e %H:%M:%S %Y` | ctime-style, e.g. `"Tue Mar  5 09:05:30 2024"`; expands to that specifier sequence |
+| `%+` | RFC 3339 date-time | A whole `DateTime`, rendered/parsed via the dedicated `to_rfc3339`/`parse_rfc3339` fast path rather than a sequence of simpler specifiers (mirrors chrono); needs a date, time, and offset together, like `%Z`/`%z` |
 | `%%` | Literal `%` | |
 
 ## Quick start
@@ -138,6 +145,7 @@ pub(all) enum Item {
   Literal(String)
   Numeric(Numeric)
   Fixed(Fixed)
+  Rfc3339
 }
 
 ///|

@@ -87,6 +87,10 @@ pub(all) enum Item {
   Literal(String)
   Numeric(Numeric)
   Fixed(Fixed)
+  /// `%+`: a whole RFC 3339 date-time, rendered/parsed via the dedicated
+  /// fast path (`to_rfc3339`/`parse_rfc3339`) rather than as a sequence
+  /// of simpler items — chrono itself treats `%+` the same way.
+  Rfc3339
 } derive(Eq, @debug.Debug)
 
 ///|

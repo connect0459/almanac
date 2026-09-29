@@ -324,6 +324,72 @@ test "format_date_time_tz renders %Z as an IANA zone's abbreviation in effect at
 }
 
 ///|
+test "format_date renders the compound date specifiers %D, %x, and %v" {
+  let date = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
+  assert_eq(@format.format_date(date, "%D"), "03/05/24")
+  assert_eq(@format.format_date(date, "%x"), "03/05/24")
+  assert_eq(@format.format_date(date, "%v"), " 5-Mar-2024")
+}
+
+///|
+test "format_time renders the compound time specifiers %R, %X, and %r" {
+  let time = @core.NaiveTime::from_hms(9, 5, 30).unwrap()
+  assert_eq(@format.format_time(time, "%R"), "09:05")
+  assert_eq(@format.format_time(time, "%X"), "09:05:30")
+  assert_eq(@format.format_time(time, "%r"), "09:05:30 AM")
+}
+
+///|
+test "format_date_time renders the ctime-style compound specifier %c" {
+  let dt = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+    @core.NaiveTime::from_hms(9, 5, 30).unwrap(),
+  )
+  assert_eq(@format.format_date_time(dt, "%c"), "Tue Mar  5 09:05:30 2024")
+}
+
+///|
+test "format_date_time_tz renders %+ identically to to_rfc3339" {
+  let dt = @tz.DateTime::from_utc(
+    @core.NaiveDateTime::new(
+      @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+      @core.NaiveTime::from_hms_nano(9, 30, 0, 123000000).unwrap(),
+    ),
+    @tz.FixedOffset::east(9 * 3600).unwrap(),
+  )
+  assert_eq(@format.format_date_time_tz(dt, "%+"), @format.to_rfc3339(dt))
+  assert_eq(
+    @format.format_date_time_tz(dt, "%+"),
+    "2024-03-05T18:30:00.123+09:00",
+  )
+}
+
+///|
+test "format_date, format_time, and format_date_time raise MissingField for %+, which needs a date, time, and offset together" {
+  let date = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
+  let time = @core.NaiveTime::from_hms(9, 30, 0).unwrap()
+  let dt = @core.NaiveDateTime::new(date, time)
+  try @format.format_date(date, "%+") |> ignore catch {
+    @format.MissingField(@format.Rfc3339) => ()
+    _ => fail("expected MissingField(Rfc3339)")
+  } noraise {
+    _ => fail("expected format_date to reject %+")
+  }
+  try @format.format_time(time, "%+") |> ignore catch {
+    @format.MissingField(@format.Rfc3339) => ()
+    _ => fail("expected MissingField(Rfc3339)")
+  } noraise {
+    _ => fail("expected format_time to reject %+")
+  }
+  try @format.format_date_time(dt, "%+") |> ignore catch {
+    @format.MissingField(@format.Rfc3339) => ()
+    _ => fail("expected MissingField(Rfc3339)")
+  } noraise {
+    _ => fail("expected format_date_time to reject %+")
+  }
+}
+
+///|
 test "format_date_time raises MissingField for a timezone specifier, since it carries no offset" {
   let dt = @core.NaiveDateTime::new(
     @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),

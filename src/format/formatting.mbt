@@ -104,6 +104,12 @@ fn render(
   for item in items {
     match item {
       Literal(s) => out.write_string(s)
+      Rfc3339 =>
+        match (date, time, tz_info) {
+          (Some(d), Some(t), Some((offset, _))) =>
+            out.write_string(render_rfc3339(d, t, offset))
+          _ => raise MissingField(item)
+        }
       Numeric(Year) =>
         match date {
           Some(d) => out.write_string(pad_int(d.year(), 4))

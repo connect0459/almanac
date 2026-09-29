@@ -63,6 +63,7 @@ pub(all) enum Item {
   Literal(String)
   Numeric(Numeric)
   Fixed(Fixed)
+  Rfc3339
 } derive(Eq, @debug.Debug)
 pub fn Item::equal(Self, Self) -> Bool
 pub fn Item::not_equal(Self, Self) -> Bool
