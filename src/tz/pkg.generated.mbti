@@ -75,8 +75,12 @@ pub(all) enum MappedLocalTime {
   Ambiguous(FixedOffset, FixedOffset)
   Absent
 } derive(Eq, @debug.Debug)
+pub fn MappedLocalTime::earliest(Self) -> FixedOffset?
 pub fn MappedLocalTime::equal(Self, Self) -> Bool
+pub fn MappedLocalTime::latest(Self) -> FixedOffset?
+pub fn MappedLocalTime::map(Self, (FixedOffset) -> FixedOffset) -> Self
 pub fn MappedLocalTime::not_equal(Self, Self) -> Bool
+pub fn MappedLocalTime::single(Self) -> FixedOffset?
 pub fn MappedLocalTime::to_repr(Self) -> @debug.Repr
 
 pub struct PosixTz {

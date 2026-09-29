@@ -20,6 +20,54 @@ pub extend MappedLocalTime with Eq::{not_equal}
 pub extend MappedLocalTime with @debug.Debug::{to_repr}
 
 ///|
+/// The offset, only when `self` is unambiguous (`Single`); `None` for
+/// `Ambiguous` or `Absent`.
+pub fn MappedLocalTime::single(self : MappedLocalTime) -> FixedOffset? {
+  match self {
+    Single(offset) => Some(offset)
+    Ambiguous(_, _) | Absent => None
+  }
+}
+
+///|
+/// The earliest offset `self` could resolve to: the sole offset for
+/// `Single`, the first (earlier-UTC-instant) offset of an `Ambiguous`
+/// fold, or `None` for `Absent`.
+pub fn MappedLocalTime::earliest(self : MappedLocalTime) -> FixedOffset? {
+  match self {
+    Single(offset) => Some(offset)
+    Ambiguous(earliest, _) => Some(earliest)
+    Absent => None
+  }
+}
+
+///|
+/// The latest offset `self` could resolve to: the sole offset for
+/// `Single`, the second (later-UTC-instant) offset of an `Ambiguous`
+/// fold, or `None` for `Absent`.
+pub fn MappedLocalTime::latest(self : MappedLocalTime) -> FixedOffset? {
+  match self {
+    Single(offset) => Some(offset)
+    Ambiguous(_, latest) => Some(latest)
+    Absent => None
+  }
+}
+
+///|
+/// Applies `f` to every offset carried by `self`, preserving its shape
+/// (`Single`/`Ambiguous`/`Absent`).
+pub fn MappedLocalTime::map(
+  self : MappedLocalTime,
+  f : (FixedOffset) -> FixedOffset,
+) -> MappedLocalTime {
+  match self {
+    Single(offset) => Single(f(offset))
+    Ambiguous(earliest, latest) => Ambiguous(f(earliest), f(latest))
+    Absent => Absent
+  }
+}
+
+///|
 /// Resolves whether `local_ts` (a local wall-clock reading, as a naive
 /// Unix instant) falls in the gap or fold around a single transition from
 /// `offset_before` to `offset_after` at `transition_utc`. Returns `None`
