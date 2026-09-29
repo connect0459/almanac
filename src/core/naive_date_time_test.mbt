@@ -783,3 +783,106 @@ test "with_month0, with_day0 and with_ordinal0 reject out-of-range values" {
   assert_eq(dt.with_ordinal0(365), None)
   assert_eq(dt.with_ordinal0(-1), None)
 }
+
+///|
+test "add_seconds and sub_seconds shift by a whole number of seconds across day and year boundaries" {
+  let dt = @core.NaiveDate::from_ymd(2023, 12, 31)
+    .unwrap()
+    .and_hms(23, 59, 30)
+    .unwrap()
+  assert_eq(
+    dt.add_seconds(90),
+    @core.NaiveDate::from_ymd(2024, 1, 1).unwrap().and_hms(0, 1, 0).unwrap(),
+  )
+  assert_eq(dt.add_seconds(0), dt)
+  assert_eq(
+    dt.add_seconds(-30),
+    @core.NaiveDate::from_ymd(2023, 12, 31).unwrap().and_hms(23, 59, 0).unwrap(),
+  )
+  let start = @core.NaiveDate::from_ymd(2024, 1, 1)
+    .unwrap()
+    .and_hms(0, 0, 10)
+    .unwrap()
+  assert_eq(
+    start.sub_seconds(20),
+    @core.NaiveDate::from_ymd(2023, 12, 31)
+    .unwrap()
+    .and_hms(23, 59, 50)
+    .unwrap(),
+  )
+  assert_eq(
+    start.sub_seconds(-20),
+    @core.NaiveDate::from_ymd(2024, 1, 1).unwrap().and_hms(0, 0, 30).unwrap(),
+  )
+}
+
+///|
+test "add_seconds agrees with add_signed by the same number of seconds and keeps the sub-second part" {
+  let dt = @core.NaiveDate::from_ymd(2024, 2, 28)
+    .unwrap()
+    .and_hms_nano(23, 0, 0, 123_456_789)
+    .unwrap()
+  let delta = @core.TimeDelta::seconds(86_400L).unwrap()
+  assert_eq(dt.add_seconds(86_400), dt.add_signed(delta))
+  assert_eq(dt.sub_seconds(86_400), dt.sub_signed(delta))
+  assert_eq(dt.add_seconds(3_600).nanosecond(), 123_456_789)
+}
+
+///|
+test "a zero shift preserves a leap second, as add_signed does" {
+  let leap = @core.NaiveDate::from_ymd(2016, 12, 31)
+    .unwrap()
+    .and_hms_nano(23, 59, 59, 1_500_000_000)
+    .unwrap()
+  assert_eq(leap.add_seconds(0), leap)
+  assert_eq(leap.sub_seconds(0), leap)
+}
+
+///|
+test "add_seconds handles the extreme Int arguments" {
+  let dt = @core.NaiveDate::from_ymd(2024, 1, 1)
+    .unwrap()
+    .and_hms(0, 0, 0)
+    .unwrap()
+  assert_eq(
+    dt.checked_add_seconds(2_147_483_647),
+    Some(dt.add_signed(@core.TimeDelta::seconds(2_147_483_647L).unwrap())),
+  )
+  assert_eq(
+    dt.checked_sub_seconds(-2_147_483_648),
+    Some(dt.add_signed(@core.TimeDelta::seconds(2_147_483_648L).unwrap())),
+  )
+  assert_eq(
+    dt.checked_add_seconds(-2_147_483_648),
+    Some(dt.sub_signed(@core.TimeDelta::seconds(2_147_483_648L).unwrap())),
+  )
+}
+
+///|
+test "checked_add_seconds and checked_sub_seconds return None outside the representable date range" {
+  assert_eq(max_datetime().checked_add_seconds(1), None)
+  assert_eq(max_datetime().checked_sub_seconds(-1), None)
+  assert_eq(min_datetime().checked_sub_seconds(1), None)
+  assert_eq(min_datetime().checked_add_seconds(-1), None)
+  assert_eq(max_datetime().checked_add_seconds(0), Some(max_datetime()))
+}
+
+///|
+test "checked_add_seconds and checked_sub_seconds agree with the total versions within range" {
+  let dt = @core.NaiveDate::from_ymd(2024, 1, 1)
+    .unwrap()
+    .and_hms(12, 0, 0)
+    .unwrap()
+  assert_eq(dt.checked_add_seconds(45), Some(dt.add_seconds(45)))
+  assert_eq(dt.checked_sub_seconds(45), Some(dt.sub_seconds(45)))
+}
+
+///|
+test "panic add_seconds aborts when the result leaves the representable date range" {
+  ignore(max_datetime().add_seconds(1))
+}
+
+///|
+test "panic sub_seconds aborts when the result leaves the representable date range" {
+  ignore(min_datetime().sub_seconds(1))
+}

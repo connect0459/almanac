@@ -488,6 +488,60 @@ pub fn NaiveDateTime::checked_sub_signed(
 }
 
 ///|
+/// This datetime shifted forward by `seconds` whole seconds (backward if
+/// negative). A convenience over `add_signed` with a `TimeDelta` built from
+/// the same seconds, e.g. to apply a UTC offset; a nonzero shift follows
+/// `add_signed`'s leap-second rule, and a zero shift changes nothing.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_add_seconds` to get `None` instead.
+pub fn NaiveDateTime::add_seconds(
+  self : NaiveDateTime,
+  seconds : Int,
+) -> NaiveDateTime {
+  expect_in_range(
+    self.checked_add_seconds(seconds),
+    "NaiveDateTime::add_seconds",
+  )
+}
+
+///|
+/// This datetime shifted backward by `seconds` whole seconds (forward if
+/// negative). See `add_seconds`.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_sub_seconds` to get `None` instead.
+pub fn NaiveDateTime::sub_seconds(
+  self : NaiveDateTime,
+  seconds : Int,
+) -> NaiveDateTime {
+  expect_in_range(
+    self.checked_sub_seconds(seconds),
+    "NaiveDateTime::sub_seconds",
+  )
+}
+
+///|
+/// Like `add_seconds`, but `None` if the result falls outside `NaiveDate`'s
+/// representable range.
+pub fn NaiveDateTime::checked_add_seconds(
+  self : NaiveDateTime,
+  seconds : Int,
+) -> NaiveDateTime? {
+  self.checked_add_signed(TimeDelta::seconds(seconds.to_int64()).unwrap())
+}
+
+///|
+/// Like `sub_seconds`, but `None` if the result falls outside `NaiveDate`'s
+/// representable range.
+pub fn NaiveDateTime::checked_sub_seconds(
+  self : NaiveDateTime,
+  seconds : Int,
+) -> NaiveDateTime? {
+  self.checked_add_signed(TimeDelta::seconds(-seconds.to_int64()).unwrap())
+}
+
+///|
 /// This datetime with its date advanced by `months` (or moved back, if
 /// `months` is negative), keeping the time of day unchanged. See
 /// `NaiveDate::add_months` for the day-of-month clamping rule.

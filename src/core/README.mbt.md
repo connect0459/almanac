@@ -357,6 +357,8 @@ A `NaiveDate` and `NaiveTime` combined into one zone-less instant.
 | `sub_months(Int)` | `-> Self` | Shift the date backward by whole months |
 | `add_days(Int)` | `-> Self` | Shift the date by a day count, keeping the time of day |
 | `sub_days(Int)` | `-> Self` | Shift the date backward by a day count |
+| `add_seconds(Int)` / `sub_seconds(Int)` | `-> Self` | Shift by a whole number of seconds (e.g. to apply a UTC offset), like `add_signed` with the same seconds: a nonzero shift follows its leap-second rule, a zero shift changes nothing |
+| `checked_add_seconds(Int)` / `checked_sub_seconds(Int)` | `-> Self?` | As `add_seconds`/`sub_seconds`, but `None` if the date is out of range |
 | `checked_add_signed(TimeDelta)` / `checked_sub_signed(TimeDelta)` | `-> Self?` | As `add_signed`/`sub_signed`, but `None` if the date is out of range |
 | `checked_add_days(Int)` / `checked_sub_days(Int)` | `-> Self?` | As `add_days`/`sub_days`, but `None` if out of range |
 | `checked_add_months(Int)` / `checked_sub_months(Int)` | `-> Self?` | As `add_months`/`sub_months`, but `None` if out of range |
