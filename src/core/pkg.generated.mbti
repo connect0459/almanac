@@ -73,6 +73,7 @@ pub impl Show for Month
 pub struct NaiveDate {
   // private fields
 } derive(Compare, Eq, Hash, @debug.Debug)
+pub fn NaiveDate::abs_diff(Self, Self) -> Int64
 pub fn NaiveDate::add_days(Self, Int) -> Self
 pub fn NaiveDate::add_months(Self, Int) -> Self
 pub fn NaiveDate::add_signed(Self, TimeDelta) -> Self?
@@ -90,6 +91,7 @@ pub fn NaiveDate::checked_sub_months(Self, Int) -> Self?
 pub fn NaiveDate::checked_sub_years(Self, Int) -> Self?
 pub fn NaiveDate::compare(Self, Self) -> Int
 pub fn NaiveDate::day(Self) -> Int
+pub fn NaiveDate::day0(Self) -> Int
 pub fn NaiveDate::epoch_days(Self) -> Int
 pub fn NaiveDate::equal(Self, Self) -> Bool
 pub fn NaiveDate::from_epoch_days(Int) -> Self?
@@ -105,13 +107,16 @@ pub fn NaiveDate::iter_days(Self) -> NaiveDateDaysIterator
 pub fn NaiveDate::iter_weeks(Self) -> NaiveDateWeeksIterator
 pub fn NaiveDate::leap_year(Self) -> Bool
 pub fn NaiveDate::month(Self) -> Month
+pub fn NaiveDate::month0(Self) -> Int
 pub fn NaiveDate::not_equal(Self, Self) -> Bool
 pub fn NaiveDate::num_days_from_ce(Self) -> Int
+pub fn NaiveDate::num_days_in_month(Self) -> Int
 pub fn NaiveDate::op_ge(Self, Self) -> Bool
 pub fn NaiveDate::op_gt(Self, Self) -> Bool
 pub fn NaiveDate::op_le(Self, Self) -> Bool
 pub fn NaiveDate::op_lt(Self, Self) -> Bool
 pub fn NaiveDate::ordinal(Self) -> Int
+pub fn NaiveDate::ordinal0(Self) -> Int
 pub fn NaiveDate::output(Self, &Logger) -> Unit
 pub fn NaiveDate::pred(Self) -> Self
 pub fn NaiveDate::pred_opt(Self) -> Self?
@@ -128,10 +133,14 @@ pub fn NaiveDate::to_string(Self) -> String
 pub fn NaiveDate::week(Self, Weekday) -> NaiveWeek
 pub fn NaiveDate::weekday(Self) -> Weekday
 pub fn NaiveDate::with_day(Self, Int) -> Self?
+pub fn NaiveDate::with_day0(Self, Int) -> Self?
 pub fn NaiveDate::with_month(Self, Int) -> Self?
+pub fn NaiveDate::with_month0(Self, Int) -> Self?
 pub fn NaiveDate::with_ordinal(Self, Int) -> Self?
+pub fn NaiveDate::with_ordinal0(Self, Int) -> Self?
 pub fn NaiveDate::with_year(Self, Int) -> Self?
 pub fn NaiveDate::year(Self) -> Int
+pub fn NaiveDate::year_ce(Self) -> (Bool, Int)
 pub fn NaiveDate::years_since(Self, Self) -> Int?
 pub impl Show for NaiveDate
 

@@ -184,6 +184,74 @@ pub fn NaiveDate::with_ordinal(self : NaiveDate, ordinal : Int) -> NaiveDate? {
 }
 
 ///|
+/// The month of the year, counting from `0` (`Jan` is `0`, `Dec` is `11`).
+pub fn NaiveDate::month0(self : NaiveDate) -> Int {
+  self.month().number_from_month() - 1
+}
+
+///|
+/// The day of the month, counting from `0` (`0..=30`).
+pub fn NaiveDate::day0(self : NaiveDate) -> Int {
+  self.day() - 1
+}
+
+///|
+/// The day of the year, counting from `0` (`0..=365`).
+pub fn NaiveDate::ordinal0(self : NaiveDate) -> Int {
+  self.ordinal() - 1
+}
+
+///|
+/// The year split into a Common Era flag and a positive year number: year
+/// `1` and later are `(true, year)`, and year `0` and earlier are
+/// `(false, 1 - year)`, so year `0` is `(false, 1)` and year `-1` is
+/// `(false, 2)`.
+pub fn NaiveDate::year_ce(self : NaiveDate) -> (Bool, Int) {
+  let year = self.year()
+  if year >= 1 {
+    (true, year)
+  } else {
+    (false, 1 - year)
+  }
+}
+
+///|
+/// The number of days in this date's month, accounting for leap years.
+pub fn NaiveDate::num_days_in_month(self : NaiveDate) -> Int {
+  self.month().num_days(self.year())
+}
+
+///|
+/// The number of days between this date and `other`, always non-negative
+/// regardless of which is earlier.
+pub fn NaiveDate::abs_diff(self : NaiveDate, other : NaiveDate) -> Int64 {
+  let diff = self.days.to_int64() - other.days.to_int64()
+  if diff < 0L {
+    -diff
+  } else {
+    diff
+  }
+}
+
+///|
+/// Like `with_month`, but taking a `0`-based month (`0..=11`).
+pub fn NaiveDate::with_month0(self : NaiveDate, month0 : Int) -> NaiveDate? {
+  self.with_month(month0 + 1)
+}
+
+///|
+/// Like `with_day`, but taking a `0`-based day of the month.
+pub fn NaiveDate::with_day0(self : NaiveDate, day0 : Int) -> NaiveDate? {
+  self.with_day(day0 + 1)
+}
+
+///|
+/// Like `with_ordinal`, but taking a `0`-based day of the year.
+pub fn NaiveDate::with_ordinal0(self : NaiveDate, ordinal0 : Int) -> NaiveDate? {
+  self.with_ordinal(ordinal0 + 1)
+}
+
+///|
 /// The next calendar day.
 ///
 /// Aborts if the result falls outside `NaiveDate`'s representable range; use

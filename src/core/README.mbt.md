@@ -168,6 +168,10 @@ A proleptic Gregorian calendar date. Constructors are `Option`-returning: an inv
 | `month()` | `-> Month` | Calendar month |
 | `day()` | `-> Int` | Day of month |
 | `ordinal()` | `-> Int` | Day of year, 1-based |
+| `month0()` / `day0()` / `ordinal0()` | `-> Int` | The zero-based forms of the month (`0..=11`), day of month (`0..=30`) and day of year (`0..=365`) |
+| `year_ce()` | `-> (Bool, Int)` | The year as a Common Era flag and a positive year number: `(true, 2024)`, and `(false, 1)` for year `0`, `(false, 2)` for year `-1` |
+| `num_days_in_month()` | `-> Int` | Length of this date's month, honoring leap years |
+| `abs_diff(Self)` | `-> Int64` | Non-negative number of days between two dates, in either order |
 | `weekday()` | `-> Weekday` | Day of week |
 | `iso_week()` | `-> IsoWeek` | ISO 8601 week-numbering year and week |
 | `leap_year()` | `-> Bool` | Whether this date's year is a leap year |
@@ -175,6 +179,7 @@ A proleptic Gregorian calendar date. Constructors are `Option`-returning: an inv
 | `with_month(Int)` | `-> Self?` | Same year/day in a different month; `None` if the day doesn't exist in that month |
 | `with_day(Int)` | `-> Self?` | Same year/month with a different day |
 | `with_ordinal(Int)` | `-> Self?` | Same year with a different ordinal day |
+| `with_month0(Int)` / `with_day0(Int)` / `with_ordinal0(Int)` | `-> Self?` | As `with_month`/`with_day`/`with_ordinal`, taking a zero-based value |
 | `succ()` | `-> Self` | The next day |
 | `pred()` | `-> Self` | The previous day |
 | `add_days(Int)` | `-> Self` | Shift forward (or back, if negative) by a day count |

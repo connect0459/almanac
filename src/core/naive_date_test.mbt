@@ -936,3 +936,107 @@ test "equal dates hash equally and work as map keys" {
   assert_eq(counts.length(), 2)
   assert_eq(counts.get(a), Some(2))
 }
+
+///|
+test "month0, day0 and ordinal0 are the zero-based forms of the calendar fields" {
+  let first = @core.NaiveDate::from_ymd(2024, 1, 1).unwrap()
+  assert_eq((first.month0(), first.day0(), first.ordinal0()), (0, 0, 0))
+  let last = @core.NaiveDate::from_ymd(2024, 12, 31).unwrap()
+  assert_eq((last.month0(), last.day0(), last.ordinal0()), (11, 30, 365))
+  let common_last = @core.NaiveDate::from_ymd(2023, 12, 31).unwrap()
+  assert_eq(common_last.ordinal0(), 364)
+}
+
+///|
+test "year_ce splits the year into a Common Era flag and a positive year number" {
+  assert_eq(
+    @core.NaiveDate::from_ymd(2024, 6, 1).unwrap().year_ce(),
+    (true, 2024),
+  )
+  assert_eq(@core.NaiveDate::from_ymd(1, 1, 1).unwrap().year_ce(), (true, 1))
+  assert_eq(@core.NaiveDate::from_ymd(0, 1, 1).unwrap().year_ce(), (false, 1))
+  assert_eq(@core.NaiveDate::from_ymd(-1, 1, 1).unwrap().year_ce(), (false, 2))
+  assert_eq(
+    @core.NaiveDate::from_ymd(-100, 1, 1).unwrap().year_ce(),
+    (false, 101),
+  )
+}
+
+///|
+test "num_days_in_month reports the length of the date's own month, honoring leap years" {
+  assert_eq(
+    @core.NaiveDate::from_ymd(2024, 1, 15).unwrap().num_days_in_month(),
+    31,
+  )
+  assert_eq(
+    @core.NaiveDate::from_ymd(2024, 4, 15).unwrap().num_days_in_month(),
+    30,
+  )
+  assert_eq(
+    @core.NaiveDate::from_ymd(2024, 2, 1).unwrap().num_days_in_month(),
+    29,
+  )
+  assert_eq(
+    @core.NaiveDate::from_ymd(2023, 2, 1).unwrap().num_days_in_month(),
+    28,
+  )
+  assert_eq(
+    @core.NaiveDate::from_ymd(1900, 2, 1).unwrap().num_days_in_month(),
+    28,
+  )
+  assert_eq(
+    @core.NaiveDate::from_ymd(2000, 2, 1).unwrap().num_days_in_month(),
+    29,
+  )
+}
+
+///|
+test "abs_diff is the non-negative number of days between two dates in either order" {
+  let a = @core.NaiveDate::from_ymd(2024, 3, 1).unwrap()
+  let b = @core.NaiveDate::from_ymd(2024, 2, 1).unwrap()
+  assert_eq(a.abs_diff(b), 29L)
+  assert_eq(b.abs_diff(a), 29L)
+  assert_eq(a.abs_diff(a), 0L)
+}
+
+///|
+test "abs_diff spans the full representable range without overflow" {
+  assert_eq(max_date().abs_diff(min_date()), 2L * (2_147_483_647L - 719_468L))
+  assert_eq(min_date().abs_diff(max_date()), 2L * (2_147_483_647L - 719_468L))
+}
+
+///|
+test "with_month0, with_day0 and with_ordinal0 take zero-based values" {
+  let date = @core.NaiveDate::from_ymd(2024, 1, 31).unwrap()
+  assert_eq(date.with_month0(2), @core.NaiveDate::from_ymd(2024, 3, 31))
+  assert_eq(date.with_day0(0), @core.NaiveDate::from_ymd(2024, 1, 1))
+  assert_eq(date.with_ordinal0(59), @core.NaiveDate::from_ymd(2024, 2, 29))
+}
+
+///|
+test "with_month0, with_day0 and with_ordinal0 agree with their one-based counterparts" {
+  let date = @core.NaiveDate::from_ymd(2024, 1, 15).unwrap()
+  for n in 0..<=11 {
+    assert_eq(date.with_month0(n), date.with_month(n + 1))
+  }
+  for n in 0..<=30 {
+    assert_eq(date.with_day0(n), date.with_day(n + 1))
+  }
+  for n in [0, 100, 365] {
+    assert_eq(date.with_ordinal0(n), date.with_ordinal(n + 1))
+  }
+}
+
+///|
+test "with_month0, with_day0 and with_ordinal0 reject out-of-range values" {
+  let date = @core.NaiveDate::from_ymd(2023, 2, 1).unwrap()
+  assert_eq(date.with_month0(12), None)
+  assert_eq(date.with_month0(-1), None)
+  assert_eq(date.with_month0(2_147_483_647), None)
+  assert_eq(date.with_day0(28), None)
+  assert_eq(date.with_day0(-1), None)
+  assert_eq(date.with_day0(2_147_483_647), None)
+  assert_eq(date.with_ordinal0(365), None)
+  assert_eq(date.with_ordinal0(-1), None)
+  assert_eq(date.with_ordinal0(2_147_483_647), None)
+}
