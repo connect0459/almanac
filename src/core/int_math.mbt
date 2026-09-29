@@ -63,3 +63,11 @@ fn checked_mul64(a : Int64, b : Int64) -> Int64? {
     }
   }
 }
+
+///|
+fn[T] expect_in_range(value : T?, operation : String) -> T {
+  match value {
+    Some(v) => v
+    None => abort(operation + ": result is outside the representable range")
+  }
+}

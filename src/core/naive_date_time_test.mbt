@@ -296,3 +296,139 @@ test "signed_duration_since spans the full representable date range without over
     @core.TimeDelta::days(2L * limit.to_int64()).unwrap(),
   )
 }
+
+///|
+fn max_datetime() -> @core.NaiveDateTime {
+  @core.NaiveDate::from_epoch_days(2_147_483_647 - 719_468)
+  .unwrap()
+  .and_hms(23, 59, 59)
+  .unwrap()
+}
+
+///|
+fn min_datetime() -> @core.NaiveDateTime {
+  @core.NaiveDate::from_epoch_days(-(2_147_483_647 - 719_468))
+  .unwrap()
+  .and_hms(0, 0, 0)
+  .unwrap()
+}
+
+///|
+test "checked_add_signed and checked_sub_signed agree with the total versions within range" {
+  let dt = @core.NaiveDate::from_ymd(2024, 2, 28)
+    .unwrap()
+    .and_hms(23, 0, 0)
+    .unwrap()
+  let delta = @core.TimeDelta::hours(2L).unwrap()
+  assert_eq(dt.checked_add_signed(delta), Some(dt.add_signed(delta)))
+  assert_eq(dt.checked_sub_signed(delta), Some(dt.sub_signed(delta)))
+  assert_eq(
+    dt.checked_add_signed(delta),
+    @core.NaiveDate::from_ymd(2024, 2, 29).unwrap().and_hms(1, 0, 0),
+  )
+}
+
+///|
+test "checked_add_signed and checked_sub_signed reject a result outside the representable range" {
+  let one_second = @core.TimeDelta::seconds(1L).unwrap()
+  assert_eq(max_datetime().checked_add_signed(one_second), None)
+  assert_eq(min_datetime().checked_sub_signed(one_second), None)
+  assert_eq(
+    max_datetime().checked_add_signed(@core.TimeDelta::zero()),
+    Some(max_datetime()),
+  )
+}
+
+///|
+test "checked_add_signed and checked_sub_signed reject a duration whose day count exceeds the range" {
+  let dt = @core.NaiveDate::from_ymd(2024, 2, 28)
+    .unwrap()
+    .and_hms(0, 0, 0)
+    .unwrap()
+  assert_eq(dt.checked_add_signed(@core.TimeDelta::max_value()), None)
+  assert_eq(dt.checked_add_signed(@core.TimeDelta::min_value()), None)
+  assert_eq(dt.checked_sub_signed(@core.TimeDelta::max_value()), None)
+  assert_eq(dt.checked_sub_signed(@core.TimeDelta::min_value()), None)
+}
+
+///|
+test "datetime checked day and month arithmetic keeps the time of day and rejects out-of-range results" {
+  let dt = @core.NaiveDate::from_ymd(2024, 1, 31)
+    .unwrap()
+    .and_hms(8, 30, 0)
+    .unwrap()
+  assert_eq(
+    dt.checked_add_days(1),
+    @core.NaiveDate::from_ymd(2024, 2, 1).unwrap().and_hms(8, 30, 0),
+  )
+  assert_eq(
+    dt.checked_sub_days(31),
+    @core.NaiveDate::from_ymd(2023, 12, 31).unwrap().and_hms(8, 30, 0),
+  )
+  assert_eq(
+    dt.checked_add_months(1),
+    @core.NaiveDate::from_ymd(2024, 2, 29).unwrap().and_hms(8, 30, 0),
+  )
+  assert_eq(
+    dt.checked_sub_months(2),
+    @core.NaiveDate::from_ymd(2023, 11, 30).unwrap().and_hms(8, 30, 0),
+  )
+  assert_eq(max_datetime().checked_add_days(1), None)
+  assert_eq(min_datetime().checked_sub_days(1), None)
+  assert_eq(max_datetime().checked_add_months(1), None)
+  assert_eq(min_datetime().checked_sub_months(1), None)
+}
+
+///|
+test "from_timestamp rejects a timestamp whose day count is outside the representable range" {
+  assert_eq(
+    @core.NaiveDateTime::from_timestamp(9_223_372_036_854_775_807L, 0),
+    None,
+  )
+  assert_eq(
+    @core.NaiveDateTime::from_timestamp(-9_223_372_036_854_775_807L, 0),
+    None,
+  )
+  let limit = 2_147_483_647L - 719_468L
+  assert_true(@core.NaiveDateTime::from_timestamp(limit * 86400L, 0) is Some(_))
+  assert_eq(@core.NaiveDateTime::from_timestamp((limit + 1L) * 86400L, 0), None)
+  assert_eq(
+    @core.NaiveDateTime::from_timestamp((-limit - 1L) * 86400L, 0),
+    None,
+  )
+}
+
+///|
+test "panic add_signed aborts when the result leaves the representable range" {
+  ignore(max_datetime().add_signed(@core.TimeDelta::seconds(1L).unwrap()))
+}
+
+///|
+test "panic add_signed aborts on a duration exceeding the day range instead of truncating" {
+  ignore(min_datetime().add_signed(@core.TimeDelta::max_value()))
+}
+
+///|
+test "panic sub_signed aborts when the result leaves the representable range" {
+  ignore(min_datetime().sub_signed(@core.TimeDelta::seconds(1L).unwrap()))
+}
+
+///|
+test "panic datetime add_days aborts when the result leaves the representable range" {
+  ignore(max_datetime().add_days(1))
+}
+
+///|
+test "panic datetime sub_days aborts when the result leaves the representable range" {
+  ignore(min_datetime().sub_days(1))
+}
+
+///|
+test "panic datetime add_months aborts when the result leaves the representable range" {
+  ignore(max_datetime().add_months(1))
+}
+
+///|
+test "panic datetime sub_months aborts when the result leaves the representable range" {
+  ignore(min_datetime().sub_months(1))
+}

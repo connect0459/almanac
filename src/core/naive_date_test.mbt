@@ -492,7 +492,7 @@ test "add_signed reaches the representable range boundary on both sides and reje
   let lower = epoch.add_signed(@core.TimeDelta::days(-limit).unwrap()).unwrap()
   assert_true(upper.year() > 5_000_000)
   assert_true(lower.year() < -5_000_000)
-  assert_eq(upper.succ().pred(), upper)
+  assert_eq(upper.pred().succ(), upper)
   assert_eq(epoch.add_signed(@core.TimeDelta::days(limit + 1L).unwrap()), None)
   assert_eq(epoch.add_signed(@core.TimeDelta::days(-limit - 1L).unwrap()), None)
 }
@@ -689,4 +689,120 @@ test "from_num_days_from_ce rejects day counts beyond the representable range wi
     @core.NaiveDate::from_num_days_from_ce(-max + 719_468 + 719_162),
     None,
   )
+}
+
+///|
+fn max_date() -> @core.NaiveDate {
+  @core.NaiveDate::from_epoch_days(2_147_483_647 - 719_468).unwrap()
+}
+
+///|
+fn min_date() -> @core.NaiveDate {
+  @core.NaiveDate::from_epoch_days(-(2_147_483_647 - 719_468)).unwrap()
+}
+
+///|
+test "checked_add_days and checked_sub_days shift a date within range" {
+  let date = @core.NaiveDate::from_ymd(2024, 2, 28).unwrap()
+  assert_eq(date.checked_add_days(2), @core.NaiveDate::from_ymd(2024, 3, 1))
+  assert_eq(date.checked_sub_days(28), @core.NaiveDate::from_ymd(2024, 1, 31))
+  assert_eq(date.checked_add_days(-1), date.checked_sub_days(1))
+}
+
+///|
+test "checked_add_days and checked_sub_days reject a result outside the representable range" {
+  assert_eq(max_date().checked_add_days(1), None)
+  assert_eq(min_date().checked_add_days(-1), None)
+  assert_eq(max_date().checked_sub_days(-1), None)
+  assert_eq(min_date().checked_sub_days(1), None)
+  assert_eq(max_date().checked_add_days(0), Some(max_date()))
+  assert_eq(min_date().checked_sub_days(0), Some(min_date()))
+}
+
+///|
+test "checked_add_days and checked_sub_days reject extreme arguments without wrapping" {
+  let date = @core.NaiveDate::from_ymd(2024, 2, 28).unwrap()
+  assert_eq(date.checked_add_days(2_147_483_647), None)
+  assert_eq(date.checked_add_days(-2_147_483_648), None)
+  assert_eq(date.checked_sub_days(2_147_483_647), None)
+  assert_eq(date.checked_sub_days(-2_147_483_648), None)
+}
+
+///|
+test "succ_opt and pred_opt step one day and stop at the range boundary" {
+  let date = @core.NaiveDate::from_ymd(2024, 2, 28).unwrap()
+  assert_eq(date.succ_opt(), @core.NaiveDate::from_ymd(2024, 2, 29))
+  assert_eq(date.pred_opt(), @core.NaiveDate::from_ymd(2024, 2, 27))
+  assert_eq(max_date().succ_opt(), None)
+  assert_eq(min_date().pred_opt(), None)
+  assert_eq(max_date().pred_opt().unwrap().succ_opt(), Some(max_date()))
+  assert_eq(min_date().succ_opt().unwrap().pred_opt(), Some(min_date()))
+}
+
+///|
+test "checked_add_months and checked_sub_months clamp the day of month like their total counterparts" {
+  let date = @core.NaiveDate::from_ymd(2024, 1, 31).unwrap()
+  assert_eq(date.checked_add_months(1), Some(date.add_months(1)))
+  assert_eq(date.checked_add_months(1), @core.NaiveDate::from_ymd(2024, 2, 29))
+  assert_eq(date.checked_sub_months(2), @core.NaiveDate::from_ymd(2023, 11, 30))
+  assert_eq(date.checked_add_months(0), Some(date))
+}
+
+///|
+test "checked_add_months and checked_sub_months reject a result outside the representable range" {
+  assert_eq(max_date().checked_add_months(12), None)
+  assert_eq(min_date().checked_add_months(-12), None)
+  assert_eq(max_date().checked_sub_months(-12), None)
+  assert_eq(min_date().checked_sub_months(12), None)
+  assert_eq(max_date().checked_add_months(0), Some(max_date()))
+  assert_eq(min_date().checked_add_months(0), Some(min_date()))
+}
+
+///|
+test "checked_add_months and checked_sub_months reject extreme arguments without wrapping" {
+  let date = @core.NaiveDate::from_ymd(2024, 1, 31).unwrap()
+  assert_eq(date.checked_add_months(2_147_483_647), None)
+  assert_eq(date.checked_add_months(-2_147_483_648), None)
+  assert_eq(date.checked_sub_months(2_147_483_647), None)
+  assert_eq(date.checked_sub_months(-2_147_483_648), None)
+}
+
+///|
+test "panic add_days aborts when the result leaves the representable range" {
+  ignore(max_date().add_days(1))
+}
+
+///|
+test "panic sub_days aborts when the result leaves the representable range" {
+  ignore(min_date().sub_days(1))
+}
+
+///|
+test "panic add_days aborts on an extreme argument instead of wrapping" {
+  ignore(max_date().add_days(2_147_483_647))
+}
+
+///|
+test "panic succ aborts at the upper range boundary" {
+  ignore(max_date().succ())
+}
+
+///|
+test "panic pred aborts at the lower range boundary" {
+  ignore(min_date().pred())
+}
+
+///|
+test "panic add_months aborts when the result leaves the representable range" {
+  ignore(max_date().add_months(12))
+}
+
+///|
+test "panic sub_months aborts when the result leaves the representable range" {
+  ignore(min_date().sub_months(12))
+}
+
+///|
+test "panic add_months aborts on an extreme argument instead of wrapping" {
+  ignore(max_date().add_months(2_147_483_647))
 }

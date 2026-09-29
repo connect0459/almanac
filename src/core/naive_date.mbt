@@ -166,8 +166,11 @@ pub fn NaiveDate::with_ordinal(self : NaiveDate, ordinal : Int) -> NaiveDate? {
 
 ///|
 /// The next calendar day.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `succ_opt` to get `None` instead.
 pub fn NaiveDate::succ(self : NaiveDate) -> NaiveDate {
-  self.add_days(1)
+  expect_in_range(self.succ_opt(), "NaiveDate::succ")
 }
 
 ///|
@@ -307,22 +310,66 @@ pub fn NaiveDate::signed_duration_since(
 
 ///|
 /// The previous calendar day.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `pred_opt` to get `None` instead.
 pub fn NaiveDate::pred(self : NaiveDate) -> NaiveDate {
-  self.sub_days(1)
+  expect_in_range(self.pred_opt(), "NaiveDate::pred")
 }
 
 ///|
 /// The date `days` days after this one (or before it, if `days` is
 /// negative).
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_add_days` to get `None` instead.
 pub fn NaiveDate::add_days(self : NaiveDate, days : Int) -> NaiveDate {
-  NaiveDate::{ days: self.days + days, }
+  expect_in_range(self.checked_add_days(days), "NaiveDate::add_days")
+}
+
+///|
+/// The date `days` days after this one (or before it, if `days` is
+/// negative), or `None` if the result falls outside `NaiveDate`'s
+/// representable range.
+pub fn NaiveDate::checked_add_days(self : NaiveDate, days : Int) -> NaiveDate? {
+  self.checked_add_days64(days.to_int64())
+}
+
+///|
+/// The date `days` days before this one (or after it, if `days` is
+/// negative), or `None` if the result falls outside `NaiveDate`'s
+/// representable range.
+pub fn NaiveDate::checked_sub_days(self : NaiveDate, days : Int) -> NaiveDate? {
+  self.checked_add_days64(-days.to_int64())
+}
+
+///|
+fn NaiveDate::checked_add_days64(self : NaiveDate, days : Int64) -> NaiveDate? {
+  NaiveDate::from_epoch_days64(self.days.to_int64() + days)
+}
+
+///|
+/// The next calendar day, or `None` if this is the last representable
+/// date.
+pub fn NaiveDate::succ_opt(self : NaiveDate) -> NaiveDate? {
+  self.checked_add_days(1)
+}
+
+///|
+/// The previous calendar day, or `None` if this is the first representable
+/// date.
+pub fn NaiveDate::pred_opt(self : NaiveDate) -> NaiveDate? {
+  self.checked_sub_days(1)
 }
 
 ///|
 /// The date `days` days before this one (or after it, if `days` is
 /// negative).
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_sub_days` to get `None` instead.
 pub fn NaiveDate::sub_days(self : NaiveDate, days : Int) -> NaiveDate {
-  NaiveDate::{ days: self.days - days, }
+  expect_in_range(self.checked_sub_days(days), "NaiveDate::sub_days")
 }
 
 ///|
@@ -330,21 +377,62 @@ pub fn NaiveDate::sub_days(self : NaiveDate, days : Int) -> NaiveDate {
 /// negative). The day-of-month is clamped to the target month's length
 /// when it doesn't exist there (e.g. Jan 31 + 1 month becomes Feb 28 or
 /// Feb 29).
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_add_months` to get `None` instead.
 pub fn NaiveDate::add_months(self : NaiveDate, months : Int) -> NaiveDate {
+  expect_in_range(self.checked_add_months(months), "NaiveDate::add_months")
+}
+
+///|
+/// The date `months` months after this one (or before it, if `months` is
+/// negative), or `None` if the result falls outside `NaiveDate`'s
+/// representable range. See `add_months` for the day-of-month clamping
+/// rule.
+pub fn NaiveDate::checked_add_months(
+  self : NaiveDate,
+  months : Int,
+) -> NaiveDate? {
+  self.checked_add_months64(months.to_int64())
+}
+
+///|
+/// The date `months` months before this one (or after it, if `months` is
+/// negative), or `None` if the result falls outside `NaiveDate`'s
+/// representable range.
+pub fn NaiveDate::checked_sub_months(
+  self : NaiveDate,
+  months : Int,
+) -> NaiveDate? {
+  self.checked_add_months64(-months.to_int64())
+}
+
+///|
+fn NaiveDate::checked_add_months64(
+  self : NaiveDate,
+  months : Int64,
+) -> NaiveDate? {
   let (year, month, day) = civil_from_days(self.days)
-  let total = year * 12 + (month - 1) + months
-  let new_year = floor_div(total, 12)
-  let new_month = floor_mod(total, 12) + 1
-  let max_day = Month::from_number(new_month).unwrap().num_days(new_year)
+  let total = year.to_int64() * 12L + (month - 1).to_int64() + months
+  let new_year = floor_div64(total, 12L)
+  let new_month = floor_mod64(total, 12L).to_int() + 1
+  let max_day = Month::from_number(new_month)
+    .unwrap()
+    .num_days(new_year.to_int())
   let clamped_day = if day > max_day { max_day } else { day }
-  NaiveDate::{ days: days_from_civil(new_year, new_month, clamped_day), }
+  NaiveDate::from_epoch_days64(
+    days_from_civil64(new_year, new_month, clamped_day),
+  )
 }
 
 ///|
 /// The date `months` months before this one (or after it, if `months` is
 /// negative). See `add_months` for the day-of-month clamping rule.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_sub_months` to get `None` instead.
 pub fn NaiveDate::sub_months(self : NaiveDate, months : Int) -> NaiveDate {
-  self.add_months(-months)
+  expect_in_range(self.checked_sub_months(months), "NaiveDate::sub_months")
 }
 
 ///|

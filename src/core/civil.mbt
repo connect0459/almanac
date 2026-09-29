@@ -7,13 +7,20 @@
 /// "Euclidean Affine Functions and Applications to Calendar Algorithms"
 /// (as also used by Howard Hinnant's `days_from_civil`).
 pub fn days_from_civil(year : Int, month : Int, day : Int) -> Int {
-  let y = if month <= 2 { year - 1 } else { year }
-  let era = (if y >= 0 { y } else { y - 399 }) / 400
-  let yoe = y - era * 400
-  let mp = if month > 2 { month - 3 } else { month + 9 }
-  let doy = (153 * mp + 2) / 5 + day - 1
-  let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy
-  era * 146097 + doe - 719468
+  days_from_civil64(year.to_int64(), month, day).to_int()
+}
+
+///|
+/// `days_from_civil` with a 64-bit year and day count, so a caller checking a
+/// computed year against `NaiveDate`'s range never wraps on the way.
+fn days_from_civil64(year : Int64, month : Int, day : Int) -> Int64 {
+  let y = if month <= 2 { year - 1L } else { year }
+  let era = (if y >= 0L { y } else { y - 399L }) / 400L
+  let yoe = y - era * 400L
+  let mp = (if month > 2 { month - 3 } else { month + 9 }).to_int64()
+  let doy = (153L * mp + 2L) / 5L + day.to_int64() - 1L
+  let doe = yoe * 365L + yoe / 4L - yoe / 100L + doy
+  era * 146097L + doe - 719468L
 }
 
 ///|

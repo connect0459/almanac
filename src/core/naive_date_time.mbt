@@ -1,13 +1,4 @@
 ///|
-/// The date for a day count relative to the Unix epoch (`1970-01-01` is day
-/// `0`). Total: `civil_from_days` always yields a valid proleptic Gregorian
-/// `(year, month, day)` triple.
-fn from_epoch_days(days : Int) -> NaiveDate {
-  let (year, month, day) = civil_from_days(days)
-  NaiveDate::from_ymd(year, month, day).unwrap()
-}
-
-///|
 /// The Unix epoch instant, `1970-01-01T00:00:00`: the reference point
 /// `NaiveDateTime::round`/`truncate` measure a granularity against.
 fn epoch() -> NaiveDateTime {
@@ -48,11 +39,15 @@ pub fn NaiveDateTime::from_timestamp(
   secs : Int64,
   nanos : Int,
 ) -> NaiveDateTime? {
-  let days = floor_div64(secs, 86400L).to_int()
+  let days = floor_div64(secs, 86400L)
   let secs_of_day = floor_mod64(secs, 86400L).to_int()
-  match NaiveTime::from_num_seconds_from_midnight(secs_of_day, nanos) {
-    None => None
-    Some(time) => Some(NaiveDateTime::{ date: from_epoch_days(days), time, })
+  match
+    (
+      NaiveDate::from_epoch_days64(days),
+      NaiveTime::from_num_seconds_from_midnight(secs_of_day, nanos),
+    ) {
+    (Some(date), Some(time)) => Some(NaiveDateTime::{ date, time, })
+    _ => None
   }
 }
 
@@ -164,61 +159,148 @@ pub fn NaiveDateTime::timestamp_nanos(self : NaiveDateTime) -> Int64? {
 /// day overflow from the time-of-day arithmetic into the date. See
 /// `NaiveTime::overflowing_add_signed` for the wrapping and leap-second
 /// rules.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_add_signed` to get `None` instead.
 pub fn NaiveDateTime::add_signed(
   self : NaiveDateTime,
   delta : TimeDelta,
 ) -> NaiveDateTime {
+  expect_in_range(self.checked_add_signed(delta), "NaiveDateTime::add_signed")
+}
+
+///|
+/// This datetime advanced by the signed duration `delta`, or `None` if the
+/// resulting date falls outside `NaiveDate`'s representable range. See
+/// `add_signed`.
+pub fn NaiveDateTime::checked_add_signed(
+  self : NaiveDateTime,
+  delta : TimeDelta,
+) -> NaiveDateTime? {
   let (time, days) = self.time.overflowing_add_signed(delta)
-  NaiveDateTime::{ date: self.date.add_days(days.to_int()), time, }
+  self.date.checked_add_days64(days).map(date => NaiveDateTime::{ date, time, })
 }
 
 ///|
 /// This datetime moved back by the signed duration `delta`. See
 /// `add_signed`.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_sub_signed` to get `None` instead.
 pub fn NaiveDateTime::sub_signed(
   self : NaiveDateTime,
   delta : TimeDelta,
 ) -> NaiveDateTime {
-  self.add_signed(delta.neg())
+  expect_in_range(self.checked_sub_signed(delta), "NaiveDateTime::sub_signed")
+}
+
+///|
+/// This datetime moved back by the signed duration `delta`, or `None` if
+/// the resulting date falls outside `NaiveDate`'s representable range.
+pub fn NaiveDateTime::checked_sub_signed(
+  self : NaiveDateTime,
+  delta : TimeDelta,
+) -> NaiveDateTime? {
+  self.checked_add_signed(delta.neg())
 }
 
 ///|
 /// This datetime with its date advanced by `months` (or moved back, if
 /// `months` is negative), keeping the time of day unchanged. See
 /// `NaiveDate::add_months` for the day-of-month clamping rule.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_add_months` to get `None` instead.
 pub fn NaiveDateTime::add_months(
   self : NaiveDateTime,
   months : Int,
 ) -> NaiveDateTime {
-  NaiveDateTime::{ date: self.date.add_months(months), time: self.time, }
+  expect_in_range(self.checked_add_months(months), "NaiveDateTime::add_months")
+}
+
+///|
+/// Like `add_months`, but `None` if the resulting date falls outside
+/// `NaiveDate`'s representable range.
+pub fn NaiveDateTime::checked_add_months(
+  self : NaiveDateTime,
+  months : Int,
+) -> NaiveDateTime? {
+  self.date
+  .checked_add_months(months)
+  .map(date => NaiveDateTime::{ date, time: self.time, })
 }
 
 ///|
 /// This datetime with its date moved back by `months`. See `add_months`.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_sub_months` to get `None` instead.
 pub fn NaiveDateTime::sub_months(
   self : NaiveDateTime,
   months : Int,
 ) -> NaiveDateTime {
-  NaiveDateTime::{ date: self.date.sub_months(months), time: self.time, }
+  expect_in_range(self.checked_sub_months(months), "NaiveDateTime::sub_months")
+}
+
+///|
+/// Like `sub_months`, but `None` if the resulting date falls outside
+/// `NaiveDate`'s representable range.
+pub fn NaiveDateTime::checked_sub_months(
+  self : NaiveDateTime,
+  months : Int,
+) -> NaiveDateTime? {
+  self.date
+  .checked_sub_months(months)
+  .map(date => NaiveDateTime::{ date, time: self.time, })
 }
 
 ///|
 /// This datetime with its date advanced by `days` (or moved back, if
 /// `days` is negative), keeping the time of day unchanged.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_add_days` to get `None` instead.
 pub fn NaiveDateTime::add_days(
   self : NaiveDateTime,
   days : Int,
 ) -> NaiveDateTime {
-  NaiveDateTime::{ date: self.date.add_days(days), time: self.time, }
+  expect_in_range(self.checked_add_days(days), "NaiveDateTime::add_days")
+}
+
+///|
+/// Like `add_days`, but `None` if the resulting date falls outside
+/// `NaiveDate`'s representable range.
+pub fn NaiveDateTime::checked_add_days(
+  self : NaiveDateTime,
+  days : Int,
+) -> NaiveDateTime? {
+  self.date
+  .checked_add_days(days)
+  .map(date => NaiveDateTime::{ date, time: self.time, })
 }
 
 ///|
 /// This datetime with its date moved back by `days`. See `add_days`.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_sub_days` to get `None` instead.
 pub fn NaiveDateTime::sub_days(
   self : NaiveDateTime,
   days : Int,
 ) -> NaiveDateTime {
-  NaiveDateTime::{ date: self.date.sub_days(days), time: self.time, }
+  expect_in_range(self.checked_sub_days(days), "NaiveDateTime::sub_days")
+}
+
+///|
+/// Like `sub_days`, but `None` if the resulting date falls outside
+/// `NaiveDate`'s representable range.
+pub fn NaiveDateTime::checked_sub_days(
+  self : NaiveDateTime,
+  days : Int,
+) -> NaiveDateTime? {
+  self.date
+  .checked_sub_days(days)
+  .map(date => NaiveDateTime::{ date, time: self.time, })
 }
 
 ///|

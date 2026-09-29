@@ -73,6 +73,10 @@ pub fn NaiveDate::and_hms_micro(Self, Int, Int, Int, Int) -> NaiveDateTime?
 pub fn NaiveDate::and_hms_milli(Self, Int, Int, Int, Int) -> NaiveDateTime?
 pub fn NaiveDate::and_hms_nano(Self, Int, Int, Int, Int) -> NaiveDateTime?
 pub fn NaiveDate::and_time(Self, NaiveTime) -> NaiveDateTime
+pub fn NaiveDate::checked_add_days(Self, Int) -> Self?
+pub fn NaiveDate::checked_add_months(Self, Int) -> Self?
+pub fn NaiveDate::checked_sub_days(Self, Int) -> Self?
+pub fn NaiveDate::checked_sub_months(Self, Int) -> Self?
 pub fn NaiveDate::compare(Self, Self) -> Int
 pub fn NaiveDate::day(Self) -> Int
 pub fn NaiveDate::epoch_days(Self) -> Int
@@ -96,12 +100,14 @@ pub fn NaiveDate::op_le(Self, Self) -> Bool
 pub fn NaiveDate::op_lt(Self, Self) -> Bool
 pub fn NaiveDate::ordinal(Self) -> Int
 pub fn NaiveDate::pred(Self) -> Self
+pub fn NaiveDate::pred_opt(Self) -> Self?
 pub fn NaiveDate::quarter(Self) -> Int
 pub fn NaiveDate::signed_duration_since(Self, Self) -> TimeDelta
 pub fn NaiveDate::sub_days(Self, Int) -> Self
 pub fn NaiveDate::sub_months(Self, Int) -> Self
 pub fn NaiveDate::sub_signed(Self, TimeDelta) -> Self?
 pub fn NaiveDate::succ(Self) -> Self
+pub fn NaiveDate::succ_opt(Self) -> Self?
 pub fn NaiveDate::to_repr(Self) -> @debug.Repr
 pub fn NaiveDate::week(Self, Weekday) -> NaiveWeek
 pub fn NaiveDate::weekday(Self) -> Weekday
@@ -126,6 +132,12 @@ pub struct NaiveDateTime {
 pub fn NaiveDateTime::add_days(Self, Int) -> Self
 pub fn NaiveDateTime::add_months(Self, Int) -> Self
 pub fn NaiveDateTime::add_signed(Self, TimeDelta) -> Self
+pub fn NaiveDateTime::checked_add_days(Self, Int) -> Self?
+pub fn NaiveDateTime::checked_add_months(Self, Int) -> Self?
+pub fn NaiveDateTime::checked_add_signed(Self, TimeDelta) -> Self?
+pub fn NaiveDateTime::checked_sub_days(Self, Int) -> Self?
+pub fn NaiveDateTime::checked_sub_months(Self, Int) -> Self?
+pub fn NaiveDateTime::checked_sub_signed(Self, TimeDelta) -> Self?
 pub fn NaiveDateTime::compare(Self, Self) -> Int
 pub fn NaiveDateTime::date(Self) -> NaiveDate
 pub fn NaiveDateTime::equal(Self, Self) -> Bool

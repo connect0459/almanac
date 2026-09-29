@@ -189,6 +189,10 @@ A proleptic Gregorian calendar date. Constructors are `Option`-returning: an inv
 | `NaiveDate::from_num_days_from_ce(Int)` | `-> NaiveDate?` | Inverse of `num_days_from_ce()`; `None` if out of range |
 | `add_months(Int)` | `-> Self` | Shift by whole months, clamping the day of month to the target month's length |
 | `sub_months(Int)` | `-> Self` | Shift backward by whole months, with the same clamping |
+| `succ_opt()` | `-> Self?` | The next day; `None` at the last representable date |
+| `pred_opt()` | `-> Self?` | The previous day; `None` at the first representable date |
+| `checked_add_days(Int)` / `checked_sub_days(Int)` | `-> Self?` | As `add_days`/`sub_days`, but `None` if out of range |
+| `checked_add_months(Int)` / `checked_sub_months(Int)` | `-> Self?` | As `add_months`/`sub_months`, but `None` if out of range |
 | `week(Weekday)` | `-> NaiveWeek` | The calendar week containing this date, with weeks starting on the given weekday |
 | `years_since(Self)` | `-> Int?` | Full elapsed calendar years from `other` to `self` (a year counts once the month and day have both recurred); `None` if `self` is before `other` |
 | `quarter()` | `-> Int` | Calendar quarter, `1..=4` |
@@ -324,6 +328,11 @@ A `NaiveDate` and `NaiveTime` combined into one zone-less instant.
 | `sub_months(Int)` | `-> Self` | Shift the date backward by whole months |
 | `add_days(Int)` | `-> Self` | Shift the date by a day count, keeping the time of day |
 | `sub_days(Int)` | `-> Self` | Shift the date backward by a day count |
+| `checked_add_signed(TimeDelta)` / `checked_sub_signed(TimeDelta)` | `-> Self?` | As `add_signed`/`sub_signed`, but `None` if the date is out of range |
+| `checked_add_days(Int)` / `checked_sub_days(Int)` | `-> Self?` | As `add_days`/`sub_days`, but `None` if out of range |
+| `checked_add_months(Int)` / `checked_sub_months(Int)` | `-> Self?` | As `add_months`/`sub_months`, but `None` if out of range |
+
+The non-`checked` arithmetic on `NaiveDate` and `NaiveDateTime` (`succ`, `pred`, `add_*`, `sub_*`) aborts if the result falls outside the representable date range (about ±5.87 million years around the epoch) rather than wrapping into an invalid date; use the `checked_*`/`*_opt` forms to get `None` instead.
 | `signed_duration_since(Self)` | `-> TimeDelta` | The signed duration from `other` to `self` |
 | `round(TimeDelta)` | `-> Self?` | Round to the nearest multiple of a granularity since the Unix epoch, ties breaking away from the epoch; see `TimeDelta::round` for which granularities are supported |
 | `truncate(TimeDelta)` | `-> Self?` | Truncate toward the Unix epoch to the nearest multiple of a granularity; a datetime before the epoch is truncated *forward* in time (see Quick start above), never further into the past |
