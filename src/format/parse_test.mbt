@@ -143,6 +143,14 @@ test "parsing rejects a malformed numeric field for every fixed-width numeric sp
       ("%S", "XX"),
       ("%f", "12345"),
       ("%I", "XX"),
+      ("%C", "XX"),
+      ("%y", "XX"),
+      ("%q", "X"),
+      ("%e", "XX"),
+      ("%w", "X"),
+      ("%u", "X"),
+      ("%U", "XX"),
+      ("%W", "XX"),
     ] {
     let (fmt, bad) = case
     try @format.parse_date_time(bad, fmt) |> ignore catch {
@@ -410,6 +418,227 @@ test "parse_time rejects a 12-hour value outside 1..=12" {
     _ => fail("expected InconsistentFields")
   } noraise {
     _ => fail("expected rejection for an out-of-range %I value")
+  }
+}
+
+///|
+test "parse_date cross-checks a redundantly-present quarter against month/day" {
+  let date = @core.NaiveDate::from_ymd(2024, 7, 15).unwrap()
+  let fmt = "%Y-%m-%d (%q)"
+  assert_eq(@format.parse_date(@format.format_date(date, fmt), fmt), date)
+  try @format.parse_date("2024-07-15 (1)", fmt) |> ignore catch {
+    @format.InconsistentFields => ()
+    _ => fail("expected InconsistentFields")
+  } noraise {
+    _ => fail("expected parse_date to reject a mismatched quarter")
+  }
+}
+
+///|
+test "parse_date round-trips the space-padded day via %e, sharing %d's field" {
+  let fmt = "%Y-%m-%e"
+  for day in [5, 15] {
+    let date = @core.NaiveDate::from_ymd(2024, 3, day).unwrap()
+    assert_eq(@format.parse_date(@format.format_date(date, fmt), fmt), date)
+  }
+  assert_eq(
+    @format.parse_date("2024-03- 5", fmt),
+    @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+  )
+}
+
+///|
+test "parse_date round-trips the numeric weekday via %w and %u across every day of the week, cross-checked against %A" {
+  let sunday = @core.NaiveDate::from_ymd(2024, 3, 3).unwrap()
+  for offset in [0, 1, 2, 3, 4, 5, 6] {
+    let date = sunday.add_days(offset)
+    assert_eq(
+      @format.parse_date(
+        @format.format_date(date, "%Y-%m-%d %w"),
+        "%Y-%m-%d %w",
+      ),
+      date,
+    )
+    assert_eq(
+      @format.parse_date(
+        @format.format_date(date, "%Y-%m-%d %u"),
+        "%Y-%m-%d %u",
+      ),
+      date,
+    )
+  }
+  try
+    @format.parse_date("2024-03-05 Tuesday 1", "%Y-%m-%d %A %u") |> ignore
+  catch {
+    @format.InconsistentFields => ()
+    _ => fail("expected InconsistentFields")
+  } noraise {
+    _ => fail("expected parse_date to reject a %A/%u disagreement")
+  }
+}
+
+///|
+test "parsing %w/%u rejects a digit outside the valid weekday range" {
+  try @format.parse_date("2024-03-05 7", "%Y-%m-%d %w") |> ignore catch {
+    @format.InconsistentFields => ()
+    _ => fail("expected InconsistentFields")
+  } noraise {
+    _ => fail("expected rejection for an out-of-range %w value")
+  }
+  try @format.parse_date("2024-03-05 0", "%Y-%m-%d %u") |> ignore catch {
+    @format.InconsistentFields => ()
+    _ => fail("expected InconsistentFields")
+  } noraise {
+    _ => fail("expected rejection for an out-of-range %u value")
+  }
+}
+
+///|
+test "parse_date reconstructs the year from %C and %y together" {
+  let date = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
+  let fmt = "%C%y-%m-%d"
+  assert_eq(@format.parse_date(@format.format_date(date, fmt), fmt), date)
+}
+
+///|
+test "parse_date interprets a lone %y (no %C) via the conventional pivot: below 70 is 20xx, at or above 70 is 19xx" {
+  assert_eq(
+    @format.parse_date("24-03-05", "%y-%m-%d"),
+    @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+  )
+  assert_eq(
+    @format.parse_date("69-03-05", "%y-%m-%d"),
+    @core.NaiveDate::from_ymd(2069, 3, 5).unwrap(),
+  )
+  assert_eq(
+    @format.parse_date("70-03-05", "%y-%m-%d"),
+    @core.NaiveDate::from_ymd(1970, 3, 5).unwrap(),
+  )
+  assert_eq(
+    @format.parse_date("99-03-05", "%y-%m-%d"),
+    @core.NaiveDate::from_ymd(1999, 3, 5).unwrap(),
+  )
+}
+
+///|
+test "parse_date rejects %C without %y, since a century alone is insufficient" {
+  try @format.parse_date("20-03-05", "%C-%m-%d") |> ignore catch {
+    @format.IncompleteFields => ()
+    _ => fail("expected IncompleteFields")
+  } noraise {
+    _ => fail("expected parse_date to reject %C without %y")
+  }
+}
+
+///|
+test "parse_date cross-checks %Y against a redundantly-present %C/%y, and rejects a negative year combined with either" {
+  assert_eq(
+    @format.parse_date("2024-20-24-03-05", "%Y-%C-%y-%m-%d"),
+    @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+  )
+  try @format.parse_date("2024-19-24-03-05", "%Y-%C-%y-%m-%d") |> ignore catch {
+    @format.InconsistentFields => ()
+    _ => fail("expected InconsistentFields")
+  } noraise {
+    _ => fail("expected parse_date to reject a mismatched %C")
+  }
+  try
+    @format.parse_date("-0007-00-93-01-01", "%Y-%C-%y-%m-%d") |> ignore
+  catch {
+    @format.InconsistentFields => ()
+    _ => fail("expected InconsistentFields")
+  } noraise {
+    _ =>
+      fail("expected parse_date to reject a negative year combined with %C/%y")
+  }
+}
+
+///|
+test "parse_date round-trips the US-style week number via %U/%W combined with a weekday" {
+  for
+    case in [
+      (2024, 1, 1),
+      (2024, 1, 6),
+      (2024, 1, 7),
+      (2024, 1, 8),
+      (2024, 12, 31),
+      (2023, 1, 1),
+      (2023, 1, 2),
+      (2021, 1, 1),
+      (2021, 1, 3),
+      (2021, 1, 4),
+    ] {
+    let (year, month, day) = case
+    let date = @core.NaiveDate::from_ymd(year, month, day).unwrap()
+    let u_fmt = "%Y %U %A"
+    assert_eq(@format.parse_date(@format.format_date(date, u_fmt), u_fmt), date)
+    let w_fmt = "%Y %W %A"
+    assert_eq(@format.parse_date(@format.format_date(date, w_fmt), w_fmt), date)
+  }
+}
+
+///|
+test "parse_date rejects %U/%W without a weekday, since the week number alone doesn't determine a day" {
+  try @format.parse_date("2024 01", "%Y %U") |> ignore catch {
+    @format.IncompleteFields => ()
+    _ => fail("expected IncompleteFields")
+  } noraise {
+    _ => fail("expected parse_date to reject %U without a weekday")
+  }
+}
+
+///|
+test "parse_date rejects a %U/%W and weekday combination that names an impossible date" {
+  try @format.parse_date("2024 53 Sunday", "%Y %U %A") |> ignore catch {
+    @format.InconsistentFields => ()
+    _ => fail("expected InconsistentFields")
+  } noraise {
+    _ =>
+      fail("expected parse_date to reject an impossible %U/weekday combination")
+  }
+}
+
+///|
+test "parse_date rejects disagreeing %U and %W values for the same date" {
+  try @format.parse_date("2024 01 05 Monday", "%Y %U %W %A") |> ignore catch {
+    @format.InconsistentFields => ()
+    _ => fail("expected InconsistentFields")
+  } noraise {
+    _ => fail("expected parse_date to reject disagreeing %U/%W")
+  }
+}
+
+///|
+test "parse_date cross-checks a redundantly-present %U/%W against an already-determined date" {
+  let date = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
+  let u_fmt = "%Y-%m-%d %U"
+  assert_eq(@format.parse_date(@format.format_date(date, u_fmt), u_fmt), date)
+  try @format.parse_date("2024-03-05 99", u_fmt) |> ignore catch {
+    @format.InconsistentFields => ()
+    _ => fail("expected InconsistentFields")
+  } noraise {
+    _ => fail("expected parse_date to reject a mismatched %U")
+  }
+  let w_fmt = "%Y-%m-%d %W"
+  assert_eq(@format.parse_date(@format.format_date(date, w_fmt), w_fmt), date)
+  try @format.parse_date("2024-03-05 99", w_fmt) |> ignore catch {
+    @format.InconsistentFields => ()
+    _ => fail("expected InconsistentFields")
+  } noraise {
+    _ => fail("expected parse_date to reject a mismatched %W")
+  }
+}
+
+///|
+test "parse_date rejects a weekday with no month/day/ordinal and no %U/%W to combine it with" {
+  try @format.parse_date("2024 Monday", "%Y %A") |> ignore catch {
+    @format.IncompleteFields => ()
+    _ => fail("expected IncompleteFields")
+  } noraise {
+    _ =>
+      fail(
+        "expected parse_date to reject a bare weekday with no other date fields",
+      )
   }
 }
 

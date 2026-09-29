@@ -24,6 +24,24 @@ pub(all) enum Numeric {
   IsoYear2
   /// `%V`: the ISO 8601 week number (`01`..=`53`).
   IsoWeekNumber
+  /// `%C`: the calendar year divided by 100, zero-padded to 2 digits.
+  Century
+  /// `%y`: the calendar year modulo 100, zero-padded to 2 digits.
+  YearMod100
+  /// `%q`: the quarter (`1`..=`4`).
+  Quarter
+  /// `%e`: the day of the month, space-padded (`" 1"`..=`"31"`).
+  DayBlank
+  /// `%w`: the weekday as a number, Sunday-based (`0`..=`6`, Sunday `0`).
+  WeekdayNumberSunday0
+  /// `%u`: the weekday as a number, Monday-based (`1`..=`7`, ISO 8601).
+  WeekdayNumberMonday1
+  /// `%U`: the week number of the year, Sunday-based (`00`..=`53`); days
+  /// before the year's first Sunday are week `00`.
+  WeekSunday
+  /// `%W`: the week number of the year, Monday-based (`00`..=`53`); days
+  /// before the year's first Monday are week `00`.
+  WeekMonday
 } derive(Eq, @debug.Debug)
 
 ///|

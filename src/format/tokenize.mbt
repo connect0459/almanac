@@ -117,6 +117,38 @@ pub fn tokenize(fmt : String) -> Array[Item] raise ParseError {
         flush_literal()
         items.push(Numeric(IsoWeekNumber))
       }
+      'C' => {
+        flush_literal()
+        items.push(Numeric(Century))
+      }
+      'y' => {
+        flush_literal()
+        items.push(Numeric(YearMod100))
+      }
+      'q' => {
+        flush_literal()
+        items.push(Numeric(Quarter))
+      }
+      'e' => {
+        flush_literal()
+        items.push(Numeric(DayBlank))
+      }
+      'w' => {
+        flush_literal()
+        items.push(Numeric(WeekdayNumberSunday0))
+      }
+      'u' => {
+        flush_literal()
+        items.push(Numeric(WeekdayNumberMonday1))
+      }
+      'U' => {
+        flush_literal()
+        items.push(Numeric(WeekSunday))
+      }
+      'W' => {
+        flush_literal()
+        items.push(Numeric(WeekMonday))
+      }
       'F' => {
         flush_literal()
         items.push(Numeric(Year))

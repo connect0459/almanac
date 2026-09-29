@@ -21,6 +21,14 @@ test "tokenize recognizes each numeric specifier" {
       ("%G", @format.IsoYear),
       ("%g", @format.IsoYear2),
       ("%V", @format.IsoWeekNumber),
+      ("%C", @format.Century),
+      ("%y", @format.YearMod100),
+      ("%q", @format.Quarter),
+      ("%e", @format.DayBlank),
+      ("%w", @format.WeekdayNumberSunday0),
+      ("%u", @format.WeekdayNumberMonday1),
+      ("%U", @format.WeekSunday),
+      ("%W", @format.WeekMonday),
     ] {
     let (spec, expected) = case
     assert_eq(@format.tokenize(spec), [@format.Numeric(expected)])

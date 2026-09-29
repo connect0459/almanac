@@ -21,6 +21,21 @@ priv struct Parsed {
   hour12 : Int?
   /// `%p`/`%P`: whether the 12-hour clock reading is PM.
   is_pm : Bool?
+  /// `%C`: the calendar year divided by 100, reconciled with `year`
+  /// and/or `year_mod_100` by `resolve_year`.
+  year_div_100 : Int?
+  /// `%y`: the calendar year modulo 100. See `resolve_year`.
+  year_mod_100 : Int?
+  /// `%q`: cross-checked, like `ordinal`/`weekday`, against an
+  /// already-determined date rather than used to construct one (a
+  /// quarter alone doesn't determine a day).
+  quarter : Int?
+  /// `%U`: the Sunday-based week number, combined with `weekday` by
+  /// `resolve_date_from_week` when no month/day/ordinal is present, or
+  /// else cross-checked against the constructed date.
+  week_sunday : Int?
+  /// `%W`: the Monday-based week number. See `week_sunday`.
+  week_monday : Int?
 }
 
 ///|
@@ -38,6 +53,11 @@ fn Parsed::empty() -> Parsed {
     offset_secs: None,
     hour12: None,
     is_pm: None,
+    year_div_100: None,
+    year_mod_100: None,
+    quarter: None,
+    week_sunday: None,
+    week_monday: None,
   }
 }
 
@@ -154,6 +174,39 @@ fn match_weekday_name(chars : Array[Char], pos : Int) -> (@core.Weekday, Int)? {
           None => continue i + 1
         }
     }
+  }
+}
+
+///|
+/// The `Weekday` whose `num_days_from_sunday()` is `n` (`%w`'s numbering:
+/// `0` = Sunday), or `None` if `n` is outside `0..=6`.
+fn weekday_from_num_days_from_sunday(n : Int) -> @core.Weekday? {
+  match n {
+    0 => Some(@core.Sun)
+    1 => Some(@core.Mon)
+    2 => Some(@core.Tue)
+    3 => Some(@core.Wed)
+    4 => Some(@core.Thu)
+    5 => Some(@core.Fri)
+    6 => Some(@core.Sat)
+    _ => None
+  }
+}
+
+///|
+/// The `Weekday` whose `number_from_monday()` is `n` (`%u`'s ISO 8601
+/// numbering: `1` = Monday, `7` = Sunday), or `None` if `n` is outside
+/// `1..=7`.
+fn weekday_from_number_from_monday(n : Int) -> @core.Weekday? {
+  match n {
+    1 => Some(@core.Mon)
+    2 => Some(@core.Tue)
+    3 => Some(@core.Wed)
+    4 => Some(@core.Thu)
+    5 => Some(@core.Fri)
+    6 => Some(@core.Sat)
+    7 => Some(@core.Sun)
+    _ => None
   }
 }
 
@@ -376,6 +429,74 @@ fn apply_item(
     Numeric(IsoYear) => raise InputMismatch
     Numeric(IsoYear2) => raise InputMismatch
     Numeric(IsoWeekNumber) => raise InputMismatch
+    Numeric(Century) =>
+      match parse_fixed_digits(chars, pos, 2) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          (
+            { ..parsed, year_div_100: merge_field(parsed.year_div_100, value), },
+            p,
+          )
+      }
+    Numeric(YearMod100) =>
+      match parse_fixed_digits(chars, pos, 2) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          (
+            { ..parsed, year_mod_100: merge_field(parsed.year_mod_100, value), },
+            p,
+          )
+      }
+    Numeric(Quarter) =>
+      match parse_fixed_digits(chars, pos, 1) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          ({ ..parsed, quarter: merge_field(parsed.quarter, value), }, p)
+      }
+    Numeric(DayBlank) =>
+      match parse_blank_or_zero_padded_digits(chars, pos, 2) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          ({ ..parsed, day: merge_field(parsed.day, value), }, p)
+      }
+    Numeric(WeekdayNumberSunday0) =>
+      match parse_fixed_digits(chars, pos, 1) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          match weekday_from_num_days_from_sunday(value) {
+            None => raise InconsistentFields
+            Some(wd) =>
+              ({ ..parsed, weekday: merge_field(parsed.weekday, wd), }, p)
+          }
+      }
+    Numeric(WeekdayNumberMonday1) =>
+      match parse_fixed_digits(chars, pos, 1) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          match weekday_from_number_from_monday(value) {
+            None => raise InconsistentFields
+            Some(wd) =>
+              ({ ..parsed, weekday: merge_field(parsed.weekday, wd), }, p)
+          }
+      }
+    Numeric(WeekSunday) =>
+      match parse_fixed_digits(chars, pos, 2) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          (
+            { ..parsed, week_sunday: merge_field(parsed.week_sunday, value), },
+            p,
+          )
+      }
+    Numeric(WeekMonday) =>
+      match parse_fixed_digits(chars, pos, 2) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          (
+            { ..parsed, week_monday: merge_field(parsed.week_monday, value), },
+            p,
+          )
+      }
   }
 }
 
@@ -403,8 +524,95 @@ fn parse_items(items : Array[Item], input : String) -> Parsed raise ParseError {
 /// `month`+`day` or `ordinal`. Cross-checks a redundantly-present
 /// ordinal, and a parsed weekday (`%A`/`%a`), against the constructed
 /// date.
+/// Resolves the actual calendar year from `%Y` (`year`) and/or `%C`/`%y`
+/// (`year_div_100`/`year_mod_100`), cross-checking every present field
+/// against the others (mirrors `merge_field`'s disagreement-raises
+/// philosophy, applied across specifiers rather than within one). A
+/// negative `%Y` combined with either `%C` or `%y` is rejected outright,
+/// rather than silently reconciled, since a negative year has no
+/// well-defined century/modulo split. `%y` alone (no `%C`, no `%Y`) is
+/// interpreted via the conventional two-digit-year pivot (`< 70` -> 20xx,
+/// `>= 70` -> 19xx), matching strftime/chrono convention. `None` when
+/// none of the three fields is present at all.
+fn resolve_year(parsed : Parsed) -> Int? raise ParseError {
+  match (parsed.year, parsed.year_div_100, parsed.year_mod_100) {
+    (Some(y), None, None) => Some(y)
+    (Some(y), q, r) => {
+      if y < 0 {
+        raise InconsistentFields
+      }
+      let q_ = y / 100
+      let r_ = y % 100
+      if q.unwrap_or(q_) != q_ || r.unwrap_or(r_) != r_ {
+        raise InconsistentFields
+      }
+      Some(y)
+    }
+    (None, None, None) => None
+    (None, Some(q), Some(r)) => Some(q * 100 + r)
+    (None, None, Some(r)) => Some(r + (if r < 70 { 2000 } else { 1900 }))
+    (None, Some(_), None) => raise IncompleteFields
+  }
+}
+
+///|
+/// The 1-based ordinal day of the date in `year` whose weekday is
+/// `weekday` and whose `%U`/`%W`-style week number is `week`, under a
+/// week-numbering scheme whose weeks start on the weekday indexed `0` by
+/// `wday_x` (see `week_number`, this function's inverse). Not
+/// range-checked against `year`'s actual length — `resolve_date_from_week`
+/// delegates that to `NaiveDate::from_yo`.
+fn week_based_yday(first_day_wday_x : Int, week : Int, wday_x : Int) -> Int {
+  let first_anchor_yday = (7 - first_day_wday_x) % 7 + 1
+  first_anchor_yday + (week - 1) * 7 + wday_x
+}
+
+///|
+/// Constructs a date from `%U`/`%W` (a week number) plus a weekday
+/// (`%A`/`%a`/`%w`/`%u`), for when no month/day/ordinal was given at all.
+/// Used only by `resolve_date`'s `(None, None)` branch; `%q` has no role
+/// here (a quarter alone never determines a day, so it's cross-checked
+/// against the finished date instead, like `ordinal`/`weekday`).
+fn resolve_date_from_week(
+  year : Int,
+  parsed : Parsed,
+) -> @core.NaiveDate raise ParseError {
+  let weekday = match parsed.weekday {
+    None => raise IncompleteFields
+    Some(wd) => wd
+  }
+  // `from_ymd(year, 1, 1)` never fails: day 1 is always valid in month 1,
+  // for any year.
+  let jan1 = @core.NaiveDate::from_ymd(year, 1, 1).unwrap()
+  let from_sunday = parsed.week_sunday.map(week => {
+    week_based_yday(
+      jan1.weekday().num_days_from_sunday(),
+      week,
+      weekday.num_days_from_sunday(),
+    )
+  })
+  let from_monday = parsed.week_monday.map(week => {
+    week_based_yday(
+      jan1.weekday().num_days_from_monday(),
+      week,
+      weekday.num_days_from_monday(),
+    )
+  })
+  let yday = match (from_sunday, from_monday) {
+    (None, None) => raise IncompleteFields
+    (Some(y), None) => y
+    (None, Some(y)) => y
+    (Some(a), Some(b)) => if a == b { a } else { raise InconsistentFields }
+  }
+  match @core.NaiveDate::from_yo(year, yday) {
+    None => raise InconsistentFields
+    Some(d) => d
+  }
+}
+
+///|
 fn resolve_date(parsed : Parsed) -> @core.NaiveDate raise ParseError {
-  let year = match parsed.year {
+  let year = match resolve_year(parsed) {
     None => raise IncompleteFields
     Some(y) => y
   }
@@ -416,12 +624,12 @@ fn resolve_date(parsed : Parsed) -> @core.NaiveDate raise ParseError {
       }
     (None, None) =>
       match parsed.ordinal {
-        None => raise IncompleteFields
         Some(ordinal) =>
           match @core.NaiveDate::from_yo(year, ordinal) {
             None => raise InconsistentFields
             Some(d) => d
           }
+        None => resolve_date_from_week(year, parsed)
       }
     _ => raise IncompleteFields
   }
@@ -432,6 +640,26 @@ fn resolve_date(parsed : Parsed) -> @core.NaiveDate raise ParseError {
   match parsed.weekday {
     None => ()
     Some(wd) => if date.weekday() != wd { raise InconsistentFields }
+  }
+  match parsed.quarter {
+    None => ()
+    Some(q) => if date.quarter() != q { raise InconsistentFields }
+  }
+  match parsed.week_sunday {
+    None => ()
+    Some(week) =>
+      if week_number(date.ordinal(), date.weekday().num_days_from_sunday()) !=
+        week {
+        raise InconsistentFields
+      }
+  }
+  match parsed.week_monday {
+    None => ()
+    Some(week) =>
+      if week_number(date.ordinal(), date.weekday().num_days_from_monday()) !=
+        week {
+        raise InconsistentFields
+      }
   }
   date
 }

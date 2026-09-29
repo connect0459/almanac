@@ -33,9 +33,17 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%P` | am/pm marker, lowercase | `"am"`/`"pm"`; parses `%p`/`%P` case-insensitively either way |
 | `%p` | am/pm marker, uppercase | `"AM"`/`"PM"`; see `%P` |
 | `%s` | Unix timestamp | Format-only: the underlying UTC instant's seconds since the epoch (unaffected by `format_date_time_tz`'s local zone shift); raises `InputMismatch` on parse |
-| `%G` | ISO week-based year | Zero-padded to 4 digits; format-only, raises `InputMismatch` on parse (needs a weekday specifier, not yet implemented, to round-trip) |
+| `%G` | ISO week-based year | Zero-padded to 4 digits; format-only, raises `InputMismatch` on parse (round-tripping via ISO week-date construction is not yet implemented, unlike `%U`/`%W`'s Gregorian-year week-date construction below) |
 | `%g` | ISO week-based year, no century | Zero-padded to 2 digits; format-only, see `%G` |
 | `%V` | ISO week number | Zero-padded, `01`..`53`; format-only, see `%G` |
+| `%C` | Century | Zero-padded to 2 digits (`year / 100`); combines with `%y` on parse (`%y` alone is interpreted via the conventional two-digit-year pivot: `< 70` -> 20xx, `>= 70` -> 19xx); cross-checked against `%Y`, if also present |
+| `%y` | Year without century | Zero-padded to 2 digits (`year % 100`); see `%C` |
+| `%q` | Quarter | `1`..`4`, no padding; on parse, cross-checked against an already-determined date (a quarter alone can't determine a day, like `%A`/`%a`) |
+| `%e` | Day, space-padded | `" 1"`..`"31"`; parses the same field as `%d`, tolerating a blank or zero leading digit |
+| `%w` | Weekday number, Sunday-based | `0`..`6` (Sunday `0`); parses the same field as `%A`/`%a` |
+| `%u` | Weekday number, Monday-based (ISO 8601) | `1`..`7` (Sunday `7`); parses the same field as `%A`/`%a` |
+| `%U` | Week number, Sunday-based | Zero-padded, `00`..`53`; combined with a weekday (`%A`/`%a`/`%w`/`%u`) on parse to construct a date when no month/day/ordinal is given, mirroring `%j`'s role; cross-checked against an already-determined date otherwise |
+| `%W` | Week number, Monday-based | Zero-padded, `00`..`53`; see `%U` |
 | `%Z` | Timezone name | Format-only: raises `InputMismatch` on parse (no generically parseable shape) |
 | `%z` | Timezone offset | `±HHMM`, no colon |
 | `%F` | `%Y-%m-%d` | Expands to that specifier sequence |
@@ -94,7 +102,7 @@ test {
 | Function | Signature | Description |
 | :--- | :--- | :--- |
 | `format_date(NaiveDate, String)` | `-> String raise ParseError` | Render against a format string; raises `MissingField` for a time-of-day specifier (`%H`/`%M`/`%S`/`%f`/`%I`/`%l`/`%P`/`%p`) |
-| `format_time(NaiveTime, String)` | `-> String raise ParseError` | Render against a format string; raises `MissingField` for a date specifier (`%Y`/`%m`/`%d`/`%j`/`%A`/`%a`/`%B`/`%b`/`%h`/`%G`/`%g`/`%V`) or `%s` (no absolute instant to draw from) |
+| `format_time(NaiveTime, String)` | `-> String raise ParseError` | Render against a format string; raises `MissingField` for a date specifier (`%Y`/`%m`/`%d`/`%j`/`%A`/`%a`/`%B`/`%b`/`%h`/`%G`/`%g`/`%V`/`%C`/`%y`/`%q`/`%e`/`%w`/`%u`/`%U`/`%W`) or `%s` (no absolute instant to draw from) |
 | `format_date_time(NaiveDateTime, String)` | `-> String raise ParseError` | Render against a format string; raises `MissingField` for `%Z`/`%z` (no zone to draw from) |
 | `format_date_time_tz(DateTime[Tz], String)` *(Tz : TimeZone)* | `-> String raise ParseError` | Render in local (wall-clock) representation; `%Z` renders `tz.tz_name()`, `%z` the numeric offset, `%s` the underlying UTC instant's timestamp |
 
@@ -148,6 +156,14 @@ pub(all) enum Numeric {
   IsoYear
   IsoYear2
   IsoWeekNumber
+  Century
+  YearMod100
+  Quarter
+  DayBlank
+  WeekdayNumberSunday0
+  WeekdayNumberMonday1
+  WeekSunday
+  WeekMonday
 }
 
 ///|

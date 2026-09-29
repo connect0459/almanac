@@ -70,6 +70,17 @@ fn pad_int_blank(n : Int, width : Int) -> String {
 }
 
 ///|
+/// The week number (`%U`/`%W`, `0..=53`) of the date whose 1-based
+/// ordinal day is `yday`, under a week-numbering scheme whose weeks
+/// start on the weekday indexed `0` by `wday_x` (that date's own
+/// `Weekday::num_days_from_sunday()`/`num_days_from_monday()`, matching
+/// `%U`'s Sunday start or `%W`'s Monday start respectively): days before
+/// the year's first such start day fall in week `0`.
+fn week_number(yday : Int, wday_x : Int) -> Int {
+  (yday - 1 - wday_x + 7) / 7
+}
+
+///|
 /// Renders a signed offset (in seconds) as strftime's `%z`: a sign
 /// followed by a zero-padded `HHMM`, with no colon and no sub-minute
 /// seconds component.
@@ -217,6 +228,60 @@ fn render(
       Numeric(IsoWeekNumber) =>
         match date {
           Some(d) => out.write_string(pad_int(d.iso_week().week(), 2))
+          None => raise MissingField(item)
+        }
+      Numeric(Century) =>
+        match date {
+          Some(d) => out.write_string(pad_int(d.year() / 100, 2))
+          None => raise MissingField(item)
+        }
+      Numeric(YearMod100) =>
+        match date {
+          Some(d) => out.write_string(pad_int(d.year() % 100, 2))
+          None => raise MissingField(item)
+        }
+      Numeric(Quarter) =>
+        match date {
+          Some(d) => out.write_string(pad_int(d.quarter(), 1))
+          None => raise MissingField(item)
+        }
+      Numeric(DayBlank) =>
+        match date {
+          Some(d) => out.write_string(pad_int_blank(d.day(), 2))
+          None => raise MissingField(item)
+        }
+      Numeric(WeekdayNumberSunday0) =>
+        match date {
+          Some(d) =>
+            out.write_string(pad_int(d.weekday().num_days_from_sunday(), 1))
+          None => raise MissingField(item)
+        }
+      Numeric(WeekdayNumberMonday1) =>
+        match date {
+          Some(d) =>
+            out.write_string(pad_int(d.weekday().number_from_monday(), 1))
+          None => raise MissingField(item)
+        }
+      Numeric(WeekSunday) =>
+        match date {
+          Some(d) =>
+            out.write_string(
+              pad_int(
+                week_number(d.ordinal(), d.weekday().num_days_from_sunday()),
+                2,
+              ),
+            )
+          None => raise MissingField(item)
+        }
+      Numeric(WeekMonday) =>
+        match date {
+          Some(d) =>
+            out.write_string(
+              pad_int(
+                week_number(d.ordinal(), d.weekday().num_days_from_monday()),
+                2,
+              ),
+            )
           None => raise MissingField(item)
         }
     }
