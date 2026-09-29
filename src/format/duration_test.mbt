@@ -98,7 +98,7 @@ test "parse_duration rejects a value beyond the representable range" {
   for
     bad in [
       "9223372036854775808s", "9223372036854775s", "2562047788016h", "2562047788015h13m",
-      "99999999999999999999ns",
+      "9223372036854774.000000001s", "-9223372036854774.000000001s", "99999999999999999999ns",
     ] {
     try parsed(bad) |> ignore catch {
       @format.InvalidDuration => ()
@@ -111,5 +111,6 @@ test "parse_duration rejects a value beyond the representable range" {
 
 ///|
 test "parse_duration accepts the largest representable duration" {
-  assert_eq(parsed("9223372036854774.999999999s"), @core.TimeDelta::max_value())
+  assert_eq(parsed("9223372036854774s"), @core.TimeDelta::max_value())
+  assert_eq(parsed("-9223372036854774s"), @core.TimeDelta::min_value())
 }

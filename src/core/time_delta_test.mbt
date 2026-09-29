@@ -409,10 +409,7 @@ test "to_string prefixes a negative duration with a minus sign" {
 
 ///|
 test "to_string renders the extreme representable durations" {
-  assert_eq(
-    @core.TimeDelta::max_value().to_string(),
-    "2562047788015h12m54.999999999s",
-  )
+  assert_eq(@core.TimeDelta::max_value().to_string(), "2562047788015h12m54s")
   assert_eq(@core.TimeDelta::min_value().to_string(), "-2562047788015h12m54s")
 }
 
@@ -432,7 +429,7 @@ test "milliseconds represents a duration far beyond what a nanosecond count coul
 test "milliseconds round-trips through num_milliseconds across the representable range" {
   for
     n in [
-      0L, 1L, -1L, 1_500L, -1_500L, 10_000_000_000_000L, -10_000_000_000_000L, 9_223_372_036_854_774_999L,
+      0L, 1L, -1L, 1_500L, -1_500L, 10_000_000_000_000L, -10_000_000_000_000L, 9_223_372_036_854_774_000L,
       -9_223_372_036_854_774_000L,
     ] {
     assert_eq(
@@ -445,6 +442,7 @@ test "milliseconds round-trips through num_milliseconds across the representable
 ///|
 test "milliseconds rejects a count whose seconds exceed the representable range" {
   assert_eq(@core.TimeDelta::milliseconds(9_223_372_036_854_775_807L), None)
+  assert_eq(@core.TimeDelta::milliseconds(9_223_372_036_854_774_001L), None)
   assert_eq(@core.TimeDelta::milliseconds(9_223_372_036_854_775_000L), None)
   assert_eq(@core.TimeDelta::milliseconds(-9_223_372_036_854_775_807L), None)
   assert_eq(
@@ -512,7 +510,7 @@ test "new rejects a nanosecond count outside 0..=999_999_999" {
 ///|
 test "new accepts the extreme representable durations and rejects seconds beyond them" {
   assert_eq(
-    @core.TimeDelta::new(9_223_372_036_854_774L, 999_999_999),
+    @core.TimeDelta::new(9_223_372_036_854_774L, 0),
     Some(@core.TimeDelta::max_value()),
   )
   assert_eq(
@@ -682,6 +680,10 @@ test "round_up rejects a zero, negative or mixed granularity" {
 test "round_up returns None when rounding up would leave the representable range" {
   assert_eq(
     @core.TimeDelta::max_value().round_up(@core.TimeDelta::seconds(1L).unwrap()),
+    Some(@core.TimeDelta::max_value()),
+  )
+  assert_eq(
+    @core.TimeDelta::max_value().round_up(@core.TimeDelta::hours(1L).unwrap()),
     None,
   )
   assert_eq(
@@ -766,14 +768,12 @@ test "sum agrees with adding one at a time when no step overflows" {
 test "sum does not depend on the order, even when a partial sum would leave the range" {
   let max = @core.TimeDelta::max_value()
   let min = @core.TimeDelta::min_value()
-  let expected = @core.TimeDelta::nanoseconds(1_999_999_998L)
-  assert_eq(@core.TimeDelta::sum([max, max, min, min]), expected)
-  assert_eq(@core.TimeDelta::sum([max, min, max, min]), expected)
-  assert_eq(@core.TimeDelta::sum([min, min, max, max]), expected)
-  assert_eq(
-    @core.TimeDelta::sum([max, min]),
-    @core.TimeDelta::nanoseconds(999_999_999L),
-  )
+  let seven = @core.TimeDelta::seconds(7L).unwrap()
+  let expected = @core.TimeDelta::seconds(7L)
+  assert_eq(@core.TimeDelta::sum([max, max, min, min, seven]), expected)
+  assert_eq(@core.TimeDelta::sum([max, min, max, seven, min]), expected)
+  assert_eq(@core.TimeDelta::sum([seven, min, min, max, max]), expected)
+  assert_eq(@core.TimeDelta::sum([max, min]), Some(@core.TimeDelta::zero()))
 }
 
 ///|
@@ -785,10 +785,8 @@ test "sum of many extreme durations that cancel still succeeds" {
   for _ in 0..<1_000 {
     deltas.push(@core.TimeDelta::min_value())
   }
-  assert_eq(
-    @core.TimeDelta::sum(deltas),
-    @core.TimeDelta::nanoseconds(999_999_999_000L),
-  )
+  deltas.push(@core.TimeDelta::milliseconds(1_500L).unwrap())
+  assert_eq(@core.TimeDelta::sum(deltas), @core.TimeDelta::milliseconds(1_500L))
 }
 
 ///|
@@ -959,4 +957,78 @@ test "from_seconds_double rejects NaN and infinities" {
   assert_eq(@core.TimeDelta::from_seconds_double(0.0 / 0.0), None)
   assert_eq(@core.TimeDelta::from_seconds_double(1.0 / 0.0), None)
   assert_eq(@core.TimeDelta::from_seconds_double(-1.0 / 0.0), None)
+}
+
+///|
+test "the representable range is symmetric, so neg maps each extreme to the other" {
+  let max = @core.TimeDelta::max_value()
+  let min = @core.TimeDelta::min_value()
+  assert_eq(max.neg(), min)
+  assert_eq(min.neg(), max)
+  assert_eq(max.neg().neg(), max)
+}
+
+///|
+test "abs never leaves the representable range at the extremes" {
+  assert_eq(@core.TimeDelta::min_value().abs(), @core.TimeDelta::max_value())
+  assert_eq(@core.TimeDelta::max_value().abs(), @core.TimeDelta::max_value())
+}
+
+///|
+test "max_value is exactly the largest whole-second duration, with no nanosecond remainder" {
+  assert_eq(
+    @core.TimeDelta::max_value(),
+    @core.TimeDelta::new(9_223_372_036_854_774L, 0).unwrap(),
+  )
+  assert_eq(@core.TimeDelta::max_value().subsec_nanoseconds(), 0)
+  assert_eq(@core.TimeDelta::new(9_223_372_036_854_774L, 1), None)
+  assert_eq(
+    @core.TimeDelta::max_value().add(@core.TimeDelta::nanoseconds(1L).unwrap()),
+    None,
+  )
+  assert_eq(
+    @core.TimeDelta::min_value().sub(@core.TimeDelta::nanoseconds(1L).unwrap()),
+    None,
+  )
+}
+
+///|
+test "a duration just inside each extreme is representable and its negation is too" {
+  let just_below_max = @core.TimeDelta::max_value()
+    .sub(@core.TimeDelta::nanoseconds(1L).unwrap())
+    .unwrap()
+  assert_eq(just_below_max.subsec_nanoseconds(), 999_999_999)
+  assert_eq(just_below_max.neg().neg(), just_below_max)
+  let just_above_min = @core.TimeDelta::min_value()
+    .add(@core.TimeDelta::nanoseconds(1L).unwrap())
+    .unwrap()
+  assert_eq(just_above_min.neg().neg(), just_above_min)
+  assert_eq(just_above_min.neg(), just_below_max)
+}
+
+///|
+test "num_milliseconds of both extremes fits Int64 exactly" {
+  assert_eq(
+    @core.TimeDelta::max_value().num_milliseconds(),
+    9_223_372_036_854_774_000L,
+  )
+  assert_eq(
+    @core.TimeDelta::min_value().num_milliseconds(),
+    -9_223_372_036_854_774_000L,
+  )
+}
+
+///|
+test "every duration built through the constructors stays within the range negation preserves" {
+  for
+    delta in [
+      @core.TimeDelta::new(9_223_372_036_854_773L, 999_999_999).unwrap(),
+      @core.TimeDelta::new(-9_223_372_036_854_774L, 1).unwrap(),
+      @core.TimeDelta::from_seconds_double(9_223_372_036_854_774.0).unwrap(),
+      @core.TimeDelta::days(106_751_991_167L).unwrap(),
+    ] {
+    assert_eq(delta.neg().neg(), delta)
+    assert_true(delta.neg() <= @core.TimeDelta::max_value())
+    assert_true(delta.neg() >= @core.TimeDelta::min_value())
+  }
 }

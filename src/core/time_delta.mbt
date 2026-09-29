@@ -3,11 +3,11 @@
 const NANOS_PER_SEC : Int64 = 1_000_000_000L
 
 ///|
-/// Bound for the `seconds` component, chosen so `num_milliseconds` always
-/// fits in `Int64` (`Int64::max_value / 1000`, with headroom so the
-/// nanosecond remainder can never push the millisecond count past
-/// `Int64::max_value`). Symmetric with the lower bound so `abs` is always
-/// total.
+/// Bound on a duration's magnitude in seconds, chosen so `num_milliseconds`
+/// always fits in `Int64` (`Int64::max_value / 1000`, with headroom). The
+/// representable range is exactly `-MAX_SECS..=MAX_SECS` seconds, so a
+/// duration is valid when its absolute value does not exceed `MAX_SECS`
+/// seconds; that symmetry is what makes `neg` and `abs` total.
 const MAX_SECS : Int64 = 9_223_372_036_854_774L
 
 ///|
@@ -118,15 +118,17 @@ fn write_fraction(value : Int, width : Int, logger : &Logger) -> Unit {
 /// Builds a `TimeDelta` from a whole-seconds component and a nanosecond
 /// component of arbitrary sign and magnitude, normalizing the nanoseconds
 /// into the `0..=999_999_999` range and carrying the excess into `seconds`.
-/// Returns `None` if the normalized seconds fall outside the representable
-/// range.
+/// Returns `None` if the result's magnitude exceeds `MAX_SECS` seconds (a
+/// `MAX_SECS` boundary value must have no nanosecond remainder).
 fn from_secs_nanos(secs : Int64, nanos : Int64) -> TimeDelta? {
   let extra_secs = floor_div64(nanos, NANOS_PER_SEC)
   let rem_nanos = floor_mod64(nanos, NANOS_PER_SEC)
   match checked_add64(secs, extra_secs) {
     None => None
     Some(total_secs) =>
-      if total_secs < MIN_SECS || total_secs > MAX_SECS {
+      if total_secs < MIN_SECS ||
+        total_secs > MAX_SECS ||
+        (total_secs == MAX_SECS && rem_nanos != 0L) {
         None
       } else {
         Some(TimeDelta::{
@@ -229,15 +231,17 @@ pub fn TimeDelta::zero() -> TimeDelta {
 }
 
 ///|
-/// The most negative representable duration.
+/// The most negative representable duration, exactly `-9_223_372_036_854_774`
+/// seconds: the negation of `max_value`.
 pub fn TimeDelta::min_value() -> TimeDelta {
   TimeDelta::{ seconds: MIN_SECS, nanoseconds: 0, }
 }
 
 ///|
-/// The most positive representable duration.
+/// The most positive representable duration, exactly `9_223_372_036_854_774`
+/// seconds with no nanosecond remainder: the negation of `min_value`.
 pub fn TimeDelta::max_value() -> TimeDelta {
-  TimeDelta::{ seconds: MAX_SECS, nanoseconds: 999_999_999, }
+  TimeDelta::{ seconds: MAX_SECS, nanoseconds: 0, }
 }
 
 ///|

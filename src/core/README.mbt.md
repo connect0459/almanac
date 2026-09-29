@@ -293,8 +293,8 @@ A signed duration, precise to the nanosecond. Constructors and checked arithmeti
 | `TimeDelta::new(Int64, Int)` | `-> Self?` | Whole seconds plus a nanosecond remainder in `0..=999_999_999` (the sign lives in the seconds: `new(-1, 500_000_000)` is minus half a second); `None` if the remainder is out of range or the result is out of range |
 | `TimeDelta::from_seconds_double(Double)` | `-> Self?` | From fractional seconds, rounded to the nearest nanosecond (an exact half-nanosecond tie goes away from zero, so `0.3` is exactly 300 000 000 ns); `None` for NaN, an infinity or an out-of-range value. Nanosecond precision holds only while the whole-second part is below about 9 million seconds, a `Double` limit |
 | `TimeDelta::zero()` | `-> Self` | The zero-length duration |
-| `TimeDelta::min_value()` | `-> Self` | The most negative representable duration |
-| `TimeDelta::max_value()` | `-> Self` | The most positive representable duration |
+| `TimeDelta::min_value()` | `-> Self` | The most negative representable duration, exactly `-9_223_372_036_854_774` seconds |
+| `TimeDelta::max_value()` | `-> Self` | The most positive representable duration, exactly `9_223_372_036_854_774` seconds; the range is symmetric, so `neg()` and `abs()` never leave it |
 | `num_weeks()` | `-> Int64` | Whole weeks, truncated toward zero |
 | `num_days()` | `-> Int64` | Whole days, truncated toward zero |
 | `num_hours()` | `-> Int64` | Whole hours, truncated toward zero |
