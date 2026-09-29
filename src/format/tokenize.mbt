@@ -1,4 +1,190 @@
 ///|
+/// Resolves the specifier starting at `chars[pos]` (the character right
+/// after `%`, or right after a padding flag) into the `Item`(s) it
+/// produces and the position just past the consumed specifier text.
+/// Shared by `tokenize`'s normal path and its padding-flag path (`%-`/
+/// `%0`/`%_`), which needs to resolve *what follows the flag* the same
+/// way, to decide whether wrapping it in `PaddedNumeric` is valid.
+fn resolve_specifier(
+  chars : Array[Char],
+  pos : Int,
+  n : Int,
+) -> (Array[Item], Int) raise ParseError {
+  match chars[pos] {
+    'Y' => ([Numeric(Year)], pos + 1)
+    'm' => ([Numeric(Month)], pos + 1)
+    'd' => ([Numeric(Day)], pos + 1)
+    'j' => ([Numeric(Ordinal)], pos + 1)
+    'H' => ([Numeric(Hour)], pos + 1)
+    'M' => ([Numeric(Minute)], pos + 1)
+    'S' => ([Numeric(Second)], pos + 1)
+    'f' => ([Numeric(Nanosecond)], pos + 1)
+    'A' => ([Fixed(LongWeekdayName)], pos + 1)
+    'a' => ([Fixed(ShortWeekdayName)], pos + 1)
+    'Z' => ([Fixed(TimezoneName)], pos + 1)
+    'z' => ([Fixed(TimezoneOffset)], pos + 1)
+    ':' => {
+      let colon_end = for j = pos {
+        if j < n && chars[j] == ':' {
+          continue j + 1
+        } else {
+          break j
+        }
+      }
+      if colon_end < n && chars[colon_end] == 'z' {
+        match colon_end - pos {
+          1 => ([Fixed(TimezoneOffsetColonMinutes)], colon_end + 1)
+          2 => ([Fixed(TimezoneOffsetColonSeconds)], colon_end + 1)
+          3 => ([Fixed(TimezoneOffsetColonHours)], colon_end + 1)
+          _ => raise UnknownSpecifier(':')
+        }
+      } else {
+        raise UnknownSpecifier(':')
+      }
+    }
+    '#' =>
+      if pos + 1 < n && chars[pos + 1] == 'z' {
+        ([Fixed(TimezoneOffsetPermissive)], pos + 2)
+      } else {
+        raise UnknownSpecifier('#')
+      }
+    'B' => ([Fixed(LongMonthName)], pos + 1)
+    'b' | 'h' => ([Fixed(ShortMonthName)], pos + 1)
+    'P' => ([Fixed(AmPmLower)], pos + 1)
+    'p' => ([Fixed(AmPmUpper)], pos + 1)
+    'I' => ([Numeric(Hour12)], pos + 1)
+    'l' => ([Numeric(Hour12Blank)], pos + 1)
+    's' => ([Numeric(Timestamp)], pos + 1)
+    'G' => ([Numeric(IsoYear)], pos + 1)
+    'g' => ([Numeric(IsoYear2)], pos + 1)
+    'V' => ([Numeric(IsoWeekNumber)], pos + 1)
+    'C' => ([Numeric(Century)], pos + 1)
+    'y' => ([Numeric(YearMod100)], pos + 1)
+    'q' => ([Numeric(Quarter)], pos + 1)
+    'e' => ([Numeric(DayBlank)], pos + 1)
+    'w' => ([Numeric(WeekdayNumberSunday0)], pos + 1)
+    'u' => ([Numeric(WeekdayNumberMonday1)], pos + 1)
+    'U' => ([Numeric(WeekSunday)], pos + 1)
+    'W' => ([Numeric(WeekMonday)], pos + 1)
+    'F' =>
+      (
+        [
+          Numeric(Year),
+          Literal("-"),
+          Numeric(Month),
+          Literal("-"),
+          Numeric(Day),
+        ],
+        pos + 1,
+      )
+    'T' =>
+      (
+        [
+          Numeric(Hour),
+          Literal(":"),
+          Numeric(Minute),
+          Literal(":"),
+          Numeric(Second),
+        ],
+        pos + 1,
+      )
+    'D' | 'x' =>
+      (
+        [
+          Numeric(Month),
+          Literal("/"),
+          Numeric(Day),
+          Literal("/"),
+          Numeric(YearMod100),
+        ],
+        pos + 1,
+      )
+    'v' =>
+      (
+        [
+          Numeric(DayBlank),
+          Literal("-"),
+          Fixed(ShortMonthName),
+          Literal("-"),
+          Numeric(Year),
+        ],
+        pos + 1,
+      )
+    'R' => ([Numeric(Hour), Literal(":"), Numeric(Minute)], pos + 1)
+    'X' =>
+      (
+        [
+          Numeric(Hour),
+          Literal(":"),
+          Numeric(Minute),
+          Literal(":"),
+          Numeric(Second),
+        ],
+        pos + 1,
+      )
+    'r' =>
+      (
+        [
+          Numeric(Hour12),
+          Literal(":"),
+          Numeric(Minute),
+          Literal(":"),
+          Numeric(Second),
+          Literal(" "),
+          Fixed(AmPmUpper),
+        ],
+        pos + 1,
+      )
+    'c' =>
+      (
+        [
+          Fixed(ShortWeekdayName),
+          Literal(" "),
+          Fixed(ShortMonthName),
+          Literal(" "),
+          Numeric(DayBlank),
+          Literal(" "),
+          Numeric(Hour),
+          Literal(":"),
+          Numeric(Minute),
+          Literal(":"),
+          Numeric(Second),
+          Literal(" "),
+          Numeric(Year),
+        ],
+        pos + 1,
+      )
+    '+' => ([Rfc3339], pos + 1)
+    '.' =>
+      if pos + 1 < n && chars[pos + 1] == 'f' {
+        ([Numeric(DotFraction)], pos + 2)
+      } else {
+        raise UnknownSpecifier('.')
+      }
+    '3' =>
+      if pos + 1 < n && chars[pos + 1] == 'f' {
+        ([Numeric(Nanosecond3)], pos + 2)
+      } else {
+        raise UnknownSpecifier('3')
+      }
+    '6' =>
+      if pos + 1 < n && chars[pos + 1] == 'f' {
+        ([Numeric(Nanosecond6)], pos + 2)
+      } else {
+        raise UnknownSpecifier('6')
+      }
+    '9' =>
+      if pos + 1 < n && chars[pos + 1] == 'f' {
+        // %9f is the same fixed 9-digit fraction as bare %f.
+        ([Numeric(Nanosecond)], pos + 2)
+      } else {
+        raise UnknownSpecifier('9')
+      }
+    c => raise UnknownSpecifier(c)
+  }
+}
+
+///|
 /// Parses a `%`-specifier format string into a sequence of `Item`s,
 /// coalescing consecutive literal characters into a single `Literal` item
 /// and expanding `%F`/`%T` into their equivalent specifier sequences.
@@ -27,269 +213,53 @@ pub fn tokenize(fmt : String) -> Array[Item] raise ParseError {
     if i + 1 >= n {
       raise TrailingPercent
     }
-    match chars[i + 1] {
-      '%' => literal.write_char('%')
-      'Y' => {
-        flush_literal()
-        items.push(Numeric(Year))
-      }
-      'm' => {
-        flush_literal()
-        items.push(Numeric(Month))
-      }
-      'd' => {
-        flush_literal()
-        items.push(Numeric(Day))
-      }
-      'j' => {
-        flush_literal()
-        items.push(Numeric(Ordinal))
-      }
-      'H' => {
-        flush_literal()
-        items.push(Numeric(Hour))
-      }
-      'M' => {
-        flush_literal()
-        items.push(Numeric(Minute))
-      }
-      'S' => {
-        flush_literal()
-        items.push(Numeric(Second))
-      }
-      'f' => {
-        flush_literal()
-        items.push(Numeric(Nanosecond))
-      }
-      'A' => {
-        flush_literal()
-        items.push(Fixed(LongWeekdayName))
-      }
-      'a' => {
-        flush_literal()
-        items.push(Fixed(ShortWeekdayName))
-      }
-      'Z' => {
-        flush_literal()
-        items.push(Fixed(TimezoneName))
-      }
-      'z' => {
-        flush_literal()
-        items.push(Fixed(TimezoneOffset))
-      }
-      ':' => {
-        let colon_end = for j = i + 1 {
-          if j < n && chars[j] == ':' {
-            continue j + 1
-          } else {
-            break j
-          }
-        }
-        if colon_end < n && chars[colon_end] == 'z' {
-          flush_literal()
-          match colon_end - (i + 1) {
-            1 => items.push(Fixed(TimezoneOffsetColonMinutes))
-            2 => items.push(Fixed(TimezoneOffsetColonSeconds))
-            3 => items.push(Fixed(TimezoneOffsetColonHours))
-            _ => raise UnknownSpecifier(':')
-          }
-          continue colon_end + 1
-        } else {
-          raise UnknownSpecifier(':')
-        }
-      }
-      '#' =>
-        if i + 2 < n && chars[i + 2] == 'z' {
-          flush_literal()
-          items.push(Fixed(TimezoneOffsetPermissive))
-          continue i + 3
-        } else {
-          raise UnknownSpecifier('#')
-        }
-      'B' => {
-        flush_literal()
-        items.push(Fixed(LongMonthName))
-      }
-      'b' | 'h' => {
-        flush_literal()
-        items.push(Fixed(ShortMonthName))
-      }
-      'P' => {
-        flush_literal()
-        items.push(Fixed(AmPmLower))
-      }
-      'p' => {
-        flush_literal()
-        items.push(Fixed(AmPmUpper))
-      }
-      'I' => {
-        flush_literal()
-        items.push(Numeric(Hour12))
-      }
-      'l' => {
-        flush_literal()
-        items.push(Numeric(Hour12Blank))
-      }
-      's' => {
-        flush_literal()
-        items.push(Numeric(Timestamp))
-      }
-      'G' => {
-        flush_literal()
-        items.push(Numeric(IsoYear))
-      }
-      'g' => {
-        flush_literal()
-        items.push(Numeric(IsoYear2))
-      }
-      'V' => {
-        flush_literal()
-        items.push(Numeric(IsoWeekNumber))
-      }
-      'C' => {
-        flush_literal()
-        items.push(Numeric(Century))
-      }
-      'y' => {
-        flush_literal()
-        items.push(Numeric(YearMod100))
-      }
-      'q' => {
-        flush_literal()
-        items.push(Numeric(Quarter))
-      }
-      'e' => {
-        flush_literal()
-        items.push(Numeric(DayBlank))
-      }
-      'w' => {
-        flush_literal()
-        items.push(Numeric(WeekdayNumberSunday0))
-      }
-      'u' => {
-        flush_literal()
-        items.push(Numeric(WeekdayNumberMonday1))
-      }
-      'U' => {
-        flush_literal()
-        items.push(Numeric(WeekSunday))
-      }
-      'W' => {
-        flush_literal()
-        items.push(Numeric(WeekMonday))
-      }
-      'F' => {
-        flush_literal()
-        items.push(Numeric(Year))
-        items.push(Literal("-"))
-        items.push(Numeric(Month))
-        items.push(Literal("-"))
-        items.push(Numeric(Day))
-      }
-      'T' => {
-        flush_literal()
-        items.push(Numeric(Hour))
-        items.push(Literal(":"))
-        items.push(Numeric(Minute))
-        items.push(Literal(":"))
-        items.push(Numeric(Second))
-      }
-      'D' | 'x' => {
-        flush_literal()
-        items.push(Numeric(Month))
-        items.push(Literal("/"))
-        items.push(Numeric(Day))
-        items.push(Literal("/"))
-        items.push(Numeric(YearMod100))
-      }
-      'v' => {
-        flush_literal()
-        items.push(Numeric(DayBlank))
-        items.push(Literal("-"))
-        items.push(Fixed(ShortMonthName))
-        items.push(Literal("-"))
-        items.push(Numeric(Year))
-      }
-      'R' => {
-        flush_literal()
-        items.push(Numeric(Hour))
-        items.push(Literal(":"))
-        items.push(Numeric(Minute))
-      }
-      'X' => {
-        flush_literal()
-        items.push(Numeric(Hour))
-        items.push(Literal(":"))
-        items.push(Numeric(Minute))
-        items.push(Literal(":"))
-        items.push(Numeric(Second))
-      }
-      'r' => {
-        flush_literal()
-        items.push(Numeric(Hour12))
-        items.push(Literal(":"))
-        items.push(Numeric(Minute))
-        items.push(Literal(":"))
-        items.push(Numeric(Second))
-        items.push(Literal(" "))
-        items.push(Fixed(AmPmUpper))
-      }
-      'c' => {
-        flush_literal()
-        items.push(Fixed(ShortWeekdayName))
-        items.push(Literal(" "))
-        items.push(Fixed(ShortMonthName))
-        items.push(Literal(" "))
-        items.push(Numeric(DayBlank))
-        items.push(Literal(" "))
-        items.push(Numeric(Hour))
-        items.push(Literal(":"))
-        items.push(Numeric(Minute))
-        items.push(Literal(":"))
-        items.push(Numeric(Second))
-        items.push(Literal(" "))
-        items.push(Numeric(Year))
-      }
-      '+' => {
-        flush_literal()
-        items.push(Rfc3339)
-      }
-      '.' =>
-        if i + 2 < n && chars[i + 2] == 'f' {
-          flush_literal()
-          items.push(Numeric(DotFraction))
-          continue i + 3
-        } else {
-          raise UnknownSpecifier('.')
-        }
-      '3' =>
-        if i + 2 < n && chars[i + 2] == 'f' {
-          flush_literal()
-          items.push(Numeric(Nanosecond3))
-          continue i + 3
-        } else {
-          raise UnknownSpecifier('3')
-        }
-      '6' =>
-        if i + 2 < n && chars[i + 2] == 'f' {
-          flush_literal()
-          items.push(Numeric(Nanosecond6))
-          continue i + 3
-        } else {
-          raise UnknownSpecifier('6')
-        }
-      '9' =>
-        if i + 2 < n && chars[i + 2] == 'f' {
-          flush_literal()
-          // %9f is the same fixed 9-digit fraction as bare %f.
-          items.push(Numeric(Nanosecond))
-          continue i + 3
-        } else {
-          raise UnknownSpecifier('9')
-        }
-      c => raise UnknownSpecifier(c)
+    if chars[i + 1] == '%' {
+      literal.write_char('%')
+      continue i + 2
     }
-    continue i + 2
+    let pad_mode = match chars[i + 1] {
+      '-' => Some(NoPad)
+      '0' => Some(ZeroPad)
+      '_' => Some(SpacePad)
+      _ => None
+    }
+    match pad_mode {
+      None => {
+        let (resolved, next_pos) = resolve_specifier(chars, i + 1, n)
+        flush_literal()
+        for item in resolved {
+          items.push(item)
+        }
+        continue next_pos
+      }
+      Some(mode) => {
+        if i + 2 >= n {
+          raise TrailingPercent
+        }
+        let (resolved, next_pos) = resolve_specifier(chars, i + 2, n)
+        flush_literal()
+        if resolved.length() == 1 {
+          match resolved[0] {
+            // The fractional-second family and %s are Numeric in this
+            // project but map to Fixed (or have no fixed width) in
+            // chrono, so chrono itself rejects a padding flag on them —
+            // see PaddedNumeric's doc comment.
+            Numeric(
+              Nanosecond
+              | DotFraction
+              | Nanosecond3
+              | Nanosecond6
+              | Timestamp
+            ) => raise UnknownSpecifier(chars[i + 1])
+            Numeric(kind) => items.push(PaddedNumeric(kind, mode))
+            _ => raise UnknownSpecifier(chars[i + 1])
+          }
+        } else {
+          raise UnknownSpecifier(chars[i + 1])
+        }
+        continue next_pos
+      }
+    }
   }
   flush_literal()
   items

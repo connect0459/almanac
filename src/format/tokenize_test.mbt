@@ -223,6 +223,55 @@ test "tokenize raises UnknownSpecifier when a colon run or # isn't followed by z
 }
 
 ///|
+test "tokenize recognizes %-Y, %0e, and %_d as padding-flag overrides on a bare numeric specifier" {
+  assert_eq(@format.tokenize("%-Y"), [
+    @format.PaddedNumeric(@format.Year, @format.NoPad),
+  ])
+  assert_eq(@format.tokenize("%0e"), [
+    @format.PaddedNumeric(@format.DayBlank, @format.ZeroPad),
+  ])
+  assert_eq(@format.tokenize("%_d"), [
+    @format.PaddedNumeric(@format.Day, @format.SpacePad),
+  ])
+}
+
+///|
+test "tokenize applies a padding flag to a multi-character numeric specifier (%-3f is rejected, since %3f is Fixed in chrono's own model)" {
+  assert_eq(@format.tokenize("%-C"), [
+    @format.PaddedNumeric(@format.Century, @format.NoPad),
+  ])
+  try @format.tokenize("%-3f") |> ignore catch {
+    @format.UnknownSpecifier('-') => ()
+    _ => fail("expected UnknownSpecifier('-')")
+  } noraise {
+    _ => fail("expected tokenize to reject %-3f")
+  }
+}
+
+///|
+test "tokenize rejects a padding flag applied to a Fixed specifier or a compound expansion" {
+  for case in [("%-A", '-'), ("%0F", '0'), ("%_z", '_'), ("%-f", '-')] {
+    let (spec, expected_char) = case
+    try @format.tokenize(spec) |> ignore catch {
+      @format.UnknownSpecifier(c) => assert_eq(c, expected_char)
+      _ => fail("expected UnknownSpecifier for \{spec}")
+    } noraise {
+      _ => fail("expected tokenize to reject \{spec}")
+    }
+  }
+}
+
+///|
+test "tokenize raises TrailingPercent when a padding flag ends the format string" {
+  try @format.tokenize("abc%-") |> ignore catch {
+    @format.TrailingPercent => ()
+    _ => fail("expected TrailingPercent")
+  } noraise {
+    _ => fail("expected tokenize to reject a trailing padding flag")
+  }
+}
+
+///|
 test "tokenize interprets %% as a literal percent sign" {
   assert_eq(@format.tokenize("100%%"), [@format.Literal("100%")])
 }

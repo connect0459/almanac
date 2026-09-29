@@ -109,6 +109,30 @@ pub extend Fixed with Eq::{not_equal}
 pub extend Fixed with @debug.Debug::{to_repr}
 
 ///|
+/// A padding-flag override (`%-`/`%0`/`%_`) for a single numeric
+/// specifier: `NoPad` (`%-`) renders with no padding at all, `ZeroPad`
+/// (`%0`) forces zero-padding (redundant for a specifier that already
+/// zero-pads by default, but meaningful for one like `%e` that normally
+/// space-pads), `SpacePad` (`%_`) forces space-padding. Only affects
+/// rendering — parsing ignores it entirely and behaves exactly like the
+/// unwrapped specifier, matching chrono (its `Item::Numeric`'s `Pad`
+/// field is likewise unread by its parser).
+pub(all) enum PadMode {
+  NoPad
+  ZeroPad
+  SpacePad
+} derive(Eq, @debug.Debug)
+
+///|
+pub extend PadMode with Eq::{equal}
+
+///|
+pub extend PadMode with Eq::{not_equal}
+
+///|
+pub extend PadMode with @debug.Debug::{to_repr}
+
+///|
 /// A single formatting/parsing item produced by `tokenize` from a
 /// `%`-specifier format string.
 pub(all) enum Item {
@@ -119,6 +143,16 @@ pub(all) enum Item {
   /// fast path (`to_rfc3339`/`parse_rfc3339`) rather than as a sequence
   /// of simpler items — chrono itself treats `%+` the same way.
   Rfc3339
+  /// `%-X`/`%0X`/`%_X`: a single numeric specifier `X` with its default
+  /// padding overridden. Only produced when `X` resolves to a bare
+  /// `Numeric` item on its own (not a `Fixed` item or a multi-item
+  /// compound expansion like `%F`) — matches chrono, which only allows a
+  /// padding flag on its own `Numeric`-carrying items. Also excludes the
+  /// fractional-second family (`%f`/`%.f`/`%3f`/`%6f`), which are
+  /// `Numeric` in this project for implementation convenience but map to
+  /// `Fixed` in chrono (so chrono itself rejects a flag on them), and
+  /// `%s` (`Timestamp`), which has no natural fixed width to override.
+  PaddedNumeric(Numeric, PadMode)
 } derive(Eq, @debug.Debug)
 
 ///|

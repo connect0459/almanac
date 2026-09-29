@@ -488,3 +488,80 @@ test "format_date_time raises MissingField for a timezone specifier, since it ca
     }
   }
 }
+
+///|
+test "format_date renders %-Y with no padding, even for a value that normally zero-pads" {
+  let date = @core.NaiveDate::from_ymd(24, 3, 5).unwrap()
+  assert_eq(@format.format_date(date, "%-Y"), "24")
+  assert_eq(@format.format_date(date, "%Y"), "0024")
+}
+
+///|
+test "format_date renders %0e with zero-padding, overriding %e's normal space-padding" {
+  let date = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
+  assert_eq(@format.format_date(date, "%0e"), "05")
+  assert_eq(@format.format_date(date, "%e"), " 5")
+}
+
+///|
+test "format_date renders %_d with space-padding, overriding %d's normal zero-padding" {
+  let date = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
+  assert_eq(@format.format_date(date, "%_d"), " 5")
+  assert_eq(@format.format_date(date, "%d"), "05")
+}
+
+///|
+test "format_date preserves the sign for %-Y and %_Y on a negative (BCE) year" {
+  let date = @core.NaiveDate::from_ymd(-7, 1, 1).unwrap()
+  assert_eq(@format.format_date(date, "%-Y"), "-7")
+  assert_eq(@format.format_date(date, "%_Y"), "  -7")
+}
+
+///|
+test "format_date/format_time render every eligible Numeric kind via %0<X>, matching the bare specifier's own zero-padded default" {
+  let date = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
+  let time = @core.NaiveTime::from_hms(9, 5, 3).unwrap()
+  for
+    letter in [
+      "Y", "m", "d", "j", "G", "g", "V", "C", "y", "U", "W", "q", "w", "u",
+    ] {
+    assert_eq(
+      @format.format_date(date, "%0" + letter),
+      @format.format_date(date, "%" + letter),
+    )
+  }
+  for letter in ["H", "M", "S", "I"] {
+    assert_eq(
+      @format.format_time(time, "%0" + letter),
+      @format.format_time(time, "%" + letter),
+    )
+  }
+  // DayBlank/Hour12Blank default to space-padding, so %0 visibly differs.
+  assert_eq(@format.format_date(date, "%0e"), "05")
+  assert_eq(@format.format_time(time, "%0l"), "09")
+}
+
+///|
+test "format_time/format_date raise MissingField for every eligible padding-flagged specifier when its data is absent" {
+  let time = @core.NaiveTime::from_hms(9, 5, 3).unwrap()
+  for
+    letter in [
+      "Y", "m", "d", "j", "G", "g", "V", "C", "y", "q", "e", "w", "u", "U", "W",
+    ] {
+    try @format.format_time(time, "%0" + letter) |> ignore catch {
+      @format.MissingField(@format.PaddedNumeric(_, _)) => ()
+      _ => fail("expected MissingField for %0\{letter}")
+    } noraise {
+      _ => fail("expected format_time to reject %0\{letter}")
+    }
+  }
+  let date = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
+  for letter in ["H", "M", "S", "I", "l"] {
+    try @format.format_date(date, "%0" + letter) |> ignore catch {
+      @format.MissingField(@format.PaddedNumeric(_, _)) => ()
+      _ => fail("expected MissingField for %0\{letter}")
+    } noraise {
+      _ => fail("expected format_date to reject %0\{letter}")
+    }
+  }
+}

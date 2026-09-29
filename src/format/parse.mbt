@@ -487,6 +487,10 @@ fn apply_item(
         None => raise InputMismatch
         Some(p) => (parsed, p)
       }
+    // A padding flag only affects rendering — chrono's parser reads the
+    // same width/logic regardless of Pad, so this delegates verbatim to
+    // the unwrapped specifier's own parsing.
+    PaddedNumeric(kind, _) => apply_item(Numeric(kind), parsed, chars, pos)
     Rfc3339 =>
       match parse_rfc3339_datetime(chars, pos) {
         None => raise InputMismatch

@@ -64,6 +64,11 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%c` | `%a %b %e %H:%M:%S %Y` | ctime-style, e.g. `"Tue Mar  5 09:05:30 2024"`; expands to that specifier sequence |
 | `%+` | RFC 3339 date-time | A whole `DateTime`, rendered/parsed via the dedicated `to_rfc3339`/`parse_rfc3339` fast path rather than a sequence of simpler specifiers (mirrors chrono); needs a date, time, and offset together, like `%Z`/`%z` |
 | `%%` | Literal `%` | |
+| `%-X` | No padding | Overrides `X`'s own default padding; `X` must resolve to a single bare `Numeric` specifier (not a `Fixed` one or a compound expansion like `%F`) other than `%f`/`%.f`/`%3f`/`%6f`/`%s` — chrono itself treats the fractional-second family as `Fixed`, and `%s` has no natural fixed width |
+| `%0X` | Zero padding | See `%-X`; meaningful for a specifier that doesn't already zero-pad, e.g. `%0e` |
+| `%_X` | Space padding | See `%-X`; meaningful for a specifier that doesn't already space-pad, e.g. `%_d` |
+
+Padding flags only affect formatting. On parse, `%-X`/`%0X`/`%_X` behave exactly like bare `%X` (matching chrono, whose parser never reads a specifier's `Pad`).
 
 ## Quick start
 
@@ -143,7 +148,7 @@ test {
 | :--- | :--- | :--- |
 | `tokenize(String)` | `-> Array[Item] raise ParseError` | Parses a `%`-specifier format string into a sequence of `Item`s; raises `UnknownSpecifier`/`TrailingPercent` on a malformed format string. Not usually needed directly — `format_*`/`parse_*` call it internally |
 
-### `Item`, `Numeric`, `Fixed`
+### `Item`, `Numeric`, `Fixed`, `PadMode`
 
 The token types produced by `tokenize`.
 
@@ -154,6 +159,14 @@ pub(all) enum Item {
   Numeric(Numeric)
   Fixed(Fixed)
   Rfc3339
+  PaddedNumeric(Numeric, PadMode)
+}
+
+///|
+pub(all) enum PadMode {
+  NoPad
+  ZeroPad
+  SpacePad
 }
 
 ///|
@@ -202,7 +215,7 @@ pub(all) enum Fixed {
 }
 ```
 
-`Item`, `Numeric`, and `Fixed` each also implement `Eq`.
+`Item`, `Numeric`, `Fixed`, and `PadMode` each also implement `Eq`.
 
 ### `ParseError`
 

@@ -1007,6 +1007,21 @@ test "parsing %.f cross-checks against a redundantly-present %f, accepting agree
 }
 
 ///|
+test "parse_date round-trips %-Y through format_date, parsing identically to plain %Y regardless of the padding flag" {
+  let date = @core.NaiveDate::from_ymd(24, 3, 5).unwrap()
+  let fmt = "%-Y-%m-%d"
+  assert_eq(@format.parse_date(@format.format_date(date, fmt), fmt), date)
+}
+
+///|
+test "parse_date parses %0e and %_d identically to plain %e/%d, ignoring the padding flag entirely" {
+  let date = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
+  assert_eq(@format.parse_date("2024-03-05", "%Y-%m-%0e"), date)
+  assert_eq(@format.parse_date("2024-03-05", "%Y-%m-%_d"), date)
+  assert_eq(@format.parse_date("2024-03- 5", "%Y-%m-%0e"), date)
+}
+
+///|
 test "parsing %s, %G, %g, and %V always raise InputMismatch, since parsing them is not yet supported" {
   for spec in ["%s", "%G", "%g", "%V"] {
     try @format.parse_date_time("anything", spec) |> ignore catch {

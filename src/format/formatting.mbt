@@ -81,6 +81,146 @@ fn week_number(yday : Int, wday_x : Int) -> Int {
 }
 
 ///|
+/// The raw value and default (zero-padded) width for a `Numeric` kind
+/// eligible for a `PaddedNumeric` override — every kind except the
+/// fractional-second family and `Timestamp` (see `PaddedNumeric`'s own
+/// doc comment for why those are excluded). Raises `MissingField` if the
+/// date/time context `kind` needs isn't present.
+///
+/// The excluded kinds still need a match arm (`Numeric` is one type, and
+/// `render`'s existing bare-`Numeric` arms already handle them on their
+/// own), but `tokenize` never constructs `PaddedNumeric` with one of
+/// them, so that arm is unreachable in practice.
+fn numeric_value(
+  kind : Numeric,
+  date : @core.NaiveDate?,
+  time : @core.NaiveTime?,
+  item : Item,
+) -> (Int, Int) raise ParseError {
+  match kind {
+    Year =>
+      match date {
+        Some(d) => (d.year(), 4)
+        None => raise MissingField(item)
+      }
+    Month =>
+      match date {
+        Some(d) => (d.month().number_from_month(), 2)
+        None => raise MissingField(item)
+      }
+    Day =>
+      match date {
+        Some(d) => (d.day(), 2)
+        None => raise MissingField(item)
+      }
+    Ordinal =>
+      match date {
+        Some(d) => (d.ordinal(), 3)
+        None => raise MissingField(item)
+      }
+    Hour =>
+      match time {
+        Some(t) => (t.hour(), 2)
+        None => raise MissingField(item)
+      }
+    Minute =>
+      match time {
+        Some(t) => (t.minute(), 2)
+        None => raise MissingField(item)
+      }
+    Second =>
+      match time {
+        Some(t) => (t.second() + t.nanosecond() / 1_000_000_000, 2)
+        None => raise MissingField(item)
+      }
+    Hour12 =>
+      match time {
+        Some(t) => {
+          let (_, hour) = t.hour12()
+          (hour, 2)
+        }
+        None => raise MissingField(item)
+      }
+    Hour12Blank =>
+      match time {
+        Some(t) => {
+          let (_, hour) = t.hour12()
+          (hour, 2)
+        }
+        None => raise MissingField(item)
+      }
+    IsoYear =>
+      match date {
+        Some(d) => (d.iso_week().year(), 4)
+        None => raise MissingField(item)
+      }
+    IsoYear2 =>
+      match date {
+        Some(d) => (d.iso_week().year() % 100, 2)
+        None => raise MissingField(item)
+      }
+    IsoWeekNumber =>
+      match date {
+        Some(d) => (d.iso_week().week(), 2)
+        None => raise MissingField(item)
+      }
+    Century =>
+      match date {
+        Some(d) => (d.year() / 100, 2)
+        None => raise MissingField(item)
+      }
+    YearMod100 =>
+      match date {
+        Some(d) => (d.year() % 100, 2)
+        None => raise MissingField(item)
+      }
+    Quarter =>
+      match date {
+        Some(d) => (d.quarter(), 1)
+        None => raise MissingField(item)
+      }
+    DayBlank =>
+      match date {
+        Some(d) => (d.day(), 2)
+        None => raise MissingField(item)
+      }
+    WeekdayNumberSunday0 =>
+      match date {
+        Some(d) => (d.weekday().num_days_from_sunday(), 1)
+        None => raise MissingField(item)
+      }
+    WeekdayNumberMonday1 =>
+      match date {
+        Some(d) => (d.weekday().number_from_monday(), 1)
+        None => raise MissingField(item)
+      }
+    WeekSunday =>
+      match date {
+        Some(d) =>
+          (week_number(d.ordinal(), d.weekday().num_days_from_sunday()), 2)
+        None => raise MissingField(item)
+      }
+    WeekMonday =>
+      match date {
+        Some(d) =>
+          (week_number(d.ordinal(), d.weekday().num_days_from_monday()), 2)
+        None => raise MissingField(item)
+      }
+    Nanosecond | DotFraction | Nanosecond3 | Nanosecond6 | Timestamp =>
+      raise MissingField(item)
+  }
+}
+
+///|
+fn render_padded(value : Int, default_width : Int, mode : PadMode) -> String {
+  match mode {
+    NoPad => value.to_string()
+    ZeroPad => pad_int(value, default_width)
+    SpacePad => pad_int_blank(value, default_width)
+  }
+}
+
+///|
 /// Renders a signed offset (in seconds) as strftime's `%z`: a sign
 /// followed by a zero-padded `HHMM`, with no colon and no sub-minute
 /// seconds component.
@@ -131,6 +271,10 @@ fn render(
   for item in items {
     match item {
       Literal(s) => out.write_string(s)
+      PaddedNumeric(kind, mode) => {
+        let (value, width) = numeric_value(kind, date, time, item)
+        out.write_string(render_padded(value, width, mode))
+      }
       Rfc3339 =>
         match (date, time, tz_info) {
           (Some(d), Some(t), Some((offset, _))) =>
