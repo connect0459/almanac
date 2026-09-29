@@ -67,6 +67,7 @@ pub struct NaiveDate {
 } derive(Compare, Eq, @debug.Debug)
 pub fn NaiveDate::add_days(Self, Int) -> Self
 pub fn NaiveDate::add_months(Self, Int) -> Self
+pub fn NaiveDate::add_signed(Self, TimeDelta) -> Self?
 pub fn NaiveDate::compare(Self, Self) -> Int
 pub fn NaiveDate::day(Self) -> Int
 pub fn NaiveDate::equal(Self, Self) -> Bool
@@ -87,8 +88,10 @@ pub fn NaiveDate::op_lt(Self, Self) -> Bool
 pub fn NaiveDate::ordinal(Self) -> Int
 pub fn NaiveDate::pred(Self) -> Self
 pub fn NaiveDate::quarter(Self) -> Int
+pub fn NaiveDate::signed_duration_since(Self, Self) -> TimeDelta
 pub fn NaiveDate::sub_days(Self, Int) -> Self
 pub fn NaiveDate::sub_months(Self, Int) -> Self
+pub fn NaiveDate::sub_signed(Self, TimeDelta) -> Self?
 pub fn NaiveDate::succ(Self) -> Self
 pub fn NaiveDate::to_repr(Self) -> @debug.Repr
 pub fn NaiveDate::week(Self, Weekday) -> NaiveWeek

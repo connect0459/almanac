@@ -171,6 +171,41 @@ pub fn NaiveDate::succ(self : NaiveDate) -> NaiveDate {
 }
 
 ///|
+const MAX_ABS_EPOCH_DAYS : Int64 = 2_147_483_647L - 719_468L
+
+///|
+/// The date `delta`'s whole days after this one, or `None` if that day
+/// count falls outside `NaiveDate`'s representable range. A sub-day
+/// remainder of `delta` is discarded (truncation toward zero), since a
+/// date carries no time-of-day.
+pub fn NaiveDate::add_signed(self : NaiveDate, delta : TimeDelta) -> NaiveDate? {
+  let days = self.days.to_int64() + delta.num_days()
+  if days > MAX_ABS_EPOCH_DAYS || days < -MAX_ABS_EPOCH_DAYS {
+    None
+  } else {
+    Some(NaiveDate::{ days: days.to_int(), })
+  }
+}
+
+///|
+/// The date `delta`'s whole days before this one, or `None` if that day
+/// count falls outside `NaiveDate`'s representable range. A sub-day
+/// remainder of `delta` is discarded (truncation toward zero).
+pub fn NaiveDate::sub_signed(self : NaiveDate, delta : TimeDelta) -> NaiveDate? {
+  self.add_signed(delta.neg())
+}
+
+///|
+/// The duration from `other` to this date, always a whole number of days.
+/// Total: `NaiveDate`'s day range is far narrower than `TimeDelta`'s.
+pub fn NaiveDate::signed_duration_since(
+  self : NaiveDate,
+  other : NaiveDate,
+) -> TimeDelta {
+  TimeDelta::days(self.days.to_int64() - other.days.to_int64()).unwrap()
+}
+
+///|
 /// The previous calendar day.
 pub fn NaiveDate::pred(self : NaiveDate) -> NaiveDate {
   self.sub_days(1)

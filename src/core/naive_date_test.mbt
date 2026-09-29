@@ -434,3 +434,98 @@ test "quarter reports 1 through 4 across the year" {
     )
   }
 }
+
+///|
+test "add_signed moves a date forward across a month boundary by whole days" {
+  let date = @core.NaiveDate::from_ymd(2024, 1, 30).unwrap()
+  let result = date.add_signed(@core.TimeDelta::days(3L).unwrap())
+  assert_eq(result, @core.NaiveDate::from_ymd(2024, 2, 2))
+}
+
+///|
+test "add_signed with a negative duration moves a date backward" {
+  let date = @core.NaiveDate::from_ymd(2024, 3, 1).unwrap()
+  let result = date.add_signed(@core.TimeDelta::days(-1L).unwrap())
+  assert_eq(result, @core.NaiveDate::from_ymd(2024, 2, 29))
+}
+
+///|
+test "add_signed truncates a sub-day remainder toward zero" {
+  let date = @core.NaiveDate::from_ymd(2024, 5, 10).unwrap()
+  assert_eq(
+    date.add_signed(@core.TimeDelta::hours(36L).unwrap()),
+    @core.NaiveDate::from_ymd(2024, 5, 11),
+  )
+  assert_eq(
+    date.add_signed(@core.TimeDelta::hours(-36L).unwrap()),
+    @core.NaiveDate::from_ymd(2024, 5, 9),
+  )
+  assert_eq(date.add_signed(@core.TimeDelta::hours(23L).unwrap()), Some(date))
+  assert_eq(date.add_signed(@core.TimeDelta::hours(-23L).unwrap()), Some(date))
+}
+
+///|
+test "sub_signed is the inverse of add_signed" {
+  let date = @core.NaiveDate::from_ymd(2024, 5, 10).unwrap()
+  let delta = @core.TimeDelta::days(400L).unwrap()
+  assert_eq(date.add_signed(delta).unwrap().sub_signed(delta), Some(date))
+  assert_eq(
+    date.sub_signed(@core.TimeDelta::days(10L).unwrap()),
+    @core.NaiveDate::from_ymd(2024, 4, 30),
+  )
+}
+
+///|
+test "add_signed rejects a duration whose day count exceeds the representable date range" {
+  let date = @core.NaiveDate::from_ymd(2024, 5, 10).unwrap()
+  assert_eq(date.add_signed(@core.TimeDelta::max_value()), None)
+  assert_eq(date.add_signed(@core.TimeDelta::min_value()), None)
+  assert_eq(date.sub_signed(@core.TimeDelta::max_value()), None)
+  assert_eq(date.sub_signed(@core.TimeDelta::min_value()), None)
+}
+
+///|
+test "add_signed reaches the representable range boundary on both sides and rejects one day past it" {
+  let epoch = @core.NaiveDate::from_ymd(1970, 1, 1).unwrap()
+  let limit = 2_147_483_647L - 719_468L
+  let upper = epoch.add_signed(@core.TimeDelta::days(limit).unwrap()).unwrap()
+  let lower = epoch.add_signed(@core.TimeDelta::days(-limit).unwrap()).unwrap()
+  assert_true(upper.year() > 5_000_000)
+  assert_true(lower.year() < -5_000_000)
+  assert_eq(upper.succ().pred(), upper)
+  assert_eq(epoch.add_signed(@core.TimeDelta::days(limit + 1L).unwrap()), None)
+  assert_eq(epoch.add_signed(@core.TimeDelta::days(-limit - 1L).unwrap()), None)
+}
+
+///|
+test "signed_duration_since counts whole days between two dates" {
+  let a = @core.NaiveDate::from_ymd(2024, 3, 1).unwrap()
+  let b = @core.NaiveDate::from_ymd(2024, 2, 1).unwrap()
+  assert_eq(a.signed_duration_since(b), @core.TimeDelta::days(29L).unwrap())
+  assert_eq(b.signed_duration_since(a), @core.TimeDelta::days(-29L).unwrap())
+}
+
+///|
+test "signed_duration_since reports zero for a date against itself" {
+  let a = @core.NaiveDate::from_ymd(2024, 3, 1).unwrap()
+  assert_true(a.signed_duration_since(a).is_zero())
+}
+
+///|
+test "signed_duration_since is the inverse of add_signed" {
+  let a = @core.NaiveDate::from_ymd(2000, 2, 29).unwrap()
+  let b = @core.NaiveDate::from_ymd(2024, 12, 31).unwrap()
+  assert_eq(a.add_signed(b.signed_duration_since(a)), Some(b))
+}
+
+///|
+test "signed_duration_since spans the full representable range without overflow" {
+  let epoch = @core.NaiveDate::from_ymd(1970, 1, 1).unwrap()
+  let limit = 2_147_483_647L - 719_468L
+  let upper = epoch.add_signed(@core.TimeDelta::days(limit).unwrap()).unwrap()
+  let lower = epoch.add_signed(@core.TimeDelta::days(-limit).unwrap()).unwrap()
+  assert_eq(
+    upper.signed_duration_since(lower),
+    @core.TimeDelta::days(2L * limit).unwrap(),
+  )
+}
