@@ -252,6 +252,10 @@ pub struct TimeDelta {
 } derive(Compare, Eq, @debug.Debug)
 pub fn TimeDelta::abs(Self) -> Self
 pub fn TimeDelta::add(Self, Self) -> Self?
+pub fn TimeDelta::as_hours_double(Self) -> Double
+pub fn TimeDelta::as_hours_float(Self) -> Float
+pub fn TimeDelta::as_minutes_double(Self) -> Double
+pub fn TimeDelta::as_minutes_float(Self) -> Float
 pub fn TimeDelta::as_seconds_double(Self) -> Double
 pub fn TimeDelta::as_seconds_float(Self) -> Float
 pub fn TimeDelta::compare(Self, Self) -> Int
@@ -268,6 +272,7 @@ pub fn TimeDelta::minutes(Int64) -> Self?
 pub fn TimeDelta::mul(Self, Int) -> Self?
 pub fn TimeDelta::nanoseconds(Int64) -> Self?
 pub fn TimeDelta::neg(Self) -> Self
+pub fn TimeDelta::new(Int64, Int) -> Self?
 pub fn TimeDelta::not_equal(Self, Self) -> Bool
 pub fn TimeDelta::num_days(Self) -> Int64
 pub fn TimeDelta::num_hours(Self) -> Int64

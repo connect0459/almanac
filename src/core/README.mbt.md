@@ -275,6 +275,7 @@ A signed duration, precise to the nanosecond. Constructors and checked arithmeti
 | `TimeDelta::milliseconds(Int64)` | `-> Self?` | Whole milliseconds |
 | `TimeDelta::microseconds(Int64)` | `-> Self?` | Whole microseconds |
 | `TimeDelta::nanoseconds(Int64)` | `-> Self?` | Whole nanoseconds |
+| `TimeDelta::new(Int64, Int)` | `-> Self?` | Whole seconds plus a nanosecond remainder in `0..=999_999_999` (the sign lives in the seconds: `new(-1, 500_000_000)` is minus half a second); `None` if the remainder is out of range or the result is out of range |
 | `TimeDelta::zero()` | `-> Self` | The zero-length duration |
 | `TimeDelta::min_value()` | `-> Self` | The most negative representable duration |
 | `TimeDelta::max_value()` | `-> Self` | The most positive representable duration |
@@ -291,6 +292,8 @@ A signed duration, precise to the nanosecond. Constructors and checked arithmeti
 | `subsec_microseconds()` | `-> Int` | `subsec_nanoseconds()` in whole microseconds |
 | `as_seconds_double()` | `-> Double` | Total length in fractional seconds, as a 64-bit float; loses precision for a very large duration, never fails |
 | `as_seconds_float()` | `-> Float` | Total length in fractional seconds, as a 32-bit float; same precision caveat |
+| `as_minutes_double()` / `as_hours_double()` | `-> Double` | Total length in fractional minutes / hours, as a 64-bit float; same precision caveat |
+| `as_minutes_float()` / `as_hours_float()` | `-> Float` | Total length in fractional minutes / hours, as a 32-bit float; same precision caveat |
 | `add(TimeDelta)` | `-> Self?` | Sum; `None` on overflow |
 | `sub(TimeDelta)` | `-> Self?` | Difference; `None` on overflow |
 | `mul(Int)` | `-> Self?` | Scale by an integer scalar; `None` on overflow |

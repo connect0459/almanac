@@ -483,3 +483,89 @@ test "microseconds accepts every Int64 count and preserves its value" {
     )
   }
 }
+
+///|
+test "new builds a duration from whole seconds and a nanosecond remainder" {
+  let delta = @core.TimeDelta::new(3L, 500_000_000).unwrap()
+  assert_eq(delta, @core.TimeDelta::milliseconds(3_500L).unwrap())
+  assert_eq(@core.TimeDelta::new(0L, 0), Some(@core.TimeDelta::zero()))
+}
+
+///|
+test "new carries the sign entirely in the seconds component" {
+  assert_eq(
+    @core.TimeDelta::new(-1L, 500_000_000),
+    @core.TimeDelta::milliseconds(-500L),
+  )
+  assert_eq(@core.TimeDelta::new(-2L, 0), @core.TimeDelta::seconds(-2L))
+}
+
+///|
+test "new rejects a nanosecond count outside 0..=999_999_999" {
+  assert_eq(@core.TimeDelta::new(0L, 1_000_000_000), None)
+  assert_eq(@core.TimeDelta::new(1L, 2_000_000_000), None)
+  assert_eq(@core.TimeDelta::new(0L, -1), None)
+  assert_eq(@core.TimeDelta::new(1L, -1_000_000_000), None)
+  assert_true(@core.TimeDelta::new(0L, 999_999_999) is Some(_))
+}
+
+///|
+test "new accepts the extreme representable durations and rejects seconds beyond them" {
+  assert_eq(
+    @core.TimeDelta::new(9_223_372_036_854_774L, 999_999_999),
+    Some(@core.TimeDelta::max_value()),
+  )
+  assert_eq(
+    @core.TimeDelta::new(-9_223_372_036_854_774L, 0),
+    Some(@core.TimeDelta::min_value()),
+  )
+  assert_eq(@core.TimeDelta::new(9_223_372_036_854_775L, 0), None)
+  assert_eq(@core.TimeDelta::new(-9_223_372_036_854_775L, 0), None)
+}
+
+///|
+test "new round-trips through num_seconds and subsec_nanoseconds for a positive duration" {
+  let delta = @core.TimeDelta::new(12L, 345_678_901).unwrap()
+  assert_eq(delta.num_seconds(), 12L)
+  assert_eq(delta.subsec_nanoseconds(), 345_678_901)
+}
+
+///|
+test "as_hours_double reports fractional hours" {
+  assert_eq(@core.TimeDelta::seconds(5_400L).unwrap().as_hours_double(), 1.5)
+  assert_eq(@core.TimeDelta::hours(2L).unwrap().as_hours_double(), 2.0)
+  assert_eq(@core.TimeDelta::seconds(-5_400L).unwrap().as_hours_double(), -1.5)
+  assert_eq(@core.TimeDelta::zero().as_hours_double(), 0.0)
+}
+
+///|
+test "as_minutes_double reports fractional minutes" {
+  assert_eq(@core.TimeDelta::seconds(90L).unwrap().as_minutes_double(), 1.5)
+  assert_eq(@core.TimeDelta::minutes(3L).unwrap().as_minutes_double(), 3.0)
+  assert_eq(@core.TimeDelta::seconds(-90L).unwrap().as_minutes_double(), -1.5)
+  assert_eq(@core.TimeDelta::zero().as_minutes_double(), 0.0)
+}
+
+///|
+test "as_hours_double and as_minutes_double include the sub-second part" {
+  let delta = @core.TimeDelta::milliseconds(1_800_000L + 500L).unwrap()
+  assert_true((delta.as_minutes_double() - 30.008333333333333).abs() < 1.0e-9)
+  assert_true((delta.as_hours_double() - 0.5001388888888889).abs() < 1.0e-12)
+}
+
+///|
+test "as_hours_double and as_minutes_double stay finite for the extreme durations" {
+  assert_true(@core.TimeDelta::max_value().as_hours_double() > 2.5e12)
+  assert_true(@core.TimeDelta::min_value().as_hours_double() < -2.5e12)
+  assert_true(@core.TimeDelta::max_value().as_minutes_double() > 1.5e14)
+}
+
+///|
+test "as_hours_float and as_minutes_float report fractional values" {
+  assert_eq(@core.TimeDelta::seconds(5_400L).unwrap().as_hours_float(), 1.5)
+  assert_eq(@core.TimeDelta::seconds(-5_400L).unwrap().as_hours_float(), -1.5)
+  assert_eq(@core.TimeDelta::seconds(90L).unwrap().as_minutes_float(), 1.5)
+  assert_eq(@core.TimeDelta::seconds(-90L).unwrap().as_minutes_float(), -1.5)
+  assert_eq(@core.TimeDelta::zero().as_hours_float(), 0.0)
+  assert_eq(@core.TimeDelta::zero().as_minutes_float(), 0.0)
+}

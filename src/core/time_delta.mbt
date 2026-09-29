@@ -126,6 +126,20 @@ fn from_secs_nanos(secs : Int64, nanos : Int64) -> TimeDelta? {
 }
 
 ///|
+/// The duration of `seconds` whole seconds plus `nanoseconds`, which must be
+/// in `0..=999_999_999`: the sign of the duration is carried entirely by
+/// `seconds`, so `new(-1L, 500_000_000)` is minus half a second. Returns
+/// `None` if `nanoseconds` is outside that range or the result does not
+/// fit in the representable range.
+pub fn TimeDelta::new(seconds : Int64, nanoseconds : Int) -> TimeDelta? {
+  if nanoseconds < 0 || nanoseconds >= 1_000_000_000 {
+    None
+  } else {
+    from_secs_nanos(seconds, nanoseconds.to_int64())
+  }
+}
+
+///|
 /// The duration of the given number of whole weeks, or `None` if it does
 /// not fit in the representable range.
 pub fn TimeDelta::weeks(n : Int64) -> TimeDelta? {
@@ -266,6 +280,34 @@ pub fn TimeDelta::as_seconds_double(self : TimeDelta) -> Double {
 pub fn TimeDelta::as_seconds_float(self : TimeDelta) -> Float {
   Float::from_int64(self.seconds) +
   Float::from_int(self.nanoseconds) / 1_000_000_000.0
+}
+
+///|
+/// This duration's total length in fractional minutes, as a 64-bit float.
+/// Loses precision for a very large duration; never fails.
+pub fn TimeDelta::as_minutes_double(self : TimeDelta) -> Double {
+  self.as_seconds_double() / 60.0
+}
+
+///|
+/// This duration's total length in fractional hours, as a 64-bit float.
+/// Loses precision for a very large duration; never fails.
+pub fn TimeDelta::as_hours_double(self : TimeDelta) -> Double {
+  self.as_seconds_double() / 3600.0
+}
+
+///|
+/// This duration's total length in fractional minutes, as a 32-bit float.
+/// Loses precision for a very large duration; never fails.
+pub fn TimeDelta::as_minutes_float(self : TimeDelta) -> Float {
+  self.as_seconds_float() / 60.0
+}
+
+///|
+/// This duration's total length in fractional hours, as a 32-bit float.
+/// Loses precision for a very large duration; never fails.
+pub fn TimeDelta::as_hours_float(self : TimeDelta) -> Float {
+  self.as_seconds_float() / 3600.0
 }
 
 ///|
