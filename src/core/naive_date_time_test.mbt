@@ -886,3 +886,13 @@ test "panic add_seconds aborts when the result leaves the representable date ran
 test "panic sub_seconds aborts when the result leaves the representable date range" {
   ignore(min_datetime().sub_seconds(1))
 }
+
+///|
+test "ymd and hms report the date and time components together" {
+  let dt = @core.NaiveDate::from_ymd(2024, 2, 29)
+    .unwrap()
+    .and_hms(13, 45, 7)
+    .unwrap()
+  assert_eq(dt.ymd(), (2024, @core.Feb, 29))
+  assert_eq(dt.hms(), (13, 45, 7))
+}

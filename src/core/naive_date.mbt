@@ -121,6 +121,12 @@ pub fn NaiveDate::month(self : NaiveDate) -> Month {
 }
 
 ///|
+/// The year, month, and day of month together.
+pub fn NaiveDate::ymd(self : NaiveDate) -> (Int, Month, Int) {
+  (self.year(), self.month(), self.day())
+}
+
+///|
 /// The day of the month.
 pub fn NaiveDate::day(self : NaiveDate) -> Int {
   let (_, _, day) = civil_from_days(self.days)

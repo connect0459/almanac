@@ -143,6 +143,7 @@ pub fn NaiveDate::with_year(Self, Int) -> Self?
 pub fn NaiveDate::year(Self) -> Int
 pub fn NaiveDate::year_ce(Self) -> (Bool, Int)
 pub fn NaiveDate::years_since(Self, Self) -> Int?
+pub fn NaiveDate::ymd(Self) -> (Int, Month, Int)
 pub impl Default for NaiveDate
 pub impl Show for NaiveDate
 
@@ -182,6 +183,7 @@ pub fn NaiveDateTime::from_timestamp_millis(Int64) -> Self?
 pub fn NaiveDateTime::from_timestamp_nanos(Int64) -> Self?
 pub fn NaiveDateTime::hash(Self) -> Int
 pub fn NaiveDateTime::hash_combine(Self, Hasher) -> Unit
+pub fn NaiveDateTime::hms(Self) -> (Int, Int, Int)
 pub fn NaiveDateTime::hour(Self) -> Int
 pub fn NaiveDateTime::hour12(Self) -> (Bool, Int)
 pub fn NaiveDateTime::iso_week(Self) -> IsoWeek
@@ -237,6 +239,7 @@ pub fn NaiveDateTime::with_second(Self, Int) -> Self?
 pub fn NaiveDateTime::with_year(Self, Int) -> Self?
 pub fn NaiveDateTime::year(Self) -> Int
 pub fn NaiveDateTime::year_ce(Self) -> (Bool, Int)
+pub fn NaiveDateTime::ymd(Self) -> (Int, Month, Int)
 pub impl Default for NaiveDateTime
 pub impl Show for NaiveDateTime
 
@@ -262,6 +265,7 @@ pub fn NaiveTime::from_hms_nano(Int, Int, Int, Int) -> Self?
 pub fn NaiveTime::from_num_seconds_from_midnight(Int, Int) -> Self?
 pub fn NaiveTime::hash(Self) -> Int
 pub fn NaiveTime::hash_combine(Self, Hasher) -> Unit
+pub fn NaiveTime::hms(Self) -> (Int, Int, Int)
 pub fn NaiveTime::hour(Self) -> Int
 pub fn NaiveTime::hour12(Self) -> (Bool, Int)
 pub fn NaiveTime::midnight() -> Self

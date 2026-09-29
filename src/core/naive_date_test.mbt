@@ -1047,3 +1047,9 @@ test "the default date is the Unix epoch date, 1970-01-01" {
   assert_eq(date, @core.NaiveDate::from_ymd(1970, 1, 1).unwrap())
   assert_eq(date.epoch_days(), 0)
 }
+
+///|
+test "ymd reports year, month, and day together" {
+  let date = @core.NaiveDate::from_ymd(2024, 2, 29).unwrap()
+  assert_eq(date.ymd(), (2024, @core.Feb, 29))
+}

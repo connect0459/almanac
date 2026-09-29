@@ -170,6 +170,13 @@ pub fn NaiveTime::second(self : NaiveTime) -> Int {
 }
 
 ///|
+/// The hour, minute, and second together, as `hour`, `minute`, and `second`
+/// report them.
+pub fn NaiveTime::hms(self : NaiveTime) -> (Int, Int, Int) {
+  (self.hour(), self.minute(), self.second())
+}
+
+///|
 /// The nanosecond component, normally `0..=999_999_999`. A value of
 /// `1_000_000_000` or above indicates this time represents a leap second
 /// (displayed as `second() + 1`, i.e. `:60`), with the leap second's own

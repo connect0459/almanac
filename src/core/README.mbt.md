@@ -172,6 +172,7 @@ A proleptic Gregorian calendar date. Constructors are `Option`-returning: an inv
 | `year()` | `-> Int` | Calendar year |
 | `month()` | `-> Month` | Calendar month |
 | `day()` | `-> Int` | Day of month |
+| `ymd()` | `-> (Int, Month, Int)` | Year, month and day of month together |
 | `ordinal()` | `-> Int` | Day of year, 1-based |
 | `month0()` / `day0()` / `ordinal0()` | `-> Int` | The zero-based forms of the month (`0..=11`), day of month (`0..=30`) and day of year (`0..=365`) |
 | `year_ce()` | `-> (Bool, Int)` | The year as a Common Era flag and a positive year number: `(true, 2024)`, and `(false, 1)` for year `0`, `(false, 2)` for year `-1` |
@@ -260,6 +261,7 @@ A time of day, precise to the nanosecond. Constructors are `Option`-returning. S
 | `hour()` | `-> Int` | Hour, `0..=23` |
 | `minute()` | `-> Int` | Minute, `0..=59` |
 | `second()` | `-> Int` | Second, `0..=59` (never `60`; see leap seconds above) |
+| `hms()` | `-> (Int, Int, Int)` | Hour, minute and second together (a leap second reports second `59`, as `second()` does) |
 | `nanosecond()` | `-> Int` | Nanosecond component, `0..=1_999_999_999` |
 | `hour12()` | `-> (Bool, Int)` | 12-hour clock hour and PM flag, wrapping midnight/noon to `12` |
 | `num_seconds_from_midnight()` | `-> Int` | Seconds elapsed since midnight |
@@ -336,6 +338,7 @@ A `NaiveDate` and `NaiveTime` combined into one zone-less instant.
 | `NaiveDateTime::unix_epoch()` | `-> Self` | The Unix epoch, `1970-01-01 00:00:00` (timestamp zero); also `NaiveDateTime`'s `Default` |
 | `year()` / `month()` / `day()` / `ordinal()` / `weekday()` / `iso_week()` / `leap_year()` | `-> Int` / `Month` / `Int` / `Int` / `Weekday` / `IsoWeek` / `Bool` | The date's components, as on `NaiveDate` |
 | `hour()` / `minute()` / `second()` / `nanosecond()` | `-> Int` | The time's components, as on `NaiveTime` (`nanosecond() >= 1_000_000_000` encodes a leap second) |
+| `ymd()` / `hms()` | `-> (Int, Month, Int)` / `(Int, Int, Int)` | The date and time components together, as on `NaiveDate`/`NaiveTime` |
 | `month0()` / `day0()` / `ordinal0()` / `quarter()` / `num_days_in_month()` / `num_days_from_ce()` | `-> Int` | The zero-based month/day/ordinal, the quarter (`1..=4`), the month's length and the Common Era day count, as on `NaiveDate` |
 | `year_ce()` | `-> (Bool, Int)` | The year as a Common Era flag and positive year number, as on `NaiveDate` |
 | `hour12()` | `-> (Bool, Int)` | The 12-hour clock as a PM flag and an hour in `1..=12`, as on `NaiveTime` |

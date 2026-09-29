@@ -451,3 +451,15 @@ test "the default time is midnight" {
   let time : @core.NaiveTime = Default::default()
   assert_eq(time, @core.NaiveTime::midnight())
 }
+
+///|
+test "hms reports hour, minute, and second together" {
+  let time = @core.NaiveTime::from_hms(23, 59, 58).unwrap()
+  assert_eq(time.hms(), (23, 59, 58))
+}
+
+///|
+test "hms reports a leap second as second 59, like second()" {
+  let time = @core.NaiveTime::from_hms_nano(23, 59, 59, 1_500_000_000).unwrap()
+  assert_eq(time.hms(), (23, 59, 59))
+}

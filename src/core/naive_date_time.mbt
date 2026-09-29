@@ -117,6 +117,18 @@ pub fn NaiveDateTime::time(self : NaiveDateTime) -> NaiveTime {
 }
 
 ///|
+/// The year, month, and day of month together.
+pub fn NaiveDateTime::ymd(self : NaiveDateTime) -> (Int, Month, Int) {
+  self.date.ymd()
+}
+
+///|
+/// The hour, minute, and second together.
+pub fn NaiveDateTime::hms(self : NaiveDateTime) -> (Int, Int, Int) {
+  self.time.hms()
+}
+
+///|
 /// The calendar year.
 pub fn NaiveDateTime::year(self : NaiveDateTime) -> Int {
   self.date.year()
