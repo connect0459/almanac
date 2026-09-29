@@ -295,6 +295,33 @@ pub fn TimeDelta::as_seconds_float(self : TimeDelta) -> Float {
 }
 
 ///|
+/// The duration of `seconds` fractional seconds, rounded to the nearest
+/// nanosecond with an exact half-nanosecond tie breaking away from zero (so
+/// a decimal such as `0.3` becomes exactly 300 000 000 ns despite its
+/// binary representation error). `None` for NaN, an infinity, or a value
+/// outside the representable range. A `Double` carries about 15 significant
+/// digits, so a very large duration cannot keep nanosecond precision; the
+/// nanosecond is exact only while the whole-second part is below about
+/// 9 million seconds.
+pub fn TimeDelta::from_seconds_double(seconds : Double) -> TimeDelta? {
+  if seconds.is_nan() || seconds.is_inf() {
+    return None
+  }
+  let whole = seconds.floor()
+  if whole > 9.0e18 || whole < -9.0e18 {
+    return None
+  }
+  let scaled = (seconds - whole) * 1.0e9
+  let rounded = scaled.round()
+  let nanos = if seconds < 0.0 && rounded - scaled == 0.5 {
+    rounded - 1.0
+  } else {
+    rounded
+  }
+  from_secs_nanos(whole.to_int64(), nanos.to_int64())
+}
+
+///|
 /// This duration's total length in fractional minutes, as a 64-bit float.
 /// Loses precision for a very large duration; never fails.
 pub fn TimeDelta::as_minutes_double(self : TimeDelta) -> Double {

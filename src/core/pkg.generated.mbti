@@ -325,6 +325,7 @@ pub fn TimeDelta::days(Int64) -> Self?
 pub fn TimeDelta::default() -> Self
 pub fn TimeDelta::div(Self, Int) -> Self?
 pub fn TimeDelta::equal(Self, Self) -> Bool
+pub fn TimeDelta::from_seconds_double(Double) -> Self?
 pub fn TimeDelta::hash(Self) -> Int
 pub fn TimeDelta::hash_combine(Self, Hasher) -> Unit
 pub fn TimeDelta::hours(Int64) -> Self?

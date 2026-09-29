@@ -810,3 +810,153 @@ test "sum returns None when the true total is outside the representable range" {
   }
   assert_eq(@core.TimeDelta::sum(many), None)
 }
+
+///|
+test "from_seconds_double reads whole and fractional seconds" {
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(90.0),
+    @core.TimeDelta::seconds(90L),
+  )
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(1.5),
+    @core.TimeDelta::milliseconds(1_500L),
+  )
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(-1.5),
+    @core.TimeDelta::milliseconds(-1_500L),
+  )
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(0.0),
+    Some(@core.TimeDelta::zero()),
+  )
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(-0.0),
+    Some(@core.TimeDelta::zero()),
+  )
+}
+
+///|
+test "from_seconds_double gives decimal literals their intended nanoseconds despite binary representation error" {
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(0.3),
+    @core.TimeDelta::nanoseconds(300_000_000L),
+  )
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(1.1),
+    @core.TimeDelta::nanoseconds(1_100_000_000L),
+  )
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(-0.3),
+    @core.TimeDelta::nanoseconds(-300_000_000L),
+  )
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(0.000000001),
+    @core.TimeDelta::nanoseconds(1L),
+  )
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(12345.678901234),
+    @core.TimeDelta::new(12345L, 678_901_234),
+  )
+}
+
+///|
+test "from_seconds_double rounds to the nearest nanosecond" {
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(0.4e-9),
+    Some(@core.TimeDelta::zero()),
+  )
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(0.6e-9),
+    @core.TimeDelta::nanoseconds(1L),
+  )
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(-0.4e-9),
+    Some(@core.TimeDelta::zero()),
+  )
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(-0.6e-9),
+    @core.TimeDelta::nanoseconds(-1L),
+  )
+}
+
+///|
+test "from_seconds_double breaks an exact half-nanosecond tie away from zero" {
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(1.0 / 1024.0),
+    @core.TimeDelta::nanoseconds(976_563L),
+  )
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(-1.0 / 1024.0),
+    @core.TimeDelta::nanoseconds(-976_563L),
+  )
+}
+
+///|
+test "from_seconds_double carries a rounded-up fraction into the seconds" {
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(0.9999999996),
+    @core.TimeDelta::seconds(1L),
+  )
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(-0.9999999996),
+    @core.TimeDelta::seconds(-1L),
+  )
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(2.9999999996),
+    @core.TimeDelta::seconds(3L),
+  )
+}
+
+///|
+test "from_seconds_double round-trips as_seconds_double for nanosecond-precise durations of moderate size" {
+  for
+    delta in [
+      @core.TimeDelta::new(12_345L, 678_901_234).unwrap(),
+      @core.TimeDelta::new(-12_345L, 678_901_234).unwrap(),
+      @core.TimeDelta::new(0L, 1).unwrap(),
+      @core.TimeDelta::new(3_600L, 500_000_000).unwrap(),
+    ] {
+    assert_eq(
+      @core.TimeDelta::from_seconds_double(delta.as_seconds_double()),
+      Some(delta),
+    )
+  }
+}
+
+///|
+test "from_seconds_double accepts large durations" {
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(10_000_000_000.0),
+    @core.TimeDelta::seconds(10_000_000_000L),
+  )
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(-10_000_000_000.0),
+    @core.TimeDelta::seconds(-10_000_000_000L),
+  )
+}
+
+///|
+test "from_seconds_double accepts the extreme whole-second values and rejects anything beyond" {
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(9_223_372_036_854_774.0),
+    @core.TimeDelta::new(9_223_372_036_854_774L, 0),
+  )
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(-9_223_372_036_854_774.0),
+    Some(@core.TimeDelta::min_value()),
+  )
+  assert_eq(@core.TimeDelta::from_seconds_double(9_223_372_036_854_776.0), None)
+  assert_eq(
+    @core.TimeDelta::from_seconds_double(-9_223_372_036_854_776.0),
+    None,
+  )
+  assert_eq(@core.TimeDelta::from_seconds_double(1.0e300), None)
+  assert_eq(@core.TimeDelta::from_seconds_double(-1.0e300), None)
+}
+
+///|
+test "from_seconds_double rejects NaN and infinities" {
+  assert_eq(@core.TimeDelta::from_seconds_double(0.0 / 0.0), None)
+  assert_eq(@core.TimeDelta::from_seconds_double(1.0 / 0.0), None)
+  assert_eq(@core.TimeDelta::from_seconds_double(-1.0 / 0.0), None)
+}
