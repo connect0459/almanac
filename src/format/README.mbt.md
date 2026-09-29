@@ -12,6 +12,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `parse_date_time_tz` | Parse a string with a `%z` offset into a `DateTime[FixedOffset]`, interpreting the fields as local wall-clock time |
 | `to_rfc3339`/`parse_rfc3339` | Dedicated RFC 3339 fast path, bypassing the specifier engine |
 | `to_rfc2822`/`parse_from_rfc2822` | Dedicated RFC 2822 fast path (e.g. `"Tue, 1 Jul 2003 10:52:37 +0200"`), bypassing the specifier engine |
+| `rfc1123`/`kitchen`/`stamp`/`stamp_milli`/`stamp_micro`/`stamp_nano`/`date_only`/`time_only` | Named convenience format strings (Go `time` package layout equivalents) — pass one to `format_*`/`parse_*` like any other format string |
 
 ## Supported specifiers
 
@@ -149,6 +150,23 @@ test {
 | :--- | :--- | :--- |
 | `to_rfc2822(DateTime[Tz])` *(Tz : TimeZone)* | `-> String raise ParseError` | Renders `"<short weekday>, <day> <short month> <year> <HH>:<MM>:<SS> ±HHMM"` (e.g. `"Tue, 1 Jul 2003 10:52:37 +0200"`); the day is unpadded (one or two digits, never a leading zero), unlike this package's other numeric fields. Raises `InvalidRfc2822` if the year is outside RFC 2822's own `0..=9999` range — unlike `to_rfc3339`, not total |
 | `parse_from_rfc2822(String)` | `-> DateTime[FixedOffset] raise ParseError` | Strict RFC 2822 parsing: only the exact shape `to_rfc2822` renders (day-of-week and seconds mandatory, single-space separators, a 4-digit year, a numeric `±HHMM` offset). Unlike chrono's own parser, does *not* support RFC 2822's "obsolete format" — optional day-of-week, arbitrary/folding whitespace, 2-/3-digit year windowing, named legacy zones (`GMT`, `EST`, ...), or parenthesized comments. Raises `InvalidRfc2822` on any mismatch |
+
+### Named layouts
+
+Convenience format-string constants, mirroring Go's `time` package layouts (translated into this project's `%`-specifier style, not copied as Go's reference-time-layout syntax). Each is just a `String` — pass one to `format_date`/`format_time`/`format_date_time`/`format_date_time_tz`, or their `parse_*` counterparts, like any other format string.
+
+| Constant | Format string | Go equivalent | Example |
+| :--- | :--- | :--- | :--- |
+| `rfc1123` | `"%a, %d %b %Y %H:%M:%S %Z"` | `RFC1123` | `"Tue, 05 Mar 2024 09:05:03 UTC"` |
+| `kitchen` | `"%-I:%M%p"` | `Kitchen` | `"9:05AM"` |
+| `stamp` | `"%b %e %H:%M:%S"` | `Stamp` | `"Mar  5 09:05:03"` |
+| `stamp_milli` | `"%b %e %H:%M:%S.%3f"` | `StampMilli` | `"Mar  5 09:05:03.123"` |
+| `stamp_micro` | `"%b %e %H:%M:%S.%6f"` | `StampMicro` | `"Mar  5 09:05:03.123456"` |
+| `stamp_nano` | `"%b %e %H:%M:%S.%9f"` | `StampNano` | `"Mar  5 09:05:03.123456789"` |
+| `date_only` | `"%F"` | `DateOnly` | `"2024-03-05"` |
+| `time_only` | `"%T"` | `TimeOnly` | `"09:05:03"` |
+
+`rfc1123` (its `%Z` can't be parsed), `kitchen` (no seconds), and the `stamp*` family (no year) don't carry enough fields to round-trip through the matching `parse_*` function on their own — matching Go's own `Stamp` family, meant for display alongside separately-known context. Only `date_only`/`time_only` are self-sufficient for parsing.
 
 ### `tokenize`
 

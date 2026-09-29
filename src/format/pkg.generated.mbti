@@ -8,6 +8,8 @@ import {
 }
 
 // Values
+pub let date_only : String
+
 pub fn format_date(@core.NaiveDate, String) -> String raise ParseError
 
 pub fn format_date_time(@core.NaiveDateTime, String) -> String raise ParseError
@@ -15,6 +17,8 @@ pub fn format_date_time(@core.NaiveDateTime, String) -> String raise ParseError
 pub fn[Tz : @tz.TimeZone] format_date_time_tz(@tz.DateTime[Tz], String) -> String raise ParseError
 
 pub fn format_time(@core.NaiveTime, String) -> String raise ParseError
+
+pub let kitchen : String
 
 pub fn parse_date(String, String) -> @core.NaiveDate raise ParseError
 
@@ -27,6 +31,18 @@ pub fn parse_from_rfc2822(String) -> @tz.DateTime[@tz.FixedOffset] raise ParseEr
 pub fn parse_rfc3339(String) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
 
 pub fn parse_time(String, String) -> @core.NaiveTime raise ParseError
+
+pub let rfc1123 : String
+
+pub let stamp : String
+
+pub let stamp_micro : String
+
+pub let stamp_milli : String
+
+pub let stamp_nano : String
+
+pub let time_only : String
 
 pub fn[Tz : @tz.TimeZone] to_rfc2822(@tz.DateTime[Tz]) -> String raise ParseError
 
