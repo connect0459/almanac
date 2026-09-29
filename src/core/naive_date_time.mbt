@@ -25,6 +25,16 @@ pub extend NaiveDateTime with Compare::{compare, op_lt, op_gt, op_le, op_ge}
 pub extend NaiveDateTime with @debug.Debug::{to_repr}
 
 ///|
+/// Renders as the date and the time joined by a space, e.g.
+/// `2024-01-02 13:45:06.500`; see `NaiveDate` and `NaiveTime`'s `Show`.
+pub impl Show for NaiveDateTime with fn output(self, logger) {
+  logger.write_string(self.date.to_string() + " " + self.time.to_string())
+}
+
+///|
+pub extend NaiveDateTime with Show::{to_string, output}
+
+///|
 /// Composes a `NaiveDate` and a `NaiveTime` into a `NaiveDateTime`.
 pub fn NaiveDateTime::new(date : NaiveDate, time : NaiveTime) -> NaiveDateTime {
   NaiveDateTime::{ date, time, }

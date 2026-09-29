@@ -53,3 +53,31 @@ test "equal ISO weeks compare as neither less nor greater" {
   assert_true(w1 >= w2)
   assert_eq(w1.compare(w2), 0)
 }
+
+///|
+test "to_string renders an ISO week as year-Www with zero padding" {
+  assert_eq(
+    @core.NaiveDate::from_ymd(2015, 9, 18).unwrap().iso_week().to_string(),
+    "2015-W38",
+  )
+  assert_eq(
+    @core.NaiveDate::from_ymd(2024, 1, 1).unwrap().iso_week().to_string(),
+    "2024-W01",
+  )
+  assert_eq(
+    @core.NaiveDate::from_ymd(5, 1, 4).unwrap().iso_week().to_string(),
+    "0005-W01",
+  )
+}
+
+///|
+test "to_string gives an ISO week year outside 0..=9999 an explicit sign" {
+  assert_eq(
+    @core.NaiveDate::from_ymd(10000, 1, 4).unwrap().iso_week().to_string(),
+    "+10000-W01",
+  )
+  assert_eq(
+    @core.NaiveDate::from_ymd(-1, 1, 4).unwrap().iso_week().to_string(),
+    "-0001-W01",
+  )
+}

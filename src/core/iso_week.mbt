@@ -19,6 +19,16 @@ pub extend IsoWeek with Compare::{compare, op_lt, op_gt, op_le, op_ge}
 pub extend IsoWeek with @debug.Debug::{to_repr}
 
 ///|
+/// Renders as `YYYY-Www`, e.g. `2015-W38`; a year outside `0..=9999` gets an
+/// explicit sign (`+10000-W01`).
+pub impl Show for IsoWeek with fn output(self, logger) {
+  logger.write_string(year_text(self.year) + "-W" + pad_zero(self.week, 2))
+}
+
+///|
+pub extend IsoWeek with Show::{to_string, output}
+
+///|
 /// The ISO 8601 week-numbering year.
 pub fn IsoWeek::year(self : IsoWeek) -> Int {
   self.year

@@ -203,3 +203,21 @@ test "equal sets compare equal regardless of construction path" {
     @core.WeekdaySet::single(@core.Mon).insert(@core.Tue),
   )
 }
+
+///|
+test "to_string lists the members' short names in Monday-first order" {
+  assert_eq(
+    @core.WeekdaySet::from_array([@core.Sun, @core.Mon, @core.Fri]).to_string(),
+    "[Mon, Fri, Sun]",
+  )
+  assert_eq(@core.WeekdaySet::single(@core.Wed).to_string(), "[Wed]")
+  assert_eq(
+    @core.WeekdaySet::all().to_string(),
+    "[Mon, Tue, Wed, Thu, Fri, Sat, Sun]",
+  )
+}
+
+///|
+test "to_string renders the empty set as empty brackets" {
+  assert_eq(@core.WeekdaySet::empty().to_string(), "[]")
+}

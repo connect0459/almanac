@@ -551,3 +551,31 @@ test "with_hour preserves an existing leap-second nanosecond component" {
     .unwrap()
   assert_eq(dt.with_hour(12).map(fn(d) { d.nanosecond() }), Some(1_500_000_000))
 }
+
+///|
+test "to_string joins the date and time with a space" {
+  assert_eq(
+    @core.NaiveDate::from_ymd(2024, 1, 2)
+    .unwrap()
+    .and_hms(13, 45, 6)
+    .unwrap()
+    .to_string(),
+    "2024-01-02 13:45:06",
+  )
+  assert_eq(
+    @core.NaiveDate::from_ymd(2024, 1, 2)
+    .unwrap()
+    .and_hms_milli(13, 45, 6, 500)
+    .unwrap()
+    .to_string(),
+    "2024-01-02 13:45:06.500",
+  )
+  assert_eq(
+    @core.NaiveDate::from_ymd(-1, 12, 31)
+    .unwrap()
+    .and_hms(0, 0, 0)
+    .unwrap()
+    .to_string(),
+    "-0001-12-31 00:00:00",
+  )
+}

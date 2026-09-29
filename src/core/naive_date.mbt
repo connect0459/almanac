@@ -20,6 +20,22 @@ pub extend NaiveDate with Compare::{compare, op_lt, op_gt, op_le, op_ge}
 pub extend NaiveDate with @debug.Debug::{to_repr}
 
 ///|
+/// Renders as `YYYY-MM-DD`; a year outside `0..=9999` gets an explicit sign
+/// (`-0001-12-31`, `+10000-01-01`).
+pub impl Show for NaiveDate with fn output(self, logger) {
+  logger.write_string(
+    year_text(self.year()) +
+    "-" +
+    pad_zero(self.month().number_from_month(), 2) +
+    "-" +
+    pad_zero(self.day(), 2),
+  )
+}
+
+///|
+pub extend NaiveDate with Show::{to_string, output}
+
+///|
 /// Constructs the date for a given proleptic Gregorian `(year, month, day)`,
 /// or `None` if `month` is outside `1..=12` or `day` is outside the range of
 /// days in that month.

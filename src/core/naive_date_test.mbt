@@ -882,3 +882,43 @@ test "panic add_years aborts when the result leaves the representable range" {
 test "panic sub_years aborts when the result leaves the representable range" {
   ignore(min_date().sub_years(1))
 }
+
+///|
+test "to_string renders a date as year-month-day with zero padding" {
+  assert_eq(
+    @core.NaiveDate::from_ymd(2024, 1, 2).unwrap().to_string(),
+    "2024-01-02",
+  )
+  assert_eq(
+    @core.NaiveDate::from_ymd(5, 12, 31).unwrap().to_string(),
+    "0005-12-31",
+  )
+  assert_eq(
+    @core.NaiveDate::from_ymd(0, 1, 1).unwrap().to_string(),
+    "0000-01-01",
+  )
+  assert_eq(
+    @core.NaiveDate::from_ymd(9999, 12, 31).unwrap().to_string(),
+    "9999-12-31",
+  )
+}
+
+///|
+test "to_string gives a year outside 0..=9999 an explicit sign" {
+  assert_eq(
+    @core.NaiveDate::from_ymd(-1, 12, 31).unwrap().to_string(),
+    "-0001-12-31",
+  )
+  assert_eq(
+    @core.NaiveDate::from_ymd(10000, 1, 1).unwrap().to_string(),
+    "+10000-01-01",
+  )
+  assert_eq(
+    @core.NaiveDate::from_ymd(12345, 6, 7).unwrap().to_string(),
+    "+12345-06-07",
+  )
+  assert_eq(
+    @core.NaiveDate::from_ymd(-12345, 6, 7).unwrap().to_string(),
+    "-12345-06-07",
+  )
+}

@@ -17,6 +17,17 @@ pub extend WeekdaySet with Eq::{not_equal}
 pub extend WeekdaySet with Compare::{compare, op_lt, op_gt, op_le, op_ge}
 
 ///|
+/// Renders as a bracketed list of the members' short names in `Mon..Sun`
+/// order, e.g. `[Mon, Fri]`; the empty set is `[]`.
+pub impl Show for WeekdaySet with fn output(self, logger) {
+  let names = self.to_array().map(day => day.short_name())
+  logger.write_string("[" + names.join(", ") + "]")
+}
+
+///|
+pub extend WeekdaySet with Show::{to_string, output}
+
+///|
 pub extend WeekdaySet with @debug.Debug::{to_repr}
 
 ///|

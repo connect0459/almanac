@@ -344,3 +344,60 @@ test "wrapping arithmetic agrees with the time reported by the overflowing forms
     time.overflowing_sub_signed(delta).0,
   )
 }
+
+///|
+test "to_string renders a time as hour:minute:second with zero padding" {
+  assert_eq(
+    @core.NaiveTime::from_hms(13, 45, 6).unwrap().to_string(),
+    "13:45:06",
+  )
+  assert_eq(@core.NaiveTime::from_hms(0, 0, 0).unwrap().to_string(), "00:00:00")
+  assert_eq(
+    @core.NaiveTime::from_hms(23, 59, 59).unwrap().to_string(),
+    "23:59:59",
+  )
+}
+
+///|
+test "to_string uses the fewest of 3, 6 or 9 fractional digits that represent the nanoseconds" {
+  assert_eq(
+    @core.NaiveTime::from_hms_nano(1, 2, 3, 500_000_000).unwrap().to_string(),
+    "01:02:03.500",
+  )
+  assert_eq(
+    @core.NaiveTime::from_hms_nano(1, 2, 3, 1_000_000).unwrap().to_string(),
+    "01:02:03.001",
+  )
+  assert_eq(
+    @core.NaiveTime::from_hms_nano(1, 2, 3, 123_456_000).unwrap().to_string(),
+    "01:02:03.123456",
+  )
+  assert_eq(
+    @core.NaiveTime::from_hms_nano(1, 2, 3, 1_000).unwrap().to_string(),
+    "01:02:03.000001",
+  )
+  assert_eq(
+    @core.NaiveTime::from_hms_nano(1, 2, 3, 789).unwrap().to_string(),
+    "01:02:03.000000789",
+  )
+  assert_eq(
+    @core.NaiveTime::from_hms_nano(1, 2, 3, 123_456_789).unwrap().to_string(),
+    "01:02:03.123456789",
+  )
+}
+
+///|
+test "to_string renders a leap second with second 60" {
+  assert_eq(
+    @core.NaiveTime::from_hms_nano(23, 59, 59, 1_000_000_000)
+    .unwrap()
+    .to_string(),
+    "23:59:60",
+  )
+  assert_eq(
+    @core.NaiveTime::from_hms_nano(23, 59, 59, 1_500_000_000)
+    .unwrap()
+    .to_string(),
+    "23:59:60.500",
+  )
+}

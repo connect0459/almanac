@@ -25,10 +25,13 @@ pub fn IsoWeek::op_ge(Self, Self) -> Bool
 pub fn IsoWeek::op_gt(Self, Self) -> Bool
 pub fn IsoWeek::op_le(Self, Self) -> Bool
 pub fn IsoWeek::op_lt(Self, Self) -> Bool
+pub fn IsoWeek::output(Self, &Logger) -> Unit
 pub fn IsoWeek::to_repr(Self) -> @debug.Repr
+pub fn IsoWeek::to_string(Self) -> String
 pub fn IsoWeek::week(Self) -> Int
 pub fn IsoWeek::week0(Self) -> Int
 pub fn IsoWeek::year(Self) -> Int
+pub impl Show for IsoWeek
 
 pub(all) enum Month {
   Jan
@@ -102,6 +105,7 @@ pub fn NaiveDate::op_gt(Self, Self) -> Bool
 pub fn NaiveDate::op_le(Self, Self) -> Bool
 pub fn NaiveDate::op_lt(Self, Self) -> Bool
 pub fn NaiveDate::ordinal(Self) -> Int
+pub fn NaiveDate::output(Self, &Logger) -> Unit
 pub fn NaiveDate::pred(Self) -> Self
 pub fn NaiveDate::pred_opt(Self) -> Self?
 pub fn NaiveDate::quarter(Self) -> Int
@@ -113,6 +117,7 @@ pub fn NaiveDate::sub_years(Self, Int) -> Self
 pub fn NaiveDate::succ(Self) -> Self
 pub fn NaiveDate::succ_opt(Self) -> Self?
 pub fn NaiveDate::to_repr(Self) -> @debug.Repr
+pub fn NaiveDate::to_string(Self) -> String
 pub fn NaiveDate::week(Self, Weekday) -> NaiveWeek
 pub fn NaiveDate::weekday(Self) -> Weekday
 pub fn NaiveDate::with_day(Self, Int) -> Self?
@@ -121,6 +126,7 @@ pub fn NaiveDate::with_ordinal(Self, Int) -> Self?
 pub fn NaiveDate::with_year(Self, Int) -> Self?
 pub fn NaiveDate::year(Self) -> Int
 pub fn NaiveDate::years_since(Self, Self) -> Int?
+pub impl Show for NaiveDate
 
 pub struct NaiveDateDaysIterator {
   // private fields
@@ -163,6 +169,7 @@ pub fn NaiveDateTime::op_gt(Self, Self) -> Bool
 pub fn NaiveDateTime::op_le(Self, Self) -> Bool
 pub fn NaiveDateTime::op_lt(Self, Self) -> Bool
 pub fn NaiveDateTime::ordinal(Self) -> Int
+pub fn NaiveDateTime::output(Self, &Logger) -> Unit
 pub fn NaiveDateTime::round(Self, TimeDelta) -> Self?
 pub fn NaiveDateTime::second(Self) -> Int
 pub fn NaiveDateTime::signed_duration_since(Self, Self) -> TimeDelta
@@ -178,6 +185,7 @@ pub fn NaiveDateTime::timestamp_subsec_micros(Self) -> Int
 pub fn NaiveDateTime::timestamp_subsec_millis(Self) -> Int
 pub fn NaiveDateTime::timestamp_subsec_nanos(Self) -> Int
 pub fn NaiveDateTime::to_repr(Self) -> @debug.Repr
+pub fn NaiveDateTime::to_string(Self) -> String
 pub fn NaiveDateTime::truncate(Self, TimeDelta) -> Self?
 pub fn NaiveDateTime::weekday(Self) -> Weekday
 pub fn NaiveDateTime::with_day(Self, Int) -> Self?
@@ -189,6 +197,7 @@ pub fn NaiveDateTime::with_ordinal(Self, Int) -> Self?
 pub fn NaiveDateTime::with_second(Self, Int) -> Self?
 pub fn NaiveDateTime::with_year(Self, Int) -> Self?
 pub fn NaiveDateTime::year(Self) -> Int
+pub impl Show for NaiveDateTime
 
 pub struct NaiveDateWeeksIterator {
   // private fields
@@ -218,17 +227,20 @@ pub fn NaiveTime::op_ge(Self, Self) -> Bool
 pub fn NaiveTime::op_gt(Self, Self) -> Bool
 pub fn NaiveTime::op_le(Self, Self) -> Bool
 pub fn NaiveTime::op_lt(Self, Self) -> Bool
+pub fn NaiveTime::output(Self, &Logger) -> Unit
 pub fn NaiveTime::overflowing_add_signed(Self, TimeDelta) -> (Self, Int64)
 pub fn NaiveTime::overflowing_sub_signed(Self, TimeDelta) -> (Self, Int64)
 pub fn NaiveTime::second(Self) -> Int
 pub fn NaiveTime::signed_duration_since(Self, Self) -> TimeDelta
 pub fn NaiveTime::to_repr(Self) -> @debug.Repr
+pub fn NaiveTime::to_string(Self) -> String
 pub fn NaiveTime::with_hour(Self, Int) -> Self?
 pub fn NaiveTime::with_minute(Self, Int) -> Self?
 pub fn NaiveTime::with_nanosecond(Self, Int) -> Self?
 pub fn NaiveTime::with_second(Self, Int) -> Self?
 pub fn NaiveTime::wrapping_add_signed(Self, TimeDelta) -> Self
 pub fn NaiveTime::wrapping_sub_signed(Self, TimeDelta) -> Self
+pub impl Show for NaiveTime
 
 pub struct NaiveWeek {
   // private fields
@@ -350,13 +362,16 @@ pub fn WeekdaySet::op_ge(Self, Self) -> Bool
 pub fn WeekdaySet::op_gt(Self, Self) -> Bool
 pub fn WeekdaySet::op_le(Self, Self) -> Bool
 pub fn WeekdaySet::op_lt(Self, Self) -> Bool
+pub fn WeekdaySet::output(Self, &Logger) -> Unit
 pub fn WeekdaySet::remove(Self, Weekday) -> Self
 pub fn WeekdaySet::single(Weekday) -> Self
 pub fn WeekdaySet::single_day(Self) -> Weekday?
 pub fn WeekdaySet::symmetric_difference(Self, Self) -> Self
 pub fn WeekdaySet::to_array(Self) -> Array[Weekday]
 pub fn WeekdaySet::to_repr(Self) -> @debug.Repr
+pub fn WeekdaySet::to_string(Self) -> String
 pub fn WeekdaySet::union(Self, Self) -> Self
+pub impl Show for WeekdaySet
 
 // Type aliases
 

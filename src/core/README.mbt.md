@@ -117,7 +117,7 @@ An immutable set of `Weekday` values. Every mutating-looking operation (`insert`
 | `length()` | `-> Int` | The number of members |
 | `to_array()` | `-> Array[Weekday]` | Members in `Mon..Sun` order |
 
-`WeekdaySet` also implements `Eq` and `Compare` (`<`/`<=`/`>`/`>=` via `compare`).
+`WeekdaySet` also implements `Eq`, `Compare` (`<`/`<=`/`>`/`>=` via `compare`) and `Show`, rendering the members' short names in `Mon..Sun` order (`[Mon, Fri]`, empty is `[]`).
 
 ---
 
@@ -146,7 +146,7 @@ An immutable set of `Weekday` values. Every mutating-looking operation (`insert`
 | `week()` | `-> Int` | 1-based week number within that year |
 | `week0()` | `-> Int` | 0-based week number |
 
-`IsoWeek` also implements `Eq` and `Compare` (`<`/`<=`/`>`/`>=` via `compare`).
+`IsoWeek` also implements `Eq`, `Compare` (`<`/`<=`/`>`/`>=` via `compare`) and `Show`, rendering `YYYY-Www` (`2015-W38`); a year outside `0..=9999` gets an explicit sign (`+10000-W01`).
 
 ---
 
@@ -201,7 +201,7 @@ A proleptic Gregorian calendar date. Constructors are `Option`-returning: an inv
 | `iter_days()` | `-> NaiveDateDaysIterator` | Lazy, bounded, double-ended iterator over successive dates one day apart, starting from `self` |
 | `iter_weeks()` | `-> NaiveDateWeeksIterator` | Lazy, bounded, double-ended iterator over successive dates one week apart, starting from `self` |
 
-`NaiveDate` also implements `Eq` and `Compare` (`<`/`<=`/`>`/`>=` via `compare`).
+`NaiveDate` also implements `Eq`, `Compare` (`<`/`<=`/`>`/`>=` via `compare`) and `Show`, rendering `YYYY-MM-DD` (`2024-01-02`); a year outside `0..=9999` gets an explicit sign (`-0001-12-31`, `+10000-01-01`).
 
 ---
 
@@ -257,7 +257,7 @@ A time of day, precise to the nanosecond. Constructors are `Option`-returning. S
 | `with_nanosecond(Int)` | `-> Self?` | Same hour/minute/second with a different nanosecond component; `None` if outside `0..=1_999_999_999` |
 | `signed_duration_since(Self)` | `-> TimeDelta` | The signed duration from `other` to `self`, with no day carry; a leap second is treated as coinciding with the prior non-leap second until time moves away from it |
 
-`NaiveTime` also implements `Eq` and `Compare` (`<`/`<=`/`>`/`>=` via `compare`).
+`NaiveTime` also implements `Eq`, `Compare` (`<`/`<=`/`>`/`>=` via `compare`) and `Show`, rendering `HH:MM:SS` plus, only when the nanoseconds are nonzero, the fewest of 3, 6 or 9 fractional digits that represent them exactly (`.500`, `.123456`, `.000000789`); a leap second is rendered with second `60`.
 
 ---
 
@@ -347,4 +347,4 @@ The non-`checked` arithmetic on `NaiveDate` and `NaiveDateTime` (`succ`, `pred`,
 | `round(TimeDelta)` | `-> Self?` | Round to the nearest multiple of a granularity since the Unix epoch, ties breaking away from the epoch; see `TimeDelta::round` for which granularities are supported |
 | `truncate(TimeDelta)` | `-> Self?` | Truncate toward the Unix epoch to the nearest multiple of a granularity; a datetime before the epoch is truncated *forward* in time (see Quick start above), never further into the past |
 
-`NaiveDateTime` also implements `Eq` and `Compare` (`<`/`<=`/`>`/`>=` via `compare`).
+`NaiveDateTime` also implements `Eq`, `Compare` (`<`/`<=`/`>`/`>=` via `compare`) and `Show`, rendering the date and time joined by a space (`2024-01-02 13:45:06.500`).

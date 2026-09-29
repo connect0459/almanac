@@ -23,6 +23,40 @@ pub extend NaiveTime with Compare::{compare, op_lt, op_gt, op_le, op_ge}
 pub extend NaiveTime with @debug.Debug::{to_repr}
 
 ///|
+/// Renders as `HH:MM:SS`, followed by a fractional part only when the
+/// nanoseconds are nonzero, using the fewest of 3, 6 or 9 digits that
+/// represent them exactly (`.500`, `.123456`, `.000000789`). A leap second
+/// is rendered with second `60`.
+pub impl Show for NaiveTime with fn output(self, logger) {
+  let leap = self.nanosecond() >= 1_000_000_000
+  let second = if leap { self.second() + 1 } else { self.second() }
+  let nanos = if leap {
+    self.nanosecond() - 1_000_000_000
+  } else {
+    self.nanosecond()
+  }
+  logger.write_string(
+    pad_zero(self.hour(), 2) +
+    ":" +
+    pad_zero(self.minute(), 2) +
+    ":" +
+    pad_zero(second, 2),
+  )
+  if nanos == 0 {
+    ()
+  } else if nanos % 1_000_000 == 0 {
+    logger.write_string("." + pad_zero(nanos / 1_000_000, 3))
+  } else if nanos % 1_000 == 0 {
+    logger.write_string("." + pad_zero(nanos / 1_000, 6))
+  } else {
+    logger.write_string("." + pad_zero(nanos, 9))
+  }
+}
+
+///|
+pub extend NaiveTime with Show::{to_string, output}
+
+///|
 /// Constructs the time for a given `hour`/`minute`/`second`/`nanosecond`,
 /// or `None` if `hour` is outside `0..=23`, `minute` or `second` are outside
 /// `0..=59`, or `nanosecond` is outside `0..=1_999_999_999`. A `nanosecond`
