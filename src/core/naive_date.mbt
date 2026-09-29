@@ -436,6 +436,48 @@ pub fn NaiveDate::sub_months(self : NaiveDate, months : Int) -> NaiveDate {
 }
 
 ///|
+/// The date `years` years after this one (or before it, if `years` is
+/// negative), keeping the month and clamping the day of month to the target
+/// month's length when it doesn't exist there (February 29 becomes
+/// February 28 in a non-leap year). Equivalent to `add_months(12 * years)`.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_add_years` to get `None` instead.
+pub fn NaiveDate::add_years(self : NaiveDate, years : Int) -> NaiveDate {
+  expect_in_range(self.checked_add_years(years), "NaiveDate::add_years")
+}
+
+///|
+/// The date `years` years before this one (or after it, if `years` is
+/// negative). See `add_years` for the day-of-month clamping rule.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_sub_years` to get `None` instead.
+pub fn NaiveDate::sub_years(self : NaiveDate, years : Int) -> NaiveDate {
+  expect_in_range(self.checked_sub_years(years), "NaiveDate::sub_years")
+}
+
+///|
+/// The date `years` years after this one, or `None` if the result falls
+/// outside `NaiveDate`'s representable range. See `add_years`.
+pub fn NaiveDate::checked_add_years(
+  self : NaiveDate,
+  years : Int,
+) -> NaiveDate? {
+  self.checked_add_months64(years.to_int64() * 12L)
+}
+
+///|
+/// The date `years` years before this one, or `None` if the result falls
+/// outside `NaiveDate`'s representable range. See `add_years`.
+pub fn NaiveDate::checked_sub_years(
+  self : NaiveDate,
+  years : Int,
+) -> NaiveDate? {
+  self.checked_add_months64(-years.to_int64() * 12L)
+}
+
+///|
 /// The calendar week containing this date, with weeks starting on `start`.
 pub fn NaiveDate::week(self : NaiveDate, start : Weekday) -> NaiveWeek {
   let start_days = start.num_days_from_monday()

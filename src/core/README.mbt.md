@@ -193,6 +193,8 @@ A proleptic Gregorian calendar date. Constructors are `Option`-returning: an inv
 | `pred_opt()` | `-> Self?` | The previous day; `None` at the first representable date |
 | `checked_add_days(Int)` / `checked_sub_days(Int)` | `-> Self?` | As `add_days`/`sub_days`, but `None` if out of range |
 | `checked_add_months(Int)` / `checked_sub_months(Int)` | `-> Self?` | As `add_months`/`sub_months`, but `None` if out of range |
+| `add_years(Int)` / `sub_years(Int)` | `-> Self` | Shift by whole years, clamping February 29 to February 28 in a non-leap year (same as `add_months(12 * years)`) |
+| `checked_add_years(Int)` / `checked_sub_years(Int)` | `-> Self?` | As `add_years`/`sub_years`, but `None` if out of range |
 | `week(Weekday)` | `-> NaiveWeek` | The calendar week containing this date, with weeks starting on the given weekday |
 | `years_since(Self)` | `-> Int?` | Full elapsed calendar years from `other` to `self` (a year counts once the month and day have both recurred); `None` if `self` is before `other` |
 | `quarter()` | `-> Int` | Calendar quarter, `1..=4` |

@@ -806,3 +806,79 @@ test "panic sub_months aborts when the result leaves the representable range" {
 test "panic add_months aborts on an extreme argument instead of wrapping" {
   ignore(max_date().add_months(2_147_483_647))
 }
+
+///|
+test "add_years keeps the month and day when they exist in the target year" {
+  let date = @core.NaiveDate::from_ymd(2024, 6, 15).unwrap()
+  assert_eq(date.add_years(1), @core.NaiveDate::from_ymd(2025, 6, 15).unwrap())
+  assert_eq(
+    date.add_years(-24),
+    @core.NaiveDate::from_ymd(2000, 6, 15).unwrap(),
+  )
+  assert_eq(date.add_years(0), date)
+}
+
+///|
+test "add_years clamps February 29 to February 28 in a non-leap target year" {
+  let leap_day = @core.NaiveDate::from_ymd(2024, 2, 29).unwrap()
+  assert_eq(
+    leap_day.add_years(1),
+    @core.NaiveDate::from_ymd(2025, 2, 28).unwrap(),
+  )
+  assert_eq(
+    leap_day.add_years(4),
+    @core.NaiveDate::from_ymd(2028, 2, 29).unwrap(),
+  )
+  assert_eq(
+    leap_day.add_years(-1),
+    @core.NaiveDate::from_ymd(2023, 2, 28).unwrap(),
+  )
+}
+
+///|
+test "add_years agrees with add_months by twelve times the years" {
+  let date = @core.NaiveDate::from_ymd(2024, 2, 29).unwrap()
+  assert_eq(date.add_years(3), date.add_months(36))
+}
+
+///|
+test "sub_years moves a date back and clamps February 29" {
+  let date = @core.NaiveDate::from_ymd(2024, 2, 29).unwrap()
+  assert_eq(date.sub_years(1), @core.NaiveDate::from_ymd(2023, 2, 28).unwrap())
+  assert_eq(date.sub_years(-4), @core.NaiveDate::from_ymd(2028, 2, 29).unwrap())
+}
+
+///|
+test "checked_add_years and checked_sub_years agree with the total versions within range" {
+  let date = @core.NaiveDate::from_ymd(2024, 2, 29).unwrap()
+  assert_eq(date.checked_add_years(1), Some(date.add_years(1)))
+  assert_eq(date.checked_sub_years(1), Some(date.sub_years(1)))
+}
+
+///|
+test "checked_add_years and checked_sub_years reject a result outside the representable range" {
+  assert_eq(max_date().checked_add_years(1), None)
+  assert_eq(min_date().checked_add_years(-1), None)
+  assert_eq(max_date().checked_sub_years(-1), None)
+  assert_eq(min_date().checked_sub_years(1), None)
+  assert_eq(max_date().checked_add_years(0), Some(max_date()))
+}
+
+///|
+test "checked_add_years and checked_sub_years reject extreme arguments without wrapping" {
+  let date = @core.NaiveDate::from_ymd(2024, 2, 29).unwrap()
+  assert_eq(date.checked_add_years(2_147_483_647), None)
+  assert_eq(date.checked_add_years(-2_147_483_648), None)
+  assert_eq(date.checked_sub_years(2_147_483_647), None)
+  assert_eq(date.checked_sub_years(-2_147_483_648), None)
+}
+
+///|
+test "panic add_years aborts when the result leaves the representable range" {
+  ignore(max_date().add_years(1))
+}
+
+///|
+test "panic sub_years aborts when the result leaves the representable range" {
+  ignore(min_date().sub_years(1))
+}
