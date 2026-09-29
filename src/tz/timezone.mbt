@@ -1,12 +1,14 @@
 ///|
-/// The result of resolving a local (wall-clock) `NaiveDateTime` to a UTC
-/// offset: a local time can map to a single offset, to two offsets (the
-/// "fold" at a backward DST transition, where the same wall-clock time
-/// occurs twice), or to no offset at all (the "gap" at a forward DST
-/// transition, where that wall-clock time never occurs).
-pub(all) enum MappedLocalTime {
-  Single(FixedOffset)
-  Ambiguous(FixedOffset, FixedOffset)
+/// The result of resolving a local (wall-clock) reading against a time
+/// zone: it can map to a single result, to two results (the "fold" at a
+/// backward DST transition, where the same wall-clock reading occurs
+/// twice), or to no result at all (the "gap" at a forward DST transition,
+/// where that wall-clock reading never occurs). `T` is usually a
+/// `FixedOffset` (see `TimeZone::offset_from_local`) or a `DateTime[Tz]`
+/// (see `DateTime::from_local`).
+pub(all) enum MappedLocalTime[T] {
+  Single(T)
+  Ambiguous(T, T)
   Absent
 } derive(Eq, @debug.Debug)
 
@@ -20,48 +22,48 @@ pub extend MappedLocalTime with Eq::{not_equal}
 pub extend MappedLocalTime with @debug.Debug::{to_repr}
 
 ///|
-/// The offset, only when `self` is unambiguous (`Single`); `None` for
+/// The value, only when `self` is unambiguous (`Single`); `None` for
 /// `Ambiguous` or `Absent`.
-pub fn MappedLocalTime::single(self : MappedLocalTime) -> FixedOffset? {
+pub fn[T] MappedLocalTime::single(self : MappedLocalTime[T]) -> T? {
   match self {
-    Single(offset) => Some(offset)
+    Single(value) => Some(value)
     Ambiguous(_, _) | Absent => None
   }
 }
 
 ///|
-/// The earliest offset `self` could resolve to: the sole offset for
-/// `Single`, the first (earlier-UTC-instant) offset of an `Ambiguous`
+/// The earliest value `self` could resolve to: the sole value for
+/// `Single`, the first (earlier-UTC-instant) value of an `Ambiguous`
 /// fold, or `None` for `Absent`.
-pub fn MappedLocalTime::earliest(self : MappedLocalTime) -> FixedOffset? {
+pub fn[T] MappedLocalTime::earliest(self : MappedLocalTime[T]) -> T? {
   match self {
-    Single(offset) => Some(offset)
+    Single(value) => Some(value)
     Ambiguous(earliest, _) => Some(earliest)
     Absent => None
   }
 }
 
 ///|
-/// The latest offset `self` could resolve to: the sole offset for
-/// `Single`, the second (later-UTC-instant) offset of an `Ambiguous`
+/// The latest value `self` could resolve to: the sole value for
+/// `Single`, the second (later-UTC-instant) value of an `Ambiguous`
 /// fold, or `None` for `Absent`.
-pub fn MappedLocalTime::latest(self : MappedLocalTime) -> FixedOffset? {
+pub fn[T] MappedLocalTime::latest(self : MappedLocalTime[T]) -> T? {
   match self {
-    Single(offset) => Some(offset)
+    Single(value) => Some(value)
     Ambiguous(_, latest) => Some(latest)
     Absent => None
   }
 }
 
 ///|
-/// Applies `f` to every offset carried by `self`, preserving its shape
+/// Applies `f` to every value carried by `self`, preserving its shape
 /// (`Single`/`Ambiguous`/`Absent`).
-pub fn MappedLocalTime::map(
-  self : MappedLocalTime,
-  f : (FixedOffset) -> FixedOffset,
-) -> MappedLocalTime {
+pub fn[T, U] MappedLocalTime::map(
+  self : MappedLocalTime[T],
+  f : (T) -> U,
+) -> MappedLocalTime[U] {
   match self {
-    Single(offset) => Single(f(offset))
+    Single(value) => Single(f(value))
     Ambiguous(earliest, latest) => Ambiguous(f(earliest), f(latest))
     Absent => Absent
   }
@@ -78,7 +80,7 @@ fn resolve_transition(
   transition_utc : Int64,
   offset_before : Int,
   offset_after : Int,
-) -> MappedLocalTime? {
+) -> MappedLocalTime[FixedOffset]? {
   let local_start = transition_utc + offset_before.to_int64()
   let local_end = transition_utc + offset_after.to_int64()
   if offset_after > offset_before {
@@ -113,7 +115,9 @@ pub trait TimeZone {
   fn offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
   /// The offset(s) in effect for the given local (wall-clock) naive
   /// datetime. See `MappedLocalTime`.
-  fn offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime
+  fn offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[
+    FixedOffset,
+  ]
   /// The name in effect for the given UTC naive datetime: an IANA zone's
   /// abbreviation (e.g. `"EDT"`), `Utc`'s fixed `"UTC"`, or a bare
   /// `FixedOffset`'s own offset string (e.g. `"+09:00"`), since a fixed

@@ -1,4 +1,85 @@
 ///|
+test "from_local resolves a single unambiguous local reading via the time zone's offset" {
+  let naive = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),
+    @core.NaiveTime::from_hms(12, 0, 0).unwrap(),
+  )
+  let fixed = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let result = @tz.DateTime::from_local(naive, fixed)
+  let dt = result.single().unwrap()
+  assert_eq(dt.naive_local(), naive)
+  assert_eq(dt.timezone(), fixed)
+}
+
+///|
+test "from_local reports Absent within a real spring-forward gap (America/New_York, 2024)" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let dst_start = 1_710_054_000L
+  let in_gap = @core.NaiveDateTime::from_timestamp(dst_start - 18000L, 0).unwrap()
+  assert_true(@tz.DateTime::from_local(in_gap, ny) is @tz.Absent)
+}
+
+///|
+test "from_local reports Ambiguous within a real fall-back fold, ordered earliest then latest (America/New_York, 2024)" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let dst_end = 1_730_613_600L
+  let in_fold = @core.NaiveDateTime::from_timestamp(dst_end - 16000L, 0).unwrap()
+  let result = @tz.DateTime::from_local(in_fold, ny)
+  let earliest = result.earliest().unwrap()
+  let latest = result.latest().unwrap()
+  assert_eq(earliest.naive_local(), in_fold)
+  assert_eq(latest.naive_local(), in_fold)
+  assert_eq(earliest.offset(), @tz.FixedOffset::east(-14400).unwrap())
+  assert_eq(latest.offset(), @tz.FixedOffset::east(-18000).unwrap())
+  assert_true(earliest.naive_utc() < latest.naive_utc())
+}
+
+///|
+test "from_ymd_hms builds a DateTime through a time zone from local calendar components" {
+  let fixed = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let result = @tz.DateTime::from_ymd_hms(2024, 6, 15, 12, 0, 0, fixed)
+  let dt = result.single().unwrap()
+  assert_eq(
+    dt.naive_local(),
+    @core.NaiveDateTime::new(
+      @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),
+      @core.NaiveTime::from_hms(12, 0, 0).unwrap(),
+    ),
+  )
+  assert_eq(dt.timezone(), fixed)
+}
+
+///|
+test "from_ymd_hms reports Absent for an invalid calendar date or time-of-day" {
+  let fixed = @tz.FixedOffset::east(0).unwrap()
+  assert_true(
+    @tz.DateTime::from_ymd_hms(2024, 2, 30, 12, 0, 0, fixed) is @tz.Absent,
+  )
+  assert_true(
+    @tz.DateTime::from_ymd_hms(2024, 6, 15, 25, 0, 0, fixed) is @tz.Absent,
+  )
+}
+
+///|
+test "from_timestamp builds a DateTime from a Unix instant through a time zone" {
+  let fixed = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let dt = @tz.DateTime::from_timestamp(1_718_452_800L, 0, fixed).unwrap()
+  assert_eq(
+    dt.naive_utc(),
+    @core.NaiveDateTime::from_timestamp(1_718_452_800L, 0).unwrap(),
+  )
+  assert_eq(dt.timezone(), fixed)
+}
+
+///|
+test "from_timestamp reports None for an out-of-range nanosecond component" {
+  assert_eq(
+    @tz.DateTime::from_timestamp(1_718_452_800L, -1, @tz.Utc::new()),
+    None,
+  )
+}
+
+///|
 test "from_utc composes a naive datetime and a time zone whose accessors report them back" {
   let naive = @core.NaiveDateTime::new(
     @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),

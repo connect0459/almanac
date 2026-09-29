@@ -7,7 +7,7 @@ Time zone support layered on top of `core`'s `NaiveDateTime`. Import `connect045
 | Type | Description |
 | :--- | :--- |
 | `TimeZone` (trait) | Resolves a `NaiveDateTime` to a UTC offset; implemented by `Utc`, `FixedOffset`, and `Location` |
-| `MappedLocalTime` | The result of resolving a local (wall-clock) time: `Single`, `Ambiguous` (DST fold), or `Absent` (DST gap) |
+| `MappedLocalTime[T]` | The result of resolving a local (wall-clock) reading: `Single`, `Ambiguous` (DST fold), or `Absent` (DST gap); `T` is a `FixedOffset` or a `DateTime[Tz]` |
 | `Utc` | The UTC zone: always offset zero |
 | `FixedOffset` | A constant UTC offset, `±23:59:59` |
 | `DateTime[Tz]` | A `NaiveDateTime` paired with a time zone `Tz` |
@@ -94,25 +94,32 @@ Implemented by `Utc`, `FixedOffset`, and `Location`. `DateTime[Tz]::offset`/`nai
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | The offset in effect at a given UTC instant; never ambiguous |
-| `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime` | The offset(s) for a given local (wall-clock) instant, handling DST ambiguity/gaps |
+| `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | The offset(s) for a given local (wall-clock) instant, handling DST ambiguity/gaps |
 | `tz_name(NaiveDateTime)` | `-> String` | The zone abbreviation/name in effect at a given instant |
 
 ---
 
-### `MappedLocalTime`
+### `MappedLocalTime[T]`
 
 ```mbt nocheck
 ///|
-pub enum MappedLocalTime {
-  Single(FixedOffset)
-  Ambiguous(FixedOffset, FixedOffset) // a DST fold: two valid offsets
-  Absent // a DST gap: no valid offset
+pub enum MappedLocalTime[T] {
+  Single(T)
+  Ambiguous(T, T) // a DST fold: two valid results, (earliest, latest)
+  Absent // a DST gap: no valid result
 }
 ```
 
-`Utc` and `FixedOffset` only ever produce `Single` (neither has daylight saving). A `Location` can produce all three around a real DST transition: `Ambiguous` when a local clock reading occurs twice (the fold at the end of DST), and `Absent` when a local clock reading never occurs (the gap at the start of DST).
+`Utc` and `FixedOffset` only ever produce `Single` (neither has daylight saving). A `Location` can produce all three around a real DST transition: `Ambiguous` when a local clock reading occurs twice (the fold at the end of DST), and `Absent` when a local clock reading never occurs (the gap at the start of DST). `T` is usually a `FixedOffset` (`TimeZone::offset_from_local`) or a `DateTime[Tz]` (`DateTime::from_local`/`from_ymd_hms`).
 
-`MappedLocalTime` also implements `Eq`.
+| Method | Signature | Description |
+| :--- | :--- | :--- |
+| `single()` | `-> T?` | The value, only when unambiguous; `None` for `Ambiguous`/`Absent` |
+| `earliest()` | `-> T?` | The earliest possible value (the sole value, or the first of an `Ambiguous` fold); `None` for `Absent` |
+| `latest()` | `-> T?` | The latest possible value (the sole value, or the second of an `Ambiguous` fold); `None` for `Absent` |
+| `map((T) -> U)` | `-> MappedLocalTime[U]` | Transform every value carried by `self`, preserving its shape |
+
+`MappedLocalTime[T]` also implements `Eq` (when `T : Eq`).
 
 ---
 
@@ -125,7 +132,7 @@ The UTC zone, always offset zero.
 | `Utc::new()` | `-> Self` | Construct the (zero-sized) UTC zone value |
 | `Utc::now()` | `-> DateTime[Utc]` | The current UTC instant, read from the host's wall clock. Unlike every other function in this package, not a pure function of its arguments. |
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | Always `FixedOffset::east(0)` |
-| `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime` | Always `Single(FixedOffset::east(0))` |
+| `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | Always `Single(FixedOffset::east(0))` |
 | `tz_name(NaiveDateTime)` | `-> String` | Always `"UTC"` |
 
 `Utc` also implements `Eq` and `TimeZone`.
@@ -142,7 +149,7 @@ A constant UTC offset, in seconds, within `±23:59:59`.
 | `FixedOffset::west(Int)` | `-> Self?` | An offset west of UTC by the given seconds (negated internally); same range |
 | `local_minus_utc()` | `-> Int` | The offset in seconds (negative for a western offset) |
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | Returns `self`, unchanged, regardless of the given instant |
-| `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime` | Always `Single(self)` |
+| `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | Always `Single(self)` |
 | `tz_name(NaiveDateTime)` | `-> String` | Colon-separated sign, hour, and minute, e.g. `"+09:00"`; extended with a seconds component for a non-whole-minute offset, e.g. `"-04:56:02"` |
 
 `FixedOffset` also implements `Eq` and `TimeZone`.
@@ -156,6 +163,9 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `DateTime::from_utc(NaiveDateTime, Tz)` | `-> Self[Tz]` | Wrap a UTC naive datetime with the given time zone |
+| `DateTime::from_local(NaiveDateTime, Tz)` *(Tz : TimeZone)* | `-> MappedLocalTime[Self[Tz]]` | Build from a local (wall-clock) naive datetime, resolving DST ambiguity via `tz.offset_from_local` |
+| `DateTime::from_ymd_hms(Int, Int, Int, Int, Int, Int, Tz)` *(Tz : TimeZone)* | `-> MappedLocalTime[Self[Tz]]` | Build from local calendar/time-of-day components; `Absent` for an invalid date/time-of-day, in addition to the usual DST-gap case |
+| `DateTime::from_timestamp(Int64, Int, Tz)` | `-> Self[Tz]?` | Build from a Unix timestamp (seconds + nanoseconds) through the given time zone; always unambiguous, `None` only on an out-of-range input |
 | `naive_utc()` | `-> NaiveDateTime` | The underlying naive datetime, in UTC |
 | `timezone()` | `-> Tz` | The time zone value this datetime is expressed in |
 | `offset()` *(Tz : TimeZone)* | `-> FixedOffset` | The UTC offset in effect at this instant |
@@ -181,7 +191,7 @@ A time zone backed by parsed IANA tzdata (TZif binary format, plus a POSIX TZ st
 | `Location::from_tzif_bytes(Bytes)` | `-> Self?` | Parse a zone directly from raw TZif bytes; `None` if malformed |
 | `type_at(NaiveDateTime)` | `-> LocalTimeType` | The offset, DST flag, and abbreviation in effect at a given UTC instant |
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | The offset in effect at a given UTC instant |
-| `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime` | The offset(s) for a given local instant, resolving DST folds and gaps |
+| `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | The offset(s) for a given local instant, resolving DST folds and gaps |
 | `tz_name(NaiveDateTime)` | `-> String` | The abbreviation in effect at a given instant, e.g. `"EDT"` |
 
 `Location` also implements `TimeZone`.
@@ -208,7 +218,7 @@ The OS-configured local time zone, resolved from `$TZ` or, when unset, `/etc/loc
 | `Local::new()` | `-> Self?` | Resolves the host's configured time zone; `None` if it could not be determined. Reads live OS state — not a pure function of its arguments. |
 | `Local::resolve(String?, Bytes?)` | `-> Self?` | The pure resolution logic `new()` wraps: given the `TZ` environment variable and `/etc/localtime`'s bytes, applies POSIX `TZ` precedence (empty `TZ` → UTC, a named zone via `Location::load`, otherwise the given bytes via `Location::from_tzif_bytes`) |
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | Delegates to the resolved zone |
-| `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime` | Delegates to the resolved zone |
+| `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | Delegates to the resolved zone |
 | `tz_name(NaiveDateTime)` | `-> String` | Delegates to the resolved zone |
 
 `Local` also implements `TimeZone`. A bare POSIX TZ rule string in `$TZ` (e.g. `"EST5EDT"`) is not supported by `Local::resolve`; only an IANA zone name or an empty string are recognized.

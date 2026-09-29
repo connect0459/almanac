@@ -28,6 +28,64 @@ pub fn[Tz] DateTime::from_utc(
 }
 
 ///|
+/// Builds a `DateTime[Tz]` from a local (wall-clock) naive datetime and a
+/// time zone, resolving DST ambiguity via `tz.offset_from_local`: `Single`
+/// for an unambiguous reading, `Ambiguous(earliest, latest)` within a
+/// fall-back fold, or `Absent` within a spring-forward gap.
+pub fn[Tz : TimeZone] DateTime::from_local(
+  naive_local : @core.NaiveDateTime,
+  tz : Tz,
+) -> MappedLocalTime[DateTime[Tz]] {
+  tz
+  .offset_from_local(naive_local)
+  .map(offset => {
+    let shift = @core.TimeDelta::seconds(offset.local_minus_utc().to_int64()).unwrap()
+    DateTime::from_utc(naive_local.sub_signed(shift), tz)
+  })
+}
+
+///|
+/// Builds a `DateTime[Tz]` from local calendar/time-of-day components and
+/// a time zone (the proleptic Gregorian calendar, year 0 being 1 BCE).
+/// `Absent` for an invalid date or time-of-day, in addition to the usual
+/// DST-gap case — see `from_local`.
+pub fn[Tz : TimeZone] DateTime::from_ymd_hms(
+  year : Int,
+  month : Int,
+  day : Int,
+  hour : Int,
+  min : Int,
+  sec : Int,
+  tz : Tz,
+) -> MappedLocalTime[DateTime[Tz]] {
+  match @core.NaiveDate::from_ymd(year, month, day) {
+    None => Absent
+    Some(date) =>
+      match @core.NaiveTime::from_hms(hour, min, sec) {
+        None => Absent
+        Some(time) =>
+          DateTime::from_local(@core.NaiveDateTime::new(date, time), tz)
+      }
+  }
+}
+
+///|
+/// Builds a `DateTime[Tz]` from the number of non-leap seconds since the
+/// Unix epoch plus a nanosecond component, and a time zone. Always
+/// unambiguous (a UTC instant, unlike `from_local`): `None` only when
+/// `secs`/`nanos` themselves are out of range — see
+/// `@core.NaiveDateTime::from_timestamp`.
+pub fn[Tz] DateTime::from_timestamp(
+  secs : Int64,
+  nanos : Int,
+  tz : Tz,
+) -> DateTime[Tz]? {
+  @core.NaiveDateTime::from_timestamp(secs, nanos).map(utc => {
+    DateTime::from_utc(utc, tz)
+  })
+}
+
+///|
 /// The underlying naive datetime, in UTC.
 pub fn[Tz] DateTime::naive_utc(self : DateTime[Tz]) -> @core.NaiveDateTime {
   self.datetime

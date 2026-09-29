@@ -378,7 +378,7 @@ pub fn PosixTz::offset_at(self : PosixTz, utc_instant : Int64) -> Int {
 pub fn PosixTz::offset_from_local(
   self : PosixTz,
   naive_local : @core.NaiveDateTime,
-) -> MappedLocalTime {
+) -> MappedLocalTime[FixedOffset] {
   match self.rule {
     None => Single(FixedOffset::east(self.std_offset).unwrap())
     Some(rule) => {
