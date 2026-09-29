@@ -237,8 +237,12 @@ fn try_parse_rfc3339(s : String) -> @tz.DateTime[@tz.FixedOffset]? {
           None => None
           Some(offset) => {
             let local_naive = @core.NaiveDateTime::new(date, time)
-            let shift = @core.TimeDelta::seconds(offset_secs.to_int64()).unwrap()
-            Some(@tz.DateTime::from_utc(local_naive.sub_signed(shift), offset))
+            Some(
+              @tz.DateTime::from_utc(
+                local_naive.sub_seconds(offset_secs),
+                offset,
+              ),
+            )
           }
         }
       }

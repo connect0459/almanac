@@ -39,8 +39,7 @@ pub fn[Tz : TimeZone] DateTime::from_local(
   tz
   .offset_from_local(naive_local)
   .map(offset => {
-    let shift = @core.TimeDelta::seconds(offset.local_minus_utc().to_int64()).unwrap()
-    DateTime::from_utc(naive_local.sub_signed(shift), tz)
+    DateTime::from_utc(naive_local.sub_seconds(offset.local_minus_utc()), tz)
   })
 }
 
@@ -110,10 +109,7 @@ pub fn[Tz : TimeZone] DateTime::offset(self : DateTime[Tz]) -> FixedOffset {
 pub fn[Tz : TimeZone] DateTime::naive_local(
   self : DateTime[Tz],
 ) -> @core.NaiveDateTime {
-  let shift = @core.TimeDelta::seconds(
-    self.offset().local_minus_utc().to_int64(),
-  ).unwrap()
-  self.datetime.add_signed(shift)
+  self.datetime.add_seconds(self.offset().local_minus_utc())
 }
 
 ///|

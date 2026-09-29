@@ -977,6 +977,8 @@ pub fn parse_date_time_tz(
     resolve_time(parsed),
   )
   let offset = resolve_offset(parsed)
-  let shift = @core.TimeDelta::seconds(offset.local_minus_utc().to_int64()).unwrap()
-  @tz.DateTime::from_utc(local_naive.sub_signed(shift), offset)
+  @tz.DateTime::from_utc(
+    local_naive.sub_seconds(offset.local_minus_utc()),
+    offset,
+  )
 }
