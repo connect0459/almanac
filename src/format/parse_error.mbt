@@ -5,6 +5,10 @@ pub suberror ParseError {
   TrailingPercent
   MissingField(Item)
   InvalidRfc3339
+  /// `to_rfc2822`'s year is outside RFC 2822's `0..=9999` range, or
+  /// `parse_from_rfc2822` fails to match the (strict, non-obsolete)
+  /// grammar this project supports.
+  InvalidRfc2822
   /// A required field (e.g. no date field at all, or an offset missing
   /// when `%z` isn't in the format) was never populated while walking
   /// the token sequence.

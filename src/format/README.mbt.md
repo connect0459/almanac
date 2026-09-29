@@ -1,6 +1,6 @@
 # `format` package
 
-strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459/chrono/format` for `format_date`/`format_time`/`format_date_time`/`format_date_time_tz`, their `parse_*` counterparts, and a dedicated RFC 3339 fast path (`to_rfc3339`/`parse_rfc3339`).
+strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459/chrono/format` for `format_date`/`format_time`/`format_date_time`/`format_date_time_tz`, their `parse_*` counterparts, and dedicated RFC 3339 and RFC 2822 fast paths (`to_rfc3339`/`parse_rfc3339`, `to_rfc2822`/`parse_from_rfc2822`).
 
 ## Key functions
 
@@ -11,6 +11,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `parse_date`/`parse_time`/`parse_date_time` | Parse a string against a format string into a `NaiveDate`/`NaiveTime`/`NaiveDateTime` |
 | `parse_date_time_tz` | Parse a string with a `%z` offset into a `DateTime[FixedOffset]`, interpreting the fields as local wall-clock time |
 | `to_rfc3339`/`parse_rfc3339` | Dedicated RFC 3339 fast path, bypassing the specifier engine |
+| `to_rfc2822`/`parse_from_rfc2822` | Dedicated RFC 2822 fast path (e.g. `"Tue, 1 Jul 2003 10:52:37 +0200"`), bypassing the specifier engine |
 
 ## Supported specifiers
 
@@ -142,6 +143,13 @@ test {
 | `to_rfc3339(DateTime[Tz])` *(Tz : TimeZone)* | `-> String` | Renders `YYYY-MM-DDTHH:MM:SS[.fraction](Z\|±HH:MM)`; a zero offset renders as `Z`, fractional seconds only when nonzero with trailing zeros trimmed, a leap second as `:60`. Total — never raises |
 | `parse_rfc3339(String)` | `-> DateTime[FixedOffset] raise ParseError` | Strict RFC 3339 parsing (`T`/`t` and `Z`/`z` case-insensitive; a fractional-second field beyond 9 digits is truncated, not rejected); raises `InvalidRfc3339` on any mismatch |
 
+### RFC 2822 fast path
+
+| Function | Signature | Description |
+| :--- | :--- | :--- |
+| `to_rfc2822(DateTime[Tz])` *(Tz : TimeZone)* | `-> String raise ParseError` | Renders `"<short weekday>, <day> <short month> <year> <HH>:<MM>:<SS> ±HHMM"` (e.g. `"Tue, 1 Jul 2003 10:52:37 +0200"`); the day is unpadded (one or two digits, never a leading zero), unlike this package's other numeric fields. Raises `InvalidRfc2822` if the year is outside RFC 2822's own `0..=9999` range — unlike `to_rfc3339`, not total |
+| `parse_from_rfc2822(String)` | `-> DateTime[FixedOffset] raise ParseError` | Strict RFC 2822 parsing: only the exact shape `to_rfc2822` renders (day-of-week and seconds mandatory, single-space separators, a 4-digit year, a numeric `±HHMM` offset). Unlike chrono's own parser, does *not* support RFC 2822's "obsolete format" — optional day-of-week, arbitrary/folding whitespace, 2-/3-digit year windowing, named legacy zones (`GMT`, `EST`, ...), or parenthesized comments. Raises `InvalidRfc2822` on any mismatch |
+
 ### `tokenize`
 
 | Function | Signature | Description |
@@ -225,6 +233,7 @@ pub(all) enum Fixed {
 | `TrailingPercent` | A format string ends with a bare `%` |
 | `MissingField(Item)` | A `format_*` call is asked to render a specifier its input type can't supply (e.g. `%Z` via `format_date_time`) |
 | `InvalidRfc3339` | `parse_rfc3339` fails to match the RFC 3339 grammar |
+| `InvalidRfc2822` | `to_rfc2822`'s year is outside `0..=9999`, or `parse_from_rfc2822` fails to match this package's (strict) RFC 2822 grammar |
 | `IncompleteFields` | A `parse_*` call resolves fields that never populate a required value (e.g. no year) |
 | `InconsistentFields` | Two populated fields disagree, or don't jointly form a valid value (e.g. `%j` contradicting `%m`/`%d`, or an out-of-range calendar date) |
 | `InputMismatch` | Literal or specifier text fails to match the input, input remains unconsumed, or a format-only specifier (`%Z`, `%s`, `%G`, `%g`, `%V`) is parsed |
