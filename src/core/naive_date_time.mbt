@@ -1,11 +1,4 @@
 ///|
-/// The day count (relative to the Unix epoch, `1970-01-01` is day `0`) for
-/// `date`.
-fn to_epoch_days(date : NaiveDate) -> Int {
-  days_from_civil(date.year(), date.month().number_from_month(), date.day())
-}
-
-///|
 /// The date for a day count relative to the Unix epoch (`1970-01-01` is day
 /// `0`). Total: `civil_from_days` always yields a valid proleptic Gregorian
 /// `(year, month, day)` triple.
@@ -111,7 +104,7 @@ pub fn NaiveDateTime::time(self : NaiveDateTime) -> NaiveTime {
 /// Does not account for a leap second's extra elapsed second, matching
 /// `NaiveTime::num_seconds_from_midnight`.
 pub fn NaiveDateTime::timestamp(self : NaiveDateTime) -> Int64 {
-  to_epoch_days(self.date).to_int64() * 86400L +
+  self.date.epoch_days().to_int64() * 86400L +
   self.time.num_seconds_from_midnight().to_int64()
 }
 
@@ -237,7 +230,7 @@ pub fn NaiveDateTime::signed_duration_since(
   self : NaiveDateTime,
   other : NaiveDateTime,
 ) -> TimeDelta {
-  let day_diff = (to_epoch_days(self.date) - to_epoch_days(other.date)).to_int64()
+  let day_diff = (self.date.epoch_days() - other.date.epoch_days()).to_int64()
   let self_nanos = self.time.num_seconds_from_midnight().to_int64() *
     1_000_000_000L +
     self.time.nanosecond().to_int64()
