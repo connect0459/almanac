@@ -183,3 +183,69 @@ test "name returns the English weekday name" {
 test "to_string renders the English weekday name" {
   assert_eq(@core.Wed.to_string(), "Wednesday")
 }
+
+///|
+test "from_number_from_monday inverts number_from_monday" {
+  for n in 1..<=7 {
+    assert_eq(
+      @core.Weekday::from_number_from_monday(n).map(fn(d) {
+        d.number_from_monday()
+      }),
+      Some(n),
+    )
+  }
+}
+
+///|
+test "from_number_from_sunday inverts number_from_sunday" {
+  for n in 1..<=7 {
+    assert_eq(
+      @core.Weekday::from_number_from_sunday(n).map(fn(d) {
+        d.number_from_sunday()
+      }),
+      Some(n),
+    )
+  }
+}
+
+///|
+test "from_num_days_from_monday inverts num_days_from_monday" {
+  for n in 0..<=6 {
+    assert_eq(
+      @core.Weekday::from_num_days_from_monday(n).map(fn(d) {
+        d.num_days_from_monday()
+      }),
+      Some(n),
+    )
+  }
+}
+
+///|
+test "from_num_days_from_sunday inverts num_days_from_sunday" {
+  for n in 0..<=6 {
+    assert_eq(
+      @core.Weekday::from_num_days_from_sunday(n).map(fn(d) {
+        d.num_days_from_sunday()
+      }),
+      Some(n),
+    )
+  }
+}
+
+///|
+test "weekday from-number constructors reject numbers outside their range" {
+  assert_eq(@core.Weekday::from_number_from_monday(0), None)
+  assert_eq(@core.Weekday::from_number_from_monday(8), None)
+  assert_eq(@core.Weekday::from_number_from_sunday(0), None)
+  assert_eq(@core.Weekday::from_number_from_sunday(8), None)
+  assert_eq(@core.Weekday::from_num_days_from_monday(-1), None)
+  assert_eq(@core.Weekday::from_num_days_from_monday(7), None)
+  assert_eq(@core.Weekday::from_num_days_from_sunday(-1), None)
+  assert_eq(@core.Weekday::from_num_days_from_sunday(7), None)
+}
+
+///|
+test "from_number_from_monday and from_number_from_sunday disagree on Sunday" {
+  assert_eq(@core.Weekday::from_number_from_monday(7), Some(@core.Sun))
+  assert_eq(@core.Weekday::from_number_from_sunday(1), Some(@core.Sun))
+}

@@ -121,3 +121,30 @@ test "num_days for February depends on whether the year is a leap year" {
 test "to_string renders the English month name" {
   assert_eq(@core.Sep.to_string(), "September")
 }
+
+///|
+test "from_number returns the month for each number in 1..=12" {
+  for n in 1..<=12 {
+    assert_eq(
+      @core.Month::from_number(n).map(fn(m) { m.number_from_month() }),
+      Some(n),
+    )
+  }
+}
+
+///|
+test "from_number rejects numbers outside 1..=12" {
+  assert_eq(@core.Month::from_number(0), None)
+  assert_eq(@core.Month::from_number(13), None)
+  assert_eq(@core.Month::from_number(-1), None)
+}
+
+///|
+test "months are ordered from January to December" {
+  assert_true(@core.Jan < @core.Feb)
+  assert_true(@core.Nov < @core.Dec)
+  assert_true(@core.Dec > @core.Jan)
+  assert_true(@core.Mar <= @core.Mar)
+  assert_true(@core.Mar >= @core.Mar)
+  assert_eq(@core.Jun.compare(@core.Jun), 0)
+}

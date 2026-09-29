@@ -112,6 +112,47 @@ pub fn Weekday::number_from_sunday(self : Weekday) -> Int {
 }
 
 ///|
+/// The `Weekday` whose `number_from_monday()` is `n` (ISO 8601 numbering:
+/// `1` = `Mon`, `7` = `Sun`), or `None` if `n` is outside `1..=7`.
+pub fn Weekday::from_number_from_monday(n : Int) -> Weekday? {
+  Weekday::from_num_days_from_monday(n - 1)
+}
+
+///|
+/// The `Weekday` whose `number_from_sunday()` is `n` (`1` = `Sun`,
+/// `7` = `Sat`), or `None` if `n` is outside `1..=7`.
+pub fn Weekday::from_number_from_sunday(n : Int) -> Weekday? {
+  Weekday::from_num_days_from_sunday(n - 1)
+}
+
+///|
+/// The `Weekday` whose `num_days_from_monday()` is `n` (`0` = `Mon`), or
+/// `None` if `n` is outside `0..=6`.
+pub fn Weekday::from_num_days_from_monday(n : Int) -> Weekday? {
+  match n {
+    0 => Some(Mon)
+    1 => Some(Tue)
+    2 => Some(Wed)
+    3 => Some(Thu)
+    4 => Some(Fri)
+    5 => Some(Sat)
+    6 => Some(Sun)
+    _ => None
+  }
+}
+
+///|
+/// The `Weekday` whose `num_days_from_sunday()` is `n` (`0` = `Sun`), or
+/// `None` if `n` is outside `0..=6`.
+pub fn Weekday::from_num_days_from_sunday(n : Int) -> Weekday? {
+  match n {
+    0 => Some(Sun)
+    1..=6 => Weekday::from_num_days_from_monday(n - 1)
+    _ => None
+  }
+}
+
+///|
 /// The number of days elapsed since `other`, wrapping forward through the
 /// week (always in `0..=6`).
 pub fn Weekday::days_since(self : Weekday, other : Weekday) -> Int {

@@ -316,39 +316,6 @@ fn match_weekday_name(chars : Array[Char], pos : Int) -> (@core.Weekday, Int)? {
 }
 
 ///|
-/// The `Weekday` whose `num_days_from_sunday()` is `n` (`%w`'s numbering:
-/// `0` = Sunday), or `None` if `n` is outside `0..=6`.
-fn weekday_from_num_days_from_sunday(n : Int) -> @core.Weekday? {
-  match n {
-    0 => Some(@core.Sun)
-    1 => Some(@core.Mon)
-    2 => Some(@core.Tue)
-    3 => Some(@core.Wed)
-    4 => Some(@core.Thu)
-    5 => Some(@core.Fri)
-    6 => Some(@core.Sat)
-    _ => None
-  }
-}
-
-///|
-/// The `Weekday` whose `number_from_monday()` is `n` (`%u`'s ISO 8601
-/// numbering: `1` = Monday, `7` = Sunday), or `None` if `n` is outside
-/// `1..=7`.
-fn weekday_from_number_from_monday(n : Int) -> @core.Weekday? {
-  match n {
-    1 => Some(@core.Mon)
-    2 => Some(@core.Tue)
-    3 => Some(@core.Wed)
-    4 => Some(@core.Thu)
-    5 => Some(@core.Fri)
-    6 => Some(@core.Sat)
-    7 => Some(@core.Sun)
-    _ => None
-  }
-}
-
-///|
 fn apply_weekday_specifier(
   chars : Array[Char],
   pos : Int,
@@ -693,7 +660,7 @@ fn apply_item(
       match parse_fixed_digits(chars, pos, 1) {
         None => raise InputMismatch
         Some((value, p)) =>
-          match weekday_from_num_days_from_sunday(value) {
+          match @core.Weekday::from_num_days_from_sunday(value) {
             None => raise InconsistentFields
             Some(wd) =>
               ({ ..parsed, weekday: merge_field(parsed.weekday, wd), }, p)
@@ -703,7 +670,7 @@ fn apply_item(
       match parse_fixed_digits(chars, pos, 1) {
         None => raise InputMismatch
         Some((value, p)) =>
-          match weekday_from_number_from_monday(value) {
+          match @core.Weekday::from_number_from_monday(value) {
             None => raise InconsistentFields
             Some(wd) =>
               ({ ..parsed, weekday: merge_field(parsed.weekday, wd), }, p)

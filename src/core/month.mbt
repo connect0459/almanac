@@ -13,13 +13,16 @@ pub(all) enum Month {
   Oct
   Nov
   Dec
-} derive(Eq, @debug.Debug)
+} derive(Eq, Compare, @debug.Debug)
 
 ///|
 pub extend Month with Eq::{equal}
 
 ///|
 pub extend Month with Eq::{not_equal}
+
+///|
+pub extend Month with Compare::{compare, op_lt, op_gt, op_le, op_ge}
 
 ///|
 pub extend Month with @debug.Debug::{to_repr}
@@ -111,7 +114,7 @@ pub extend Month with Show::{to_string, output}
 ///|
 /// The month for a 1-based month-of-year number, or `None` if `n` is
 /// outside `1..=12`.
-fn month_from_number(n : Int) -> Month? {
+pub fn Month::from_number(n : Int) -> Month? {
   match n {
     1 => Some(Jan)
     2 => Some(Feb)

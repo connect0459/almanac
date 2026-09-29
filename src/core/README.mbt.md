@@ -83,8 +83,12 @@ test {
 | `num_days_from_sunday()` | `-> Int` | 0-based, `Sun` is `0` |
 | `days_since(Weekday)` | `-> Int` | Days elapsed since `other`, counting forward |
 | `name()` | `-> String` | English name, e.g. `"Monday"` |
+| `Weekday::from_number_from_monday(Int)` | `-> Weekday?` | Inverse of `number_from_monday()`; `None` outside `1..=7` |
+| `Weekday::from_number_from_sunday(Int)` | `-> Weekday?` | Inverse of `number_from_sunday()`; `None` outside `1..=7` |
+| `Weekday::from_num_days_from_monday(Int)` | `-> Weekday?` | Inverse of `num_days_from_monday()`; `None` outside `0..=6` |
+| `Weekday::from_num_days_from_sunday(Int)` | `-> Weekday?` | Inverse of `num_days_from_sunday()`; `None` outside `0..=6` |
 
-`Weekday` also implements `Eq` and `Show` (renders `name()`).
+`Weekday` also implements `Eq` and `Show` (renders `name()`). It deliberately has no `Compare`: a weekday ordering depends on which day starts the week, so use `num_days_from_monday`/`num_days_from_sunday`/`days_since` to compare with an explicit starting day.
 
 ---
 
@@ -128,8 +132,9 @@ An immutable set of `Weekday` values. Every mutating-looking operation (`insert`
 | `number_from_month()` | `-> Int` | 1-based, `Jan` is `1` |
 | `name()` | `-> String` | Full English name, e.g. `"February"` |
 | `num_days(Int)` | `-> Int` | Number of days in this month for the given year |
+| `Month::from_number(Int)` | `-> Month?` | Inverse of `number_from_month()`; `None` outside `1..=12` |
 
-`Month` also implements `Eq` and `Show` (renders `name()`).
+`Month` also implements `Eq`, `Compare` (`Jan` < ... < `Dec`) and `Show` (renders `name()`).
 
 ---
 

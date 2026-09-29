@@ -24,7 +24,7 @@ pub extend NaiveDate with @debug.Debug::{to_repr}
 /// or `None` if `month` is outside `1..=12` or `day` is outside the range of
 /// days in that month.
 pub fn NaiveDate::from_ymd(year : Int, month : Int, day : Int) -> NaiveDate? {
-  match month_from_number(month) {
+  match Month::from_number(month) {
     None => None
     Some(m) =>
       if day >= 1 && day <= m.num_days(year) {
@@ -89,7 +89,7 @@ pub fn NaiveDate::year(self : NaiveDate) -> Int {
 /// The month of the year.
 pub fn NaiveDate::month(self : NaiveDate) -> Month {
   let (_, month, _) = civil_from_days(self.days)
-  month_from_number(month).unwrap()
+  Month::from_number(month).unwrap()
 }
 
 ///|
@@ -200,7 +200,7 @@ pub fn NaiveDate::add_months(self : NaiveDate, months : Int) -> NaiveDate {
   let total = year * 12 + (month - 1) + months
   let new_year = floor_div(total, 12)
   let new_month = floor_mod(total, 12) + 1
-  let max_day = month_from_number(new_month).unwrap().num_days(new_year)
+  let max_day = Month::from_number(new_month).unwrap().num_days(new_year)
   let clamped_day = if day > max_day { max_day } else { day }
   NaiveDate::{ days: days_from_civil(new_year, new_month, clamped_day), }
 }
