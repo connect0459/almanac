@@ -359,6 +359,7 @@ pub fn TimeDelta::sub(Self, Self) -> Self?
 pub fn TimeDelta::subsec_microseconds(Self) -> Int
 pub fn TimeDelta::subsec_milliseconds(Self) -> Int
 pub fn TimeDelta::subsec_nanoseconds(Self) -> Int
+pub fn TimeDelta::sum(Array[Self]) -> Self?
 pub fn TimeDelta::to_repr(Self) -> @debug.Repr
 pub fn TimeDelta::to_string(Self) -> String
 pub fn TimeDelta::truncate(Self, Self) -> Self?

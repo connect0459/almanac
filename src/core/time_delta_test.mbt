@@ -700,3 +700,113 @@ test "the default duration is zero" {
   assert_eq(delta, @core.TimeDelta::zero())
   assert_true(delta.is_zero())
 }
+
+///|
+test "sum of an empty array is zero" {
+  assert_eq(@core.TimeDelta::sum([]), Some(@core.TimeDelta::zero()))
+}
+
+///|
+test "sum adds durations, carrying nanoseconds into seconds" {
+  assert_eq(
+    @core.TimeDelta::sum([
+      @core.TimeDelta::seconds(1L).unwrap(),
+      @core.TimeDelta::seconds(2L).unwrap(),
+    ]),
+    @core.TimeDelta::seconds(3L),
+  )
+  assert_eq(
+    @core.TimeDelta::sum([
+      @core.TimeDelta::milliseconds(600L).unwrap(),
+      @core.TimeDelta::milliseconds(600L).unwrap(),
+    ]),
+    @core.TimeDelta::milliseconds(1_200L),
+  )
+}
+
+///|
+test "sum handles negative and mixed-sign durations" {
+  assert_eq(
+    @core.TimeDelta::sum([
+      @core.TimeDelta::seconds(1L).unwrap(),
+      @core.TimeDelta::seconds(-3L).unwrap(),
+    ]),
+    @core.TimeDelta::seconds(-2L),
+  )
+  assert_eq(
+    @core.TimeDelta::sum([
+      @core.TimeDelta::milliseconds(-500L).unwrap(),
+      @core.TimeDelta::milliseconds(250L).unwrap(),
+    ]),
+    @core.TimeDelta::milliseconds(-250L),
+  )
+}
+
+///|
+test "sum of a single duration is that duration" {
+  let delta = @core.TimeDelta::new(-7L, 123_456_789).unwrap()
+  assert_eq(@core.TimeDelta::sum([delta]), Some(delta))
+}
+
+///|
+test "sum agrees with adding one at a time when no step overflows" {
+  let deltas = [
+    @core.TimeDelta::hours(3L).unwrap(),
+    @core.TimeDelta::minutes(-45L).unwrap(),
+    @core.TimeDelta::nanoseconds(999_999_999L).unwrap(),
+    @core.TimeDelta::seconds(-1L).unwrap(),
+  ]
+  let stepwise = deltas.fold(init=Some(@core.TimeDelta::zero()), (acc, d) => {
+    acc.bind(a => a.add(d))
+  })
+  assert_eq(@core.TimeDelta::sum(deltas), stepwise)
+}
+
+///|
+test "sum does not depend on the order, even when a partial sum would leave the range" {
+  let max = @core.TimeDelta::max_value()
+  let min = @core.TimeDelta::min_value()
+  let expected = @core.TimeDelta::nanoseconds(1_999_999_998L)
+  assert_eq(@core.TimeDelta::sum([max, max, min, min]), expected)
+  assert_eq(@core.TimeDelta::sum([max, min, max, min]), expected)
+  assert_eq(@core.TimeDelta::sum([min, min, max, max]), expected)
+  assert_eq(
+    @core.TimeDelta::sum([max, min]),
+    @core.TimeDelta::nanoseconds(999_999_999L),
+  )
+}
+
+///|
+test "sum of many extreme durations that cancel still succeeds" {
+  let deltas : Array[@core.TimeDelta] = []
+  for _ in 0..<1_000 {
+    deltas.push(@core.TimeDelta::max_value())
+  }
+  for _ in 0..<1_000 {
+    deltas.push(@core.TimeDelta::min_value())
+  }
+  assert_eq(
+    @core.TimeDelta::sum(deltas),
+    @core.TimeDelta::nanoseconds(999_999_999_000L),
+  )
+}
+
+///|
+test "sum returns None when the true total is outside the representable range" {
+  let max = @core.TimeDelta::max_value()
+  let min = @core.TimeDelta::min_value()
+  assert_eq(
+    @core.TimeDelta::sum([max, @core.TimeDelta::seconds(1L).unwrap()]),
+    None,
+  )
+  assert_eq(@core.TimeDelta::sum([max, max]), None)
+  assert_eq(
+    @core.TimeDelta::sum([min, @core.TimeDelta::seconds(-1L).unwrap()]),
+    None,
+  )
+  let many : Array[@core.TimeDelta] = []
+  for _ in 0..<2_000 {
+    many.push(max)
+  }
+  assert_eq(@core.TimeDelta::sum(many), None)
+}

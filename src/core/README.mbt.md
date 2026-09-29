@@ -308,6 +308,7 @@ A signed duration, precise to the nanosecond. Constructors and checked arithmeti
 | `as_minutes_float()` / `as_hours_float()` | `-> Float` | Total length in fractional minutes / hours, as a 32-bit float; same precision caveat |
 | `add(TimeDelta)` | `-> Self?` | Sum; `None` on overflow |
 | `sub(TimeDelta)` | `-> Self?` | Difference; `None` on overflow |
+| `TimeDelta::sum(Array[TimeDelta])` | `-> Self?` | Total of an array, `zero()` when empty; `None` only if the true total is out of range — unlike folding with `add`, independent of order, so a partial sum that would leave the range does not spoil a representable total |
 | `mul(Int)` | `-> Self?` | Scale by an integer scalar; `None` on overflow |
 | `div(Int)` | `-> Self?` | Divide by an integer scalar, truncated toward zero; `None` if the scalar is zero |
 | `neg()` | `-> Self` | Negation |

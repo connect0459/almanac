@@ -379,6 +379,32 @@ pub fn TimeDelta::num_nanoseconds(self : TimeDelta) -> Int64? {
 }
 
 ///|
+/// The total of `deltas`, or `None` if the true total falls outside the
+/// representable range; an empty array totals `zero()`. Unlike folding with
+/// `add`, the result does not depend on the order of `deltas`: a partial sum
+/// that would leave the range does not make the whole sum `None`, as long
+/// as the true total is representable. (Seconds are accumulated as
+/// `high * 2^31 + low`, so no partial sum can overflow `Int64` whatever the
+/// order or length; `scaled + total_low` cannot overflow either, since
+/// `scaled` is a multiple of `2^31` and `total_low` is below it.)
+pub fn TimeDelta::sum(deltas : Array[TimeDelta]) -> TimeDelta? {
+  let block = 2_147_483_648L
+  let mut high = 0L
+  let mut low = 0L
+  let mut nanos = 0L
+  for delta in deltas {
+    high += floor_div64(delta.seconds, block)
+    low += floor_mod64(delta.seconds, block)
+    nanos += delta.nanoseconds.to_int64()
+  }
+  let total_high = high + floor_div64(low, block)
+  let total_low = floor_mod64(low, block)
+  checked_mul64(total_high, block).bind(scaled => {
+    from_secs_nanos(scaled + total_low, nanos)
+  })
+}
+
+///|
 /// The sum of two durations, or `None` if it overflows the representable
 /// range.
 ///
