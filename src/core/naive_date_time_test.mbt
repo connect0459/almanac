@@ -432,3 +432,122 @@ test "panic datetime add_months aborts when the result leaves the representable 
 test "panic datetime sub_months aborts when the result leaves the representable range" {
   ignore(min_datetime().sub_months(1))
 }
+
+///|
+fn sample_datetime() -> @core.NaiveDateTime {
+  @core.NaiveDate::from_ymd(2024, 2, 29)
+  .unwrap()
+  .and_hms_nano(13, 45, 6, 789)
+  .unwrap()
+}
+
+///|
+test "date component accessors report the local calendar fields" {
+  let dt = sample_datetime()
+  assert_eq(dt.year(), 2024)
+  assert_eq(dt.month(), @core.Feb)
+  assert_eq(dt.day(), 29)
+  assert_eq(dt.ordinal(), 60)
+  assert_eq(dt.weekday(), @core.Thu)
+  assert_eq(dt.iso_week(), dt.date().iso_week())
+  assert_true(dt.leap_year())
+}
+
+///|
+test "leap_year is false for a common year" {
+  let dt = @core.NaiveDate::from_ymd(2023, 6, 1)
+    .unwrap()
+    .and_hms(0, 0, 0)
+    .unwrap()
+  assert_false(dt.leap_year())
+}
+
+///|
+test "time component accessors report the time-of-day fields" {
+  let dt = sample_datetime()
+  assert_eq(dt.hour(), 13)
+  assert_eq(dt.minute(), 45)
+  assert_eq(dt.second(), 6)
+  assert_eq(dt.nanosecond(), 789)
+}
+
+///|
+test "with_year replaces the year and keeps every other field" {
+  let dt = sample_datetime()
+  assert_eq(dt.with_year(2023), None)
+  assert_eq(
+    dt.with_year(2028),
+    @core.NaiveDate::from_ymd(2028, 2, 29).unwrap().and_hms_nano(13, 45, 6, 789),
+  )
+}
+
+///|
+test "with_month and with_day replace one date field and reject impossible dates" {
+  let dt = sample_datetime()
+  assert_eq(
+    dt.with_month(3).map(fn(d) { d.date() }),
+    @core.NaiveDate::from_ymd(2024, 3, 29),
+  )
+  assert_eq(dt.with_month(3).map(fn(d) { d.time() }), Some(dt.time()))
+  assert_eq(dt.with_month(13), None)
+  assert_eq(
+    dt.with_day(1).map(fn(d) { d.date() }),
+    @core.NaiveDate::from_ymd(2024, 2, 1),
+  )
+  assert_eq(dt.with_day(1).map(fn(d) { d.time() }), Some(dt.time()))
+  assert_eq(dt.with_day(30), None)
+}
+
+///|
+test "with_ordinal replaces the day of year and keeps the time of day" {
+  let dt = sample_datetime()
+  assert_eq(
+    dt.with_ordinal(366),
+    @core.NaiveDate::from_ymd(2024, 12, 31)
+    .unwrap()
+    .and_hms_nano(13, 45, 6, 789),
+  )
+  assert_eq(dt.with_ordinal(367), None)
+}
+
+///|
+test "with_hour, with_minute and with_second replace one time field and keep the date" {
+  let dt = sample_datetime()
+  assert_eq(
+    dt.with_hour(0).map(fn(d) { d.time() }),
+    @core.NaiveTime::from_hms_nano(0, 45, 6, 789),
+  )
+  assert_eq(
+    dt.with_minute(0).map(fn(d) { d.time() }),
+    @core.NaiveTime::from_hms_nano(13, 0, 6, 789),
+  )
+  assert_eq(
+    dt.with_second(0).map(fn(d) { d.time() }),
+    @core.NaiveTime::from_hms_nano(13, 45, 0, 789),
+  )
+  assert_eq(dt.with_hour(0).map(fn(d) { d.date() }), Some(dt.date()))
+  assert_eq(dt.with_hour(24), None)
+  assert_eq(dt.with_minute(60), None)
+  assert_eq(dt.with_second(60), None)
+}
+
+///|
+test "with_nanosecond replaces the sub-second field, including a leap-second value" {
+  let dt = sample_datetime()
+  assert_eq(dt.with_nanosecond(5).map(fn(d) { d.nanosecond() }), Some(5))
+  assert_eq(
+    dt.with_nanosecond(1_500_000_000).map(fn(d) { d.nanosecond() }),
+    Some(1_500_000_000),
+  )
+  assert_eq(dt.with_nanosecond(2_000_000_000), None)
+  assert_eq(dt.with_nanosecond(5).map(fn(d) { d.date() }), Some(dt.date()))
+}
+
+///|
+test "with_hour preserves an existing leap-second nanosecond component" {
+  let dt = @core.NaiveDate::from_ymd(2016, 12, 31)
+    .unwrap()
+    .and_hms_nano(23, 59, 59, 1_500_000_000)
+    .unwrap()
+  assert_eq(dt.with_hour(12).map(fn(d) { d.nanosecond() }), Some(1_500_000_000))
+}

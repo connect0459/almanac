@@ -309,6 +309,10 @@ A `NaiveDate` and `NaiveTime` combined into one zone-less instant.
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `NaiveDateTime::new(NaiveDate, NaiveTime)` | `-> Self` | Compose a date and a time of day |
+| `year()` / `month()` / `day()` / `ordinal()` / `weekday()` / `iso_week()` / `leap_year()` | `-> Int` / `Month` / `Int` / `Int` / `Weekday` / `IsoWeek` / `Bool` | The date's components, as on `NaiveDate` |
+| `hour()` / `minute()` / `second()` / `nanosecond()` | `-> Int` | The time's components, as on `NaiveTime` (`nanosecond() >= 1_000_000_000` encodes a leap second) |
+| `with_year(Int)` / `with_month(Int)` / `with_day(Int)` / `with_ordinal(Int)` | `-> Self?` | Replace one date component, keeping the time of day; `None` if the result is not a valid date |
+| `with_hour(Int)` / `with_minute(Int)` / `with_second(Int)` / `with_nanosecond(Int)` | `-> Self?` | Replace one time component, keeping the date and every other time field (including a leap second); `None` if out of range |
 | `NaiveDateTime::from_timestamp(Int64, Int)` | `-> Self?` | From a Unix timestamp (whole seconds) plus a nanosecond component (`0..=1_999_999_999`) |
 | `NaiveDateTime::from_timestamp_millis(Int64)` | `-> Self?` | From a Unix timestamp in whole milliseconds |
 | `NaiveDateTime::from_timestamp_micros(Int64)` | `-> Self?` | From a Unix timestamp in whole microseconds |

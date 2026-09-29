@@ -94,6 +94,171 @@ pub fn NaiveDateTime::time(self : NaiveDateTime) -> NaiveTime {
 }
 
 ///|
+/// The calendar year.
+pub fn NaiveDateTime::year(self : NaiveDateTime) -> Int {
+  self.date.year()
+}
+
+///|
+/// The calendar month.
+pub fn NaiveDateTime::month(self : NaiveDateTime) -> Month {
+  self.date.month()
+}
+
+///|
+/// The day of the month, `1..=31`.
+pub fn NaiveDateTime::day(self : NaiveDateTime) -> Int {
+  self.date.day()
+}
+
+///|
+/// The day of the year, `1..=366`.
+pub fn NaiveDateTime::ordinal(self : NaiveDateTime) -> Int {
+  self.date.ordinal()
+}
+
+///|
+/// The day of the week.
+pub fn NaiveDateTime::weekday(self : NaiveDateTime) -> Weekday {
+  self.date.weekday()
+}
+
+///|
+/// The ISO 8601 week date's year and week number.
+pub fn NaiveDateTime::iso_week(self : NaiveDateTime) -> IsoWeek {
+  self.date.iso_week()
+}
+
+///|
+/// Whether the calendar year is a leap year.
+pub fn NaiveDateTime::leap_year(self : NaiveDateTime) -> Bool {
+  self.date.leap_year()
+}
+
+///|
+/// The hour, `0..=23`.
+pub fn NaiveDateTime::hour(self : NaiveDateTime) -> Int {
+  self.time.hour()
+}
+
+///|
+/// The minute, `0..=59`.
+pub fn NaiveDateTime::minute(self : NaiveDateTime) -> Int {
+  self.time.minute()
+}
+
+///|
+/// The second, `0..=59` (never `60`; see `nanosecond` for leap seconds).
+pub fn NaiveDateTime::second(self : NaiveDateTime) -> Int {
+  self.time.second()
+}
+
+///|
+/// The nanosecond within the second, `0..=1_999_999_999` (a value at or above
+/// `1_000_000_000` represents a leap second).
+pub fn NaiveDateTime::nanosecond(self : NaiveDateTime) -> Int {
+  self.time.nanosecond()
+}
+
+///|
+/// This datetime with its year replaced, or `None` if the result is not a valid
+/// date. The time of day is unchanged. See `NaiveDate::with_year`.
+pub fn NaiveDateTime::with_year(
+  self : NaiveDateTime,
+  year : Int,
+) -> NaiveDateTime? {
+  self.date
+  .with_year(year)
+  .map(date => NaiveDateTime::{ date, time: self.time, })
+}
+
+///|
+/// This datetime with its month replaced, or `None` if the result is not a valid
+/// date. The time of day is unchanged. See `NaiveDate::with_month`.
+pub fn NaiveDateTime::with_month(
+  self : NaiveDateTime,
+  month : Int,
+) -> NaiveDateTime? {
+  self.date
+  .with_month(month)
+  .map(date => NaiveDateTime::{ date, time: self.time, })
+}
+
+///|
+/// This datetime with its day replaced, or `None` if the result is not a valid
+/// date. The time of day is unchanged. See `NaiveDate::with_day`.
+pub fn NaiveDateTime::with_day(
+  self : NaiveDateTime,
+  day : Int,
+) -> NaiveDateTime? {
+  self.date.with_day(day).map(date => NaiveDateTime::{ date, time: self.time, })
+}
+
+///|
+/// This datetime with its day of year replaced, or `None` if the result is not a valid
+/// date. The time of day is unchanged. See `NaiveDate::with_ordinal`.
+pub fn NaiveDateTime::with_ordinal(
+  self : NaiveDateTime,
+  ordinal : Int,
+) -> NaiveDateTime? {
+  self.date
+  .with_ordinal(ordinal)
+  .map(date => NaiveDateTime::{ date, time: self.time, })
+}
+
+///|
+/// This datetime with its hour replaced, or `None` if it is out of range. The
+/// date and every other time field (including a leap-second nanosecond) are
+/// unchanged. See `NaiveTime::with_hour`.
+pub fn NaiveDateTime::with_hour(
+  self : NaiveDateTime,
+  hour : Int,
+) -> NaiveDateTime? {
+  self.time
+  .with_hour(hour)
+  .map(time => NaiveDateTime::{ date: self.date, time, })
+}
+
+///|
+/// This datetime with its minute replaced, or `None` if it is out of range. The
+/// date and every other time field (including a leap-second nanosecond) are
+/// unchanged. See `NaiveTime::with_minute`.
+pub fn NaiveDateTime::with_minute(
+  self : NaiveDateTime,
+  minute : Int,
+) -> NaiveDateTime? {
+  self.time
+  .with_minute(minute)
+  .map(time => NaiveDateTime::{ date: self.date, time, })
+}
+
+///|
+/// This datetime with its second replaced, or `None` if it is out of range. The
+/// date and every other time field (including a leap-second nanosecond) are
+/// unchanged. See `NaiveTime::with_second`.
+pub fn NaiveDateTime::with_second(
+  self : NaiveDateTime,
+  second : Int,
+) -> NaiveDateTime? {
+  self.time
+  .with_second(second)
+  .map(time => NaiveDateTime::{ date: self.date, time, })
+}
+
+///|
+/// This datetime with its nanosecond replaced, or `None` if it is out of range. The
+/// date and every other time field (including a leap-second nanosecond) are
+/// unchanged. See `NaiveTime::with_nanosecond`.
+pub fn NaiveDateTime::with_nanosecond(
+  self : NaiveDateTime,
+  nanosecond : Int,
+) -> NaiveDateTime? {
+  self.time
+  .with_nanosecond(nanosecond)
+  .map(time => NaiveDateTime::{ date: self.date, time, })
+}
+
+///|
 /// The Unix timestamp, in whole seconds, truncated toward negative
 /// infinity (i.e. the seconds component of `from_timestamp`'s inverse).
 /// Does not account for a leap second's extra elapsed second, matching

@@ -140,18 +140,27 @@ pub fn NaiveDateTime::checked_sub_months(Self, Int) -> Self?
 pub fn NaiveDateTime::checked_sub_signed(Self, TimeDelta) -> Self?
 pub fn NaiveDateTime::compare(Self, Self) -> Int
 pub fn NaiveDateTime::date(Self) -> NaiveDate
+pub fn NaiveDateTime::day(Self) -> Int
 pub fn NaiveDateTime::equal(Self, Self) -> Bool
 pub fn NaiveDateTime::from_timestamp(Int64, Int) -> Self?
 pub fn NaiveDateTime::from_timestamp_micros(Int64) -> Self?
 pub fn NaiveDateTime::from_timestamp_millis(Int64) -> Self?
 pub fn NaiveDateTime::from_timestamp_nanos(Int64) -> Self?
+pub fn NaiveDateTime::hour(Self) -> Int
+pub fn NaiveDateTime::iso_week(Self) -> IsoWeek
+pub fn NaiveDateTime::leap_year(Self) -> Bool
+pub fn NaiveDateTime::minute(Self) -> Int
+pub fn NaiveDateTime::month(Self) -> Month
+pub fn NaiveDateTime::nanosecond(Self) -> Int
 pub fn NaiveDateTime::new(NaiveDate, NaiveTime) -> Self
 pub fn NaiveDateTime::not_equal(Self, Self) -> Bool
 pub fn NaiveDateTime::op_ge(Self, Self) -> Bool
 pub fn NaiveDateTime::op_gt(Self, Self) -> Bool
 pub fn NaiveDateTime::op_le(Self, Self) -> Bool
 pub fn NaiveDateTime::op_lt(Self, Self) -> Bool
+pub fn NaiveDateTime::ordinal(Self) -> Int
 pub fn NaiveDateTime::round(Self, TimeDelta) -> Self?
+pub fn NaiveDateTime::second(Self) -> Int
 pub fn NaiveDateTime::signed_duration_since(Self, Self) -> TimeDelta
 pub fn NaiveDateTime::sub_days(Self, Int) -> Self
 pub fn NaiveDateTime::sub_months(Self, Int) -> Self
@@ -166,6 +175,16 @@ pub fn NaiveDateTime::timestamp_subsec_millis(Self) -> Int
 pub fn NaiveDateTime::timestamp_subsec_nanos(Self) -> Int
 pub fn NaiveDateTime::to_repr(Self) -> @debug.Repr
 pub fn NaiveDateTime::truncate(Self, TimeDelta) -> Self?
+pub fn NaiveDateTime::weekday(Self) -> Weekday
+pub fn NaiveDateTime::with_day(Self, Int) -> Self?
+pub fn NaiveDateTime::with_hour(Self, Int) -> Self?
+pub fn NaiveDateTime::with_minute(Self, Int) -> Self?
+pub fn NaiveDateTime::with_month(Self, Int) -> Self?
+pub fn NaiveDateTime::with_nanosecond(Self, Int) -> Self?
+pub fn NaiveDateTime::with_ordinal(Self, Int) -> Self?
+pub fn NaiveDateTime::with_second(Self, Int) -> Self?
+pub fn NaiveDateTime::with_year(Self, Int) -> Self?
+pub fn NaiveDateTime::year(Self) -> Int
 
 pub struct NaiveDateWeeksIterator {
   // private fields
