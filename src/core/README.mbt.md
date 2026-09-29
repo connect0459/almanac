@@ -13,6 +13,7 @@ Calendar and clock primitives with no time zone awareness. Import `connect0459/c
 | `NaiveDate` | A proleptic Gregorian calendar date, no time zone |
 | `NaiveWeek` | The week containing a date, under a configurable first day of the week |
 | `NaiveDateDaysIterator` / `NaiveDateWeeksIterator` | Lazy, bounded, double-ended iterators over successive dates from `NaiveDate::iter_days`/`iter_weeks` |
+| `WeekdaySetIterator` | Double-ended iterator over a `WeekdaySet`'s members in cyclic weekday order from a chosen start, from `WeekdaySet::iter_from` |
 | `NaiveTime` | A time of day, precise to the nanosecond, with leap-second support |
 | `TimeDelta` | A signed duration, precise to the nanosecond |
 | `NaiveDateTime` | A `NaiveDate` and `NaiveTime` combined into one zone-less instant |
@@ -121,6 +122,8 @@ An immutable set of `Weekday` values. Every mutating-looking operation (`insert`
 | `is_empty()` | `-> Bool` | Whether the set has no members |
 | `length()` | `-> Int` | The number of members |
 | `to_array()` | `-> Array[Weekday]` | Members in `Mon..Sun` order |
+| `iter(start? : Weekday)` | `-> Iter[Weekday]` | Members in cyclic order from `start` (default `Mon`, matching `to_array()`), wrapping from `Sun` to `Mon`; a `start` that is not a member begins at the next member. A standard `Iter`, so `for day in set.iter(start=Sun)` and adapters work (`for day in set` does not: `for` needs a zero-argument `iter()`) |
+| `iter_from(start? : Weekday)` | `-> WeekdaySetIterator` | The same order as a double-ended iterator with `next()`, `next_back()`, `length()` and `iter()`; the ends converge without skipping or repeating a weekday |
 
 `WeekdaySet` also implements `Eq`, `Compare` (`<`/`<=`/`>`/`>=` via `compare`) and `Show`, rendering the members' short names in `Mon..Sun` order (`[Mon, Fri]`, empty is `[]`).
 

@@ -417,6 +417,8 @@ pub fn WeekdaySet::insert(Self, Weekday) -> Self
 pub fn WeekdaySet::intersection(Self, Self) -> Self
 pub fn WeekdaySet::is_empty(Self) -> Bool
 pub fn WeekdaySet::is_subset(Self, Self) -> Bool
+pub fn WeekdaySet::iter(Self, start? : Weekday) -> Iter[Weekday]
+pub fn WeekdaySet::iter_from(Self, start? : Weekday) -> WeekdaySetIterator
 pub fn WeekdaySet::last(Self) -> Weekday?
 pub fn WeekdaySet::length(Self) -> Int
 pub fn WeekdaySet::not_equal(Self, Self) -> Bool
@@ -435,6 +437,15 @@ pub fn WeekdaySet::to_string(Self) -> String
 pub fn WeekdaySet::union(Self, Self) -> Self
 pub impl Default for WeekdaySet
 pub impl Show for WeekdaySet
+
+pub struct WeekdaySetIterator {
+  // private fields
+} derive(@debug.Debug)
+pub fn WeekdaySetIterator::iter(Self) -> Iter[Weekday]
+pub fn WeekdaySetIterator::length(Self) -> Int
+pub fn WeekdaySetIterator::next(Self) -> Weekday?
+pub fn WeekdaySetIterator::next_back(Self) -> Weekday?
+pub fn WeekdaySetIterator::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 
