@@ -580,6 +580,56 @@ pub fn NaiveDateTime::checked_add_months(
 }
 
 ///|
+/// This datetime with its date advanced by `years` (or moved back, if
+/// `years` is negative), keeping the time of day unchanged. See
+/// `NaiveDate::add_years` for the day-of-month clamping rule.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_add_years` to get `None` instead.
+pub fn NaiveDateTime::add_years(
+  self : NaiveDateTime,
+  years : Int,
+) -> NaiveDateTime {
+  expect_in_range(self.checked_add_years(years), "NaiveDateTime::add_years")
+}
+
+///|
+/// Like `add_years`, but `None` if the resulting date falls outside
+/// `NaiveDate`'s representable range.
+pub fn NaiveDateTime::checked_add_years(
+  self : NaiveDateTime,
+  years : Int,
+) -> NaiveDateTime? {
+  self.date
+  .checked_add_years(years)
+  .map(date => NaiveDateTime::{ date, time: self.time, })
+}
+
+///|
+/// This datetime with its date moved back by `years`. See `add_years`.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_sub_years` to get `None` instead.
+pub fn NaiveDateTime::sub_years(
+  self : NaiveDateTime,
+  years : Int,
+) -> NaiveDateTime {
+  expect_in_range(self.checked_sub_years(years), "NaiveDateTime::sub_years")
+}
+
+///|
+/// Like `sub_years`, but `None` if the resulting date falls outside
+/// `NaiveDate`'s representable range.
+pub fn NaiveDateTime::checked_sub_years(
+  self : NaiveDateTime,
+  years : Int,
+) -> NaiveDateTime? {
+  self.date
+  .checked_sub_years(years)
+  .map(date => NaiveDateTime::{ date, time: self.time, })
+}
+
+///|
 /// This datetime with its date moved back by `months`. See `add_months`.
 ///
 /// Aborts if the result falls outside `NaiveDate`'s representable range; use

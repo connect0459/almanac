@@ -176,6 +176,8 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 | `sub_signed(TimeDelta)` | `-> Self[Tz]` | Move back by a signed duration |
 | `add_months(Int)` | `-> Self[Tz]` | Advance the date by months, keeping the time of day and time zone; see `NaiveDate::add_months` (in `core`) for the day-of-month clamping rule |
 | `sub_months(Int)` | `-> Self[Tz]` | Move the date back by months |
+| `add_years(Int)` | `-> Self[Tz]` | Advance the date by years, keeping the time of day and time zone; see `NaiveDate::add_years` (in `core`) for the clamping rule |
+| `sub_years(Int)` | `-> Self[Tz]` | Move the date back by years |
 | `add_days(Int)` | `-> Self[Tz]` | Advance the date by days, keeping the time of day and time zone |
 | `sub_days(Int)` | `-> Self[Tz]` | Move the date back by days |
 | `signed_duration_since(Self[Tz2])` | `-> TimeDelta` | The signed duration from `other` to `self`, independent of either's time zone |

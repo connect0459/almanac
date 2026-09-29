@@ -22,6 +22,7 @@ pub struct DateTime[Tz] {
 pub fn[Tz] DateTime::add_days(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz] DateTime::add_months(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz] DateTime::add_signed(Self[Tz], @core.TimeDelta) -> Self[Tz]
+pub fn[Tz] DateTime::add_years(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz : Eq] DateTime::equal(Self[Tz], Self[Tz]) -> Bool
 pub fn[Tz : TimeZone] DateTime::from_local(@core.NaiveDateTime, Tz) -> MappedLocalTime[Self[Tz]]
 pub fn[Tz] DateTime::from_timestamp(Int64, Int, Tz) -> Self[Tz]?
@@ -36,6 +37,7 @@ pub fn[Tz, Tz2] DateTime::signed_duration_since(Self[Tz], Self[Tz2]) -> @core.Ti
 pub fn[Tz] DateTime::sub_days(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz] DateTime::sub_months(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz] DateTime::sub_signed(Self[Tz], @core.TimeDelta) -> Self[Tz]
+pub fn[Tz] DateTime::sub_years(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz] DateTime::timezone(Self[Tz]) -> Tz
 pub fn[Tz : @debug.Debug] DateTime::to_repr(Self[Tz]) -> @debug.Repr
 pub fn[Tz] DateTime::truncate(Self[Tz], @core.TimeDelta) -> Self[Tz]?

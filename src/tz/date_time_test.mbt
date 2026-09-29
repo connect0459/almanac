@@ -270,3 +270,26 @@ test "round and truncate report None for an unsupported granularity, matching Na
   assert_eq(dt.truncate(mixed), None)
   assert_eq(dt.round(mixed), None)
 }
+
+///|
+test "add_years and sub_years on DateTime<Utc> have arithmetic parity with plain NaiveDateTime" {
+  let naive = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 2, 29).unwrap(),
+    @core.NaiveTime::from_hms(23, 0, 0).unwrap(),
+  )
+  let dt = @tz.DateTime::from_utc(naive, @tz.Utc::new())
+  assert_eq(dt.add_years(1).naive_utc(), naive.add_years(1))
+  assert_eq(dt.sub_years(1).naive_utc(), naive.sub_years(1))
+}
+
+///|
+test "add_years and sub_years keep the same time zone as self" {
+  let naive = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),
+    @core.NaiveTime::from_hms(12, 0, 0).unwrap(),
+  )
+  let fixed = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let dt = @tz.DateTime::from_utc(naive, fixed)
+  assert_eq(dt.add_years(1).timezone(), fixed)
+  assert_eq(dt.sub_years(1).timezone(), fixed)
+}

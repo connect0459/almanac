@@ -896,3 +896,65 @@ test "ymd and hms report the date and time components together" {
   assert_eq(dt.ymd(), (2024, @core.Feb, 29))
   assert_eq(dt.hms(), (13, 45, 7))
 }
+
+///|
+test "add_years and sub_years shift the date while keeping the time of day" {
+  let dt = @core.NaiveDate::from_ymd(2024, 6, 15)
+    .unwrap()
+    .and_hms(8, 30, 5)
+    .unwrap()
+  assert_eq(
+    dt.add_years(2),
+    @core.NaiveDate::from_ymd(2026, 6, 15).unwrap().and_hms(8, 30, 5).unwrap(),
+  )
+  assert_eq(
+    dt.sub_years(2),
+    @core.NaiveDate::from_ymd(2022, 6, 15).unwrap().and_hms(8, 30, 5).unwrap(),
+  )
+  assert_eq(dt.add_years(-2), dt.sub_years(2))
+}
+
+///|
+test "add_years clamps February 29 to February 28 in a non-leap year" {
+  let dt = @core.NaiveDate::from_ymd(2024, 2, 29)
+    .unwrap()
+    .and_hms(23, 59, 59)
+    .unwrap()
+  assert_eq(
+    dt.add_years(1),
+    @core.NaiveDate::from_ymd(2025, 2, 28).unwrap().and_hms(23, 59, 59).unwrap(),
+  )
+  assert_eq(
+    dt.add_years(4),
+    @core.NaiveDate::from_ymd(2028, 2, 29).unwrap().and_hms(23, 59, 59).unwrap(),
+  )
+}
+
+///|
+test "checked_add_years and checked_sub_years return None when the result leaves the representable range" {
+  let dt = @core.NaiveDate::from_ymd(2024, 2, 29)
+    .unwrap()
+    .and_hms(8, 30, 0)
+    .unwrap()
+  assert_eq(
+    dt.checked_add_years(1),
+    @core.NaiveDate::from_ymd(2025, 2, 28).unwrap().and_hms(8, 30, 0),
+  )
+  assert_eq(
+    dt.checked_sub_years(1),
+    @core.NaiveDate::from_ymd(2023, 2, 28).unwrap().and_hms(8, 30, 0),
+  )
+  assert_eq(max_datetime().checked_add_years(1), None)
+  assert_eq(min_datetime().checked_sub_years(1), None)
+  assert_eq(dt.checked_add_years(2_147_483_647), None)
+}
+
+///|
+test "panic datetime add_years aborts when the result leaves the representable range" {
+  ignore(max_datetime().add_years(1))
+}
+
+///|
+test "panic datetime sub_years aborts when the result leaves the representable range" {
+  ignore(min_datetime().sub_years(1))
+}

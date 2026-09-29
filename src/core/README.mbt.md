@@ -362,6 +362,7 @@ A `NaiveDate` and `NaiveTime` combined into one zone-less instant.
 | `add_signed(TimeDelta)` | `-> Self` | Advance by a signed duration, propagating any day overflow into the date |
 | `sub_signed(TimeDelta)` | `-> Self` | Move back by a signed duration |
 | `add_months(Int)` | `-> Self` | Shift the date by whole months, keeping the time of day |
+| `add_years(Int)` / `sub_years(Int)` | `-> Self` | Shift the date by whole years, keeping the time of day; February 29 clamps to February 28 in a non-leap year |
 | `sub_months(Int)` | `-> Self` | Shift the date backward by whole months |
 | `add_days(Int)` | `-> Self` | Shift the date by a day count, keeping the time of day |
 | `sub_days(Int)` | `-> Self` | Shift the date backward by a day count |
@@ -370,6 +371,7 @@ A `NaiveDate` and `NaiveTime` combined into one zone-less instant.
 | `checked_add_signed(TimeDelta)` / `checked_sub_signed(TimeDelta)` | `-> Self?` | As `add_signed`/`sub_signed`, but `None` if the date is out of range |
 | `checked_add_days(Int)` / `checked_sub_days(Int)` | `-> Self?` | As `add_days`/`sub_days`, but `None` if out of range |
 | `checked_add_months(Int)` / `checked_sub_months(Int)` | `-> Self?` | As `add_months`/`sub_months`, but `None` if out of range |
+| `checked_add_years(Int)` / `checked_sub_years(Int)` | `-> Self?` | As `add_years`/`sub_years`, but `None` if out of range |
 
 The non-`checked` arithmetic on `NaiveDate` and `NaiveDateTime` (`succ`, `pred`, `add_*`, `sub_*`) aborts if the result falls outside the representable date range (about ±5.87 million years around the epoch) rather than wrapping into an invalid date; use the `checked_*`/`*_opt` forms to get `None` instead.
 | `signed_duration_since(Self)` | `-> TimeDelta` | The signed duration from `other` to `self` |

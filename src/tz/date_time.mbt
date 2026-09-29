@@ -165,6 +165,26 @@ pub fn[Tz] DateTime::sub_months(
 }
 
 ///|
+/// This datetime with its date advanced by `years` (or moved back, if
+/// `years` is negative), keeping the time of day and time zone unchanged.
+/// See `@core.NaiveDate::add_years` for the day-of-month clamping rule.
+pub fn[Tz] DateTime::add_years(
+  self : DateTime[Tz],
+  years : Int,
+) -> DateTime[Tz] {
+  DateTime::{ datetime: self.datetime.add_years(years), tz: self.tz, }
+}
+
+///|
+/// This datetime with its date moved back by `years`. See `add_years`.
+pub fn[Tz] DateTime::sub_years(
+  self : DateTime[Tz],
+  years : Int,
+) -> DateTime[Tz] {
+  DateTime::{ datetime: self.datetime.sub_years(years), tz: self.tz, }
+}
+
+///|
 /// This datetime with its date advanced by `days` (or moved back, if
 /// `days` is negative), keeping the time of day and time zone unchanged.
 pub fn[Tz] DateTime::add_days(self : DateTime[Tz], days : Int) -> DateTime[Tz] {

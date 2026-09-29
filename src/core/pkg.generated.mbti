@@ -163,14 +163,17 @@ pub fn NaiveDateTime::add_days(Self, Int) -> Self
 pub fn NaiveDateTime::add_months(Self, Int) -> Self
 pub fn NaiveDateTime::add_seconds(Self, Int) -> Self
 pub fn NaiveDateTime::add_signed(Self, TimeDelta) -> Self
+pub fn NaiveDateTime::add_years(Self, Int) -> Self
 pub fn NaiveDateTime::checked_add_days(Self, Int) -> Self?
 pub fn NaiveDateTime::checked_add_months(Self, Int) -> Self?
 pub fn NaiveDateTime::checked_add_seconds(Self, Int) -> Self?
 pub fn NaiveDateTime::checked_add_signed(Self, TimeDelta) -> Self?
+pub fn NaiveDateTime::checked_add_years(Self, Int) -> Self?
 pub fn NaiveDateTime::checked_sub_days(Self, Int) -> Self?
 pub fn NaiveDateTime::checked_sub_months(Self, Int) -> Self?
 pub fn NaiveDateTime::checked_sub_seconds(Self, Int) -> Self?
 pub fn NaiveDateTime::checked_sub_signed(Self, TimeDelta) -> Self?
+pub fn NaiveDateTime::checked_sub_years(Self, Int) -> Self?
 pub fn NaiveDateTime::compare(Self, Self) -> Int
 pub fn NaiveDateTime::date(Self) -> NaiveDate
 pub fn NaiveDateTime::day(Self) -> Int
@@ -213,6 +216,7 @@ pub fn NaiveDateTime::sub_days(Self, Int) -> Self
 pub fn NaiveDateTime::sub_months(Self, Int) -> Self
 pub fn NaiveDateTime::sub_seconds(Self, Int) -> Self
 pub fn NaiveDateTime::sub_signed(Self, TimeDelta) -> Self
+pub fn NaiveDateTime::sub_years(Self, Int) -> Self
 pub fn NaiveDateTime::time(Self) -> NaiveTime
 pub fn NaiveDateTime::timestamp(Self) -> Int64
 pub fn NaiveDateTime::timestamp_micros(Self) -> Int64?
