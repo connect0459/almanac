@@ -192,6 +192,28 @@ pub fn NaiveTime::overflowing_sub_signed(
 }
 
 ///|
+/// This time advanced by the signed duration `delta`, wrapping at midnight
+/// and discarding the number of days crossed (use `overflowing_add_signed`
+/// to get it). See `overflowing_add_signed` for the leap-second rules.
+pub fn NaiveTime::wrapping_add_signed(
+  self : NaiveTime,
+  delta : TimeDelta,
+) -> NaiveTime {
+  self.overflowing_add_signed(delta).0
+}
+
+///|
+/// This time moved back by the signed duration `delta`, wrapping at
+/// midnight and discarding the number of days crossed. See
+/// `wrapping_add_signed`.
+pub fn NaiveTime::wrapping_sub_signed(
+  self : NaiveTime,
+  delta : TimeDelta,
+) -> NaiveTime {
+  self.overflowing_sub_signed(delta).0
+}
+
+///|
 /// Same minute, second, and nanosecond, with the hour changed to `hour`, or
 /// `None` if `hour` is outside `0..=23`.
 pub fn NaiveTime::with_hour(self : NaiveTime, hour : Int) -> NaiveTime? {

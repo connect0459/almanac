@@ -248,6 +248,7 @@ A time of day, precise to the nanosecond. Constructors are `Option`-returning. S
 | `num_seconds_from_midnight()` | `-> Int` | Seconds elapsed since midnight |
 | `overflowing_add_signed(TimeDelta)` | `-> (Self, Int64)` | Add a duration, wrapping at midnight; also reports the number of days crossed |
 | `overflowing_sub_signed(TimeDelta)` | `-> (Self, Int64)` | Subtract a duration, with the same wrapping and day-count report |
+| `wrapping_add_signed(TimeDelta)` / `wrapping_sub_signed(TimeDelta)` | `-> Self` | As `overflowing_add_signed`/`overflowing_sub_signed`, discarding the day count |
 | `with_hour(Int)` | `-> Self?` | Same minute/second/nanosecond in a different hour; `None` if outside `0..=23` |
 | `with_minute(Int)` | `-> Self?` | Same hour/second/nanosecond in a different minute; `None` if outside `0..=59` |
 | `with_second(Int)` | `-> Self?` | Same hour/minute/nanosecond in a different second; `None` if outside `0..=59` |

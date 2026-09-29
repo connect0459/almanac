@@ -223,6 +223,8 @@ pub fn NaiveTime::with_hour(Self, Int) -> Self?
 pub fn NaiveTime::with_minute(Self, Int) -> Self?
 pub fn NaiveTime::with_nanosecond(Self, Int) -> Self?
 pub fn NaiveTime::with_second(Self, Int) -> Self?
+pub fn NaiveTime::wrapping_add_signed(Self, TimeDelta) -> Self
+pub fn NaiveTime::wrapping_sub_signed(Self, TimeDelta) -> Self
 
 pub struct NaiveWeek {
   // private fields

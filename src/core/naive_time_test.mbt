@@ -280,3 +280,67 @@ test "signed_duration_since from a leap second matches the negation of the rever
     @core.TimeDelta::milliseconds(-400L).unwrap(),
   )
 }
+
+///|
+test "wrapping_add_signed advances within the day without wrapping" {
+  let time = @core.NaiveTime::from_hms(10, 0, 0).unwrap()
+  assert_eq(
+    time.wrapping_add_signed(@core.TimeDelta::minutes(90L).unwrap()),
+    @core.NaiveTime::from_hms(11, 30, 0).unwrap(),
+  )
+}
+
+///|
+test "wrapping_add_signed wraps past midnight and discards the day count" {
+  let time = @core.NaiveTime::from_hms(23, 0, 0).unwrap()
+  assert_eq(
+    time.wrapping_add_signed(@core.TimeDelta::hours(2L).unwrap()),
+    @core.NaiveTime::from_hms(1, 0, 0).unwrap(),
+  )
+}
+
+///|
+test "wrapping_sub_signed wraps before midnight and discards the day count" {
+  let time = @core.NaiveTime::from_hms(1, 0, 0).unwrap()
+  assert_eq(
+    time.wrapping_sub_signed(@core.TimeDelta::hours(2L).unwrap()),
+    @core.NaiveTime::from_hms(23, 0, 0).unwrap(),
+  )
+}
+
+///|
+test "wrapping_add_signed with a negative duration moves backward and wraps" {
+  let time = @core.NaiveTime::from_hms(0, 30, 0).unwrap()
+  assert_eq(
+    time.wrapping_add_signed(@core.TimeDelta::hours(-1L).unwrap()),
+    @core.NaiveTime::from_hms(23, 30, 0).unwrap(),
+  )
+}
+
+///|
+test "wrapping arithmetic by whole days returns the same time of day" {
+  let time = @core.NaiveTime::from_hms_nano(13, 45, 6, 789).unwrap()
+  assert_eq(time.wrapping_add_signed(@core.TimeDelta::days(3L).unwrap()), time)
+  assert_eq(time.wrapping_sub_signed(@core.TimeDelta::days(3L).unwrap()), time)
+}
+
+///|
+test "wrapping arithmetic keeps a leap second for a zero duration" {
+  let leap = @core.NaiveTime::from_hms_nano(23, 59, 59, 1_500_000_000).unwrap()
+  assert_eq(leap.wrapping_add_signed(@core.TimeDelta::zero()), leap)
+  assert_eq(leap.wrapping_sub_signed(@core.TimeDelta::zero()), leap)
+}
+
+///|
+test "wrapping arithmetic agrees with the time reported by the overflowing forms" {
+  let time = @core.NaiveTime::from_hms_nano(23, 59, 59, 1_500_000_000).unwrap()
+  let delta = @core.TimeDelta::seconds(90_001L).unwrap()
+  assert_eq(
+    time.wrapping_add_signed(delta),
+    time.overflowing_add_signed(delta).0,
+  )
+  assert_eq(
+    time.wrapping_sub_signed(delta),
+    time.overflowing_sub_signed(delta).0,
+  )
+}
