@@ -31,6 +31,14 @@ pub impl Compare for NaiveWeek with fn compare(self, other) {
 pub extend NaiveWeek with Compare::{compare, op_lt, op_gt, op_le, op_ge}
 
 ///|
+pub impl Hash for NaiveWeek with fn hash_combine(self, hasher) {
+  self.first_day.hash_combine(hasher)
+}
+
+///|
+pub extend NaiveWeek with Hash::{hash, hash_combine}
+
+///|
 pub extend NaiveWeek with @debug.Debug::{to_repr}
 
 ///|

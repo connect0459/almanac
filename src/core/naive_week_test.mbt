@@ -81,3 +81,21 @@ test "a later week compares greater than an earlier week" {
   assert_true(earlier < later)
   assert_true(later > earlier)
 }
+
+///|
+test "weeks with the same first day hash equally regardless of the anchor date and work as map keys" {
+  let from_wednesday = @core.NaiveDate::from_ymd(2024, 1, 3)
+    .unwrap()
+    .week(@core.Mon)
+  let from_friday = @core.NaiveDate::from_ymd(2024, 1, 5)
+    .unwrap()
+    .week(@core.Mon)
+  let next_week = @core.NaiveDate::from_ymd(2024, 1, 9).unwrap().week(@core.Mon)
+  assert_eq(from_wednesday, from_friday)
+  assert_eq(from_wednesday.hash(), from_friday.hash())
+  let seen : Map[@core.NaiveWeek, Int] = Map([])
+  seen[from_wednesday] = 1
+  seen[next_week] = 2
+  assert_eq(seen.length(), 2)
+  assert_eq(seen.get(from_friday), Some(1))
+}

@@ -17,9 +17,11 @@ pub fn is_leap_year(Int) -> Bool
 // Types and methods
 pub struct IsoWeek {
   // private fields
-} derive(Compare, Eq, @debug.Debug)
+} derive(Compare, Eq, Hash, @debug.Debug)
 pub fn IsoWeek::compare(Self, Self) -> Int
 pub fn IsoWeek::equal(Self, Self) -> Bool
+pub fn IsoWeek::hash(Self) -> Int
+pub fn IsoWeek::hash_combine(Self, Hasher) -> Unit
 pub fn IsoWeek::not_equal(Self, Self) -> Bool
 pub fn IsoWeek::op_ge(Self, Self) -> Bool
 pub fn IsoWeek::op_gt(Self, Self) -> Bool
@@ -46,10 +48,12 @@ pub(all) enum Month {
   Oct
   Nov
   Dec
-} derive(Compare, Eq, @debug.Debug)
+} derive(Compare, Eq, Hash, @debug.Debug)
 pub fn Month::compare(Self, Self) -> Int
 pub fn Month::equal(Self, Self) -> Bool
 pub fn Month::from_number(Int) -> Self?
+pub fn Month::hash(Self) -> Int
+pub fn Month::hash_combine(Self, Hasher) -> Unit
 pub fn Month::name(Self) -> String
 pub fn Month::not_equal(Self, Self) -> Bool
 pub fn Month::num_days(Self, Int) -> Int
@@ -67,7 +71,7 @@ pub impl Show for Month
 
 pub struct NaiveDate {
   // private fields
-} derive(Compare, Eq, @debug.Debug)
+} derive(Compare, Eq, Hash, @debug.Debug)
 pub fn NaiveDate::add_days(Self, Int) -> Self
 pub fn NaiveDate::add_months(Self, Int) -> Self
 pub fn NaiveDate::add_signed(Self, TimeDelta) -> Self?
@@ -93,6 +97,8 @@ pub fn NaiveDate::from_num_days_from_ce(Int) -> Self?
 pub fn NaiveDate::from_weekday_of_month(Int, Int, Weekday, Int) -> Self?
 pub fn NaiveDate::from_ymd(Int, Int, Int) -> Self?
 pub fn NaiveDate::from_yo(Int, Int) -> Self?
+pub fn NaiveDate::hash(Self) -> Int
+pub fn NaiveDate::hash_combine(Self, Hasher) -> Unit
 pub fn NaiveDate::iso_week(Self) -> IsoWeek
 pub fn NaiveDate::iter_days(Self) -> NaiveDateDaysIterator
 pub fn NaiveDate::iter_weeks(Self) -> NaiveDateWeeksIterator
@@ -138,7 +144,7 @@ pub fn NaiveDateDaysIterator::to_repr(Self) -> @debug.Repr
 
 pub struct NaiveDateTime {
   // private fields
-} derive(Compare, Eq, @debug.Debug)
+} derive(Compare, Eq, Hash, @debug.Debug)
 pub fn NaiveDateTime::add_days(Self, Int) -> Self
 pub fn NaiveDateTime::add_months(Self, Int) -> Self
 pub fn NaiveDateTime::add_signed(Self, TimeDelta) -> Self
@@ -156,6 +162,8 @@ pub fn NaiveDateTime::from_timestamp(Int64, Int) -> Self?
 pub fn NaiveDateTime::from_timestamp_micros(Int64) -> Self?
 pub fn NaiveDateTime::from_timestamp_millis(Int64) -> Self?
 pub fn NaiveDateTime::from_timestamp_nanos(Int64) -> Self?
+pub fn NaiveDateTime::hash(Self) -> Int
+pub fn NaiveDateTime::hash_combine(Self, Hasher) -> Unit
 pub fn NaiveDateTime::hour(Self) -> Int
 pub fn NaiveDateTime::iso_week(Self) -> IsoWeek
 pub fn NaiveDateTime::leap_year(Self) -> Bool
@@ -209,7 +217,7 @@ pub fn NaiveDateWeeksIterator::to_repr(Self) -> @debug.Repr
 
 pub struct NaiveTime {
   // private fields
-} derive(Compare, Eq, @debug.Debug)
+} derive(Compare, Eq, Hash, @debug.Debug)
 pub fn NaiveTime::compare(Self, Self) -> Int
 pub fn NaiveTime::equal(Self, Self) -> Bool
 pub fn NaiveTime::from_hms(Int, Int, Int) -> Self?
@@ -217,6 +225,8 @@ pub fn NaiveTime::from_hms_micro(Int, Int, Int, Int) -> Self?
 pub fn NaiveTime::from_hms_milli(Int, Int, Int, Int) -> Self?
 pub fn NaiveTime::from_hms_nano(Int, Int, Int, Int) -> Self?
 pub fn NaiveTime::from_num_seconds_from_midnight(Int, Int) -> Self?
+pub fn NaiveTime::hash(Self) -> Int
+pub fn NaiveTime::hash_combine(Self, Hasher) -> Unit
 pub fn NaiveTime::hour(Self) -> Int
 pub fn NaiveTime::hour12(Self) -> (Bool, Int)
 pub fn NaiveTime::minute(Self) -> Int
@@ -249,6 +259,8 @@ pub fn NaiveWeek::compare(Self, Self) -> Int
 pub fn NaiveWeek::days(Self) -> Array[NaiveDate]
 pub fn NaiveWeek::equal(Self, Self) -> Bool
 pub fn NaiveWeek::first_day(Self) -> NaiveDate
+pub fn NaiveWeek::hash(Self) -> Int
+pub fn NaiveWeek::hash_combine(Self, Hasher) -> Unit
 pub fn NaiveWeek::last_day(Self) -> NaiveDate
 pub fn NaiveWeek::not_equal(Self, Self) -> Bool
 pub fn NaiveWeek::op_ge(Self, Self) -> Bool
@@ -258,10 +270,11 @@ pub fn NaiveWeek::op_lt(Self, Self) -> Bool
 pub fn NaiveWeek::to_repr(Self) -> @debug.Repr
 pub impl Compare for NaiveWeek
 pub impl Eq for NaiveWeek
+pub impl Hash for NaiveWeek
 
 pub struct TimeDelta {
   // private fields
-} derive(Compare, Eq, @debug.Debug)
+} derive(Compare, Eq, Hash, @debug.Debug)
 pub fn TimeDelta::abs(Self) -> Self
 pub fn TimeDelta::add(Self, Self) -> Self?
 pub fn TimeDelta::as_hours_double(Self) -> Double
@@ -274,6 +287,8 @@ pub fn TimeDelta::compare(Self, Self) -> Int
 pub fn TimeDelta::days(Int64) -> Self?
 pub fn TimeDelta::div(Self, Int) -> Self?
 pub fn TimeDelta::equal(Self, Self) -> Bool
+pub fn TimeDelta::hash(Self) -> Int
+pub fn TimeDelta::hash_combine(Self, Hasher) -> Unit
 pub fn TimeDelta::hours(Int64) -> Self?
 pub fn TimeDelta::is_zero(Self) -> Bool
 pub fn TimeDelta::max_value() -> Self
@@ -320,13 +335,15 @@ pub(all) enum Weekday {
   Fri
   Sat
   Sun
-} derive(Eq, @debug.Debug)
+} derive(Eq, Hash, @debug.Debug)
 pub fn Weekday::days_since(Self, Self) -> Int
 pub fn Weekday::equal(Self, Self) -> Bool
 pub fn Weekday::from_num_days_from_monday(Int) -> Self?
 pub fn Weekday::from_num_days_from_sunday(Int) -> Self?
 pub fn Weekday::from_number_from_monday(Int) -> Self?
 pub fn Weekday::from_number_from_sunday(Int) -> Self?
+pub fn Weekday::hash(Self) -> Int
+pub fn Weekday::hash_combine(Self, Hasher) -> Unit
 pub fn Weekday::name(Self) -> String
 pub fn Weekday::not_equal(Self, Self) -> Bool
 pub fn Weekday::num_days_from_monday(Self) -> Int
@@ -342,7 +359,7 @@ pub impl Show for Weekday
 
 pub struct WeekdaySet {
   // private fields
-} derive(Compare, Eq, @debug.Debug)
+} derive(Compare, Eq, Hash, @debug.Debug)
 pub fn WeekdaySet::all() -> Self
 pub fn WeekdaySet::compare(Self, Self) -> Int
 pub fn WeekdaySet::contains(Self, Weekday) -> Bool
@@ -351,6 +368,8 @@ pub fn WeekdaySet::empty() -> Self
 pub fn WeekdaySet::equal(Self, Self) -> Bool
 pub fn WeekdaySet::first(Self) -> Weekday?
 pub fn WeekdaySet::from_array(Array[Weekday]) -> Self
+pub fn WeekdaySet::hash(Self) -> Int
+pub fn WeekdaySet::hash_combine(Self, Hasher) -> Unit
 pub fn WeekdaySet::insert(Self, Weekday) -> Self
 pub fn WeekdaySet::intersection(Self, Self) -> Self
 pub fn WeekdaySet::is_empty(Self) -> Bool

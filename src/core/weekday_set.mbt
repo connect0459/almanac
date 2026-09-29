@@ -5,7 +5,7 @@
 /// (`Mon = 0` .. `Sun = 6`); higher bits are always `0`.
 pub struct WeekdaySet {
   priv bits : Int
-} derive(Eq, Compare, @debug.Debug)
+} derive(Eq, Compare, Hash, @debug.Debug)
 
 ///|
 pub extend WeekdaySet with Eq::{equal}
@@ -26,6 +26,9 @@ pub impl Show for WeekdaySet with fn output(self, logger) {
 
 ///|
 pub extend WeekdaySet with Show::{to_string, output}
+
+///|
+pub extend WeekdaySet with Hash::{hash, hash_combine}
 
 ///|
 pub extend WeekdaySet with @debug.Debug::{to_repr}

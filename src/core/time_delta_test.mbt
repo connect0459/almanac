@@ -569,3 +569,16 @@ test "as_hours_float and as_minutes_float report fractional values" {
   assert_eq(@core.TimeDelta::zero().as_hours_float(), 0.0)
   assert_eq(@core.TimeDelta::zero().as_minutes_float(), 0.0)
 }
+
+///|
+test "equal durations hash equally and work as map keys" {
+  let a = @core.TimeDelta::milliseconds(1_500L).unwrap()
+  let b = @core.TimeDelta::new(1L, 500_000_000).unwrap()
+  assert_eq(a, b)
+  assert_eq(a.hash(), b.hash())
+  let seen : Map[@core.TimeDelta, Int] = Map([])
+  seen[a] = 1
+  seen[@core.TimeDelta::milliseconds(-1_500L).unwrap()] = 2
+  assert_eq(seen.length(), 2)
+  assert_eq(seen.get(b), Some(1))
+}

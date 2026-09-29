@@ -17,6 +17,8 @@ Calendar and clock primitives with no time zone awareness. Import `connect0459/c
 | `TimeDelta` | A signed duration, precise to the nanosecond |
 | `NaiveDateTime` | A `NaiveDate` and `NaiveTime` combined into one zone-less instant |
 
+Every value type above (all but the two iterators) implements `Hash` consistently with its `Eq`, so values can be `Map` keys. `NaiveWeek` hashes by `first_day()` alone, matching its `Eq`: two weeks anchored on different dates of the same calendar week are equal and hash equally.
+
 ## Quick start
 
 Constructing a date and reading its calendar fields:

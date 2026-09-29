@@ -13,7 +13,7 @@ pub(all) enum Month {
   Oct
   Nov
   Dec
-} derive(Eq, Compare, @debug.Debug)
+} derive(Eq, Compare, Hash, @debug.Debug)
 
 ///|
 pub extend Month with Eq::{equal}
@@ -23,6 +23,9 @@ pub extend Month with Eq::{not_equal}
 
 ///|
 pub extend Month with Compare::{compare, op_lt, op_gt, op_le, op_ge}
+
+///|
+pub extend Month with Hash::{hash, hash_combine}
 
 ///|
 pub extend Month with @debug.Debug::{to_repr}

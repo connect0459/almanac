@@ -579,3 +579,23 @@ test "to_string joins the date and time with a space" {
     "-0001-12-31 00:00:00",
   )
 }
+
+///|
+test "equal datetimes hash equally and work as map keys" {
+  let a = @core.NaiveDate::from_ymd(2024, 2, 29)
+    .unwrap()
+    .and_hms(13, 45, 6)
+    .unwrap()
+  let b = @core.NaiveDate::from_ymd(2024, 2, 28)
+    .unwrap()
+    .and_hms(13, 45, 6)
+    .unwrap()
+    .add_days(1)
+  assert_eq(a, b)
+  assert_eq(a.hash(), b.hash())
+  let seen : Map[@core.NaiveDateTime, Int] = Map([])
+  seen[a] = 1
+  seen[a.add_days(1)] = 2
+  assert_eq(seen.length(), 2)
+  assert_eq(seen.get(b), Some(1))
+}

@@ -221,3 +221,16 @@ test "to_string lists the members' short names in Monday-first order" {
 test "to_string renders the empty set as empty brackets" {
   assert_eq(@core.WeekdaySet::empty().to_string(), "[]")
 }
+
+///|
+test "equal weekday sets hash equally and work as map keys" {
+  let a = @core.WeekdaySet::from_array([@core.Mon, @core.Fri])
+  let b = @core.WeekdaySet::single(@core.Fri).insert(@core.Mon)
+  assert_eq(a, b)
+  assert_eq(a.hash(), b.hash())
+  let seen : Map[@core.WeekdaySet, Int] = Map([])
+  seen[a] = 1
+  seen[@core.WeekdaySet::empty()] = 2
+  assert_eq(seen.length(), 2)
+  assert_eq(seen.get(b), Some(1))
+}

@@ -13,13 +13,16 @@ pub(all) enum Weekday {
   Fri
   Sat
   Sun
-} derive(Eq, @debug.Debug)
+} derive(Eq, Hash, @debug.Debug)
 
 ///|
 pub extend Weekday with Eq::{equal}
 
 ///|
 pub extend Weekday with Eq::{not_equal}
+
+///|
+pub extend Weekday with Hash::{hash, hash_combine}
 
 ///|
 pub extend Weekday with @debug.Debug::{to_repr}

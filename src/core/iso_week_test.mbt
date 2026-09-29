@@ -81,3 +81,17 @@ test "to_string gives an ISO week year outside 0..=9999 an explicit sign" {
     "-0001-W01",
   )
 }
+
+///|
+test "equal ISO weeks hash equally and work as map keys" {
+  let monday = @core.NaiveDate::from_ymd(2024, 1, 1).unwrap().iso_week()
+  let sunday = @core.NaiveDate::from_ymd(2024, 1, 7).unwrap().iso_week()
+  let next = @core.NaiveDate::from_ymd(2024, 1, 8).unwrap().iso_week()
+  assert_eq(monday, sunday)
+  assert_eq(monday.hash(), sunday.hash())
+  let seen : Map[@core.IsoWeek, Int] = Map([])
+  seen[monday] = 1
+  seen[next] = 2
+  assert_eq(seen.length(), 2)
+  assert_eq(seen.get(sunday), Some(1))
+}

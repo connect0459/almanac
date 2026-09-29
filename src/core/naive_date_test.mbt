@@ -922,3 +922,17 @@ test "to_string gives a year outside 0..=9999 an explicit sign" {
     "-12345-06-07",
   )
 }
+
+///|
+test "equal dates hash equally and work as map keys" {
+  let a = @core.NaiveDate::from_ymd(2024, 2, 29).unwrap()
+  let b = @core.NaiveDate::from_ymd(2024, 1, 31).unwrap().add_days(29)
+  assert_eq(a, b)
+  assert_eq(a.hash(), b.hash())
+  let counts : Map[@core.NaiveDate, Int] = Map([])
+  counts[a] = 1
+  counts[b] = counts.get(b).unwrap() + 1
+  counts[@core.NaiveDate::from_ymd(2024, 3, 1).unwrap()] = 5
+  assert_eq(counts.length(), 2)
+  assert_eq(counts.get(a), Some(2))
+}

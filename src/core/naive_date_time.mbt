@@ -10,7 +10,7 @@ fn epoch() -> NaiveDateTime {
 pub struct NaiveDateTime {
   priv date : NaiveDate
   priv time : NaiveTime
-} derive(Eq, Compare, @debug.Debug)
+} derive(Eq, Compare, Hash, @debug.Debug)
 
 ///|
 pub extend NaiveDateTime with Eq::{equal}
@@ -20,6 +20,9 @@ pub extend NaiveDateTime with Eq::{not_equal}
 
 ///|
 pub extend NaiveDateTime with Compare::{compare, op_lt, op_gt, op_le, op_ge}
+
+///|
+pub extend NaiveDateTime with Hash::{hash, hash_combine}
 
 ///|
 pub extend NaiveDateTime with @debug.Debug::{to_repr}

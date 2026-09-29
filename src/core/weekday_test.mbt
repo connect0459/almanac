@@ -249,3 +249,14 @@ test "from_number_from_monday and from_number_from_sunday disagree on Sunday" {
   assert_eq(@core.Weekday::from_number_from_monday(7), Some(@core.Sun))
   assert_eq(@core.Weekday::from_number_from_sunday(1), Some(@core.Sun))
 }
+
+///|
+test "weekdays hash equally when equal and work as map keys" {
+  assert_eq(@core.Mon.hash(), @core.Sun.succ().hash())
+  let seen : Map[@core.Weekday, Int] = Map([])
+  seen[@core.Mon] = 1
+  seen[@core.Sun.succ()] = seen.get(@core.Mon).unwrap() + 1
+  seen[@core.Tue] = 5
+  assert_eq(seen.length(), 2)
+  assert_eq(seen.get(@core.Mon), Some(2))
+}

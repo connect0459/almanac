@@ -401,3 +401,30 @@ test "to_string renders a leap second with second 60" {
     "23:59:60.500",
   )
 }
+
+///|
+test "equal times hash equally and work as map keys" {
+  let a = @core.NaiveTime::from_hms_nano(13, 45, 6, 789).unwrap()
+  let b = @core.NaiveTime::from_hms(13, 45, 6)
+    .unwrap()
+    .with_nanosecond(789)
+    .unwrap()
+  assert_eq(a, b)
+  assert_eq(a.hash(), b.hash())
+  let seen : Map[@core.NaiveTime, String] = Map([])
+  seen[a] = "first"
+  seen[@core.NaiveTime::from_hms(13, 45, 7).unwrap()] = "second"
+  assert_eq(seen.length(), 2)
+  assert_eq(seen.get(b), Some("first"))
+}
+
+///|
+test "a leap second and the following midnight-adjacent time are distinct map keys" {
+  let leap = @core.NaiveTime::from_hms_nano(23, 59, 59, 1_500_000_000).unwrap()
+  let regular = @core.NaiveTime::from_hms_nano(23, 59, 59, 500_000_000).unwrap()
+  let seen : Map[@core.NaiveTime, Int] = Map([])
+  seen[leap] = 1
+  seen[regular] = 2
+  assert_eq(seen.length(), 2)
+  assert_eq(seen.get(leap), Some(1))
+}

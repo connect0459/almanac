@@ -148,3 +148,14 @@ test "months are ordered from January to December" {
   assert_true(@core.Mar >= @core.Mar)
   assert_eq(@core.Jun.compare(@core.Jun), 0)
 }
+
+///|
+test "months hash equally when equal and work as map keys" {
+  assert_eq(@core.Jan.hash(), @core.Dec.succ().hash())
+  let seen : Map[@core.Month, Int] = Map([])
+  seen[@core.Jan] = 1
+  seen[@core.Dec.succ()] = seen.get(@core.Jan).unwrap() + 1
+  seen[@core.Feb] = 5
+  assert_eq(seen.length(), 2)
+  assert_eq(seen.get(@core.Jan), Some(2))
+}
