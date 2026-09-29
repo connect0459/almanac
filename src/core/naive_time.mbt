@@ -191,45 +191,56 @@ fn subsec_granularity_nanos(digits : Int, operation : String) -> Int {
 }
 
 ///|
-/// This time truncated to `digits` fractional-second digits (`0..=9`); `9`
-/// leaves it unchanged. A leap second stays a leap second, truncated within
-/// its own extra second.
+/// This time with a leap second folded into the following second, as its
+/// elapsed instant: `23:59:60.5` becomes `00:00:00.5`. An ordinary time is
+/// returned unchanged.
+fn NaiveTime::fold_leap_second(self : NaiveTime) -> NaiveTime {
+  if self.frac >= 1_000_000_000 {
+    NaiveTime::{
+      secs: (self.secs + 1) % 86400,
+      frac: self.frac - 1_000_000_000,
+    }
+  } else {
+    self
+  }
+}
+
+///|
+/// This time truncated to `digits` fractional-second digits (`0..=9`). A leap
+/// second is treated as its elapsed instant and folded into the following
+/// second first, so the result is never a leap second, even for `9`.
 ///
 /// Aborts if `digits` is outside `0..=9`.
 pub fn NaiveTime::truncate_subsecs(self : NaiveTime, digits : Int) -> NaiveTime {
   let granularity = subsec_granularity_nanos(
     digits, "NaiveTime::truncate_subsecs",
   )
-  NaiveTime::{ secs: self.secs, frac: self.frac - self.frac % granularity, }
+  let time = self.fold_leap_second()
+  NaiveTime::{ secs: time.secs, frac: time.frac - time.frac % granularity, }
 }
 
 ///|
 /// This time rounded to the nearest of `digits` fractional-second digits
-/// (`0..=9`), a tie rounding up; `9` leaves it unchanged. A carry moves into
-/// the next second, minute, or hour and wraps from the end of the day to
-/// midnight. A leap second rounds within its own extra second and only
-/// carries once the rounded value reaches that second's end; an ordinary
-/// second never rounds into a leap second.
+/// (`0..=9`), a tie rounding up. A carry moves into the next second, minute,
+/// or hour and wraps from the end of the day to midnight. A leap second is
+/// treated as its elapsed instant and folded into the following second
+/// first, so the result is never a leap second, even for `9`.
 ///
 /// Aborts if `digits` is outside `0..=9`.
 pub fn NaiveTime::round_subsecs(self : NaiveTime, digits : Int) -> NaiveTime {
   let granularity = subsec_granularity_nanos(digits, "NaiveTime::round_subsecs")
-  let remainder = self.frac % granularity
-  let floor = self.frac - remainder
+  let time = self.fold_leap_second()
+  let remainder = time.frac % granularity
+  let floor = time.frac - remainder
   let rounded = if remainder * 2 >= granularity {
     floor + granularity
   } else {
     floor
   }
-  let end = if self.frac >= 1_000_000_000 {
-    2_000_000_000
+  if rounded >= 1_000_000_000 {
+    NaiveTime::{ secs: (time.secs + 1) % 86400, frac: 0, }
   } else {
-    1_000_000_000
-  }
-  if rounded >= end {
-    NaiveTime::{ secs: (self.secs + 1) % 86400, frac: 0, }
-  } else {
-    NaiveTime::{ secs: self.secs, frac: rounded, }
+    NaiveTime::{ secs: time.secs, frac: rounded, }
   }
 }
 

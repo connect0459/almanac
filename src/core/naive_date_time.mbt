@@ -774,9 +774,9 @@ pub fn NaiveDateTime::round_up(
 ///|
 /// This datetime truncated to `digits` fractional-second digits (`0..=9`),
 /// toward the Unix epoch like `truncate`, so a datetime before the epoch
-/// moves forward in time. Always succeeds. Like `truncate`, a leap second is
-/// treated as its elapsed instant and folds into the following second, unlike
-/// `NaiveTime::truncate_subsecs`, which keeps it a leap second.
+/// moves forward in time. Always succeeds. Like `truncate`, and like
+/// `NaiveTime::truncate_subsecs`, a leap second is treated as its elapsed
+/// instant and folds into the following second.
 ///
 /// Aborts if `digits` is outside `0..=9`.
 pub fn NaiveDateTime::truncate_subsecs(
