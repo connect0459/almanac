@@ -230,6 +230,101 @@ pub fn NaiveDateTime::with_ordinal(
 }
 
 ///|
+/// The month of the year, counting from `0`. See `NaiveDate::month0`.
+pub fn NaiveDateTime::month0(self : NaiveDateTime) -> Int {
+  self.date.month0()
+}
+
+///|
+/// The day of the month, counting from `0`. See `NaiveDate::day0`.
+pub fn NaiveDateTime::day0(self : NaiveDateTime) -> Int {
+  self.date.day0()
+}
+
+///|
+/// The day of the year, counting from `0`. See `NaiveDate::ordinal0`.
+pub fn NaiveDateTime::ordinal0(self : NaiveDateTime) -> Int {
+  self.date.ordinal0()
+}
+
+///|
+/// The quarter of the year, `1..=4`. See `NaiveDate::quarter`.
+pub fn NaiveDateTime::quarter(self : NaiveDateTime) -> Int {
+  self.date.quarter()
+}
+
+///|
+/// The year as a Common Era flag and a positive year number. See
+/// `NaiveDate::year_ce`.
+pub fn NaiveDateTime::year_ce(self : NaiveDateTime) -> (Bool, Int) {
+  self.date.year_ce()
+}
+
+///|
+/// The number of days since the start of the Common Era, counting
+/// `0001-01-01` as day `1`. See `NaiveDate::num_days_from_ce`.
+pub fn NaiveDateTime::num_days_from_ce(self : NaiveDateTime) -> Int {
+  self.date.num_days_from_ce()
+}
+
+///|
+/// The number of days in this datetime's month. See
+/// `NaiveDate::num_days_in_month`.
+pub fn NaiveDateTime::num_days_in_month(self : NaiveDateTime) -> Int {
+  self.date.num_days_in_month()
+}
+
+///|
+/// The hour on a 12-hour clock as a PM flag and an hour in `1..=12`. See
+/// `NaiveTime::hour12`.
+pub fn NaiveDateTime::hour12(self : NaiveDateTime) -> (Bool, Int) {
+  self.time.hour12()
+}
+
+///|
+/// The number of seconds since midnight. See
+/// `NaiveTime::num_seconds_from_midnight`.
+pub fn NaiveDateTime::num_seconds_from_midnight(self : NaiveDateTime) -> Int {
+  self.time.num_seconds_from_midnight()
+}
+
+///|
+/// Like `with_month`, but taking a `0`-based month. The time of day is
+/// unchanged.
+pub fn NaiveDateTime::with_month0(
+  self : NaiveDateTime,
+  month0 : Int,
+) -> NaiveDateTime? {
+  self.date
+  .with_month0(month0)
+  .map(date => NaiveDateTime::{ date, time: self.time, })
+}
+
+///|
+/// Like `with_day`, but taking a `0`-based day of the month. The time of
+/// day is unchanged.
+pub fn NaiveDateTime::with_day0(
+  self : NaiveDateTime,
+  day0 : Int,
+) -> NaiveDateTime? {
+  self.date
+  .with_day0(day0)
+  .map(date => NaiveDateTime::{ date, time: self.time, })
+}
+
+///|
+/// Like `with_ordinal`, but taking a `0`-based day of the year. The time of
+/// day is unchanged.
+pub fn NaiveDateTime::with_ordinal0(
+  self : NaiveDateTime,
+  ordinal0 : Int,
+) -> NaiveDateTime? {
+  self.date
+  .with_ordinal0(ordinal0)
+  .map(date => NaiveDateTime::{ date, time: self.time, })
+}
+
+///|
 /// This datetime with its hour replaced, or `None` if it is out of range. The
 /// date and every other time field (including a leap-second nanosecond) are
 /// unchanged. See `NaiveTime::with_hour`.

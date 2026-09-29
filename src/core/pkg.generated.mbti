@@ -169,6 +169,7 @@ pub fn NaiveDateTime::checked_sub_signed(Self, TimeDelta) -> Self?
 pub fn NaiveDateTime::compare(Self, Self) -> Int
 pub fn NaiveDateTime::date(Self) -> NaiveDate
 pub fn NaiveDateTime::day(Self) -> Int
+pub fn NaiveDateTime::day0(Self) -> Int
 pub fn NaiveDateTime::default() -> Self
 pub fn NaiveDateTime::equal(Self, Self) -> Bool
 pub fn NaiveDateTime::from_timestamp(Int64, Int) -> Self?
@@ -178,19 +179,26 @@ pub fn NaiveDateTime::from_timestamp_nanos(Int64) -> Self?
 pub fn NaiveDateTime::hash(Self) -> Int
 pub fn NaiveDateTime::hash_combine(Self, Hasher) -> Unit
 pub fn NaiveDateTime::hour(Self) -> Int
+pub fn NaiveDateTime::hour12(Self) -> (Bool, Int)
 pub fn NaiveDateTime::iso_week(Self) -> IsoWeek
 pub fn NaiveDateTime::leap_year(Self) -> Bool
 pub fn NaiveDateTime::minute(Self) -> Int
 pub fn NaiveDateTime::month(Self) -> Month
+pub fn NaiveDateTime::month0(Self) -> Int
 pub fn NaiveDateTime::nanosecond(Self) -> Int
 pub fn NaiveDateTime::new(NaiveDate, NaiveTime) -> Self
 pub fn NaiveDateTime::not_equal(Self, Self) -> Bool
+pub fn NaiveDateTime::num_days_from_ce(Self) -> Int
+pub fn NaiveDateTime::num_days_in_month(Self) -> Int
+pub fn NaiveDateTime::num_seconds_from_midnight(Self) -> Int
 pub fn NaiveDateTime::op_ge(Self, Self) -> Bool
 pub fn NaiveDateTime::op_gt(Self, Self) -> Bool
 pub fn NaiveDateTime::op_le(Self, Self) -> Bool
 pub fn NaiveDateTime::op_lt(Self, Self) -> Bool
 pub fn NaiveDateTime::ordinal(Self) -> Int
+pub fn NaiveDateTime::ordinal0(Self) -> Int
 pub fn NaiveDateTime::output(Self, &Logger) -> Unit
+pub fn NaiveDateTime::quarter(Self) -> Int
 pub fn NaiveDateTime::round(Self, TimeDelta) -> Self?
 pub fn NaiveDateTime::round_up(Self, TimeDelta) -> Self?
 pub fn NaiveDateTime::second(Self) -> Int
@@ -212,14 +220,18 @@ pub fn NaiveDateTime::truncate(Self, TimeDelta) -> Self?
 pub fn NaiveDateTime::unix_epoch() -> Self
 pub fn NaiveDateTime::weekday(Self) -> Weekday
 pub fn NaiveDateTime::with_day(Self, Int) -> Self?
+pub fn NaiveDateTime::with_day0(Self, Int) -> Self?
 pub fn NaiveDateTime::with_hour(Self, Int) -> Self?
 pub fn NaiveDateTime::with_minute(Self, Int) -> Self?
 pub fn NaiveDateTime::with_month(Self, Int) -> Self?
+pub fn NaiveDateTime::with_month0(Self, Int) -> Self?
 pub fn NaiveDateTime::with_nanosecond(Self, Int) -> Self?
 pub fn NaiveDateTime::with_ordinal(Self, Int) -> Self?
+pub fn NaiveDateTime::with_ordinal0(Self, Int) -> Self?
 pub fn NaiveDateTime::with_second(Self, Int) -> Self?
 pub fn NaiveDateTime::with_year(Self, Int) -> Self?
 pub fn NaiveDateTime::year(Self) -> Int
+pub fn NaiveDateTime::year_ce(Self) -> (Bool, Int)
 pub impl Default for NaiveDateTime
 pub impl Show for NaiveDateTime
 

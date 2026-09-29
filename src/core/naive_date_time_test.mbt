@@ -701,3 +701,85 @@ test "the default datetime is the Unix epoch" {
   let dt : @core.NaiveDateTime = Default::default()
   assert_eq(dt, @core.NaiveDateTime::unix_epoch())
 }
+
+///|
+test "zero-based date accessors report the date's zero-based fields" {
+  let dt = @core.NaiveDate::from_ymd(2024, 12, 31)
+    .unwrap()
+    .and_hms(13, 45, 6)
+    .unwrap()
+  assert_eq((dt.month0(), dt.day0(), dt.ordinal0()), (11, 30, 365))
+  let first = @core.NaiveDate::from_ymd(2024, 1, 1)
+    .unwrap()
+    .and_hms(0, 0, 0)
+    .unwrap()
+  assert_eq((first.month0(), first.day0(), first.ordinal0()), (0, 0, 0))
+}
+
+///|
+test "quarter, year_ce, num_days_from_ce and num_days_in_month follow the date" {
+  let dt = @core.NaiveDate::from_ymd(2024, 2, 29)
+    .unwrap()
+    .and_hms(13, 45, 6)
+    .unwrap()
+  assert_eq(dt.quarter(), 1)
+  assert_eq(dt.year_ce(), (true, 2024))
+  assert_eq(dt.num_days_from_ce(), dt.date().num_days_from_ce())
+  assert_eq(dt.num_days_in_month(), 29)
+  let bce = @core.NaiveDate::from_ymd(0, 10, 1)
+    .unwrap()
+    .and_hms(0, 0, 0)
+    .unwrap()
+  assert_eq(bce.quarter(), 4)
+  assert_eq(bce.year_ce(), (false, 1))
+}
+
+///|
+test "hour12 and num_seconds_from_midnight follow the time" {
+  let dt = @core.NaiveDate::from_ymd(2024, 2, 29)
+    .unwrap()
+    .and_hms(13, 45, 6)
+    .unwrap()
+  assert_eq(dt.hour12(), (true, 1))
+  assert_eq(dt.num_seconds_from_midnight(), 13 * 3600 + 45 * 60 + 6)
+  let midnight = @core.NaiveDate::from_ymd(2024, 2, 29)
+    .unwrap()
+    .and_hms(0, 0, 0)
+    .unwrap()
+  assert_eq(midnight.hour12(), (false, 12))
+  assert_eq(midnight.num_seconds_from_midnight(), 0)
+}
+
+///|
+test "with_month0, with_day0 and with_ordinal0 replace one date field and keep the time of day" {
+  let dt = @core.NaiveDate::from_ymd(2024, 1, 31)
+    .unwrap()
+    .and_hms_nano(13, 45, 6, 789)
+    .unwrap()
+  assert_eq(
+    dt.with_month0(2),
+    @core.NaiveDate::from_ymd(2024, 3, 31).unwrap().and_hms_nano(13, 45, 6, 789),
+  )
+  assert_eq(
+    dt.with_day0(0),
+    @core.NaiveDate::from_ymd(2024, 1, 1).unwrap().and_hms_nano(13, 45, 6, 789),
+  )
+  assert_eq(
+    dt.with_ordinal0(59),
+    @core.NaiveDate::from_ymd(2024, 2, 29).unwrap().and_hms_nano(13, 45, 6, 789),
+  )
+}
+
+///|
+test "with_month0, with_day0 and with_ordinal0 reject out-of-range values" {
+  let dt = @core.NaiveDate::from_ymd(2023, 2, 1)
+    .unwrap()
+    .and_hms(13, 45, 6)
+    .unwrap()
+  assert_eq(dt.with_month0(12), None)
+  assert_eq(dt.with_month0(-1), None)
+  assert_eq(dt.with_day0(28), None)
+  assert_eq(dt.with_day0(-1), None)
+  assert_eq(dt.with_ordinal0(365), None)
+  assert_eq(dt.with_ordinal0(-1), None)
+}

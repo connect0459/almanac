@@ -331,7 +331,12 @@ A `NaiveDate` and `NaiveTime` combined into one zone-less instant.
 | `NaiveDateTime::unix_epoch()` | `-> Self` | The Unix epoch, `1970-01-01 00:00:00` (timestamp zero); also `NaiveDateTime`'s `Default` |
 | `year()` / `month()` / `day()` / `ordinal()` / `weekday()` / `iso_week()` / `leap_year()` | `-> Int` / `Month` / `Int` / `Int` / `Weekday` / `IsoWeek` / `Bool` | The date's components, as on `NaiveDate` |
 | `hour()` / `minute()` / `second()` / `nanosecond()` | `-> Int` | The time's components, as on `NaiveTime` (`nanosecond() >= 1_000_000_000` encodes a leap second) |
+| `month0()` / `day0()` / `ordinal0()` / `quarter()` / `num_days_in_month()` / `num_days_from_ce()` | `-> Int` | The zero-based month/day/ordinal, the quarter (`1..=4`), the month's length and the Common Era day count, as on `NaiveDate` |
+| `year_ce()` | `-> (Bool, Int)` | The year as a Common Era flag and positive year number, as on `NaiveDate` |
+| `hour12()` | `-> (Bool, Int)` | The 12-hour clock as a PM flag and an hour in `1..=12`, as on `NaiveTime` |
+| `num_seconds_from_midnight()` | `-> Int` | Seconds since midnight, as on `NaiveTime` |
 | `with_year(Int)` / `with_month(Int)` / `with_day(Int)` / `with_ordinal(Int)` | `-> Self?` | Replace one date component, keeping the time of day; `None` if the result is not a valid date |
+| `with_month0(Int)` / `with_day0(Int)` / `with_ordinal0(Int)` | `-> Self?` | As `with_month`/`with_day`/`with_ordinal`, taking a zero-based value, keeping the time of day |
 | `with_hour(Int)` / `with_minute(Int)` / `with_second(Int)` / `with_nanosecond(Int)` | `-> Self?` | Replace one time component, keeping the date and every other time field (including a leap second); `None` if out of range |
 | `NaiveDateTime::from_timestamp(Int64, Int)` | `-> Self?` | From a Unix timestamp (whole seconds) plus a nanosecond component (`0..=1_999_999_999`) |
 | `NaiveDateTime::from_timestamp_millis(Int64)` | `-> Self?` | From a Unix timestamp in whole milliseconds |
