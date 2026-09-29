@@ -693,3 +693,10 @@ test "round_up returns None when rounding up would leave the representable range
     Some(@core.TimeDelta::min_value()),
   )
 }
+
+///|
+test "the default duration is zero" {
+  let delta : @core.TimeDelta = Default::default()
+  assert_eq(delta, @core.TimeDelta::zero())
+  assert_true(delta.is_zero())
+}

@@ -20,6 +20,15 @@ pub extend NaiveDate with Compare::{compare, op_lt, op_gt, op_le, op_ge}
 pub extend NaiveDate with Hash::{hash, hash_combine}
 
 ///|
+/// The Unix epoch date, `1970-01-01`.
+pub impl Default for NaiveDate with fn default() {
+  NaiveDate::{ days: 0, }
+}
+
+///|
+pub extend NaiveDate with Default::{default}
+
+///|
 pub extend NaiveDate with @debug.Debug::{to_repr}
 
 ///|

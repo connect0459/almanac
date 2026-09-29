@@ -1040,3 +1040,10 @@ test "with_month0, with_day0 and with_ordinal0 reject out-of-range values" {
   assert_eq(date.with_ordinal0(-1), None)
   assert_eq(date.with_ordinal0(2_147_483_647), None)
 }
+
+///|
+test "the default date is the Unix epoch date, 1970-01-01" {
+  let date : @core.NaiveDate = Default::default()
+  assert_eq(date, @core.NaiveDate::from_ymd(1970, 1, 1).unwrap())
+  assert_eq(date.epoch_days(), 0)
+}

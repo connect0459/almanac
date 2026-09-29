@@ -37,6 +37,15 @@ pub extend TimeDelta with Compare::{compare, op_lt, op_gt, op_le, op_ge}
 pub extend TimeDelta with Hash::{hash, hash_combine}
 
 ///|
+/// The zero-length duration; see `zero`.
+pub impl Default for TimeDelta with fn default() {
+  TimeDelta::zero()
+}
+
+///|
+pub extend TimeDelta with Default::{default}
+
+///|
 pub extend TimeDelta with @debug.Debug::{to_repr}
 
 ///|

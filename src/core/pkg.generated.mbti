@@ -92,6 +92,7 @@ pub fn NaiveDate::checked_sub_years(Self, Int) -> Self?
 pub fn NaiveDate::compare(Self, Self) -> Int
 pub fn NaiveDate::day(Self) -> Int
 pub fn NaiveDate::day0(Self) -> Int
+pub fn NaiveDate::default() -> Self
 pub fn NaiveDate::epoch_days(Self) -> Int
 pub fn NaiveDate::equal(Self, Self) -> Bool
 pub fn NaiveDate::from_epoch_days(Int) -> Self?
@@ -142,6 +143,7 @@ pub fn NaiveDate::with_year(Self, Int) -> Self?
 pub fn NaiveDate::year(Self) -> Int
 pub fn NaiveDate::year_ce(Self) -> (Bool, Int)
 pub fn NaiveDate::years_since(Self, Self) -> Int?
+pub impl Default for NaiveDate
 pub impl Show for NaiveDate
 
 pub struct NaiveDateDaysIterator {
@@ -167,6 +169,7 @@ pub fn NaiveDateTime::checked_sub_signed(Self, TimeDelta) -> Self?
 pub fn NaiveDateTime::compare(Self, Self) -> Int
 pub fn NaiveDateTime::date(Self) -> NaiveDate
 pub fn NaiveDateTime::day(Self) -> Int
+pub fn NaiveDateTime::default() -> Self
 pub fn NaiveDateTime::equal(Self, Self) -> Bool
 pub fn NaiveDateTime::from_timestamp(Int64, Int) -> Self?
 pub fn NaiveDateTime::from_timestamp_micros(Int64) -> Self?
@@ -206,6 +209,7 @@ pub fn NaiveDateTime::timestamp_subsec_nanos(Self) -> Int
 pub fn NaiveDateTime::to_repr(Self) -> @debug.Repr
 pub fn NaiveDateTime::to_string(Self) -> String
 pub fn NaiveDateTime::truncate(Self, TimeDelta) -> Self?
+pub fn NaiveDateTime::unix_epoch() -> Self
 pub fn NaiveDateTime::weekday(Self) -> Weekday
 pub fn NaiveDateTime::with_day(Self, Int) -> Self?
 pub fn NaiveDateTime::with_hour(Self, Int) -> Self?
@@ -216,6 +220,7 @@ pub fn NaiveDateTime::with_ordinal(Self, Int) -> Self?
 pub fn NaiveDateTime::with_second(Self, Int) -> Self?
 pub fn NaiveDateTime::with_year(Self, Int) -> Self?
 pub fn NaiveDateTime::year(Self) -> Int
+pub impl Default for NaiveDateTime
 pub impl Show for NaiveDateTime
 
 pub struct NaiveDateWeeksIterator {
@@ -230,6 +235,7 @@ pub struct NaiveTime {
   // private fields
 } derive(Compare, Eq, Hash, @debug.Debug)
 pub fn NaiveTime::compare(Self, Self) -> Int
+pub fn NaiveTime::default() -> Self
 pub fn NaiveTime::equal(Self, Self) -> Bool
 pub fn NaiveTime::from_hms(Int, Int, Int) -> Self?
 pub fn NaiveTime::from_hms_micro(Int, Int, Int, Int) -> Self?
@@ -240,6 +246,7 @@ pub fn NaiveTime::hash(Self) -> Int
 pub fn NaiveTime::hash_combine(Self, Hasher) -> Unit
 pub fn NaiveTime::hour(Self) -> Int
 pub fn NaiveTime::hour12(Self) -> (Bool, Int)
+pub fn NaiveTime::midnight() -> Self
 pub fn NaiveTime::minute(Self) -> Int
 pub fn NaiveTime::nanosecond(Self) -> Int
 pub fn NaiveTime::not_equal(Self, Self) -> Bool
@@ -261,6 +268,7 @@ pub fn NaiveTime::with_nanosecond(Self, Int) -> Self?
 pub fn NaiveTime::with_second(Self, Int) -> Self?
 pub fn NaiveTime::wrapping_add_signed(Self, TimeDelta) -> Self
 pub fn NaiveTime::wrapping_sub_signed(Self, TimeDelta) -> Self
+pub impl Default for NaiveTime
 pub impl Show for NaiveTime
 
 pub struct NaiveWeek {
@@ -296,6 +304,7 @@ pub fn TimeDelta::as_seconds_double(Self) -> Double
 pub fn TimeDelta::as_seconds_float(Self) -> Float
 pub fn TimeDelta::compare(Self, Self) -> Int
 pub fn TimeDelta::days(Int64) -> Self?
+pub fn TimeDelta::default() -> Self
 pub fn TimeDelta::div(Self, Int) -> Self?
 pub fn TimeDelta::equal(Self, Self) -> Bool
 pub fn TimeDelta::hash(Self) -> Int
@@ -337,6 +346,7 @@ pub fn TimeDelta::to_string(Self) -> String
 pub fn TimeDelta::truncate(Self, Self) -> Self?
 pub fn TimeDelta::weeks(Int64) -> Self?
 pub fn TimeDelta::zero() -> Self
+pub impl Default for TimeDelta
 pub impl Show for TimeDelta
 
 pub(all) enum Weekday {
@@ -376,6 +386,7 @@ pub struct WeekdaySet {
 pub fn WeekdaySet::all() -> Self
 pub fn WeekdaySet::compare(Self, Self) -> Int
 pub fn WeekdaySet::contains(Self, Weekday) -> Bool
+pub fn WeekdaySet::default() -> Self
 pub fn WeekdaySet::difference(Self, Self) -> Self
 pub fn WeekdaySet::empty() -> Self
 pub fn WeekdaySet::equal(Self, Self) -> Bool
@@ -403,6 +414,7 @@ pub fn WeekdaySet::to_array(Self) -> Array[Weekday]
 pub fn WeekdaySet::to_repr(Self) -> @debug.Repr
 pub fn WeekdaySet::to_string(Self) -> String
 pub fn WeekdaySet::union(Self, Self) -> Self
+pub impl Default for WeekdaySet
 pub impl Show for WeekdaySet
 
 // Type aliases

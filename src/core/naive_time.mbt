@@ -23,6 +23,22 @@ pub extend NaiveTime with Compare::{compare, op_lt, op_gt, op_le, op_ge}
 pub extend NaiveTime with Hash::{hash, hash_combine}
 
 ///|
+/// The start of the day, `00:00:00` with no fractional part: the earliest
+/// time of day.
+pub fn NaiveTime::midnight() -> NaiveTime {
+  NaiveTime::{ secs: 0, frac: 0, }
+}
+
+///|
+/// Midnight; see `midnight`.
+pub impl Default for NaiveTime with fn default() {
+  NaiveTime::midnight()
+}
+
+///|
+pub extend NaiveTime with Default::{default}
+
+///|
 pub extend NaiveTime with @debug.Debug::{to_repr}
 
 ///|

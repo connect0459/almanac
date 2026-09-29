@@ -234,3 +234,9 @@ test "equal weekday sets hash equally and work as map keys" {
   assert_eq(seen.length(), 2)
   assert_eq(seen.get(b), Some(1))
 }
+
+///|
+test "the default weekday set is empty" {
+  let set : @core.WeekdaySet = Default::default()
+  assert_eq(set, @core.WeekdaySet::empty())
+}

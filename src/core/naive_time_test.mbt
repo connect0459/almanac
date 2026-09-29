@@ -428,3 +428,26 @@ test "a leap second and the following midnight-adjacent time are distinct map ke
   assert_eq(seen.length(), 2)
   assert_eq(seen.get(leap), Some(1))
 }
+
+///|
+test "midnight is 00:00:00 with no fractional part" {
+  let midnight = @core.NaiveTime::midnight()
+  assert_eq(midnight, @core.NaiveTime::from_hms(0, 0, 0).unwrap())
+  assert_eq(midnight.num_seconds_from_midnight(), 0)
+  assert_eq(midnight.nanosecond(), 0)
+}
+
+///|
+test "midnight is the earliest time of day" {
+  assert_true(
+    @core.NaiveTime::midnight() <
+    @core.NaiveTime::from_hms_nano(0, 0, 0, 1).unwrap(),
+  )
+  assert_true(@core.NaiveTime::midnight() <= @core.NaiveTime::midnight())
+}
+
+///|
+test "the default time is midnight" {
+  let time : @core.NaiveTime = Default::default()
+  assert_eq(time, @core.NaiveTime::midnight())
+}

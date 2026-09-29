@@ -677,3 +677,27 @@ test "round returns None instead of aborting when rounding would leave the repre
     Some(min_datetime()),
   )
 }
+
+///|
+test "unix_epoch is 1970-01-01 at midnight, timestamp zero" {
+  let epoch = @core.NaiveDateTime::unix_epoch()
+  assert_eq(
+    epoch,
+    @core.NaiveDate::from_ymd(1970, 1, 1).unwrap().and_hms(0, 0, 0).unwrap(),
+  )
+  assert_eq(epoch.timestamp(), 0L)
+  assert_eq(epoch.timestamp_subsec_nanos(), 0)
+}
+
+///|
+test "unix_epoch is the origin of round and truncate" {
+  let epoch = @core.NaiveDateTime::unix_epoch()
+  assert_eq(epoch.round_up(@core.TimeDelta::days(1L).unwrap()), Some(epoch))
+  assert_eq(epoch.truncate(@core.TimeDelta::days(1L).unwrap()), Some(epoch))
+}
+
+///|
+test "the default datetime is the Unix epoch" {
+  let dt : @core.NaiveDateTime = Default::default()
+  assert_eq(dt, @core.NaiveDateTime::unix_epoch())
+}

@@ -17,6 +17,8 @@ Calendar and clock primitives with no time zone awareness. Import `connect0459/c
 | `TimeDelta` | A signed duration, precise to the nanosecond |
 | `NaiveDateTime` | A `NaiveDate` and `NaiveTime` combined into one zone-less instant |
 
+`NaiveDate` (`1970-01-01`), `NaiveTime` (midnight), `NaiveDateTime` (the Unix epoch), `TimeDelta` (zero) and `WeekdaySet` (empty) implement `Default`. Struct-valued constants are exposed as functions (`NaiveTime::midnight()`, `NaiveDateTime::unix_epoch()`, `TimeDelta::zero()`) because MoonBit's `const` is limited to primitive types.
+
 Every value type above (all but the two iterators) implements `Hash` consistently with its `Eq`, so values can be `Map` keys. `NaiveWeek` hashes by `first_day()` alone, matching its `Eq`: two weeks anchored on different dates of the same calendar week are equal and hash equally.
 
 ## Quick start
@@ -247,6 +249,7 @@ A time of day, precise to the nanosecond. Constructors are `Option`-returning. S
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `NaiveTime::from_hms(Int, Int, Int)` | `-> Self?` | From hour, minute, second |
+| `NaiveTime::midnight()` | `-> Self` | The start of the day, `00:00:00`, the earliest time of day; also `NaiveTime`'s `Default` |
 | `NaiveTime::from_hms_milli(Int, Int, Int, Int)` | `-> Self?` | With a millisecond component |
 | `NaiveTime::from_hms_micro(Int, Int, Int, Int)` | `-> Self?` | With a microsecond component |
 | `NaiveTime::from_hms_nano(Int, Int, Int, Int)` | `-> Self?` | With a nanosecond component (`0..=1_999_999_999`, the upper half representing a leap second) |
@@ -325,6 +328,7 @@ A `NaiveDate` and `NaiveTime` combined into one zone-less instant.
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `NaiveDateTime::new(NaiveDate, NaiveTime)` | `-> Self` | Compose a date and a time of day |
+| `NaiveDateTime::unix_epoch()` | `-> Self` | The Unix epoch, `1970-01-01 00:00:00` (timestamp zero); also `NaiveDateTime`'s `Default` |
 | `year()` / `month()` / `day()` / `ordinal()` / `weekday()` / `iso_week()` / `leap_year()` | `-> Int` / `Month` / `Int` / `Int` / `Weekday` / `IsoWeek` / `Bool` | The date's components, as on `NaiveDate` |
 | `hour()` / `minute()` / `second()` / `nanosecond()` | `-> Int` | The time's components, as on `NaiveTime` (`nanosecond() >= 1_000_000_000` encodes a leap second) |
 | `with_year(Int)` / `with_month(Int)` / `with_day(Int)` / `with_ordinal(Int)` | `-> Self?` | Replace one date component, keeping the time of day; `None` if the result is not a valid date |

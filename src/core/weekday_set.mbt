@@ -31,6 +31,15 @@ pub extend WeekdaySet with Show::{to_string, output}
 pub extend WeekdaySet with Hash::{hash, hash_combine}
 
 ///|
+/// The empty set; see `empty`.
+pub impl Default for WeekdaySet with fn default() {
+  WeekdaySet::empty()
+}
+
+///|
+pub extend WeekdaySet with Default::{default}
+
+///|
 pub extend WeekdaySet with @debug.Debug::{to_repr}
 
 ///|

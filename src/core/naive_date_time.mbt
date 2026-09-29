@@ -1,11 +1,4 @@
 ///|
-/// The Unix epoch instant, `1970-01-01T00:00:00`: the reference point
-/// `NaiveDateTime::round`/`truncate` measure a granularity against.
-fn epoch() -> NaiveDateTime {
-  NaiveDateTime::from_timestamp(0L, 0).unwrap()
-}
-
-///|
 /// A date and time of day, without a time zone.
 pub struct NaiveDateTime {
   priv date : NaiveDate
@@ -23,6 +16,23 @@ pub extend NaiveDateTime with Compare::{compare, op_lt, op_gt, op_le, op_ge}
 
 ///|
 pub extend NaiveDateTime with Hash::{hash, hash_combine}
+
+///|
+/// The Unix epoch instant, `1970-01-01T00:00:00`: timestamp zero, and the
+/// reference point `round`, `round_up` and `truncate` measure a granularity
+/// against.
+pub fn NaiveDateTime::unix_epoch() -> NaiveDateTime {
+  NaiveDateTime::{ date: NaiveDate::default(), time: NaiveTime::midnight(), }
+}
+
+///|
+/// The Unix epoch instant; see `unix_epoch`.
+pub impl Default for NaiveDateTime with fn default() {
+  NaiveDateTime::unix_epoch()
+}
+
+///|
+pub extend NaiveDateTime with Default::{default}
 
 ///|
 pub extend NaiveDateTime with @debug.Debug::{to_repr}
@@ -513,9 +523,9 @@ pub fn NaiveDateTime::truncate(
   granularity : TimeDelta,
 ) -> NaiveDateTime? {
   self
-  .signed_duration_since(epoch())
+  .signed_duration_since(NaiveDateTime::unix_epoch())
   .truncate(granularity)
-  .map(delta => epoch().add_signed(delta))
+  .map(delta => NaiveDateTime::unix_epoch().add_signed(delta))
 }
 
 ///|
@@ -529,9 +539,9 @@ pub fn NaiveDateTime::round(
   granularity : TimeDelta,
 ) -> NaiveDateTime? {
   self
-  .signed_duration_since(epoch())
+  .signed_duration_since(NaiveDateTime::unix_epoch())
   .round(granularity)
-  .bind(delta => epoch().checked_add_signed(delta))
+  .bind(delta => NaiveDateTime::unix_epoch().checked_add_signed(delta))
 }
 
 ///|
@@ -545,7 +555,7 @@ pub fn NaiveDateTime::round_up(
   granularity : TimeDelta,
 ) -> NaiveDateTime? {
   self
-  .signed_duration_since(epoch())
+  .signed_duration_since(NaiveDateTime::unix_epoch())
   .round_up(granularity)
-  .bind(delta => epoch().checked_add_signed(delta))
+  .bind(delta => NaiveDateTime::unix_epoch().checked_add_signed(delta))
 }
