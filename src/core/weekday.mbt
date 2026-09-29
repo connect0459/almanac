@@ -156,6 +156,22 @@ pub fn Weekday::from_num_days_from_sunday(n : Int) -> Weekday? {
 }
 
 ///|
+/// The weekday named by `name`: its full English name (`"Monday"`) or its
+/// three-letter abbreviation (`"Mon"`), ignoring ASCII letter case, or
+/// `None` for anything else (including a prefix, an abbreviation of another
+/// length such as `"Tues"`, surrounding whitespace, or non-ASCII text).
+pub fn Weekday::from_name(name : String) -> Weekday? {
+  let key = ascii_lower(name)
+  for number in 1..<=7 {
+    let day = Weekday::from_number_from_monday(number).unwrap()
+    if key == ascii_lower(day.name()) || key == ascii_lower(day.short_name()) {
+      return Some(day)
+    }
+  }
+  None
+}
+
+///|
 /// The number of days elapsed since `other`, wrapping forward through the
 /// week (always in `0..=6`).
 pub fn Weekday::days_since(self : Weekday, other : Weekday) -> Int {

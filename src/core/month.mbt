@@ -115,6 +115,23 @@ pub impl Show for Month with fn output(self, logger) {
 pub extend Month with Show::{to_string, output}
 
 ///|
+/// The month named by `name`: its full English name (`"January"`) or its
+/// three-letter abbreviation (`"Jan"`), ignoring ASCII letter case, or
+/// `None` for anything else (including a prefix, an abbreviation of another
+/// length such as `"Sept"`, surrounding whitespace, or non-ASCII text).
+pub fn Month::from_name(name : String) -> Month? {
+  let key = ascii_lower(name)
+  for number in 1..<=12 {
+    let month = Month::from_number(number).unwrap()
+    if key == ascii_lower(month.name()) ||
+      key == ascii_lower(month.short_name()) {
+      return Some(month)
+    }
+  }
+  None
+}
+
+///|
 /// The month for a 1-based month-of-year number, or `None` if `n` is
 /// outside `1..=12`.
 pub fn Month::from_number(n : Int) -> Month? {

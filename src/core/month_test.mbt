@@ -159,3 +159,74 @@ test "months hash equally when equal and work as map keys" {
   assert_eq(seen.length(), 2)
   assert_eq(seen.get(@core.Jan), Some(2))
 }
+
+///|
+test "from_name accepts each full English month name" {
+  for
+    case in [
+      ("January", @core.Jan),
+      ("February", @core.Feb),
+      ("March", @core.Mar),
+      ("April", @core.Apr),
+      ("May", @core.May),
+      ("June", @core.Jun),
+      ("July", @core.Jul),
+      ("August", @core.Aug),
+      ("September", @core.Sep),
+      ("October", @core.Oct),
+      ("November", @core.Nov),
+      ("December", @core.Dec),
+    ] {
+    let (name, month) = case
+    assert_eq(@core.Month::from_name(name), Some(month))
+  }
+}
+
+///|
+test "from_name accepts each three-letter abbreviation" {
+  for
+    case in [
+      ("Jan", @core.Jan),
+      ("Feb", @core.Feb),
+      ("Mar", @core.Mar),
+      ("Apr", @core.Apr),
+      ("May", @core.May),
+      ("Jun", @core.Jun),
+      ("Jul", @core.Jul),
+      ("Aug", @core.Aug),
+      ("Sep", @core.Sep),
+      ("Oct", @core.Oct),
+      ("Nov", @core.Nov),
+      ("Dec", @core.Dec),
+    ] {
+    let (name, month) = case
+    assert_eq(@core.Month::from_name(name), Some(month))
+  }
+}
+
+///|
+test "from_name ignores ASCII letter case" {
+  assert_eq(@core.Month::from_name("JANUARY"), Some(@core.Jan))
+  assert_eq(@core.Month::from_name("january"), Some(@core.Jan))
+  assert_eq(@core.Month::from_name("jAn"), Some(@core.Jan))
+  assert_eq(@core.Month::from_name("DEC"), Some(@core.Dec))
+}
+
+///|
+test "from_name inverts name for every month" {
+  for number in 1..<=12 {
+    let month = @core.Month::from_number(number).unwrap()
+    assert_eq(@core.Month::from_name(month.name()), Some(month))
+  }
+}
+
+///|
+test "from_name rejects anything but an exact abbreviation or full name" {
+  for
+    bad in [
+      "", "J", "Ja", "Janu", "Januar", "Sept", "Jan.", " Jan", "Jan ", "Jann", "Janvier",
+      "1", "01", "\u{FF2A}\u{FF21}\u{FF2E}", "J\u{E5}n", "Ma",
+    ] {
+    assert_eq(@core.Month::from_name(bad), None)
+  }
+}

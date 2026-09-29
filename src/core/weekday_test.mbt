@@ -260,3 +260,63 @@ test "weekdays hash equally when equal and work as map keys" {
   assert_eq(seen.length(), 2)
   assert_eq(seen.get(@core.Mon), Some(2))
 }
+
+///|
+test "from_name accepts each full English weekday name" {
+  for
+    case in [
+      ("Monday", @core.Mon),
+      ("Tuesday", @core.Tue),
+      ("Wednesday", @core.Wed),
+      ("Thursday", @core.Thu),
+      ("Friday", @core.Fri),
+      ("Saturday", @core.Sat),
+      ("Sunday", @core.Sun),
+    ] {
+    let (name, day) = case
+    assert_eq(@core.Weekday::from_name(name), Some(day))
+  }
+}
+
+///|
+test "from_name accepts each three-letter abbreviation" {
+  for
+    case in [
+      ("Mon", @core.Mon),
+      ("Tue", @core.Tue),
+      ("Wed", @core.Wed),
+      ("Thu", @core.Thu),
+      ("Fri", @core.Fri),
+      ("Sat", @core.Sat),
+      ("Sun", @core.Sun),
+    ] {
+    let (name, day) = case
+    assert_eq(@core.Weekday::from_name(name), Some(day))
+  }
+}
+
+///|
+test "from_name ignores ASCII letter case" {
+  assert_eq(@core.Weekday::from_name("MONDAY"), Some(@core.Mon))
+  assert_eq(@core.Weekday::from_name("monday"), Some(@core.Mon))
+  assert_eq(@core.Weekday::from_name("sUn"), Some(@core.Sun))
+}
+
+///|
+test "from_name inverts name for every weekday" {
+  for number in 1..<=7 {
+    let day = @core.Weekday::from_number_from_monday(number).unwrap()
+    assert_eq(@core.Weekday::from_name(day.name()), Some(day))
+  }
+}
+
+///|
+test "from_name rejects anything but an exact abbreviation or full name" {
+  for
+    bad in [
+      "", "M", "Mo", "Mond", "Tues", "Thur", "Thurs", "Mon.", " Mon", "Mon ", "Lundi",
+      "1", "\u{FF2D}\u{FF2F}\u{FF2E}", "Mon\u{E9}", "Sund",
+    ] {
+    assert_eq(@core.Weekday::from_name(bad), None)
+  }
+}

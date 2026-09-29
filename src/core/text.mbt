@@ -34,3 +34,36 @@ fn Weekday::short_name(self : Weekday) -> String {
     Sun => "Sun"
   }
 }
+
+///|
+fn Month::short_name(self : Month) -> String {
+  match self {
+    Jan => "Jan"
+    Feb => "Feb"
+    Mar => "Mar"
+    Apr => "Apr"
+    May => "May"
+    Jun => "Jun"
+    Jul => "Jul"
+    Aug => "Aug"
+    Sep => "Sep"
+    Oct => "Oct"
+    Nov => "Nov"
+    Dec => "Dec"
+  }
+}
+
+///|
+fn ascii_lower(text : String) -> String {
+  let out = StringBuilder()
+  for c in text {
+    out.write_char(
+      if c >= 'A' && c <= 'Z' {
+        (c.to_int() + 32).unsafe_to_char()
+      } else {
+        c
+      },
+    )
+  }
+  out.to_string()
+}

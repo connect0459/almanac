@@ -89,6 +89,7 @@ test {
 | `Weekday::from_number_from_sunday(Int)` | `-> Weekday?` | Inverse of `number_from_sunday()`; `None` outside `1..=7` |
 | `Weekday::from_num_days_from_monday(Int)` | `-> Weekday?` | Inverse of `num_days_from_monday()`; `None` outside `0..=6` |
 | `Weekday::from_num_days_from_sunday(Int)` | `-> Weekday?` | Inverse of `num_days_from_sunday()`; `None` outside `0..=6` |
+| `Weekday::from_name(String)` | `-> Weekday?` | The weekday for a full English name (`"Monday"`) or three-letter abbreviation (`"Mon"`), ignoring ASCII letter case; `None` for anything else (a prefix, `"Tues"`, surrounding whitespace, non-ASCII text) |
 
 `Weekday` also implements `Eq` and `Show` (renders `name()`). It deliberately has no `Compare`: a weekday ordering depends on which day starts the week, so use `num_days_from_monday`/`num_days_from_sunday`/`days_since` to compare with an explicit starting day.
 
@@ -135,6 +136,7 @@ An immutable set of `Weekday` values. Every mutating-looking operation (`insert`
 | `name()` | `-> String` | Full English name, e.g. `"February"` |
 | `num_days(Int)` | `-> Int` | Number of days in this month for the given year |
 | `Month::from_number(Int)` | `-> Month?` | Inverse of `number_from_month()`; `None` outside `1..=12` |
+| `Month::from_name(String)` | `-> Month?` | The month for a full English name (`"January"`) or three-letter abbreviation (`"Jan"`), ignoring ASCII letter case; `None` for anything else (a prefix, `"Sept"`, surrounding whitespace, non-ASCII text) |
 
 `Month` also implements `Eq`, `Compare` (`Jan` < ... < `Dec`) and `Show` (renders `name()`).
 
