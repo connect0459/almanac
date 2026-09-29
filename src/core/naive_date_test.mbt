@@ -529,3 +529,65 @@ test "signed_duration_since spans the full representable range without overflow"
     @core.TimeDelta::days(2L * limit).unwrap(),
   )
 }
+
+///|
+test "and_time combines a date with a time of day" {
+  let date = @core.NaiveDate::from_ymd(2024, 2, 29).unwrap()
+  let time = @core.NaiveTime::from_hms_nano(13, 45, 6, 789).unwrap()
+  let dt = date.and_time(time)
+  assert_eq(dt.date(), date)
+  assert_eq(dt.time(), time)
+}
+
+///|
+test "and_hms builds a datetime from whole-second time components" {
+  let date = @core.NaiveDate::from_ymd(2024, 2, 29).unwrap()
+  assert_eq(
+    date.and_hms(13, 45, 6),
+    Some(
+      @core.NaiveDateTime::new(
+        date,
+        @core.NaiveTime::from_hms(13, 45, 6).unwrap(),
+      ),
+    ),
+  )
+}
+
+///|
+test "and_hms_milli builds a datetime with millisecond precision" {
+  let date = @core.NaiveDate::from_ymd(2024, 2, 29).unwrap()
+  let dt = date.and_hms_milli(13, 45, 6, 123).unwrap()
+  assert_eq(dt.timestamp_subsec_nanos(), 123_000_000)
+}
+
+///|
+test "and_hms_micro builds a datetime with microsecond precision" {
+  let date = @core.NaiveDate::from_ymd(2024, 2, 29).unwrap()
+  let dt = date.and_hms_micro(13, 45, 6, 123_456).unwrap()
+  assert_eq(dt.timestamp_subsec_nanos(), 123_456_000)
+}
+
+///|
+test "and_hms_nano builds a datetime with nanosecond precision" {
+  let date = @core.NaiveDate::from_ymd(2024, 2, 29).unwrap()
+  let dt = date.and_hms_nano(13, 45, 6, 123_456_789).unwrap()
+  assert_eq(dt.timestamp_subsec_nanos(), 123_456_789)
+}
+
+///|
+test "and_hms variants reject an out-of-range time component" {
+  let date = @core.NaiveDate::from_ymd(2024, 2, 29).unwrap()
+  assert_eq(date.and_hms(24, 0, 0), None)
+  assert_eq(date.and_hms(0, 60, 0), None)
+  assert_eq(date.and_hms(0, 0, 60), None)
+  assert_eq(date.and_hms_milli(0, 0, 0, 2_000), None)
+  assert_eq(date.and_hms_micro(0, 0, 0, 2_000_000), None)
+  assert_eq(date.and_hms_nano(0, 0, 0, 2_000_000_000), None)
+}
+
+///|
+test "and_hms_nano preserves a leap second" {
+  let date = @core.NaiveDate::from_ymd(2016, 12, 31).unwrap()
+  let dt = date.and_hms_nano(23, 59, 59, 1_500_000_000).unwrap()
+  assert_eq(dt.time().nanosecond(), 1_500_000_000)
+}

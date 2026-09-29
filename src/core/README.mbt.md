@@ -178,6 +178,11 @@ A proleptic Gregorian calendar date. Constructors are `Option`-returning: an inv
 | `add_signed(TimeDelta)` | `-> Self?` | Shift forward by the duration's whole days (sub-day remainder truncated toward zero); `None` if out of range |
 | `sub_signed(TimeDelta)` | `-> Self?` | Shift backward by the duration's whole days; `None` if out of range |
 | `signed_duration_since(Self)` | `-> TimeDelta` | Whole-day duration from `other` to this date |
+| `and_time(NaiveTime)` | `-> NaiveDateTime` | Combine with a time of day |
+| `and_hms(Int, Int, Int)` | `-> NaiveDateTime?` | Combine with `hour:min:sec`; `None` if a component is out of range |
+| `and_hms_milli(Int, Int, Int, Int)` | `-> NaiveDateTime?` | As `and_hms`, plus milliseconds |
+| `and_hms_micro(Int, Int, Int, Int)` | `-> NaiveDateTime?` | As `and_hms`, plus microseconds |
+| `and_hms_nano(Int, Int, Int, Int)` | `-> NaiveDateTime?` | As `and_hms`, plus nanoseconds (`>= 1_000_000_000` encodes a leap second) |
 | `add_months(Int)` | `-> Self` | Shift by whole months, clamping the day of month to the target month's length |
 | `sub_months(Int)` | `-> Self` | Shift backward by whole months, with the same clamping |
 | `week(Weekday)` | `-> NaiveWeek` | The calendar week containing this date, with weeks starting on the given weekday |

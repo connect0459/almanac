@@ -68,6 +68,11 @@ pub struct NaiveDate {
 pub fn NaiveDate::add_days(Self, Int) -> Self
 pub fn NaiveDate::add_months(Self, Int) -> Self
 pub fn NaiveDate::add_signed(Self, TimeDelta) -> Self?
+pub fn NaiveDate::and_hms(Self, Int, Int, Int) -> NaiveDateTime?
+pub fn NaiveDate::and_hms_micro(Self, Int, Int, Int, Int) -> NaiveDateTime?
+pub fn NaiveDate::and_hms_milli(Self, Int, Int, Int, Int) -> NaiveDateTime?
+pub fn NaiveDate::and_hms_nano(Self, Int, Int, Int, Int) -> NaiveDateTime?
+pub fn NaiveDate::and_time(Self, NaiveTime) -> NaiveDateTime
 pub fn NaiveDate::compare(Self, Self) -> Int
 pub fn NaiveDate::day(Self) -> Int
 pub fn NaiveDate::equal(Self, Self) -> Bool

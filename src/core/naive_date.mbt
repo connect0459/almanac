@@ -171,6 +171,70 @@ pub fn NaiveDate::succ(self : NaiveDate) -> NaiveDate {
 }
 
 ///|
+/// The datetime at `time` on this date.
+pub fn NaiveDate::and_time(self : NaiveDate, time : NaiveTime) -> NaiveDateTime {
+  NaiveDateTime::new(self, time)
+}
+
+///|
+/// The datetime at `hour:min:sec` on this date, or `None` if any time
+/// component is out of range (see `NaiveTime::from_hms`).
+pub fn NaiveDate::and_hms(
+  self : NaiveDate,
+  hour : Int,
+  min : Int,
+  sec : Int,
+) -> NaiveDateTime? {
+  NaiveTime::from_hms(hour, min, sec).map(time => self.and_time(time))
+}
+
+///|
+/// The datetime at `hour:min:sec` plus `milli` milliseconds on this date,
+/// or `None` if any time component is out of range (see
+/// `NaiveTime::from_hms_milli`).
+pub fn NaiveDate::and_hms_milli(
+  self : NaiveDate,
+  hour : Int,
+  min : Int,
+  sec : Int,
+  milli : Int,
+) -> NaiveDateTime? {
+  NaiveTime::from_hms_milli(hour, min, sec, milli).map(time => {
+    self.and_time(time)
+  })
+}
+
+///|
+/// The datetime at `hour:min:sec` plus `micro` microseconds on this date,
+/// or `None` if any time component is out of range (see
+/// `NaiveTime::from_hms_micro`).
+pub fn NaiveDate::and_hms_micro(
+  self : NaiveDate,
+  hour : Int,
+  min : Int,
+  sec : Int,
+  micro : Int,
+) -> NaiveDateTime? {
+  NaiveTime::from_hms_micro(hour, min, sec, micro).map(time => {
+    self.and_time(time)
+  })
+}
+
+///|
+/// The datetime at `hour:min:sec` plus `nano` nanoseconds on this date, or
+/// `None` if any time component is out of range (see
+/// `NaiveTime::from_hms_nano`).
+pub fn NaiveDate::and_hms_nano(
+  self : NaiveDate,
+  hour : Int,
+  min : Int,
+  sec : Int,
+  nano : Int,
+) -> NaiveDateTime? {
+  NaiveTime::from_hms_nano(hour, min, sec, nano).map(time => self.and_time(time))
+}
+
+///|
 const MAX_ABS_EPOCH_DAYS : Int64 = 2_147_483_647L - 719_468L
 
 ///|
