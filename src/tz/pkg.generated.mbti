@@ -33,6 +33,7 @@ pub fn[Tz] DateTime::naive_utc(Self[Tz]) -> @core.NaiveDateTime
 pub fn[Tz : Eq] DateTime::not_equal(Self[Tz], Self[Tz]) -> Bool
 pub fn[Tz : TimeZone] DateTime::offset(Self[Tz]) -> FixedOffset
 pub fn[Tz] DateTime::round(Self[Tz], @core.TimeDelta) -> Self[Tz]?
+pub fn[Tz] DateTime::round_subsecs(Self[Tz], Int) -> Self[Tz]?
 pub fn[Tz, Tz2] DateTime::signed_duration_since(Self[Tz], Self[Tz2]) -> @core.TimeDelta
 pub fn[Tz] DateTime::sub_days(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz] DateTime::sub_months(Self[Tz], Int) -> Self[Tz]
@@ -41,6 +42,7 @@ pub fn[Tz] DateTime::sub_years(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz] DateTime::timezone(Self[Tz]) -> Tz
 pub fn[Tz : @debug.Debug] DateTime::to_repr(Self[Tz]) -> @debug.Repr
 pub fn[Tz] DateTime::truncate(Self[Tz], @core.TimeDelta) -> Self[Tz]?
+pub fn[Tz] DateTime::truncate_subsecs(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz, Tz2] DateTime::with_timezone(Self[Tz], Tz2) -> Self[Tz2]
 
 pub struct FixedOffset {

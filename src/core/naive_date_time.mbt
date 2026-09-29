@@ -770,3 +770,35 @@ pub fn NaiveDateTime::round_up(
   .round_up(granularity)
   .bind(delta => NaiveDateTime::unix_epoch().checked_add_signed(delta))
 }
+
+///|
+/// This datetime truncated to `digits` fractional-second digits (`0..=9`),
+/// toward the Unix epoch like `truncate`, so a datetime before the epoch
+/// moves forward in time. Always succeeds. Like `truncate`, a leap second is
+/// treated as its elapsed instant and folds into the following second, unlike
+/// `NaiveTime::truncate_subsecs`, which keeps it a leap second.
+///
+/// Aborts if `digits` is outside `0..=9`.
+pub fn NaiveDateTime::truncate_subsecs(
+  self : NaiveDateTime,
+  digits : Int,
+) -> NaiveDateTime {
+  let nanos = subsec_granularity_nanos(
+    digits, "NaiveDateTime::truncate_subsecs",
+  )
+  self.truncate(TimeDelta::nanoseconds(nanos.to_int64()).unwrap()).unwrap()
+}
+
+///|
+/// This datetime rounded to `digits` fractional-second digits (`0..=9`),
+/// with the tie-breaking and range behavior of `round`: `None` if rounding
+/// away from the epoch would leave `NaiveDate`'s representable range.
+///
+/// Aborts if `digits` is outside `0..=9`.
+pub fn NaiveDateTime::round_subsecs(
+  self : NaiveDateTime,
+  digits : Int,
+) -> NaiveDateTime? {
+  let nanos = subsec_granularity_nanos(digits, "NaiveDateTime::round_subsecs")
+  self.round(TimeDelta::nanoseconds(nanos.to_int64()).unwrap())
+}

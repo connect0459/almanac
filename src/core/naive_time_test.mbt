@@ -463,3 +463,120 @@ test "hms reports a leap second as second 59, like second()" {
   let time = @core.NaiveTime::from_hms_nano(23, 59, 59, 1_500_000_000).unwrap()
   assert_eq(time.hms(), (23, 59, 59))
 }
+
+///|
+test "truncate_subsecs drops digits beyond the requested count" {
+  let time = @core.NaiveTime::from_hms_nano(12, 34, 56, 987_654_321).unwrap()
+  assert_eq(
+    time.truncate_subsecs(3),
+    @core.NaiveTime::from_hms_nano(12, 34, 56, 987_000_000).unwrap(),
+  )
+  assert_eq(
+    time.truncate_subsecs(6),
+    @core.NaiveTime::from_hms_nano(12, 34, 56, 987_654_000).unwrap(),
+  )
+  assert_eq(
+    time.truncate_subsecs(0),
+    @core.NaiveTime::from_hms(12, 34, 56).unwrap(),
+  )
+}
+
+///|
+test "truncate_subsecs with nine digits leaves the time unchanged" {
+  let time = @core.NaiveTime::from_hms_nano(12, 34, 56, 987_654_321).unwrap()
+  assert_eq(time.truncate_subsecs(9), time)
+}
+
+///|
+test "round_subsecs rounds to the nearest value at the requested digit count" {
+  let time = @core.NaiveTime::from_hms_nano(12, 34, 56, 987_654_321).unwrap()
+  assert_eq(
+    time.round_subsecs(3),
+    @core.NaiveTime::from_hms_nano(12, 34, 56, 988_000_000).unwrap(),
+  )
+  assert_eq(
+    time.round_subsecs(6),
+    @core.NaiveTime::from_hms_nano(12, 34, 56, 987_654_000).unwrap(),
+  )
+  assert_eq(
+    time.round_subsecs(0),
+    @core.NaiveTime::from_hms(12, 34, 57).unwrap(),
+  )
+  assert_eq(time.round_subsecs(9), time)
+}
+
+///|
+test "round_subsecs breaks a tie by rounding up" {
+  let time = @core.NaiveTime::from_hms_nano(12, 0, 0, 500_000_000).unwrap()
+  assert_eq(time.round_subsecs(0), @core.NaiveTime::from_hms(12, 0, 1).unwrap())
+  let below = @core.NaiveTime::from_hms_nano(12, 0, 0, 499_999_999).unwrap()
+  assert_eq(
+    below.round_subsecs(0),
+    @core.NaiveTime::from_hms(12, 0, 0).unwrap(),
+  )
+}
+
+///|
+test "round_subsecs carries into the next second, minute, and hour" {
+  let time = @core.NaiveTime::from_hms_nano(12, 59, 59, 999_600_000).unwrap()
+  assert_eq(time.round_subsecs(3), @core.NaiveTime::from_hms(13, 0, 0).unwrap())
+}
+
+///|
+test "round_subsecs wraps past the end of the day to midnight" {
+  let time = @core.NaiveTime::from_hms_nano(23, 59, 59, 900_000_000).unwrap()
+  assert_eq(time.round_subsecs(0), @core.NaiveTime::midnight())
+}
+
+///|
+test "truncate_subsecs keeps a leap second a leap second" {
+  let leap = @core.NaiveTime::from_hms_nano(23, 59, 59, 1_500_000_000).unwrap()
+  assert_eq(
+    leap.truncate_subsecs(0),
+    @core.NaiveTime::from_hms_nano(23, 59, 59, 1_000_000_000).unwrap(),
+  )
+  assert_eq(
+    leap.truncate_subsecs(1),
+    @core.NaiveTime::from_hms_nano(23, 59, 59, 1_500_000_000).unwrap(),
+  )
+}
+
+///|
+test "round_subsecs stays within a leap second until the rounded value reaches its end" {
+  let early = @core.NaiveTime::from_hms_nano(23, 59, 59, 1_400_000_000).unwrap()
+  assert_eq(
+    early.round_subsecs(0),
+    @core.NaiveTime::from_hms_nano(23, 59, 59, 1_000_000_000).unwrap(),
+  )
+  let late = @core.NaiveTime::from_hms_nano(23, 59, 59, 1_500_000_000).unwrap()
+  assert_eq(late.round_subsecs(0), @core.NaiveTime::midnight())
+}
+
+///|
+test "round_subsecs never turns an ordinary second into a leap second" {
+  let time = @core.NaiveTime::from_hms_nano(23, 59, 58, 999_999_999).unwrap()
+  assert_eq(
+    time.round_subsecs(3),
+    @core.NaiveTime::from_hms(23, 59, 59).unwrap(),
+  )
+}
+
+///|
+test "panic truncate_subsecs aborts when digits is negative" {
+  ignore(@core.NaiveTime::midnight().truncate_subsecs(-1))
+}
+
+///|
+test "panic truncate_subsecs aborts when digits exceeds nine" {
+  ignore(@core.NaiveTime::midnight().truncate_subsecs(10))
+}
+
+///|
+test "panic round_subsecs aborts when digits is negative" {
+  ignore(@core.NaiveTime::midnight().round_subsecs(-1))
+}
+
+///|
+test "panic round_subsecs aborts when digits exceeds nine" {
+  ignore(@core.NaiveTime::midnight().round_subsecs(10))
+}

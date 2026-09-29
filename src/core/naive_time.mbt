@@ -177,6 +177,63 @@ pub fn NaiveTime::hms(self : NaiveTime) -> (Int, Int, Int) {
 }
 
 ///|
+/// The number of nanoseconds in one unit of the `digits`-th fractional
+/// digit, for `digits` in `0..=9`. Aborts for any other `digits`.
+fn subsec_granularity_nanos(digits : Int, operation : String) -> Int {
+  if digits < 0 || digits > 9 {
+    abort(operation + ": digits must be in 0..=9")
+  }
+  let mut nanos = 1
+  for _ in digits..<9 {
+    nanos = nanos * 10
+  }
+  nanos
+}
+
+///|
+/// This time truncated to `digits` fractional-second digits (`0..=9`); `9`
+/// leaves it unchanged. A leap second stays a leap second, truncated within
+/// its own extra second.
+///
+/// Aborts if `digits` is outside `0..=9`.
+pub fn NaiveTime::truncate_subsecs(self : NaiveTime, digits : Int) -> NaiveTime {
+  let granularity = subsec_granularity_nanos(
+    digits, "NaiveTime::truncate_subsecs",
+  )
+  NaiveTime::{ secs: self.secs, frac: self.frac - self.frac % granularity, }
+}
+
+///|
+/// This time rounded to the nearest of `digits` fractional-second digits
+/// (`0..=9`), a tie rounding up; `9` leaves it unchanged. A carry moves into
+/// the next second, minute, or hour and wraps from the end of the day to
+/// midnight. A leap second rounds within its own extra second and only
+/// carries once the rounded value reaches that second's end; an ordinary
+/// second never rounds into a leap second.
+///
+/// Aborts if `digits` is outside `0..=9`.
+pub fn NaiveTime::round_subsecs(self : NaiveTime, digits : Int) -> NaiveTime {
+  let granularity = subsec_granularity_nanos(digits, "NaiveTime::round_subsecs")
+  let remainder = self.frac % granularity
+  let floor = self.frac - remainder
+  let rounded = if remainder * 2 >= granularity {
+    floor + granularity
+  } else {
+    floor
+  }
+  let end = if self.frac >= 1_000_000_000 {
+    2_000_000_000
+  } else {
+    1_000_000_000
+  }
+  if rounded >= end {
+    NaiveTime::{ secs: (self.secs + 1) % 86400, frac: 0, }
+  } else {
+    NaiveTime::{ secs: self.secs, frac: rounded, }
+  }
+}
+
+///|
 /// The nanosecond component, normally `0..=999_999_999`. A value of
 /// `1_000_000_000` or above indicates this time represents a leap second
 /// (displayed as `second() + 1`, i.e. `:60`), with the leap second's own

@@ -293,3 +293,26 @@ test "add_years and sub_years keep the same time zone as self" {
   assert_eq(dt.add_years(1).timezone(), fixed)
   assert_eq(dt.sub_years(1).timezone(), fixed)
 }
+
+///|
+test "round_subsecs and truncate_subsecs on DateTime<Utc> have parity with plain NaiveDateTime" {
+  let naive = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),
+    @core.NaiveTime::from_hms_nano(12, 34, 56, 987_654_321).unwrap(),
+  )
+  let dt = @tz.DateTime::from_utc(naive, @tz.Utc::new())
+  assert_eq(dt.truncate_subsecs(3).naive_utc(), naive.truncate_subsecs(3))
+  assert_eq(dt.round_subsecs(3).map(d => d.naive_utc()), naive.round_subsecs(3))
+}
+
+///|
+test "round_subsecs and truncate_subsecs keep the same time zone as self" {
+  let naive = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),
+    @core.NaiveTime::from_hms_nano(12, 34, 56, 987_654_321).unwrap(),
+  )
+  let fixed = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let dt = @tz.DateTime::from_utc(naive, fixed)
+  assert_eq(dt.truncate_subsecs(3).timezone(), fixed)
+  assert_eq(dt.round_subsecs(3).unwrap().timezone(), fixed)
+}

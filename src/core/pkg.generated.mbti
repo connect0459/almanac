@@ -209,6 +209,7 @@ pub fn NaiveDateTime::ordinal0(Self) -> Int
 pub fn NaiveDateTime::output(Self, &Logger) -> Unit
 pub fn NaiveDateTime::quarter(Self) -> Int
 pub fn NaiveDateTime::round(Self, TimeDelta) -> Self?
+pub fn NaiveDateTime::round_subsecs(Self, Int) -> Self?
 pub fn NaiveDateTime::round_up(Self, TimeDelta) -> Self?
 pub fn NaiveDateTime::second(Self) -> Int
 pub fn NaiveDateTime::signed_duration_since(Self, Self) -> TimeDelta
@@ -228,6 +229,7 @@ pub fn NaiveDateTime::timestamp_subsec_nanos(Self) -> Int
 pub fn NaiveDateTime::to_repr(Self) -> @debug.Repr
 pub fn NaiveDateTime::to_string(Self) -> String
 pub fn NaiveDateTime::truncate(Self, TimeDelta) -> Self?
+pub fn NaiveDateTime::truncate_subsecs(Self, Int) -> Self
 pub fn NaiveDateTime::unix_epoch() -> Self
 pub fn NaiveDateTime::weekday(Self) -> Weekday
 pub fn NaiveDateTime::with_day(Self, Int) -> Self?
@@ -284,10 +286,12 @@ pub fn NaiveTime::op_lt(Self, Self) -> Bool
 pub fn NaiveTime::output(Self, &Logger) -> Unit
 pub fn NaiveTime::overflowing_add_signed(Self, TimeDelta) -> (Self, Int64)
 pub fn NaiveTime::overflowing_sub_signed(Self, TimeDelta) -> (Self, Int64)
+pub fn NaiveTime::round_subsecs(Self, Int) -> Self
 pub fn NaiveTime::second(Self) -> Int
 pub fn NaiveTime::signed_duration_since(Self, Self) -> TimeDelta
 pub fn NaiveTime::to_repr(Self) -> @debug.Repr
 pub fn NaiveTime::to_string(Self) -> String
+pub fn NaiveTime::truncate_subsecs(Self, Int) -> Self
 pub fn NaiveTime::with_hour(Self, Int) -> Self?
 pub fn NaiveTime::with_minute(Self, Int) -> Self?
 pub fn NaiveTime::with_nanosecond(Self, Int) -> Self?

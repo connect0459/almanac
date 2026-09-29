@@ -958,3 +958,94 @@ test "panic datetime add_years aborts when the result leaves the representable r
 test "panic datetime sub_years aborts when the result leaves the representable range" {
   ignore(min_datetime().sub_years(1))
 }
+
+///|
+test "truncate_subsecs drops digits beyond the requested count" {
+  let dt = @core.NaiveDate::from_ymd(2024, 6, 15)
+    .unwrap()
+    .and_hms_nano(12, 34, 56, 987_654_321)
+    .unwrap()
+  assert_eq(
+    dt.truncate_subsecs(3),
+    @core.NaiveDate::from_ymd(2024, 6, 15)
+    .unwrap()
+    .and_hms_nano(12, 34, 56, 987_000_000)
+    .unwrap(),
+  )
+  assert_eq(dt.truncate_subsecs(9), dt)
+}
+
+///|
+test "round_subsecs rounds to the nearest value at the requested digit count" {
+  let dt = @core.NaiveDate::from_ymd(2024, 6, 15)
+    .unwrap()
+    .and_hms_nano(12, 34, 56, 987_654_321)
+    .unwrap()
+  assert_eq(
+    dt.round_subsecs(3),
+    Some(
+      @core.NaiveDate::from_ymd(2024, 6, 15)
+      .unwrap()
+      .and_hms_nano(12, 34, 56, 988_000_000)
+      .unwrap(),
+    ),
+  )
+  assert_eq(dt.round_subsecs(9), Some(dt))
+}
+
+///|
+test "round_subsecs carries across midnight into the next date" {
+  let dt = @core.NaiveDate::from_ymd(2024, 12, 31)
+    .unwrap()
+    .and_hms_nano(23, 59, 59, 900_000_000)
+    .unwrap()
+  assert_eq(
+    dt.round_subsecs(0),
+    Some(
+      @core.NaiveDate::from_ymd(2025, 1, 1).unwrap().and_hms(0, 0, 0).unwrap(),
+    ),
+  )
+}
+
+///|
+test "round_subsecs returns None when rounding up leaves the representable range" {
+  assert_eq(max_datetime().round_subsecs(0), Some(max_datetime()))
+  let last = @core.NaiveDate::from_epoch_days(2_147_483_647 - 719_468)
+    .unwrap()
+    .and_hms_nano(23, 59, 59, 900_000_000)
+    .unwrap()
+  assert_eq(last.round_subsecs(0), None)
+}
+
+///|
+test "truncate_subsecs before the Unix epoch moves toward the epoch like truncate" {
+  let dt = @core.NaiveDate::from_ymd(1969, 12, 31)
+    .unwrap()
+    .and_hms_nano(23, 59, 59, 500_000_000)
+    .unwrap()
+  assert_eq(dt.truncate_subsecs(0), @core.NaiveDateTime::unix_epoch())
+}
+
+///|
+test "panic datetime truncate_subsecs aborts when digits exceeds nine" {
+  ignore(max_datetime().truncate_subsecs(10))
+}
+
+///|
+test "panic datetime round_subsecs aborts when digits is negative" {
+  ignore(max_datetime().round_subsecs(-1))
+}
+
+///|
+test "round_subsecs and truncate_subsecs treat a leap second as the elapsed instant, folding it into the next second" {
+  let leap = @core.NaiveDate::from_ymd(2024, 6, 15)
+    .unwrap()
+    .and_hms_nano(23, 59, 59, 1_500_000_000)
+    .unwrap()
+  let next_midnight = @core.NaiveDate::from_ymd(2024, 6, 16)
+    .unwrap()
+    .and_hms(0, 0, 0)
+    .unwrap()
+  assert_eq(leap.truncate_subsecs(0), next_midnight)
+  assert_eq(leap.round_subsecs(0), Some(next_midnight.add_seconds(1)))
+}

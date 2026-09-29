@@ -238,3 +238,29 @@ pub fn[Tz] DateTime::round(
   .round(granularity)
   .map(datetime => DateTime::{ datetime, tz: self.tz, })
 }
+
+///|
+/// This datetime's underlying UTC instant truncated to `digits`
+/// fractional-second digits (`0..=9`), keeping the same time zone. See
+/// `@core.NaiveDateTime::truncate_subsecs`; aborts if `digits` is outside
+/// `0..=9`.
+pub fn[Tz] DateTime::truncate_subsecs(
+  self : DateTime[Tz],
+  digits : Int,
+) -> DateTime[Tz] {
+  DateTime::{ datetime: self.datetime.truncate_subsecs(digits), tz: self.tz, }
+}
+
+///|
+/// This datetime's underlying UTC instant rounded to `digits`
+/// fractional-second digits (`0..=9`), keeping the same time zone. See
+/// `@core.NaiveDateTime::round_subsecs`; aborts if `digits` is outside
+/// `0..=9`.
+pub fn[Tz] DateTime::round_subsecs(
+  self : DateTime[Tz],
+  digits : Int,
+) -> DateTime[Tz]? {
+  self.datetime
+  .round_subsecs(digits)
+  .map(datetime => DateTime::{ datetime, tz: self.tz, })
+}
