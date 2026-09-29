@@ -158,6 +158,42 @@ test "add_signed and sub_signed on DateTime<Utc> have arithmetic parity with pla
 }
 
 ///|
+test "add_months and sub_months on DateTime<Utc> have arithmetic parity with plain NaiveDateTime" {
+  let naive = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 1, 31).unwrap(),
+    @core.NaiveTime::from_hms(23, 0, 0).unwrap(),
+  )
+  let dt = @tz.DateTime::from_utc(naive, @tz.Utc::new())
+  assert_eq(dt.add_months(1).naive_utc(), naive.add_months(1))
+  assert_eq(dt.sub_months(1).naive_utc(), naive.sub_months(1))
+}
+
+///|
+test "add_days and sub_days on DateTime<Utc> have arithmetic parity with plain NaiveDateTime" {
+  let naive = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),
+    @core.NaiveTime::from_hms(23, 0, 0).unwrap(),
+  )
+  let dt = @tz.DateTime::from_utc(naive, @tz.Utc::new())
+  assert_eq(dt.add_days(30).naive_utc(), naive.add_days(30))
+  assert_eq(dt.sub_days(30).naive_utc(), naive.sub_days(30))
+}
+
+///|
+test "add_months, add_days keep the same time zone as self" {
+  let naive = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),
+    @core.NaiveTime::from_hms(12, 0, 0).unwrap(),
+  )
+  let fixed = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let dt = @tz.DateTime::from_utc(naive, fixed)
+  assert_eq(dt.add_months(1).timezone(), fixed)
+  assert_eq(dt.sub_months(1).timezone(), fixed)
+  assert_eq(dt.add_days(1).timezone(), fixed)
+  assert_eq(dt.sub_days(1).timezone(), fixed)
+}
+
+///|
 test "signed_duration_since on DateTime<Utc> has arithmetic parity with plain NaiveDateTime" {
   let earlier = @tz.DateTime::from_utc(
     @core.NaiveDateTime::new(

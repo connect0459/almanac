@@ -173,6 +173,10 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 | `with_timezone(Tz2)` | `-> Self[Tz2]` | Re-express this datetime in `Tz2`, keeping the same UTC instant |
 | `add_signed(TimeDelta)` | `-> Self[Tz]` | Advance by a signed duration, keeping the same time zone |
 | `sub_signed(TimeDelta)` | `-> Self[Tz]` | Move back by a signed duration |
+| `add_months(Int)` | `-> Self[Tz]` | Advance the date by months, keeping the time of day and time zone; see `NaiveDate::add_months` (in `core`) for the day-of-month clamping rule |
+| `sub_months(Int)` | `-> Self[Tz]` | Move the date back by months |
+| `add_days(Int)` | `-> Self[Tz]` | Advance the date by days, keeping the time of day and time zone |
+| `sub_days(Int)` | `-> Self[Tz]` | Move the date back by days |
 | `signed_duration_since(Self[Tz2])` | `-> TimeDelta` | The signed duration from `other` to `self`, independent of either's time zone |
 | `round(TimeDelta)` | `-> Self[Tz]?` | Round the underlying UTC instant to the nearest multiple of a granularity since the Unix epoch, keeping the same time zone; see `TimeDelta::round` (in `core`) for which granularities are supported |
 | `truncate(TimeDelta)` | `-> Self[Tz]?` | Truncate the underlying UTC instant toward the Unix epoch; see Quick start above for how this differs from truncating the local presentation |

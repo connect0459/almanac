@@ -19,6 +19,8 @@ pub fn resolve_tzdata_bytes(Map[String, Bytes], Map[String, String], String) -> 
 pub struct DateTime[Tz] {
   // private fields
 } derive(Eq, @debug.Debug)
+pub fn[Tz] DateTime::add_days(Self[Tz], Int) -> Self[Tz]
+pub fn[Tz] DateTime::add_months(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz] DateTime::add_signed(Self[Tz], @core.TimeDelta) -> Self[Tz]
 pub fn[Tz : Eq] DateTime::equal(Self[Tz], Self[Tz]) -> Bool
 pub fn[Tz : TimeZone] DateTime::from_local(@core.NaiveDateTime, Tz) -> MappedLocalTime[Self[Tz]]
@@ -31,6 +33,8 @@ pub fn[Tz : Eq] DateTime::not_equal(Self[Tz], Self[Tz]) -> Bool
 pub fn[Tz : TimeZone] DateTime::offset(Self[Tz]) -> FixedOffset
 pub fn[Tz] DateTime::round(Self[Tz], @core.TimeDelta) -> Self[Tz]?
 pub fn[Tz, Tz2] DateTime::signed_duration_since(Self[Tz], Self[Tz2]) -> @core.TimeDelta
+pub fn[Tz] DateTime::sub_days(Self[Tz], Int) -> Self[Tz]
+pub fn[Tz] DateTime::sub_months(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz] DateTime::sub_signed(Self[Tz], @core.TimeDelta) -> Self[Tz]
 pub fn[Tz] DateTime::timezone(Self[Tz]) -> Tz
 pub fn[Tz : @debug.Debug] DateTime::to_repr(Self[Tz]) -> @debug.Repr

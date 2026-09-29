@@ -148,6 +148,40 @@ pub fn[Tz] DateTime::sub_signed(
 }
 
 ///|
+/// This datetime with its date advanced by `months` (or moved back, if
+/// `months` is negative), keeping the time of day and time zone unchanged.
+/// See `@core.NaiveDateTime::add_months` for the day-of-month clamping
+/// rule.
+pub fn[Tz] DateTime::add_months(
+  self : DateTime[Tz],
+  months : Int,
+) -> DateTime[Tz] {
+  DateTime::{ datetime: self.datetime.add_months(months), tz: self.tz, }
+}
+
+///|
+/// This datetime with its date moved back by `months`. See `add_months`.
+pub fn[Tz] DateTime::sub_months(
+  self : DateTime[Tz],
+  months : Int,
+) -> DateTime[Tz] {
+  DateTime::{ datetime: self.datetime.sub_months(months), tz: self.tz, }
+}
+
+///|
+/// This datetime with its date advanced by `days` (or moved back, if
+/// `days` is negative), keeping the time of day and time zone unchanged.
+pub fn[Tz] DateTime::add_days(self : DateTime[Tz], days : Int) -> DateTime[Tz] {
+  DateTime::{ datetime: self.datetime.add_days(days), tz: self.tz, }
+}
+
+///|
+/// This datetime with its date moved back by `days`. See `add_days`.
+pub fn[Tz] DateTime::sub_days(self : DateTime[Tz], days : Int) -> DateTime[Tz] {
+  DateTime::{ datetime: self.datetime.sub_days(days), tz: self.tz, }
+}
+
+///|
 /// The signed duration from `other` to `self` (positive if `self` is
 /// later), independent of either datetime's time zone (both are compared
 /// via their underlying UTC instant).
