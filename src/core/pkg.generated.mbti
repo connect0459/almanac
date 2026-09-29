@@ -75,8 +75,11 @@ pub fn NaiveDate::and_hms_nano(Self, Int, Int, Int, Int) -> NaiveDateTime?
 pub fn NaiveDate::and_time(Self, NaiveTime) -> NaiveDateTime
 pub fn NaiveDate::compare(Self, Self) -> Int
 pub fn NaiveDate::day(Self) -> Int
+pub fn NaiveDate::epoch_days(Self) -> Int
 pub fn NaiveDate::equal(Self, Self) -> Bool
+pub fn NaiveDate::from_epoch_days(Int) -> Self?
 pub fn NaiveDate::from_isoywd(Int, Int, Weekday) -> Self?
+pub fn NaiveDate::from_num_days_from_ce(Int) -> Self?
 pub fn NaiveDate::from_weekday_of_month(Int, Int, Weekday, Int) -> Self?
 pub fn NaiveDate::from_ymd(Int, Int, Int) -> Self?
 pub fn NaiveDate::from_yo(Int, Int) -> Self?
@@ -86,6 +89,7 @@ pub fn NaiveDate::iter_weeks(Self) -> NaiveDateWeeksIterator
 pub fn NaiveDate::leap_year(Self) -> Bool
 pub fn NaiveDate::month(Self) -> Month
 pub fn NaiveDate::not_equal(Self, Self) -> Bool
+pub fn NaiveDate::num_days_from_ce(Self) -> Int
 pub fn NaiveDate::op_ge(Self, Self) -> Bool
 pub fn NaiveDate::op_gt(Self, Self) -> Bool
 pub fn NaiveDate::op_le(Self, Self) -> Bool

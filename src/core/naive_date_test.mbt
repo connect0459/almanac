@@ -591,3 +591,102 @@ test "and_hms_nano preserves a leap second" {
   let dt = date.and_hms_nano(23, 59, 59, 1_500_000_000).unwrap()
   assert_eq(dt.time().nanosecond(), 1_500_000_000)
 }
+
+///|
+test "epoch_days counts days from the Unix epoch" {
+  assert_eq(@core.NaiveDate::from_ymd(1970, 1, 1).unwrap().epoch_days(), 0)
+  assert_eq(@core.NaiveDate::from_ymd(1970, 1, 2).unwrap().epoch_days(), 1)
+  assert_eq(@core.NaiveDate::from_ymd(1969, 12, 31).unwrap().epoch_days(), -1)
+  assert_eq(@core.NaiveDate::from_ymd(2000, 3, 1).unwrap().epoch_days(), 11017)
+}
+
+///|
+test "epoch_days agrees with days_from_civil" {
+  for ymd in [(1, 1, 1), (1900, 2, 28), (2000, 2, 29), (2024, 12, 31)] {
+    let (y, m, d) = ymd
+    assert_eq(
+      @core.NaiveDate::from_ymd(y, m, d).unwrap().epoch_days(),
+      @core.days_from_civil(y, m, d),
+    )
+  }
+}
+
+///|
+test "from_epoch_days inverts epoch_days" {
+  for n in [-719162, -1, 0, 1, 11017, 2_000_000] {
+    assert_eq(
+      @core.NaiveDate::from_epoch_days(n).map(fn(d) { d.epoch_days() }),
+      Some(n),
+    )
+  }
+  assert_eq(
+    @core.NaiveDate::from_epoch_days(0),
+    @core.NaiveDate::from_ymd(1970, 1, 1),
+  )
+}
+
+///|
+test "from_epoch_days agrees with civil_from_days" {
+  let (y, m, d) = @core.civil_from_days(19000)
+  assert_eq(
+    @core.NaiveDate::from_epoch_days(19000),
+    @core.NaiveDate::from_ymd(y, m, d),
+  )
+}
+
+///|
+test "from_epoch_days accepts the representable range boundary and rejects one day past it" {
+  let limit = 2_147_483_647 - 719_468
+  assert_true(@core.NaiveDate::from_epoch_days(limit) is Some(_))
+  assert_true(@core.NaiveDate::from_epoch_days(-limit) is Some(_))
+  assert_eq(@core.NaiveDate::from_epoch_days(limit + 1), None)
+  assert_eq(@core.NaiveDate::from_epoch_days(-limit - 1), None)
+}
+
+///|
+test "num_days_from_ce numbers 0001-01-01 as day 1" {
+  assert_eq(@core.NaiveDate::from_ymd(1, 1, 1).unwrap().num_days_from_ce(), 1)
+  assert_eq(@core.NaiveDate::from_ymd(1, 1, 2).unwrap().num_days_from_ce(), 2)
+  assert_eq(@core.NaiveDate::from_ymd(0, 12, 31).unwrap().num_days_from_ce(), 0)
+  assert_eq(
+    @core.NaiveDate::from_ymd(1970, 1, 1).unwrap().num_days_from_ce(),
+    719163,
+  )
+}
+
+///|
+test "from_num_days_from_ce inverts num_days_from_ce" {
+  for n in [-1_000_000, 0, 1, 719163, 739_000] {
+    assert_eq(
+      @core.NaiveDate::from_num_days_from_ce(n).map(fn(d) {
+        d.num_days_from_ce()
+      }),
+      Some(n),
+    )
+  }
+  assert_eq(
+    @core.NaiveDate::from_num_days_from_ce(1),
+    @core.NaiveDate::from_ymd(1, 1, 1),
+  )
+}
+
+///|
+test "from_num_days_from_ce rejects day counts beyond the representable range without overflowing" {
+  let max = 2_147_483_647
+  assert_true(
+    @core.NaiveDate::from_num_days_from_ce(max - 719_468 + 719_163) is Some(_),
+  )
+  assert_eq(
+    @core.NaiveDate::from_num_days_from_ce(max - 719_468 + 719_164),
+    None,
+  )
+  assert_eq(@core.NaiveDate::from_num_days_from_ce(max), None)
+  assert_eq(@core.NaiveDate::from_num_days_from_ce(-max - 1), None)
+  assert_true(
+    @core.NaiveDate::from_num_days_from_ce(-max + 719_468 + 719_163) is Some(_),
+  )
+  assert_eq(
+    @core.NaiveDate::from_num_days_from_ce(-max + 719_468 + 719_162),
+    None,
+  )
+}

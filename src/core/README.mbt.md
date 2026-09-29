@@ -183,6 +183,10 @@ A proleptic Gregorian calendar date. Constructors are `Option`-returning: an inv
 | `and_hms_milli(Int, Int, Int, Int)` | `-> NaiveDateTime?` | As `and_hms`, plus milliseconds |
 | `and_hms_micro(Int, Int, Int, Int)` | `-> NaiveDateTime?` | As `and_hms`, plus microseconds |
 | `and_hms_nano(Int, Int, Int, Int)` | `-> NaiveDateTime?` | As `and_hms`, plus nanoseconds (`>= 1_000_000_000` encodes a leap second) |
+| `epoch_days()` | `-> Int` | Days since the Unix epoch (`1970-01-01` is `0`) |
+| `NaiveDate::from_epoch_days(Int)` | `-> NaiveDate?` | Inverse of `epoch_days()`; `None` if out of range |
+| `num_days_from_ce()` | `-> Int` | Days since the Common Era (`0001-01-01` is `1`) |
+| `NaiveDate::from_num_days_from_ce(Int)` | `-> NaiveDate?` | Inverse of `num_days_from_ce()`; `None` if out of range |
 | `add_months(Int)` | `-> Self` | Shift by whole months, clamping the day of month to the target month's length |
 | `sub_months(Int)` | `-> Self` | Shift backward by whole months, with the same clamping |
 | `week(Weekday)` | `-> NaiveWeek` | The calendar week containing this date, with weeks starting on the given weekday |

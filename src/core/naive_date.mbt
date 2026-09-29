@@ -171,6 +171,46 @@ pub fn NaiveDate::succ(self : NaiveDate) -> NaiveDate {
 }
 
 ///|
+const CE_TO_EPOCH_DAYS : Int64 = 719_163L
+
+///|
+fn NaiveDate::from_epoch_days64(days : Int64) -> NaiveDate? {
+  if days > MAX_ABS_EPOCH_DAYS || days < -MAX_ABS_EPOCH_DAYS {
+    None
+  } else {
+    Some(NaiveDate::{ days: days.to_int(), })
+  }
+}
+
+///|
+/// The number of days since the Unix epoch (`1970-01-01` is day `0`;
+/// earlier dates are negative).
+pub fn NaiveDate::epoch_days(self : NaiveDate) -> Int {
+  self.days
+}
+
+///|
+/// The date `days` days after the Unix epoch (`1970-01-01` is day `0`), or
+/// `None` if `days` falls outside `NaiveDate`'s representable range.
+pub fn NaiveDate::from_epoch_days(days : Int) -> NaiveDate? {
+  NaiveDate::from_epoch_days64(days.to_int64())
+}
+
+///|
+/// The number of days since the start of the Common Era, counting
+/// `0001-01-01` as day `1` (so `0000-12-31` is day `0`).
+pub fn NaiveDate::num_days_from_ce(self : NaiveDate) -> Int {
+  self.days + CE_TO_EPOCH_DAYS.to_int()
+}
+
+///|
+/// The date whose `num_days_from_ce()` is `days`, or `None` if `days`
+/// falls outside `NaiveDate`'s representable range.
+pub fn NaiveDate::from_num_days_from_ce(days : Int) -> NaiveDate? {
+  NaiveDate::from_epoch_days64(days.to_int64() - CE_TO_EPOCH_DAYS)
+}
+
+///|
 /// The datetime at `time` on this date.
 pub fn NaiveDate::and_time(self : NaiveDate, time : NaiveTime) -> NaiveDateTime {
   NaiveDateTime::new(self, time)
@@ -244,11 +284,7 @@ const MAX_ABS_EPOCH_DAYS : Int64 = 2_147_483_647L - 719_468L
 /// date carries no time-of-day.
 pub fn NaiveDate::add_signed(self : NaiveDate, delta : TimeDelta) -> NaiveDate? {
   let days = self.days.to_int64() + delta.num_days()
-  if days > MAX_ABS_EPOCH_DAYS || days < -MAX_ABS_EPOCH_DAYS {
-    None
-  } else {
-    Some(NaiveDate::{ days: days.to_int(), })
-  }
+  NaiveDate::from_epoch_days64(days)
 }
 
 ///|
