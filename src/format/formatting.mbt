@@ -38,6 +38,38 @@ fn weekday_short_name(w : @core.Weekday) -> String {
 }
 
 ///|
+fn month_short_name(m : @core.Month) -> String {
+  match m {
+    Jan => "Jan"
+    Feb => "Feb"
+    Mar => "Mar"
+    Apr => "Apr"
+    May => "May"
+    Jun => "Jun"
+    Jul => "Jul"
+    Aug => "Aug"
+    Sep => "Sep"
+    Oct => "Oct"
+    Nov => "Nov"
+    Dec => "Dec"
+  }
+}
+
+///|
+/// Space-pads a non-negative integer to `width` characters (strftime's
+/// `%l`, unlike `pad_int`'s zero-padding). `hour12()`'s values (`1..=12`)
+/// never need a sign.
+fn pad_int_blank(n : Int, width : Int) -> String {
+  let digits = n.to_string()
+  let spaces = width - digits.length()
+  if spaces <= 0 {
+    digits
+  } else {
+    String::make(spaces, ' ') + digits
+  }
+}
+
+///|
 /// Renders a signed offset (in seconds) as strftime's `%z`: a sign
 /// followed by a zero-padded `HHMM`, with no colon and no sub-minute
 /// seconds component.
@@ -55,6 +87,7 @@ fn render(
   date : @core.NaiveDate?,
   time : @core.NaiveTime?,
   tz_info : (Int, String)?,
+  timestamp : Int64?,
 ) -> String raise ParseError {
   let out = StringBuilder()
   for item in items {
@@ -124,6 +157,68 @@ fn render(
           Some((offset, _)) => out.write_string(format_offset_no_colon(offset))
           None => raise MissingField(item)
         }
+      Fixed(LongMonthName) =>
+        match date {
+          Some(d) => out.write_string(d.month().name())
+          None => raise MissingField(item)
+        }
+      Fixed(ShortMonthName) =>
+        match date {
+          Some(d) => out.write_string(month_short_name(d.month()))
+          None => raise MissingField(item)
+        }
+      Fixed(AmPmLower) =>
+        match time {
+          Some(t) => {
+            let (is_pm, _) = t.hour12()
+            out.write_string(if is_pm { "pm" } else { "am" })
+          }
+          None => raise MissingField(item)
+        }
+      Fixed(AmPmUpper) =>
+        match time {
+          Some(t) => {
+            let (is_pm, _) = t.hour12()
+            out.write_string(if is_pm { "PM" } else { "AM" })
+          }
+          None => raise MissingField(item)
+        }
+      Numeric(Hour12) =>
+        match time {
+          Some(t) => {
+            let (_, hour) = t.hour12()
+            out.write_string(pad_int(hour, 2))
+          }
+          None => raise MissingField(item)
+        }
+      Numeric(Hour12Blank) =>
+        match time {
+          Some(t) => {
+            let (_, hour) = t.hour12()
+            out.write_string(pad_int_blank(hour, 2))
+          }
+          None => raise MissingField(item)
+        }
+      Numeric(Timestamp) =>
+        match timestamp {
+          Some(ts) => out.write_string(ts.to_string())
+          None => raise MissingField(item)
+        }
+      Numeric(IsoYear) =>
+        match date {
+          Some(d) => out.write_string(pad_int(d.iso_week().year(), 4))
+          None => raise MissingField(item)
+        }
+      Numeric(IsoYear2) =>
+        match date {
+          Some(d) => out.write_string(pad_int(d.iso_week().year() % 100, 2))
+          None => raise MissingField(item)
+        }
+      Numeric(IsoWeekNumber) =>
+        match date {
+          Some(d) => out.write_string(pad_int(d.iso_week().week(), 2))
+          None => raise MissingField(item)
+        }
     }
   }
   out.to_string()
@@ -134,7 +229,7 @@ pub fn format_date(
   date : @core.NaiveDate,
   fmt : String,
 ) -> String raise ParseError {
-  render(tokenize(fmt), Some(date), None, None)
+  render(tokenize(fmt), Some(date), None, None, None)
 }
 
 ///|
@@ -142,7 +237,7 @@ pub fn format_time(
   time : @core.NaiveTime,
   fmt : String,
 ) -> String raise ParseError {
-  render(tokenize(fmt), None, Some(time), None)
+  render(tokenize(fmt), None, Some(time), None, None)
 }
 
 ///|
@@ -150,13 +245,21 @@ pub fn format_date_time(
   dt : @core.NaiveDateTime,
   fmt : String,
 ) -> String raise ParseError {
-  render(tokenize(fmt), Some(dt.date()), Some(dt.time()), None)
+  render(
+    tokenize(fmt),
+    Some(dt.date()),
+    Some(dt.time()),
+    None,
+    Some(dt.timestamp()),
+  )
 }
 
 ///|
 /// Renders a zone-aware `DateTime[Tz]` against `fmt`, in its local
 /// (wall-clock) representation. `%Z` renders `tz.tz_name()`; `%z` renders
-/// the numeric offset, strftime-style (`+HHMM`, no colon).
+/// the numeric offset, strftime-style (`+HHMM`, no colon). `%s` renders
+/// the underlying UTC instant's timestamp, unaffected by the local zone
+/// shift applied to every other field.
 pub fn[Tz : @tz.TimeZone] format_date_time_tz(
   dt : @tz.DateTime[Tz],
   fmt : String,
@@ -169,5 +272,6 @@ pub fn[Tz : @tz.TimeZone] format_date_time_tz(
     Some(wall_clock.date()),
     Some(wall_clock.time()),
     Some((offset, name)),
+    Some(dt.naive_utc().timestamp()),
   )
 }

@@ -50,6 +50,10 @@ pub(all) enum Fixed {
   ShortWeekdayName
   TimezoneName
   TimezoneOffset
+  LongMonthName
+  ShortMonthName
+  AmPmLower
+  AmPmUpper
 } derive(Eq, @debug.Debug)
 pub fn Fixed::equal(Self, Self) -> Bool
 pub fn Fixed::not_equal(Self, Self) -> Bool
@@ -73,6 +77,12 @@ pub(all) enum Numeric {
   Minute
   Second
   Nanosecond
+  Hour12
+  Hour12Blank
+  Timestamp
+  IsoYear
+  IsoYear2
+  IsoWeekNumber
 } derive(Eq, @debug.Debug)
 pub fn Numeric::equal(Self, Self) -> Bool
 pub fn Numeric::not_equal(Self, Self) -> Bool

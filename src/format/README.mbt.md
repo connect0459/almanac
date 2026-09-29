@@ -26,6 +26,16 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%f` | Nanosecond | Zero-padded to 9 digits |
 | `%A` | Long weekday name | e.g. `"Monday"` |
 | `%a` | Short weekday name | e.g. `"Mon"` |
+| `%B` | Long month name | e.g. `"March"`; on parse, resolves `%m`'s field directly |
+| `%b`, `%h` | Short month name | e.g. `"Mar"`; on parse, resolves `%m`'s field directly |
+| `%I` | Hour, 12-hour clock | Zero-padded, `01`..`12`; combines with `%p`/`%P` on parse (cross-checked against `%H`, if also present) |
+| `%l` | Hour, 12-hour clock | Space-padded, `" 1"`..`"12"`; parses the same field as `%I`, tolerating a blank or zero leading digit |
+| `%P` | am/pm marker, lowercase | `"am"`/`"pm"`; parses `%p`/`%P` case-insensitively either way |
+| `%p` | am/pm marker, uppercase | `"AM"`/`"PM"`; see `%P` |
+| `%s` | Unix timestamp | Format-only: the underlying UTC instant's seconds since the epoch (unaffected by `format_date_time_tz`'s local zone shift); raises `InputMismatch` on parse |
+| `%G` | ISO week-based year | Zero-padded to 4 digits; format-only, raises `InputMismatch` on parse (needs a weekday specifier, not yet implemented, to round-trip) |
+| `%g` | ISO week-based year, no century | Zero-padded to 2 digits; format-only, see `%G` |
+| `%V` | ISO week number | Zero-padded, `01`..`53`; format-only, see `%G` |
 | `%Z` | Timezone name | Format-only: raises `InputMismatch` on parse (no generically parseable shape) |
 | `%z` | Timezone offset | `±HHMM`, no colon |
 | `%F` | `%Y-%m-%d` | Expands to that specifier sequence |
@@ -83,10 +93,10 @@ test {
 
 | Function | Signature | Description |
 | :--- | :--- | :--- |
-| `format_date(NaiveDate, String)` | `-> String raise ParseError` | Render against a format string; raises `MissingField` for a date-less specifier (none exist for this signature, kept for symmetry) |
-| `format_time(NaiveTime, String)` | `-> String raise ParseError` | Render against a format string; raises `MissingField` for a date specifier (`%Y`/`%m`/`%d`/`%j`/`%A`/`%a`) |
+| `format_date(NaiveDate, String)` | `-> String raise ParseError` | Render against a format string; raises `MissingField` for a time-of-day specifier (`%H`/`%M`/`%S`/`%f`/`%I`/`%l`/`%P`/`%p`) |
+| `format_time(NaiveTime, String)` | `-> String raise ParseError` | Render against a format string; raises `MissingField` for a date specifier (`%Y`/`%m`/`%d`/`%j`/`%A`/`%a`/`%B`/`%b`/`%h`/`%G`/`%g`/`%V`) or `%s` (no absolute instant to draw from) |
 | `format_date_time(NaiveDateTime, String)` | `-> String raise ParseError` | Render against a format string; raises `MissingField` for `%Z`/`%z` (no zone to draw from) |
-| `format_date_time_tz(DateTime[Tz], String)` *(Tz : TimeZone)* | `-> String raise ParseError` | Render in local (wall-clock) representation; `%Z` renders `tz.tz_name()`, `%z` the numeric offset |
+| `format_date_time_tz(DateTime[Tz], String)` *(Tz : TimeZone)* | `-> String raise ParseError` | Render in local (wall-clock) representation; `%Z` renders `tz.tz_name()`, `%z` the numeric offset, `%s` the underlying UTC instant's timestamp |
 
 ### Parsing
 
@@ -132,6 +142,12 @@ pub(all) enum Numeric {
   Minute
   Second
   Nanosecond
+  Hour12
+  Hour12Blank
+  Timestamp
+  IsoYear
+  IsoYear2
+  IsoWeekNumber
 }
 
 ///|
@@ -140,6 +156,10 @@ pub(all) enum Fixed {
   ShortWeekdayName
   TimezoneName
   TimezoneOffset
+  LongMonthName
+  ShortMonthName
+  AmPmLower
+  AmPmUpper
 }
 ```
 
@@ -155,6 +175,6 @@ pub(all) enum Fixed {
 | `InvalidRfc3339` | `parse_rfc3339` fails to match the RFC 3339 grammar |
 | `IncompleteFields` | A `parse_*` call resolves fields that never populate a required value (e.g. no year) |
 | `InconsistentFields` | Two populated fields disagree, or don't jointly form a valid value (e.g. `%j` contradicting `%m`/`%d`, or an out-of-range calendar date) |
-| `InputMismatch` | Literal or specifier text fails to match the input, input remains unconsumed, or `%Z` is parsed (never matchable) |
+| `InputMismatch` | Literal or specifier text fails to match the input, input remains unconsumed, or a format-only specifier (`%Z`, `%s`, `%G`, `%g`, `%V`) is parsed |
 
 `ParseError` also implements `Eq`.

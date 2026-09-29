@@ -77,6 +77,46 @@ pub fn tokenize(fmt : String) -> Array[Item] raise ParseError {
         flush_literal()
         items.push(Fixed(TimezoneOffset))
       }
+      'B' => {
+        flush_literal()
+        items.push(Fixed(LongMonthName))
+      }
+      'b' | 'h' => {
+        flush_literal()
+        items.push(Fixed(ShortMonthName))
+      }
+      'P' => {
+        flush_literal()
+        items.push(Fixed(AmPmLower))
+      }
+      'p' => {
+        flush_literal()
+        items.push(Fixed(AmPmUpper))
+      }
+      'I' => {
+        flush_literal()
+        items.push(Numeric(Hour12))
+      }
+      'l' => {
+        flush_literal()
+        items.push(Numeric(Hour12Blank))
+      }
+      's' => {
+        flush_literal()
+        items.push(Numeric(Timestamp))
+      }
+      'G' => {
+        flush_literal()
+        items.push(Numeric(IsoYear))
+      }
+      'g' => {
+        flush_literal()
+        items.push(Numeric(IsoYear2))
+      }
+      'V' => {
+        flush_literal()
+        items.push(Numeric(IsoWeekNumber))
+      }
       'F' => {
         flush_literal()
         items.push(Numeric(Year))

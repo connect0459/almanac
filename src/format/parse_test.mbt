@@ -142,6 +142,7 @@ test "parsing rejects a malformed numeric field for every fixed-width numeric sp
       ("%M", "XX"),
       ("%S", "XX"),
       ("%f", "12345"),
+      ("%I", "XX"),
     ] {
     let (fmt, bad) = case
     try @format.parse_date_time(bad, fmt) |> ignore catch {
@@ -299,5 +300,127 @@ test "parsing %Z always raises InputMismatch, since a zone name can't be resolve
     _ => fail("expected InputMismatch")
   } noraise {
     _ => fail("expected parse_date_time to reject %Z")
+  }
+}
+
+///|
+test "parse_date round-trips using the long or short month name alongside day and year" {
+  let date = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
+  assert_eq(
+    @format.parse_date(@format.format_date(date, "%B %d %Y"), "%B %d %Y"),
+    date,
+  )
+  assert_eq(
+    @format.parse_date(@format.format_date(date, "%b %d %Y"), "%b %d %Y"),
+    date,
+  )
+  assert_eq(@format.parse_date("05 Mar 2024", "%d %h %Y"), date)
+}
+
+///|
+test "parse_date rejects unrecognized month name text" {
+  try @format.parse_date("Blah 05 2024", "%B %d %Y") |> ignore catch {
+    @format.InputMismatch => ()
+    _ => fail("expected InputMismatch")
+  } noraise {
+    _ => fail("expected parse_date to reject unrecognized month text")
+  }
+}
+
+///|
+test "parse_time round-trips the 12-hour clock and am/pm marker through format_time" {
+  for case in [(0, 0), (9, 5), (12, 0), (13, 30), (23, 45)] {
+    let (hour, minute) = case
+    let time = @core.NaiveTime::from_hms(hour, minute, 0).unwrap()
+    assert_eq(
+      @format.parse_time(
+        @format.format_time(time, "%I:%M:%S %p"),
+        "%I:%M:%S %p",
+      ),
+      time,
+    )
+    assert_eq(
+      @format.parse_time(
+        @format.format_time(time, "%l:%M:%S %P"),
+        "%l:%M:%S %P",
+      ),
+      time,
+    )
+  }
+}
+
+///|
+test "parse_time accepts %p/%P case-insensitively regardless of which specifier rendered it" {
+  let time = @core.NaiveTime::from_hms(15, 0, 0).unwrap()
+  assert_eq(@format.parse_time("03:00:00 pm", "%I:%M:%S %p"), time)
+  assert_eq(@format.parse_time("03:00:00 PM", "%I:%M:%S %p"), time)
+  assert_eq(@format.parse_time("03:00:00 pm", "%I:%M:%S %P"), time)
+}
+
+///|
+test "parse_time rejects a 12-hour value present without its am/pm marker" {
+  try @format.parse_time("09:00", "%I:%M") |> ignore catch {
+    @format.IncompleteFields => ()
+    _ => fail("expected IncompleteFields")
+  } noraise {
+    _ => fail("expected parse_time to reject %I without %p/%P")
+  }
+}
+
+///|
+test "parse_time cross-checks a redundant 12-hour field against %H, accepting agreement and rejecting disagreement" {
+  assert_eq(
+    @format.parse_time("15:00:00 03 PM", "%H:%M:%S %I %p"),
+    @core.NaiveTime::from_hms(15, 0, 0).unwrap(),
+  )
+  try @format.parse_time("15:00:00 04 PM", "%H:%M:%S %I %p") |> ignore catch {
+    @format.InconsistentFields => ()
+    _ => fail("expected InconsistentFields")
+  } noraise {
+    _ => fail("expected parse_time to reject a disagreeing 12-hour field")
+  }
+}
+
+///|
+test "parse_time rejects unrecognized am/pm text" {
+  for bad in ["xm", "ax", "qm", "px"] {
+    try @format.parse_time("03:00:00 " + bad, "%I:%M:%S %p") |> ignore catch {
+      @format.InputMismatch => ()
+      _ => fail("expected InputMismatch for \{bad}")
+    } noraise {
+      _ => fail("expected rejection for \{bad}")
+    }
+  }
+}
+
+///|
+test "parse_time rejects a malformed %l field (neither two digits nor a space plus one digit)" {
+  try @format.parse_time("XX:00:00 PM", "%l:%M:%S %p") |> ignore catch {
+    @format.InputMismatch => ()
+    _ => fail("expected InputMismatch")
+  } noraise {
+    _ => fail("expected rejection for a malformed %l field")
+  }
+}
+
+///|
+test "parse_time rejects a 12-hour value outside 1..=12" {
+  try @format.parse_time("00:00:00 AM", "%I:%M:%S %p") |> ignore catch {
+    @format.InconsistentFields => ()
+    _ => fail("expected InconsistentFields")
+  } noraise {
+    _ => fail("expected rejection for an out-of-range %I value")
+  }
+}
+
+///|
+test "parsing %s, %G, %g, and %V always raise InputMismatch, since parsing them is not yet supported" {
+  for spec in ["%s", "%G", "%g", "%V"] {
+    try @format.parse_date_time("anything", spec) |> ignore catch {
+      @format.InputMismatch => ()
+      _ => fail("expected InputMismatch for \{spec}")
+    } noraise {
+      _ => fail("expected parse_date_time to reject \{spec}")
+    }
   }
 }

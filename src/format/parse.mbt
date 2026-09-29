@@ -15,6 +15,12 @@ priv struct Parsed {
   nanosecond : Int?
   weekday : @core.Weekday?
   offset_secs : Int?
+  /// `%I`/`%l`: the hour on a 12-hour clock (`1..=12`), reconciled with
+  /// `is_pm` (and cross-checked against `hour`, if also present) by
+  /// `resolve_hour`.
+  hour12 : Int?
+  /// `%p`/`%P`: whether the 12-hour clock reading is PM.
+  is_pm : Bool?
 }
 
 ///|
@@ -30,6 +36,8 @@ fn Parsed::empty() -> Parsed {
     nanosecond: None,
     weekday: None,
     offset_secs: None,
+    hour12: None,
+    is_pm: None,
   }
 }
 
@@ -163,6 +171,115 @@ fn apply_weekday_specifier(
 }
 
 ///|
+fn month_names() -> Array[(@core.Month, String, String)] {
+  [
+    (@core.Jan, "January", "Jan"),
+    (@core.Feb, "February", "Feb"),
+    (@core.Mar, "March", "Mar"),
+    (@core.Apr, "April", "Apr"),
+    (@core.May, "May", "May"),
+    (@core.Jun, "June", "Jun"),
+    (@core.Jul, "July", "Jul"),
+    (@core.Aug, "August", "Aug"),
+    (@core.Sep, "September", "Sep"),
+    (@core.Oct, "October", "Oct"),
+    (@core.Nov, "November", "Nov"),
+    (@core.Dec, "December", "Dec"),
+  ]
+}
+
+///|
+/// Matches either the long (`%B`) or short (`%b`/`%h`) name of any month
+/// at `pos` (whichever fits — mirrors `match_weekday_name`).
+fn match_month_name(chars : Array[Char], pos : Int) -> (@core.Month, Int)? {
+  let names = month_names()
+  for i = 0 {
+    if i >= names.length() {
+      break None
+    }
+    let (m, long_name, short_name) = names[i]
+    match match_literal(chars, pos, long_name) {
+      Some(p) => break Some((m, p))
+      None =>
+        match match_literal(chars, pos, short_name) {
+          Some(p) => break Some((m, p))
+          None => continue i + 1
+        }
+    }
+  }
+}
+
+///|
+/// A month name resolves directly into `parsed.month` (unlike a weekday
+/// name, which only cross-checks an already-constructed date): a format
+/// like `"%B %d %Y"` has no other field that could supply the month.
+fn apply_month_name_specifier(
+  chars : Array[Char],
+  pos : Int,
+  parsed : Parsed,
+) -> (Parsed, Int) raise ParseError {
+  match match_month_name(chars, pos) {
+    None => raise InputMismatch
+    Some((m, p)) =>
+      (
+        { ..parsed, month: merge_field(parsed.month, m.number_from_month()), },
+        p,
+      )
+  }
+}
+
+///|
+/// Matches `"am"`/`"pm"` case-insensitively at `pos`, regardless of
+/// whether the format used `%p` or `%P` to render it — the two specifiers
+/// differ only in rendered case, not in the value they carry.
+fn match_ampm(chars : Array[Char], pos : Int) -> (Bool, Int)? {
+  match expect_char_ci(chars, pos, 'A', 'a') {
+    Some(p1) =>
+      match expect_char_ci(chars, p1, 'M', 'm') {
+        Some(p2) => Some((false, p2))
+        None => None
+      }
+    None =>
+      match expect_char_ci(chars, pos, 'P', 'p') {
+        Some(p1) =>
+          match expect_char_ci(chars, p1, 'M', 'm') {
+            Some(p2) => Some((true, p2))
+            None => None
+          }
+        None => None
+      }
+  }
+}
+
+///|
+fn apply_ampm_specifier(
+  chars : Array[Char],
+  pos : Int,
+  parsed : Parsed,
+) -> (Parsed, Int) raise ParseError {
+  match match_ampm(chars, pos) {
+    None => raise InputMismatch
+    Some((is_pm, p)) =>
+      ({ ..parsed, is_pm: merge_field(parsed.is_pm, is_pm), }, p)
+  }
+}
+
+///|
+/// Parses `%l`'s blank-padded 2-character field: either two digits (like
+/// `%I`) or a leading space followed by one digit.
+fn parse_blank_or_zero_padded_digits(
+  chars : Array[Char],
+  pos : Int,
+  width : Int,
+) -> (Int, Int)? {
+  if pos < chars.length() && chars[pos] == ' ' {
+    parse_fixed_digits(chars, pos + 1, width - 1)
+  } else {
+    parse_fixed_digits(chars, pos, width)
+  }
+}
+
+///|
 /// Applies a single token against `input` at `pos`, returning the
 /// updated accumulator and the new position. `%Z` always raises
 /// `InputMismatch`: a zone name (an IANA abbreviation, `"UTC"`, or a bare
@@ -239,6 +356,26 @@ fn apply_item(
             p,
           )
       }
+    Fixed(LongMonthName) => apply_month_name_specifier(chars, pos, parsed)
+    Fixed(ShortMonthName) => apply_month_name_specifier(chars, pos, parsed)
+    Fixed(AmPmLower) => apply_ampm_specifier(chars, pos, parsed)
+    Fixed(AmPmUpper) => apply_ampm_specifier(chars, pos, parsed)
+    Numeric(Hour12) =>
+      match parse_fixed_digits(chars, pos, 2) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          ({ ..parsed, hour12: merge_field(parsed.hour12, value), }, p)
+      }
+    Numeric(Hour12Blank) =>
+      match parse_blank_or_zero_padded_digits(chars, pos, 2) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          ({ ..parsed, hour12: merge_field(parsed.hour12, value), }, p)
+      }
+    Numeric(Timestamp) => raise InputMismatch
+    Numeric(IsoYear) => raise InputMismatch
+    Numeric(IsoYear2) => raise InputMismatch
+    Numeric(IsoWeekNumber) => raise InputMismatch
   }
 }
 
@@ -300,15 +437,40 @@ fn resolve_date(parsed : Parsed) -> @core.NaiveDate raise ParseError {
 }
 
 ///|
-/// Resolves `parsed`'s time fields into a `NaiveTime`: `hour`, `minute`,
-/// and `second` are required; `nanosecond` defaults to `0`. A `second`
-/// of `60` (a leap second) maps to `NaiveTime`'s `second() == 59,
-/// nanosecond() >= 1_000_000_000` convention.
-fn resolve_time(parsed : Parsed) -> @core.NaiveTime raise ParseError {
-  let hour = match parsed.hour {
-    None => raise IncompleteFields
-    Some(h) => h
+/// Resolves the 24-hour `hour` field from `%H` and/or the `%I`/`%l`
+/// (`hour12`) + `%p`/`%P` (`is_pm`) pair, cross-checking both against each
+/// other when both are present (mirrors `merge_field`'s
+/// disagreement-raises philosophy, applied across specifiers rather than
+/// within one). `hour12` alone (no am/pm marker) or `is_pm` alone (no
+/// 12-hour value) is incomplete: neither determines an hour by itself.
+fn resolve_hour(parsed : Parsed) -> Int raise ParseError {
+  let from_12h = match (parsed.hour12, parsed.is_pm) {
+    (None, None) => None
+    (Some(hour12), Some(is_pm)) => {
+      if hour12 < 1 || hour12 > 12 {
+        raise InconsistentFields
+      }
+      let base = if hour12 == 12 { 0 } else { hour12 }
+      Some(if is_pm { base + 12 } else { base })
+    }
+    _ => raise IncompleteFields
   }
+  match (parsed.hour, from_12h) {
+    (None, None) => raise IncompleteFields
+    (Some(h), None) => h
+    (None, Some(h)) => h
+    (Some(h), Some(h2)) => if h == h2 { h } else { raise InconsistentFields }
+  }
+}
+
+///|
+/// Resolves `parsed`'s time fields into a `NaiveTime`: an hour (via
+/// `resolve_hour`), `minute`, and `second` are required; `nanosecond`
+/// defaults to `0`. A `second` of `60` (a leap second) maps to
+/// `NaiveTime`'s `second() == 59, nanosecond() >= 1_000_000_000`
+/// convention.
+fn resolve_time(parsed : Parsed) -> @core.NaiveTime raise ParseError {
+  let hour = resolve_hour(parsed)
   let minute = match parsed.minute {
     None => raise IncompleteFields
     Some(m) => m

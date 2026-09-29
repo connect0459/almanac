@@ -39,6 +39,10 @@ test "format_date raises MissingField for a time-of-day or timezone specifier" {
       ("%M", @format.Numeric(@format.Minute)),
       ("%S", @format.Numeric(@format.Second)),
       ("%f", @format.Numeric(@format.Nanosecond)),
+      ("%I", @format.Numeric(@format.Hour12)),
+      ("%l", @format.Numeric(@format.Hour12Blank)),
+      ("%P", @format.Fixed(@format.AmPmLower)),
+      ("%p", @format.Fixed(@format.AmPmUpper)),
       ("%Z", @format.Fixed(@format.TimezoneName)),
       ("%z", @format.Fixed(@format.TimezoneOffset)),
     ] {
@@ -50,6 +54,41 @@ test "format_date raises MissingField for a time-of-day or timezone specifier" {
       _ => fail("expected format_date to raise MissingField")
     }
   }
+}
+
+///|
+test "format_date renders the long and short month names via %B, %b, and %h" {
+  let march = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
+  assert_eq(@format.format_date(march, "%B"), "March")
+  assert_eq(@format.format_date(march, "%b"), "Mar")
+  assert_eq(@format.format_date(march, "%h"), "Mar")
+  for
+    case in [
+      (1, "January", "Jan"),
+      (2, "February", "Feb"),
+      (4, "April", "Apr"),
+      (5, "May", "May"),
+      (6, "June", "Jun"),
+      (7, "July", "Jul"),
+      (8, "August", "Aug"),
+      (9, "September", "Sep"),
+      (10, "October", "Oct"),
+      (11, "November", "Nov"),
+      (12, "December", "Dec"),
+    ] {
+    let (month, long_name, short_name) = case
+    let date = @core.NaiveDate::from_ymd(2024, month, 1).unwrap()
+    assert_eq(@format.format_date(date, "%B"), long_name)
+    assert_eq(@format.format_date(date, "%b"), short_name)
+  }
+}
+
+///|
+test "format_date renders the ISO week-date year and week number via %G, %g, and %V, distinct from the calendar year" {
+  let date = @core.NaiveDate::from_ymd(2005, 1, 1).unwrap()
+  assert_eq(@format.format_date(date, "%G"), "2004")
+  assert_eq(@format.format_date(date, "%g"), "04")
+  assert_eq(@format.format_date(date, "%V"), "53")
 }
 
 ///|
@@ -75,6 +114,13 @@ test "format_time raises MissingField for a date, weekday, or timezone specifier
       ("%j", @format.Numeric(@format.Ordinal)),
       ("%A", @format.Fixed(@format.LongWeekdayName)),
       ("%a", @format.Fixed(@format.ShortWeekdayName)),
+      ("%B", @format.Fixed(@format.LongMonthName)),
+      ("%b", @format.Fixed(@format.ShortMonthName)),
+      ("%h", @format.Fixed(@format.ShortMonthName)),
+      ("%s", @format.Numeric(@format.Timestamp)),
+      ("%G", @format.Numeric(@format.IsoYear)),
+      ("%g", @format.Numeric(@format.IsoYear2)),
+      ("%V", @format.Numeric(@format.IsoWeekNumber)),
       ("%Z", @format.Fixed(@format.TimezoneName)),
       ("%z", @format.Fixed(@format.TimezoneOffset)),
     ] {
@@ -89,6 +135,24 @@ test "format_time raises MissingField for a date, weekday, or timezone specifier
 }
 
 ///|
+test "format_time renders the 12-hour clock and am/pm marker via %I, %l, %P, and %p" {
+  for
+    case in [
+      (0, 0, "12", "12", "am", "AM"),
+      (9, 5, "09", " 9", "am", "AM"),
+      (12, 0, "12", "12", "pm", "PM"),
+      (23, 45, "11", "11", "pm", "PM"),
+    ] {
+    let (hour, minute, i, l, p_lower, p_upper) = case
+    let time = @core.NaiveTime::from_hms(hour, minute, 0).unwrap()
+    assert_eq(@format.format_time(time, "%I"), i)
+    assert_eq(@format.format_time(time, "%l"), l)
+    assert_eq(@format.format_time(time, "%P"), p_lower)
+    assert_eq(@format.format_time(time, "%p"), p_upper)
+  }
+}
+
+///|
 test "format_date_time renders date, time, and weekday fields together via %F %T %A" {
   let dt = @core.NaiveDateTime::new(
     @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
@@ -97,6 +161,31 @@ test "format_date_time renders date, time, and weekday fields together via %F %T
   assert_eq(
     @format.format_date_time(dt, "%F %T %A"),
     "2024-03-05 09:30:00 Tuesday",
+  )
+}
+
+///|
+test "format_date_time renders %s as the Unix timestamp of the given datetime" {
+  let dt = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),
+    @core.NaiveTime::from_hms(12, 0, 0).unwrap(),
+  )
+  assert_eq(@format.format_date_time(dt, "%s"), dt.timestamp().to_string())
+}
+
+///|
+test "format_date_time_tz renders %s as the UTC instant's timestamp, unaffected by the local zone shift" {
+  let naive = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),
+    @core.NaiveTime::from_hms(12, 0, 0).unwrap(),
+  )
+  let dt = @tz.DateTime::from_utc(
+    naive,
+    @tz.FixedOffset::east(9 * 3600).unwrap(),
+  )
+  assert_eq(
+    @format.format_date_time_tz(dt, "%s"),
+    naive.timestamp().to_string(),
   )
 }
 

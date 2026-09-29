@@ -15,6 +15,12 @@ test "tokenize recognizes each numeric specifier" {
       ("%M", @format.Minute),
       ("%S", @format.Second),
       ("%f", @format.Nanosecond),
+      ("%I", @format.Hour12),
+      ("%l", @format.Hour12Blank),
+      ("%s", @format.Timestamp),
+      ("%G", @format.IsoYear),
+      ("%g", @format.IsoYear2),
+      ("%V", @format.IsoWeekNumber),
     ] {
     let (spec, expected) = case
     assert_eq(@format.tokenize(spec), [@format.Numeric(expected)])
@@ -29,6 +35,11 @@ test "tokenize recognizes each fixed specifier" {
       ("%a", @format.ShortWeekdayName),
       ("%Z", @format.TimezoneName),
       ("%z", @format.TimezoneOffset),
+      ("%b", @format.ShortMonthName),
+      ("%h", @format.ShortMonthName),
+      ("%B", @format.LongMonthName),
+      ("%P", @format.AmPmLower),
+      ("%p", @format.AmPmUpper),
     ] {
     let (spec, expected) = case
     assert_eq(@format.tokenize(spec), [@format.Fixed(expected)])
