@@ -230,7 +230,8 @@ pub fn NaiveDateTime::signed_duration_since(
   self : NaiveDateTime,
   other : NaiveDateTime,
 ) -> TimeDelta {
-  let day_diff = (self.date.epoch_days() - other.date.epoch_days()).to_int64()
+  let day_diff = self.date.epoch_days().to_int64() -
+    other.date.epoch_days().to_int64()
   let self_nanos = self.time.num_seconds_from_midnight().to_int64() *
     1_000_000_000L +
     self.time.nanosecond().to_int64()

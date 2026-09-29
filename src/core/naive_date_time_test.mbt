@@ -279,3 +279,20 @@ test "equal datetimes compare as neither less nor greater" {
   assert_true(d1 >= d2)
   assert_eq(d1.compare(d2), 0)
 }
+
+///|
+test "signed_duration_since spans the full representable date range without overflow" {
+  let limit = 2_147_483_647 - 719_468
+  let upper = @core.NaiveDate::from_epoch_days(limit)
+    .unwrap()
+    .and_hms(0, 0, 0)
+    .unwrap()
+  let lower = @core.NaiveDate::from_epoch_days(-limit)
+    .unwrap()
+    .and_hms(0, 0, 0)
+    .unwrap()
+  assert_eq(
+    upper.signed_duration_since(lower),
+    @core.TimeDelta::days(2L * limit.to_int64()).unwrap(),
+  )
+}
