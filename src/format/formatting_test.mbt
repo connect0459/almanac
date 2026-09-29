@@ -181,14 +181,18 @@ test "format_time renders a leap second as 60 while %f keeps only the sub-second
 }
 
 ///|
-test "format_time renders %.f trimmed to its minimal significant digits, or nothing when zero" {
+test "format_time renders %.f with the fewest of 3, 6 or 9 digits that represent the nanoseconds, or nothing when zero" {
   for
     case in [
       (0, ""),
-      (500000000, ".5"),
-      (120000000, ".12"),
+      (500000000, ".500"),
+      (120000000, ".120"),
+      (1000000, ".001"),
       (123456000, ".123456"),
+      (100000, ".000100"),
+      (1000, ".000001"),
       (123456789, ".123456789"),
+      (1, ".000000001"),
     ] {
     let (nanos, expected) = case
     let time = @core.NaiveTime::from_hms_nano(9, 30, 0, nanos).unwrap()

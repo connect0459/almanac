@@ -27,7 +27,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%M` | Minute | Zero-padded, `00`..`59` |
 | `%S` | Second | Zero-padded, `00`..`60` (`60` on parse maps to a leap second) |
 | `%f` | Nanosecond | Zero-padded to 9 digits |
-| `%.f` | Dot-prefixed fractional second | Trimmed to its minimal significant digits, matching `to_rfc3339`'s fraction rendering; renders nothing when zero. On parse, optional — unlike every other specifier, absent input (no leading dot) leaves the nanosecond field untouched rather than raising |
+| `%.f` | Dot-prefixed fractional second | The fewest of 3, 6 or 9 digits that represent the nanoseconds (`.500`, `.123456`, `.000000789`), matching `to_rfc3339`'s and `NaiveTime`'s `Show` fraction rendering; renders nothing when zero. On parse, optional — unlike every other specifier, absent input (no leading dot) leaves the nanosecond field untouched rather than raising |
 | `%3f` | Fractional second, milliseconds | 3 digits, no leading dot, truncated (not rounded); mandatory on parse |
 | `%6f` | Fractional second, microseconds | 6 digits, no leading dot; see `%3f` |
 | `%9f` | Fractional second | 9 digits, no leading dot; identical to `%f` |
@@ -106,15 +106,16 @@ test {
 }
 ```
 
-`to_rfc3339` trims trailing zeros from fractional seconds and renders a zero offset as `Z`:
+`to_rfc3339` renders fractional seconds with the fewest of 3, 6 or 9 digits that represent them, and a zero offset as `Z`; `parse_rfc3339` accepts any number of fractional digits:
 
 ```mbt check
 ///|
 test {
   let naive = @core.NaiveDateTime::from_timestamp(0L, 500_000_000).unwrap()
   let dt = @tz.DateTime::from_utc(naive, @tz.FixedOffset::east(0).unwrap())
-  assert_eq(@format.to_rfc3339(dt), "1970-01-01T00:00:00.5Z")
+  assert_eq(@format.to_rfc3339(dt), "1970-01-01T00:00:00.500Z")
   assert_eq(@format.parse_rfc3339("1970-01-01T00:00:00.5Z"), dt)
+  assert_eq(@format.parse_rfc3339("1970-01-01T00:00:00.500Z"), dt)
 }
 ```
 
@@ -142,7 +143,7 @@ test {
 
 | Function | Signature | Description |
 | :--- | :--- | :--- |
-| `to_rfc3339(DateTime[Tz])` *(Tz : TimeZone)* | `-> String` | Renders `YYYY-MM-DDTHH:MM:SS[.fraction](Z\|±HH:MM)`; a zero offset renders as `Z`, fractional seconds only when nonzero with trailing zeros trimmed, a leap second as `:60`. Total — never raises |
+| `to_rfc3339(DateTime[Tz])` *(Tz : TimeZone)* | `-> String` | Renders `YYYY-MM-DDTHH:MM:SS[.fraction](Z\|±HH:MM)`; a zero offset renders as `Z`, fractional seconds only when nonzero, with the fewest of 3, 6 or 9 digits that represent them, a leap second as `:60`. Total — never raises |
 | `parse_rfc3339(String)` | `-> DateTime[FixedOffset] raise ParseError` | Strict RFC 3339 parsing (`T`/`t` and `Z`/`z` case-insensitive; a fractional-second field beyond 9 digits is truncated, not rejected); raises `InvalidRfc3339` on any mismatch |
 
 ### RFC 2822 fast path

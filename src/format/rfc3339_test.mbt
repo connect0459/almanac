@@ -28,14 +28,16 @@ test "to_rfc3339 renders a non-zero fixed offset in colon-separated form, shifte
 }
 
 ///|
-test "to_rfc3339 renders fractional seconds with trailing zeros trimmed, omitting them entirely when zero" {
+test "to_rfc3339 renders fractional seconds with the fewest of 3, 6 or 9 digits that represent them, omitting them entirely when zero" {
   let base = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
   for
     case in [
       (0, "2024-03-05T09:30:00Z"),
       (123000000, "2024-03-05T09:30:00.123Z"),
-      (100000000, "2024-03-05T09:30:00.1Z"),
-      (500000000, "2024-03-05T09:30:00.5Z"),
+      (100000000, "2024-03-05T09:30:00.100Z"),
+      (500000000, "2024-03-05T09:30:00.500Z"),
+      (123456000, "2024-03-05T09:30:00.123456Z"),
+      (1000, "2024-03-05T09:30:00.000001Z"),
       (1, "2024-03-05T09:30:00.000000001Z"),
       (123456789, "2024-03-05T09:30:00.123456789Z"),
     ] {
@@ -60,7 +62,7 @@ test "to_rfc3339 renders a leap second as :60, matching NaiveTime's leap-second 
     ),
     @tz.Utc::new(),
   )
-  assert_eq(@format.to_rfc3339(dt), "2016-12-31T23:59:60.5Z")
+  assert_eq(@format.to_rfc3339(dt), "2016-12-31T23:59:60.500Z")
 }
 
 ///|

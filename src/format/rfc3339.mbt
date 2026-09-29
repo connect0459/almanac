@@ -272,22 +272,18 @@ fn format_offset_colon(secs : Int) -> String {
 }
 
 ///|
-/// Renders a nanosecond component (`0..=999_999_999`) as `.` followed by
-/// its digits with trailing zeros trimmed, or `""` when it is zero.
-fn format_fraction_trimmed(nanos : Int) -> String {
+/// Renders a nanosecond component (`0..=999_999_999`) as `.` followed by the
+/// fewest of 3, 6 or 9 digits that represent it exactly, or `""` when it is
+/// zero.
+fn format_fraction_auto(nanos : Int) -> String {
   if nanos == 0 {
     ""
+  } else if nanos % 1_000_000 == 0 {
+    "." + pad_int(nanos / 1_000_000, 3)
+  } else if nanos % 1_000 == 0 {
+    "." + pad_int(nanos / 1_000, 6)
   } else {
-    // `nanos != 0` guarantees this always finds a nonzero digit at or
-    // before `n == 1`, so `v` never reaches `0` here.
-    let significant_digits = for n = 9, v = nanos {
-      if v % 10 != 0 {
-        break n
-      }
-      continue n - 1, v / 10
-    }
-    let digits = pad_int(nanos, 9).to_array()
-    "." + String::from_array(digits[0:significant_digits])
+    "." + pad_int(nanos, 9)
   }
 }
 
@@ -321,7 +317,7 @@ fn render_rfc3339(
   pad_int(time.minute(), 2) +
   ":" +
   pad_int(seconds, 2) +
-  format_fraction_trimmed(fraction_nanos) +
+  format_fraction_auto(fraction_nanos) +
   offset_str
 }
 

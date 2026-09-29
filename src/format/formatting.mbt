@@ -316,7 +316,7 @@ fn render(
         match time {
           Some(t) =>
             out.write_string(
-              format_fraction_trimmed(t.nanosecond() % 1_000_000_000),
+              format_fraction_auto(t.nanosecond() % 1_000_000_000),
             )
           None => raise MissingField(item)
         }

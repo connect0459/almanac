@@ -42,8 +42,9 @@ pub(all) enum Numeric {
   /// `%W`: the week number of the year, Monday-based (`00`..=`53`); days
   /// before the year's first Monday are week `00`.
   WeekMonday
-  /// `%.f`: a dot-prefixed fractional second, trimmed to its minimal
-  /// significant digits (mirrors `to_rfc3339`'s fraction rendering); on
+  /// `%.f`: a dot-prefixed fractional second in the fewest of 3, 6 or 9
+  /// digits that represent it exactly (mirrors `to_rfc3339`'s fraction
+  /// rendering, and renders nothing when zero); on
   /// parse, optional — absent input (no leading dot) simply leaves the
   /// nanosecond field untouched rather than raising, unlike every other
   /// specifier.
