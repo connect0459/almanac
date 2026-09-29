@@ -26,6 +26,8 @@ pub fn parse_date_time(String, String) -> @core.NaiveDateTime raise ParseError
 
 pub fn parse_date_time_tz(String, String) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
 
+pub fn parse_duration(String) -> @core.TimeDelta raise ParseError
+
 pub fn parse_from_rfc2822(String) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
 
 pub fn parse_rfc3339(String) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
@@ -57,6 +59,7 @@ pub suberror ParseError {
   MissingField(Item)
   InvalidRfc3339
   InvalidRfc2822
+  InvalidDuration
   IncompleteFields
   InconsistentFields
   InputMismatch

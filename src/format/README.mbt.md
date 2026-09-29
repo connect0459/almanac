@@ -1,6 +1,6 @@
 # `format` package
 
-strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459/chrono/format` for `format_date`/`format_time`/`format_date_time`/`format_date_time_tz`, their `parse_*` counterparts, and dedicated RFC 3339 and RFC 2822 fast paths (`to_rfc3339`/`parse_rfc3339`, `to_rfc2822`/`parse_from_rfc2822`).
+strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459/chrono/format` for `format_date`/`format_time`/`format_date_time`/`format_date_time_tz`, their `parse_*` counterparts, and dedicated RFC 3339 and RFC 2822 fast paths (`to_rfc3339`/`parse_rfc3339`, `to_rfc2822`/`parse_from_rfc2822`), and `parse_duration` for `TimeDelta`.
 
 ## Key functions
 
@@ -12,6 +12,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `parse_date_time_tz` | Parse a string with a `%z` offset into a `DateTime[FixedOffset]`, interpreting the fields as local wall-clock time |
 | `to_rfc3339`/`parse_rfc3339` | Dedicated RFC 3339 fast path, bypassing the specifier engine |
 | `to_rfc2822`/`parse_from_rfc2822` | Dedicated RFC 2822 fast path (e.g. `"Tue, 1 Jul 2003 10:52:37 +0200"`), bypassing the specifier engine |
+| `parse_duration` | Reads a `TimeDelta` from Go-style text (`"1h30m"`, `"-1.5s"`, `"300ms"`); the inverse of `TimeDelta`'s `Show` |
 | `rfc1123`/`kitchen`/`stamp`/`stamp_milli`/`stamp_micro`/`stamp_nano`/`date_only`/`time_only` | Named convenience format strings (Go `time` package layout equivalents) — pass one to `format_*`/`parse_*` like any other format string |
 
 ## Supported specifiers
@@ -150,6 +151,7 @@ test {
 | :--- | :--- | :--- |
 | `to_rfc2822(DateTime[Tz])` *(Tz : TimeZone)* | `-> String raise ParseError` | Renders `"<short weekday>, <day> <short month> <year> <HH>:<MM>:<SS> ±HHMM"` (e.g. `"Tue, 1 Jul 2003 10:52:37 +0200"`); the day is unpadded (one or two digits, never a leading zero), unlike this package's other numeric fields. Raises `InvalidRfc2822` if the year is outside RFC 2822's own `0..=9999` range — unlike `to_rfc3339`, not total |
 | `parse_from_rfc2822(String)` | `-> DateTime[FixedOffset] raise ParseError` | Strict RFC 2822 parsing: only the exact shape `to_rfc2822` renders (day-of-week and seconds mandatory, single-space separators, a 4-digit year, a numeric `±HHMM` offset). Unlike chrono's own parser, does *not* support RFC 2822's "obsolete format" — optional day-of-week, arbitrary/folding whitespace, 2-/3-digit year windowing, named legacy zones (`GMT`, `EST`, ...), or parenthesized comments. Raises `InvalidRfc2822` on any mismatch |
+| `parse_duration(String)` | `-> TimeDelta raise ParseError` | Parses one or more `<number><unit>` components with an optional leading sign (`"1h30m"`, `"-1.5s"`, `"300ms"`, `".5s"`, `"1.5h"`). Units are `ns`, `us` (also `µs` U+00B5 and `μs` U+03BC), `ms`, `s`, `m`, `h`, case-sensitive, with hours the largest (no days/weeks); components are summed. A bare `"0"` (optionally signed) needs no unit. Fractional digits beyond the ninth, and precision finer than a nanosecond, are truncated toward zero. The inverse of `TimeDelta`'s `Show`. Raises `InvalidDuration` for malformed input or a value outside `TimeDelta`'s range |
 
 ### Named layouts
 
@@ -252,6 +254,7 @@ pub(all) enum Fixed {
 | `MissingField(Item)` | A `format_*` call is asked to render a specifier its input type can't supply (e.g. `%Z` via `format_date_time`) |
 | `InvalidRfc3339` | `parse_rfc3339` fails to match the RFC 3339 grammar |
 | `InvalidRfc2822` | `to_rfc2822`'s year is outside `0..=9999`, or `parse_from_rfc2822` fails to match this package's (strict) RFC 2822 grammar |
+| `InvalidDuration` | `parse_duration`'s input is malformed (no digits, missing or unknown unit, misplaced sign, stray characters) or its value is outside `TimeDelta`'s representable range |
 | `IncompleteFields` | A `parse_*` call resolves fields that never populate a required value (e.g. no year) |
 | `InconsistentFields` | Two populated fields disagree, or don't jointly form a valid value (e.g. `%j` contradicting `%m`/`%d`, or an out-of-range calendar date) |
 | `InputMismatch` | Literal or specifier text fails to match the input, input remains unconsumed, or a format-only specifier (`%Z`, `%s`, `%G`, `%g`, `%V`) is parsed |

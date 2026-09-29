@@ -9,6 +9,10 @@ pub suberror ParseError {
   /// `parse_from_rfc2822` fails to match the (strict, non-obsolete)
   /// grammar this project supports.
   InvalidRfc2822
+  /// `parse_duration`'s input is malformed (no digits, a missing or unknown
+  /// unit, a misplaced sign, stray characters) or its value falls outside
+  /// `TimeDelta`'s representable range.
+  InvalidDuration
   /// A required field (e.g. no date field at all, or an offset missing
   /// when `%z` isn't in the format) was never populated while walking
   /// the token sequence.
