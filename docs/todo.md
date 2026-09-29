@@ -174,7 +174,7 @@ Coverage target: 100%, consistent with Phase 1–8 (confirmed with the user), ex
 
 ### `src/tz`
 
-- [ ] `MappedLocalTime` combinators: `.single()`/`.earliest()`/`.latest()`/`.map()`-equivalents, so callers don't have to hand-write a pattern match every time
+- [x] `MappedLocalTime` combinators: `.single()`/`.earliest()`/`.latest()`/`.map()`-equivalents, so callers don't have to hand-write a pattern match every time
 - [ ] `TimeZone`-mediated `DateTime[Tz]` construction: build from local y/m/d/h/m/s or from a Unix timestamp through a given zone (resolving DST ambiguity via `MappedLocalTime`), not just `DateTime::from_utc` wrapping an already-UTC naive datetime
 - [ ] `DateTime[Tz]` calendar arithmetic: expose `add_months`/`sub_months`/`add_days`/`sub_days` (already on `NaiveDateTime`) without requiring the caller to manually unwrap to `naive_utc()` and rebuild
 - [ ] `Location` zone-identifier accessor: return the loaded IANA name (e.g. `"Asia/Tokyo"`), distinct from the existing instant-specific abbreviation (`"JST"`) returned by `tz_name`
