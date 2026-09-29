@@ -59,6 +59,18 @@ pub fn NaiveDateDaysIterator::length(self : NaiveDateDaysIterator) -> Int {
 }
 
 ///|
+/// This iterator as a standard `Iter`, so it works in a `for` loop
+/// (`for date in start.iter_days()`) and with adapters such as `map` and
+/// `take`. The `Iter` shares this iterator's state: whatever it consumes
+/// from the front is consumed here too, and it stops before any dates
+/// already taken with `next_back`.
+pub fn NaiveDateDaysIterator::iter(
+  self : NaiveDateDaysIterator,
+) -> Iter[NaiveDate] {
+  Iter::new(() => self.next(), size_hint=self.length())
+}
+
+///|
 /// A lazy, bounded, double-ended iterator over successive dates, stepping
 /// by one week. See `NaiveDate::iter_weeks`.
 pub struct NaiveDateWeeksIterator {
@@ -108,4 +120,15 @@ pub fn NaiveDateWeeksIterator::length(self : NaiveDateWeeksIterator) -> Int {
   } else {
     (self.end.days - self.value.days) / 7 + 1
   }
+}
+
+///|
+/// This iterator as a standard `Iter`, so it works in a `for` loop
+/// (`for date in start.iter_weeks()`) and with adapters such as `map` and
+/// `take`. The `Iter` shares this iterator's state, as for
+/// `NaiveDateDaysIterator::iter`.
+pub fn NaiveDateWeeksIterator::iter(
+  self : NaiveDateWeeksIterator,
+) -> Iter[NaiveDate] {
+  Iter::new(() => self.next(), size_hint=self.length())
 }

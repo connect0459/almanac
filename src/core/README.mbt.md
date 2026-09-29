@@ -218,7 +218,7 @@ A proleptic Gregorian calendar date. Constructors are `Option`-returning: an inv
 
 ### `NaiveDateDaysIterator` / `NaiveDateWeeksIterator`
 
-Returned by `NaiveDate::iter_days`/`iter_weeks`. Both are lazy and double-ended: `next()` advances from the front, `next_back()` from the back, and they converge without skipping or repeating a date. Both are bounded above by a conservative, round practical limit, `+275760-09-13` (matching the well-known ECMAScript `Date` representable range) — not `NaiveDate`'s actual much larger overflow-safe range — reaching and including that bound if the iterator gets that far; a date already past it yields nothing.
+Returned by `NaiveDate::iter_days`/`iter_weeks`. Both are lazy and double-ended: `next()` advances from the front, `next_back()` from the back, and they converge without skipping or repeating a date. Both are bounded above by a conservative, round practical limit, `+275760-09-13` (matching the well-known ECMAScript `Date` representable range) — not `NaiveDate`'s actual much larger overflow-safe range — reaching and including that bound if the iterator gets that far; a date already past it yields nothing. Each also has `iter()`, returning a standard `Iter[NaiveDate]` that shares the iterator's state, so `for date in start.iter_days() { ... }` works directly and adapters are available through it (`start.iter_days().iter().take(7).map(...).collect()`); the iterator types themselves cannot be `Iter` values, since MoonBit's `Iter` is a concrete closure-based type rather than a trait.
 
 | Method | Signature | Description |
 | :--- | :--- | :--- |

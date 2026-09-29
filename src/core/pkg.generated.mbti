@@ -149,6 +149,7 @@ pub impl Show for NaiveDate
 pub struct NaiveDateDaysIterator {
   // private fields
 } derive(@debug.Debug)
+pub fn NaiveDateDaysIterator::iter(Self) -> Iter[NaiveDate]
 pub fn NaiveDateDaysIterator::length(Self) -> Int
 pub fn NaiveDateDaysIterator::next(Self) -> NaiveDate?
 pub fn NaiveDateDaysIterator::next_back(Self) -> NaiveDate?
@@ -242,6 +243,7 @@ pub impl Show for NaiveDateTime
 pub struct NaiveDateWeeksIterator {
   // private fields
 } derive(@debug.Debug)
+pub fn NaiveDateWeeksIterator::iter(Self) -> Iter[NaiveDate]
 pub fn NaiveDateWeeksIterator::length(Self) -> Int
 pub fn NaiveDateWeeksIterator::next(Self) -> NaiveDate?
 pub fn NaiveDateWeeksIterator::next_back(Self) -> NaiveDate?
