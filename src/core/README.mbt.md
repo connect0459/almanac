@@ -312,6 +312,7 @@ A signed duration, precise to the nanosecond. Constructors and checked arithmeti
 | `is_zero()` | `-> Bool` | Whether this duration is exactly zero |
 | `round(TimeDelta)` | `-> Self?` | Round to the nearest multiple of a granularity, ties breaking away from zero; `None` if the granularity is zero, negative, or mixes a whole-second part with a sub-second remainder (e.g. 1.5 seconds — every named duration unit is either purely sub-second or a whole-second-or-larger multiple) |
 | `truncate(TimeDelta)` | `-> Self?` | Truncate toward zero to the nearest multiple of a granularity; same granularity restriction as `round` |
+| `round_up(TimeDelta)` | `-> Self?` | Round up (toward positive infinity) to a multiple of a granularity: unchanged if already a multiple, otherwise the next one above (for a negative duration that is toward zero, equal to `truncate`); `None` for a rejected granularity or if the result would leave the representable range |
 
 `TimeDelta` also implements `Eq`, `Compare` (`<`/`<=`/`>`/`>=` via `compare`) and `Show`. `Show` renders Go's `time.Duration` style: a leading `-` for a negative value, then hours/minutes/seconds (`1h2m3.5s`) with hours as the largest unit (never days) and trailing fractional zeros trimmed; units between the largest and the seconds are kept even when zero (`1h0m0s`); a duration under one second uses `ns`/`us`/`ms` (`1.5ms`); zero is `0s`. `format`'s `parse_duration` reads this form back.
 
@@ -355,5 +356,6 @@ The non-`checked` arithmetic on `NaiveDate` and `NaiveDateTime` (`succ`, `pred`,
 | `signed_duration_since(Self)` | `-> TimeDelta` | The signed duration from `other` to `self` |
 | `round(TimeDelta)` | `-> Self?` | Round to the nearest multiple of a granularity since the Unix epoch, ties breaking away from the epoch; see `TimeDelta::round` for which granularities are supported |
 | `truncate(TimeDelta)` | `-> Self?` | Truncate toward the Unix epoch to the nearest multiple of a granularity; a datetime before the epoch is truncated *forward* in time (see Quick start above), never further into the past |
+| `round_up(TimeDelta)` | `-> Self?` | Round up (toward positive infinity) to the next multiple of a granularity since the Unix epoch, unchanged if already a multiple; a datetime before the epoch moves toward the epoch; `None` for a rejected granularity or if the result would leave `NaiveDate`'s range |
 
 `NaiveDateTime` also implements `Eq`, `Compare` (`<`/`<=`/`>`/`>=` via `compare`) and `Show`, rendering the date and time joined by a space (`2024-01-02 13:45:06.500`).

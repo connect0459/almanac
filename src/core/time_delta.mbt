@@ -627,3 +627,29 @@ pub fn TimeDelta::round(
     }
   }
 }
+
+///|
+/// This duration rounded up (toward positive infinity) to the nearest
+/// multiple of `granularity`: unchanged if already a multiple, otherwise
+/// the next multiple above it. For a negative duration that is toward zero,
+/// the same result as `truncate`. Returns `None` if `granularity` is
+/// rejected (see `truncate`) or if rounding up would leave `TimeDelta`'s
+/// representable range.
+pub fn TimeDelta::round_up(
+  self : TimeDelta,
+  granularity : TimeDelta,
+) -> TimeDelta? {
+  match classify_granularity(granularity) {
+    None => None
+    Some(kind) => {
+      let remainder = signed_remainder(self, kind)
+      if remainder.is_zero() {
+        Some(self)
+      } else if self.seconds < 0L {
+        self.sub(remainder)
+      } else {
+        self.sub(remainder).bind(t => t.add(granularity_magnitude(kind)))
+      }
+    }
+  }
+}

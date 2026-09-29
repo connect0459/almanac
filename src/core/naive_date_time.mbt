@@ -532,3 +532,19 @@ pub fn NaiveDateTime::round(
   .round(granularity)
   .map(delta => epoch().add_signed(delta))
 }
+
+///|
+/// This datetime rounded up (toward positive infinity) to the nearest
+/// multiple of `granularity` since the Unix epoch: unchanged if already a
+/// multiple, otherwise the next one after it. See `TimeDelta::round_up`.
+/// Returns `None` if `granularity` is rejected or the result falls outside
+/// `NaiveDate`'s representable range.
+pub fn NaiveDateTime::round_up(
+  self : NaiveDateTime,
+  granularity : TimeDelta,
+) -> NaiveDateTime? {
+  self
+  .signed_duration_since(epoch())
+  .round_up(granularity)
+  .bind(delta => epoch().checked_add_signed(delta))
+}

@@ -599,3 +599,72 @@ test "equal datetimes hash equally and work as map keys" {
   assert_eq(seen.length(), 2)
   assert_eq(seen.get(b), Some(1))
 }
+
+///|
+test "round_up moves a datetime up to the next multiple of the granularity since the epoch" {
+  let dt = @core.NaiveDate::from_ymd(2024, 1, 2)
+    .unwrap()
+    .and_hms_milli(13, 45, 6, 500)
+    .unwrap()
+  assert_eq(
+    dt.round_up(@core.TimeDelta::seconds(1L).unwrap()),
+    @core.NaiveDate::from_ymd(2024, 1, 2).unwrap().and_hms(13, 45, 7),
+  )
+  assert_eq(
+    dt.round_up(@core.TimeDelta::hours(1L).unwrap()),
+    @core.NaiveDate::from_ymd(2024, 1, 2).unwrap().and_hms(14, 0, 0),
+  )
+  assert_eq(
+    dt.round_up(@core.TimeDelta::days(1L).unwrap()),
+    @core.NaiveDate::from_ymd(2024, 1, 3).unwrap().and_hms(0, 0, 0),
+  )
+}
+
+///|
+test "round_up leaves a datetime that already sits on a multiple unchanged" {
+  let dt = @core.NaiveDate::from_ymd(2024, 1, 2)
+    .unwrap()
+    .and_hms(13, 0, 0)
+    .unwrap()
+  assert_eq(dt.round_up(@core.TimeDelta::hours(1L).unwrap()), Some(dt))
+}
+
+///|
+test "round_up before the epoch still moves toward positive infinity" {
+  let before = @core.NaiveDate::from_ymd(1969, 12, 31)
+    .unwrap()
+    .and_hms_milli(23, 59, 59, 500)
+    .unwrap()
+  assert_eq(
+    before.round_up(@core.TimeDelta::seconds(1L).unwrap()),
+    @core.NaiveDate::from_ymd(1970, 1, 1).unwrap().and_hms(0, 0, 0),
+  )
+  let earlier = @core.NaiveDate::from_ymd(1969, 12, 31)
+    .unwrap()
+    .and_hms_milli(23, 0, 0, 100)
+    .unwrap()
+  assert_eq(
+    earlier.round_up(@core.TimeDelta::hours(1L).unwrap()),
+    @core.NaiveDate::from_ymd(1970, 1, 1).unwrap().and_hms(0, 0, 0),
+  )
+}
+
+///|
+test "round_up rejects a zero, negative or mixed granularity" {
+  let dt = @core.NaiveDate::from_ymd(2024, 1, 2)
+    .unwrap()
+    .and_hms(13, 45, 6)
+    .unwrap()
+  assert_eq(dt.round_up(@core.TimeDelta::zero()), None)
+  assert_eq(dt.round_up(@core.TimeDelta::seconds(-1L).unwrap()), None)
+  assert_eq(dt.round_up(@core.TimeDelta::milliseconds(1_500L).unwrap()), None)
+}
+
+///|
+test "round_up returns None instead of aborting when the result leaves the representable date range" {
+  assert_eq(max_datetime().round_up(@core.TimeDelta::days(1L).unwrap()), None)
+  assert_eq(
+    max_datetime().round_up(@core.TimeDelta::seconds(1L).unwrap()),
+    Some(max_datetime()),
+  )
+}

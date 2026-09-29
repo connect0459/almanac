@@ -189,6 +189,7 @@ pub fn NaiveDateTime::op_lt(Self, Self) -> Bool
 pub fn NaiveDateTime::ordinal(Self) -> Int
 pub fn NaiveDateTime::output(Self, &Logger) -> Unit
 pub fn NaiveDateTime::round(Self, TimeDelta) -> Self?
+pub fn NaiveDateTime::round_up(Self, TimeDelta) -> Self?
 pub fn NaiveDateTime::second(Self) -> Int
 pub fn NaiveDateTime::signed_duration_since(Self, Self) -> TimeDelta
 pub fn NaiveDateTime::sub_days(Self, Int) -> Self
@@ -325,6 +326,7 @@ pub fn TimeDelta::op_le(Self, Self) -> Bool
 pub fn TimeDelta::op_lt(Self, Self) -> Bool
 pub fn TimeDelta::output(Self, &Logger) -> Unit
 pub fn TimeDelta::round(Self, Self) -> Self?
+pub fn TimeDelta::round_up(Self, Self) -> Self?
 pub fn TimeDelta::seconds(Int64) -> Self?
 pub fn TimeDelta::sub(Self, Self) -> Self?
 pub fn TimeDelta::subsec_microseconds(Self) -> Int
