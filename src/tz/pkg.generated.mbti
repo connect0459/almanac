@@ -17,24 +17,24 @@ pub fn parse_tzif(Bytes) -> TzifData?
 pub struct DateTime[Tz] {
   // private fields
 } derive(@debug.Debug)
-pub fn[Tz] DateTime::add_days(Self[Tz], Int) -> Self[Tz]
-pub fn[Tz] DateTime::add_months(Self[Tz], Int) -> Self[Tz]
+pub fn[Tz : TimeZone] DateTime::add_days(Self[Tz], Int) -> Self[Tz]
+pub fn[Tz : TimeZone] DateTime::add_months(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz] DateTime::add_offset(Self[Tz], FixedOffset) -> Self[Tz]
 pub fn[Tz] DateTime::add_seconds(Self[Tz], Int64) -> Self[Tz]
 pub fn[Tz] DateTime::add_signed(Self[Tz], @core.TimeDelta) -> Self[Tz]
-pub fn[Tz] DateTime::add_years(Self[Tz], Int) -> Self[Tz]
-pub fn[Tz] DateTime::checked_add_days(Self[Tz], Int) -> Self[Tz]?
-pub fn[Tz] DateTime::checked_add_months(Self[Tz], Int) -> Self[Tz]?
+pub fn[Tz : TimeZone] DateTime::add_years(Self[Tz], Int) -> Self[Tz]
+pub fn[Tz : TimeZone] DateTime::checked_add_days(Self[Tz], Int) -> Self[Tz]?
+pub fn[Tz : TimeZone] DateTime::checked_add_months(Self[Tz], Int) -> Self[Tz]?
 pub fn[Tz] DateTime::checked_add_offset(Self[Tz], FixedOffset) -> Self[Tz]?
 pub fn[Tz] DateTime::checked_add_seconds(Self[Tz], Int64) -> Self[Tz]?
 pub fn[Tz] DateTime::checked_add_signed(Self[Tz], @core.TimeDelta) -> Self[Tz]?
-pub fn[Tz] DateTime::checked_add_years(Self[Tz], Int) -> Self[Tz]?
-pub fn[Tz] DateTime::checked_sub_days(Self[Tz], Int) -> Self[Tz]?
-pub fn[Tz] DateTime::checked_sub_months(Self[Tz], Int) -> Self[Tz]?
+pub fn[Tz : TimeZone] DateTime::checked_add_years(Self[Tz], Int) -> Self[Tz]?
+pub fn[Tz : TimeZone] DateTime::checked_sub_days(Self[Tz], Int) -> Self[Tz]?
+pub fn[Tz : TimeZone] DateTime::checked_sub_months(Self[Tz], Int) -> Self[Tz]?
 pub fn[Tz] DateTime::checked_sub_offset(Self[Tz], FixedOffset) -> Self[Tz]?
 pub fn[Tz] DateTime::checked_sub_seconds(Self[Tz], Int64) -> Self[Tz]?
 pub fn[Tz] DateTime::checked_sub_signed(Self[Tz], @core.TimeDelta) -> Self[Tz]?
-pub fn[Tz] DateTime::checked_sub_years(Self[Tz], Int) -> Self[Tz]?
+pub fn[Tz : TimeZone] DateTime::checked_sub_years(Self[Tz], Int) -> Self[Tz]?
 pub fn[Tz] DateTime::compare(Self[Tz], Self[Tz]) -> Int
 pub fn[Tz, Tz2] DateTime::compare_instant(Self[Tz], Self[Tz2]) -> Int
 pub fn[Tz : TimeZone] DateTime::date(Self[Tz]) -> @core.NaiveDate
@@ -83,12 +83,12 @@ pub fn[Tz] DateTime::round_subsecs(Self[Tz], Int) -> Result[Self[Tz], @core.Roun
 pub fn[Tz] DateTime::round_up(Self[Tz], @core.TimeDelta) -> Result[Self[Tz], @core.RoundingError]
 pub fn[Tz : TimeZone] DateTime::second(Self[Tz]) -> Int
 pub fn[Tz, Tz2] DateTime::signed_duration_since(Self[Tz], Self[Tz2]) -> @core.TimeDelta
-pub fn[Tz] DateTime::sub_days(Self[Tz], Int) -> Self[Tz]
-pub fn[Tz] DateTime::sub_months(Self[Tz], Int) -> Self[Tz]
+pub fn[Tz : TimeZone] DateTime::sub_days(Self[Tz], Int) -> Self[Tz]
+pub fn[Tz : TimeZone] DateTime::sub_months(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz] DateTime::sub_offset(Self[Tz], FixedOffset) -> Self[Tz]
 pub fn[Tz] DateTime::sub_seconds(Self[Tz], Int64) -> Self[Tz]
 pub fn[Tz] DateTime::sub_signed(Self[Tz], @core.TimeDelta) -> Self[Tz]
-pub fn[Tz] DateTime::sub_years(Self[Tz], Int) -> Self[Tz]
+pub fn[Tz : TimeZone] DateTime::sub_years(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz : TimeZone] DateTime::time(Self[Tz]) -> @core.NaiveTime
 pub fn[Tz] DateTime::timestamp(Self[Tz]) -> Int64
 pub fn[Tz] DateTime::timestamp_micros(Self[Tz]) -> Int64?

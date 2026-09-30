@@ -221,11 +221,11 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 | `sub_signed(TimeDelta)` | `-> Self[Tz]` | Move back by a signed duration |
 | `add_offset(FixedOffset)` / `sub_offset(FixedOffset)` | `-> Self[Tz]` | Move the instant forward/backward by an offset's seconds (the opposite way for a west offset), keeping the same time zone; abort if the result leaves `NaiveDate`'s range |
 | `checked_add_offset(FixedOffset)` / `checked_sub_offset(FixedOffset)` | `-> Self[Tz]?` | The same, but `None` instead of aborting when out of range |
-| `add_months(Int)` | `-> Self[Tz]` | Advance the date by months, keeping the time of day and time zone; see `NaiveDate::add_months` (in `core`) for the day-of-month clamping rule |
+| `add_months(Int)` *(Tz : TimeZone)* | `-> Self[Tz]` | Advance the local date by months, keeping the local time of day and the time zone; see `NaiveDate::add_months` (in `core`) for the day-of-month clamping rule. A result in a DST fold takes the earlier occurrence and one in a gap moves forward by the gap's length, as `from_local_lenient` does |
 | `sub_months(Int)` | `-> Self[Tz]` | Move the date back by months |
-| `add_years(Int)` | `-> Self[Tz]` | Advance the date by years, keeping the time of day and time zone; see `NaiveDate::add_years` (in `core`) for the clamping rule |
+| `add_years(Int)` *(Tz : TimeZone)* | `-> Self[Tz]` | Advance the local date by years, keeping the local time of day and the time zone; see `NaiveDate::add_years` (in `core`) for the clamping rule |
 | `sub_years(Int)` | `-> Self[Tz]` | Move the date back by years |
-| `add_days(Int)` | `-> Self[Tz]` | Advance the date by days, keeping the time of day and time zone |
+| `add_days(Int)` *(Tz : TimeZone)* | `-> Self[Tz]` | Advance the local date by days, keeping the local time of day and the time zone, so a day across a DST change lasts 23 or 25 hours; fold and gap as for `add_months` |
 | `sub_days(Int)` | `-> Self[Tz]` | Move the date back by days |
 | `add_seconds(Int64)` / `sub_seconds(Int64)` | `-> Self[Tz]` | Move the instant by a whole number of seconds (backward if negative), keeping the same time zone; abort if the result leaves `NaiveDate`'s range |
 | `checked_add_seconds(Int64)` / `checked_sub_seconds(Int64)` | `-> Self[Tz]?` | The same, but `None` instead of aborting when out of range |
@@ -258,6 +258,8 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 | `round_up(TimeDelta)` | `-> Result[Self[Tz], @core.RoundingError]` | Round the underlying UTC instant up (toward positive infinity) to the next multiple of a granularity since the Unix epoch, unchanged if already a multiple, keeping the same time zone; see `NaiveDateTime::round_up` for the failure reasons |
 | `truncate(TimeDelta)` | `-> Result[Self[Tz], @core.RoundingError]` | Truncate the underlying UTC instant toward the Unix epoch; see Quick start above for how this differs from truncating the local presentation |
 | `round_subsecs(Int)` / `truncate_subsecs(Int)` | `-> Result[Self[Tz], @core.RoundingError]` / `-> Self[Tz]` | Round or truncate the underlying UTC instant to a number of fractional-second digits (`0..=9`; other values abort) |
+
+Rounding acts on the UTC instant, not the local reading (as Go's `Truncate` and `Round` act on absolute time), so in a zone such as `+05:30` a one-hour truncation leaves a local time that is not on the hour. To round to a local boundary, round `naive_local()` and resolve the result with `DateTime::from_local`. Calendar steps (`add_days`, `add_months`, `add_years`) act on the local reading, while `add_signed`, `add_seconds` and the rounding methods act on the instant.
 
 `DateTime[Tz]` also implements `Eq` (when `Tz : Eq`).
 

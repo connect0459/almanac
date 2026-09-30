@@ -725,6 +725,182 @@ pub fn[Tz : TimeZone] DateTime::fixed_offset(
 }
 
 ///|
+fn[T] expect_some(value : T?, operation : String) -> T {
+  match value {
+    Some(v) => v
+    None => abort(operation + ": result is outside the representable range")
+  }
+}
+
+///|
+/// Whether `reading` is at least two days clear of `NaiveDate`'s
+/// representable limits, the margin `from_local_lenient` needs to convert a
+/// local reading without leaving the range.
+fn clear_of_range_limits(reading : @core.NaiveDateTime) -> Bool {
+  reading.checked_add_seconds(3 * 86400L) is Some(_) &&
+  reading.checked_sub_seconds(3 * 86400L) is Some(_)
+}
+
+///|
+/// Applies a calendar step to the local reading and resolves the result
+/// with `from_local_lenient`, or `None` if the step or the conversion leaves
+/// `NaiveDate`'s representable range (a result within two days of its limits
+/// counts as out of range).
+fn[Tz : TimeZone] DateTime::local_step(
+  self : DateTime[Tz],
+  step : (@core.NaiveDateTime) -> @core.NaiveDateTime?,
+) -> DateTime[Tz]? {
+  self.datetime
+  .checked_add_seconds(self.offset().local_minus_utc().to_int64())
+  .bind(step)
+  .filter(clear_of_range_limits)
+  .map(reading => DateTime::from_local_lenient(reading, self.tz))
+}
+
+///|
+/// This datetime with its local date advanced by `months` (or moved back, if
+/// `months` is negative), keeping the local time of day and the time zone.
+/// See `@core.NaiveDateTime::add_months` for the day-of-month clamping rule.
+/// A result that falls in a DST fold takes the earlier occurrence, and one in
+/// a gap moves forward by the gap's length, as `from_local_lenient` does.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_add_months` to get `None` instead.
+pub fn[Tz : TimeZone] DateTime::add_months(
+  self : DateTime[Tz],
+  months : Int,
+) -> DateTime[Tz] {
+  expect_some(self.checked_add_months(months), "DateTime::add_months")
+}
+
+///|
+/// This datetime with its local date moved back by `months`. See
+/// `add_months`.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_sub_months` to get `None` instead.
+pub fn[Tz : TimeZone] DateTime::sub_months(
+  self : DateTime[Tz],
+  months : Int,
+) -> DateTime[Tz] {
+  expect_some(self.checked_sub_months(months), "DateTime::sub_months")
+}
+
+///|
+/// This datetime with its local date advanced by `years` (or moved back, if
+/// `years` is negative), keeping the local time of day and the time zone.
+/// See `@core.NaiveDate::add_years` for the day-of-month clamping rule, and
+/// `add_months` for how a DST gap or fold is resolved.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_add_years` to get `None` instead.
+pub fn[Tz : TimeZone] DateTime::add_years(
+  self : DateTime[Tz],
+  years : Int,
+) -> DateTime[Tz] {
+  expect_some(self.checked_add_years(years), "DateTime::add_years")
+}
+
+///|
+/// This datetime with its local date moved back by `years`. See `add_years`.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_sub_years` to get `None` instead.
+pub fn[Tz : TimeZone] DateTime::sub_years(
+  self : DateTime[Tz],
+  years : Int,
+) -> DateTime[Tz] {
+  expect_some(self.checked_sub_years(years), "DateTime::sub_years")
+}
+
+///|
+/// This datetime with its local date advanced by `days` (or moved back, if
+/// `days` is negative), keeping the local time of day and the time zone, so
+/// a day across a DST change is 23 or 25 hours long. See `add_months` for
+/// how a DST gap or fold is resolved.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_add_days` to get `None` instead.
+pub fn[Tz : TimeZone] DateTime::add_days(
+  self : DateTime[Tz],
+  days : Int,
+) -> DateTime[Tz] {
+  expect_some(self.checked_add_days(days), "DateTime::add_days")
+}
+
+///|
+/// This datetime with its local date moved back by `days`. See `add_days`.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_sub_days` to get `None` instead.
+pub fn[Tz : TimeZone] DateTime::sub_days(
+  self : DateTime[Tz],
+  days : Int,
+) -> DateTime[Tz] {
+  expect_some(self.checked_sub_days(days), "DateTime::sub_days")
+}
+
+///|
+/// Like `add_months`, but `None` if the result falls outside `NaiveDate`'s
+/// representable range.
+pub fn[Tz : TimeZone] DateTime::checked_add_months(
+  self : DateTime[Tz],
+  months : Int,
+) -> DateTime[Tz]? {
+  self.local_step(reading => reading.checked_add_months(months))
+}
+
+///|
+/// Like `sub_months`, but `None` if the result falls outside `NaiveDate`'s
+/// representable range.
+pub fn[Tz : TimeZone] DateTime::checked_sub_months(
+  self : DateTime[Tz],
+  months : Int,
+) -> DateTime[Tz]? {
+  self.local_step(reading => reading.checked_sub_months(months))
+}
+
+///|
+/// Like `add_years`, but `None` if the result falls outside `NaiveDate`'s
+/// representable range.
+pub fn[Tz : TimeZone] DateTime::checked_add_years(
+  self : DateTime[Tz],
+  years : Int,
+) -> DateTime[Tz]? {
+  self.local_step(reading => reading.checked_add_years(years))
+}
+
+///|
+/// Like `sub_years`, but `None` if the result falls outside `NaiveDate`'s
+/// representable range.
+pub fn[Tz : TimeZone] DateTime::checked_sub_years(
+  self : DateTime[Tz],
+  years : Int,
+) -> DateTime[Tz]? {
+  self.local_step(reading => reading.checked_sub_years(years))
+}
+
+///|
+/// Like `add_days`, but `None` if the result falls outside `NaiveDate`'s
+/// representable range.
+pub fn[Tz : TimeZone] DateTime::checked_add_days(
+  self : DateTime[Tz],
+  days : Int,
+) -> DateTime[Tz]? {
+  self.local_step(reading => reading.checked_add_days(days))
+}
+
+///|
+/// Like `sub_days`, but `None` if the result falls outside `NaiveDate`'s
+/// representable range.
+pub fn[Tz : TimeZone] DateTime::checked_sub_days(
+  self : DateTime[Tz],
+  days : Int,
+) -> DateTime[Tz]? {
+  self.local_step(reading => reading.checked_sub_days(days))
+}
+
+///|
 /// This datetime advanced by the signed duration `delta`, keeping the same
 /// time zone. Delegates to `NaiveDateTime::add_signed` on the underlying
 /// UTC instant.
@@ -752,78 +928,6 @@ pub fn[Tz] DateTime::sub_signed(
 }
 
 ///|
-/// This datetime with its date advanced by `months` (or moved back, if
-/// `months` is negative), keeping the time of day and time zone unchanged.
-/// See `@core.NaiveDateTime::add_months` for the day-of-month clamping
-/// rule.
-///
-/// Aborts if the result falls outside `NaiveDate`'s representable range; use
-/// `checked_add_months` to get `None` instead.
-pub fn[Tz] DateTime::add_months(
-  self : DateTime[Tz],
-  months : Int,
-) -> DateTime[Tz] {
-  DateTime::{ datetime: self.datetime.add_months(months), tz: self.tz, }
-}
-
-///|
-/// This datetime with its date moved back by `months`. See `add_months`.
-///
-/// Aborts if the result falls outside `NaiveDate`'s representable range; use
-/// `checked_sub_months` to get `None` instead.
-pub fn[Tz] DateTime::sub_months(
-  self : DateTime[Tz],
-  months : Int,
-) -> DateTime[Tz] {
-  DateTime::{ datetime: self.datetime.sub_months(months), tz: self.tz, }
-}
-
-///|
-/// This datetime with its date advanced by `years` (or moved back, if
-/// `years` is negative), keeping the time of day and time zone unchanged.
-/// See `@core.NaiveDate::add_years` for the day-of-month clamping rule.
-///
-/// Aborts if the result falls outside `NaiveDate`'s representable range; use
-/// `checked_add_years` to get `None` instead.
-pub fn[Tz] DateTime::add_years(
-  self : DateTime[Tz],
-  years : Int,
-) -> DateTime[Tz] {
-  DateTime::{ datetime: self.datetime.add_years(years), tz: self.tz, }
-}
-
-///|
-/// This datetime with its date moved back by `years`. See `add_years`.
-///
-/// Aborts if the result falls outside `NaiveDate`'s representable range; use
-/// `checked_sub_years` to get `None` instead.
-pub fn[Tz] DateTime::sub_years(
-  self : DateTime[Tz],
-  years : Int,
-) -> DateTime[Tz] {
-  DateTime::{ datetime: self.datetime.sub_years(years), tz: self.tz, }
-}
-
-///|
-/// This datetime with its date advanced by `days` (or moved back, if
-/// `days` is negative), keeping the time of day and time zone unchanged.
-///
-/// Aborts if the result falls outside `NaiveDate`'s representable range; use
-/// `checked_add_days` to get `None` instead.
-pub fn[Tz] DateTime::add_days(self : DateTime[Tz], days : Int) -> DateTime[Tz] {
-  DateTime::{ datetime: self.datetime.add_days(days), tz: self.tz, }
-}
-
-///|
-/// This datetime with its date moved back by `days`. See `add_days`.
-///
-/// Aborts if the result falls outside `NaiveDate`'s representable range; use
-/// `checked_sub_days` to get `None` instead.
-pub fn[Tz] DateTime::sub_days(self : DateTime[Tz], days : Int) -> DateTime[Tz] {
-  DateTime::{ datetime: self.datetime.sub_days(days), tz: self.tz, }
-}
-
-///|
 /// Like `add_signed`, but `None` if the result falls outside `NaiveDate`'s
 /// representable range.
 pub fn[Tz] DateTime::checked_add_signed(
@@ -844,78 +948,6 @@ pub fn[Tz] DateTime::checked_sub_signed(
 ) -> DateTime[Tz]? {
   self.datetime
   .checked_sub_signed(delta)
-  .map(datetime => DateTime::{ datetime, tz: self.tz, })
-}
-
-///|
-/// Like `add_months`, but `None` if the resulting date falls outside
-/// `NaiveDate`'s representable range.
-pub fn[Tz] DateTime::checked_add_months(
-  self : DateTime[Tz],
-  months : Int,
-) -> DateTime[Tz]? {
-  self.datetime
-  .checked_add_months(months)
-  .map(datetime => DateTime::{ datetime, tz: self.tz, })
-}
-
-///|
-/// Like `sub_months`, but `None` if the resulting date falls outside
-/// `NaiveDate`'s representable range.
-pub fn[Tz] DateTime::checked_sub_months(
-  self : DateTime[Tz],
-  months : Int,
-) -> DateTime[Tz]? {
-  self.datetime
-  .checked_sub_months(months)
-  .map(datetime => DateTime::{ datetime, tz: self.tz, })
-}
-
-///|
-/// Like `add_years`, but `None` if the resulting date falls outside
-/// `NaiveDate`'s representable range.
-pub fn[Tz] DateTime::checked_add_years(
-  self : DateTime[Tz],
-  years : Int,
-) -> DateTime[Tz]? {
-  self.datetime
-  .checked_add_years(years)
-  .map(datetime => DateTime::{ datetime, tz: self.tz, })
-}
-
-///|
-/// Like `sub_years`, but `None` if the resulting date falls outside
-/// `NaiveDate`'s representable range.
-pub fn[Tz] DateTime::checked_sub_years(
-  self : DateTime[Tz],
-  years : Int,
-) -> DateTime[Tz]? {
-  self.datetime
-  .checked_sub_years(years)
-  .map(datetime => DateTime::{ datetime, tz: self.tz, })
-}
-
-///|
-/// Like `add_days`, but `None` if the resulting date falls outside
-/// `NaiveDate`'s representable range.
-pub fn[Tz] DateTime::checked_add_days(
-  self : DateTime[Tz],
-  days : Int,
-) -> DateTime[Tz]? {
-  self.datetime
-  .checked_add_days(days)
-  .map(datetime => DateTime::{ datetime, tz: self.tz, })
-}
-
-///|
-/// Like `sub_days`, but `None` if the resulting date falls outside
-/// `NaiveDate`'s representable range.
-pub fn[Tz] DateTime::checked_sub_days(
-  self : DateTime[Tz],
-  days : Int,
-) -> DateTime[Tz]? {
-  self.datetime
-  .checked_sub_days(days)
   .map(datetime => DateTime::{ datetime, tz: self.tz, })
 }
 
@@ -1057,8 +1089,9 @@ pub fn[Tz] DateTime::truncate(
 ///|
 /// This datetime's underlying UTC instant rounded to the nearest multiple
 /// of `granularity` since the Unix epoch, ties breaking away from the
-/// epoch, keeping the same time zone. See `truncate` for how this operates
-/// on the absolute UTC instant rather than the local presentation.
+/// epoch, keeping the same time zone. Like `truncate`, it operates on the
+/// absolute UTC instant rather than the local presentation; to round to a
+/// local boundary, round `naive_local()` and use `DateTime::from_local`.
 pub fn[Tz] DateTime::round(
   self : DateTime[Tz],
   granularity : @core.TimeDelta,
@@ -1072,9 +1105,9 @@ pub fn[Tz] DateTime::round(
 /// This datetime's underlying UTC instant rounded up (toward positive
 /// infinity) to the nearest multiple of `granularity` since the Unix epoch:
 /// unchanged if already a multiple, otherwise the next one after it, keeping
-/// the same time zone. See `@core.NaiveDateTime::round_up` for the failure
-/// reasons and `truncate` for how this operates on the absolute UTC instant
-/// rather than the local presentation.
+/// the same time zone. Like `truncate`, it operates on the absolute UTC
+/// instant rather than the local presentation. See
+/// `@core.NaiveDateTime::round_up` for the failure reasons.
 pub fn[Tz] DateTime::round_up(
   self : DateTime[Tz],
   granularity : @core.TimeDelta,

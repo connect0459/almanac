@@ -1372,3 +1372,75 @@ test "DateTime ymd, hms and leap_year read the local reading" {
   let utc_reading = dt.naive_utc()
   assert_eq(utc_reading.hms(), (14, 30, 15))
 }
+
+///|
+fn local_dt(
+  zone : @tz.Location,
+  y : Int,
+  mo : Int,
+  d : Int,
+  h : Int,
+  mi : Int,
+) -> @tz.DateTime[@tz.Location] {
+  @tz.DateTime::from_ymd_hms(y, mo, d, h, mi, 0, zone).earliest().unwrap()
+}
+
+///|
+test "calendar steps act on the local calendar, so a month added in +09:00 clamps to the local month end" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let dt = @tz.DateTime::from_ymd_hms(2024, 1, 31, 8, 0, 0, tokyo)
+    .single()
+    .unwrap()
+  let next = dt.add_months(1)
+  assert_eq(next.ymd(), (2024, @core.Feb, 29))
+  assert_eq(next.hms(), (8, 0, 0))
+  assert_eq(dt.add_years(1).ymd(), (2025, @core.Jan, 31))
+  assert_eq(dt.add_days(30).ymd(), (2024, @core.Mar, 1))
+  assert_eq(dt.sub_months(1).ymd(), (2023, @core.Dec, 31))
+}
+
+///|
+test "a day added across a DST change keeps the local time of day" {
+  let ny = @tz.Location::load("America/New_York").unwrap()
+  let before = local_dt(ny, 2024, 3, 9, 12, 0)
+  let after = before.add_days(1)
+  assert_eq(after.ymd(), (2024, @core.Mar, 10))
+  assert_eq(after.hms(), (12, 0, 0))
+  assert_eq(
+    after.signed_duration_since(before),
+    @core.TimeDelta::hours(23L).unwrap(),
+  )
+  assert_eq(after.sub_days(1), before)
+}
+
+///|
+test "a calendar step landing in a DST gap resolves forward by the gap's length" {
+  let ny = @tz.Location::load("America/New_York").unwrap()
+  let before = local_dt(ny, 2024, 3, 9, 2, 30)
+  let after = before.add_days(1)
+  assert_eq(after.ymd(), (2024, @core.Mar, 10))
+  assert_eq(after.hms(), (3, 30, 0))
+}
+
+///|
+test "a calendar step landing in a DST fold takes the earlier occurrence" {
+  let ny = @tz.Location::load("America/New_York").unwrap()
+  let before = local_dt(ny, 2024, 11, 2, 1, 30)
+  let after = before.add_days(1)
+  assert_eq(after.hms(), (1, 30, 0))
+  assert_eq(after.offset(), @tz.FixedOffset::west(4 * 3600).unwrap())
+}
+
+///|
+test "checked calendar steps return None past the representable range, including close to its limits" {
+  let dt = @tz.DateTime::from_ymd_hms(2024, 1, 31, 8, 0, 0, @tz.Utc::new())
+    .single()
+    .unwrap()
+  assert_eq(dt.checked_add_years(2_147_483_647), None)
+  assert_eq(dt.checked_sub_years(2_147_483_647), None)
+  let last_day = 2_147_483_647 - 719_468
+  let to_limit = last_day - dt.date().epoch_days()
+  assert_eq(dt.checked_add_days(to_limit + 1), None)
+  assert_eq(dt.checked_add_days(to_limit), None)
+  assert_true(dt.checked_add_days(to_limit - 5) is Some(_))
+}
