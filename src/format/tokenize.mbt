@@ -18,7 +18,7 @@ fn resolve_specifier(
     'H' => ([Numeric(Hour)], pos + 1)
     'M' => ([Numeric(Minute)], pos + 1)
     'S' => ([Numeric(Second)], pos + 1)
-    'f' => ([Numeric(Nanosecond)], pos + 1)
+    'f' => ([Numeric(Nanosecond9)], pos + 1)
     'A' => ([Fixed(LongWeekdayName)], pos + 1)
     'a' => ([Fixed(ShortWeekdayName)], pos + 1)
     'Z' => ([Fixed(TimezoneName)], pos + 1)
@@ -59,7 +59,7 @@ fn resolve_specifier(
     't' => ([Literal("\t")], pos + 1)
     's' => ([Numeric(Timestamp)], pos + 1)
     'G' => ([Numeric(IsoYear)], pos + 1)
-    'g' => ([Numeric(IsoYear2)], pos + 1)
+    'g' => ([Numeric(IsoYearMod100)], pos + 1)
     'V' => ([Numeric(IsoWeekNumber)], pos + 1)
     'C' => ([Numeric(Century)], pos + 1)
     'y' => ([Numeric(YearMod100)], pos + 1)
@@ -185,7 +185,7 @@ fn resolve_specifier(
     '9' =>
       if pos + 1 < n && chars[pos + 1] == 'f' {
         // %9f is the same fixed 9-digit fraction as bare %f.
-        ([Numeric(Nanosecond)], pos + 2)
+        ([Numeric(Nanosecond9)], pos + 2)
       } else {
         raise UnknownSpecifier('9')
       }
@@ -253,7 +253,7 @@ pub fn tokenize(fmt : String) -> Array[Item] raise ParseError {
             // override, so a padding flag is rejected on them — see
             // PaddedNumeric's doc comment.
             Numeric(
-              Nanosecond
+              Nanosecond9
               | DotFraction
               | Nanosecond3
               | Nanosecond6

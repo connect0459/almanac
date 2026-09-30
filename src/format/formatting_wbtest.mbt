@@ -4,7 +4,7 @@ test "rendering a padded numeric of a kind without a default width reports Missi
   let time = Some(@core.NaiveTime::from_hms(9, 5, 3).unwrap())
   for
     kind in [
-      Nanosecond,
+      Nanosecond9,
       DotFraction,
       Nanosecond3,
       Nanosecond6,

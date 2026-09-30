@@ -10,7 +10,7 @@ pub(all) enum Numeric {
   Hour
   Minute
   Second
-  Nanosecond
+  Nanosecond9
   /// `%I`: the hour on a 12-hour clock, zero-padded (`01`..=`12`).
   Hour12
   /// `%l`: the hour on a 12-hour clock, space-padded (`" 1"`..=`"12"`).
@@ -23,7 +23,7 @@ pub(all) enum Numeric {
   /// near a year boundary; see `@core.IsoWeek`).
   IsoYear
   /// `%g`: `IsoYear` without its century, zero-padded to 2 digits.
-  IsoYear2
+  IsoYearMod100
   /// `%V`: the ISO 8601 week number (`01`..=`53`).
   IsoWeekNumber
   /// `%C`: the calendar year divided by 100, zero-padded to 2 digits.

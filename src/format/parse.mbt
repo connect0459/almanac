@@ -674,7 +674,7 @@ fn apply_item(
         Some((value, p)) =>
           ({ ..parsed, second: merge_field(parsed.second, value), }, p)
       }
-    Numeric(Nanosecond) =>
+    Numeric(Nanosecond9) =>
       match read_digits(chars, pos, 9, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>
@@ -808,7 +808,7 @@ fn apply_item(
         Some((value, p)) =>
           ({ ..parsed, iso_year: merge_field(parsed.iso_year, value), }, p)
       }
-    Numeric(IsoYear2) =>
+    Numeric(IsoYearMod100) =>
       match read_digits(chars, pos, 2, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>

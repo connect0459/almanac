@@ -244,13 +244,13 @@ pub(all) enum Numeric {
   Hour
   Minute
   Second
-  Nanosecond
+  Nanosecond9
   Hour12
   Hour12Blank
   HourBlank
   Timestamp
   IsoYear
-  IsoYear2
+  IsoYearMod100
   IsoWeekNumber
   Century
   YearMod100

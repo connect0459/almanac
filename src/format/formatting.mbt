@@ -158,7 +158,7 @@ fn numeric_value(
         Some(d) => (d.iso_week().year(), 4)
         None => raise MissingField(item)
       }
-    IsoYear2 =>
+    IsoYearMod100 =>
       match date {
         Some(d) => (d.iso_week().year() % 100, 2)
         None => raise MissingField(item)
@@ -210,7 +210,7 @@ fn numeric_value(
           (week_number(d.ordinal(), d.weekday().num_days_from_monday()), 2)
         None => raise MissingField(item)
       }
-    Nanosecond
+    Nanosecond9
     | DotFraction
     | Nanosecond3
     | Nanosecond6
@@ -333,7 +333,7 @@ fn render(
             )
           None => raise MissingField(item)
         }
-      Numeric(Nanosecond) =>
+      Numeric(Nanosecond9) =>
         match time {
           Some(t) =>
             out.write_string(pad_int(t.nanosecond() % 1_000_000_000, 9))
@@ -480,7 +480,7 @@ fn render(
           Some(d) => out.write_string(year_text(d.iso_week().year(), 4))
           None => raise MissingField(item)
         }
-      Numeric(IsoYear2) =>
+      Numeric(IsoYearMod100) =>
         match date {
           Some(d) => out.write_string(pad_int(d.iso_week().year() % 100, 2))
           None => raise MissingField(item)
