@@ -232,14 +232,16 @@ pub fn TimeDelta::zero() -> TimeDelta {
 
 ///|
 /// The most negative representable duration, exactly `-9_223_372_036_854_774`
-/// seconds: the negation of `max_value`.
+/// seconds: the negation of `max_value`. The range is part of the type's
+/// contract and will not change.
 pub fn TimeDelta::min_value() -> TimeDelta {
   TimeDelta::{ seconds: MIN_SECS, nanoseconds: 0, }
 }
 
 ///|
 /// The most positive representable duration, exactly `9_223_372_036_854_774`
-/// seconds with no nanosecond remainder: the negation of `min_value`.
+/// seconds with no nanosecond remainder: the negation of `min_value`. The
+/// range is part of the type's contract and will not change.
 pub fn TimeDelta::max_value() -> TimeDelta {
   TimeDelta::{ seconds: MAX_SECS, nanoseconds: 0, }
 }
