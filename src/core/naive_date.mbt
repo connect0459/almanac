@@ -231,7 +231,8 @@ pub fn NaiveDate::year_ce(self : NaiveDate) -> (Bool, Int) {
 }
 
 ///|
-/// The number of days in this date's month, accounting for leap years.
+/// The number of days in this date's month, accounting for leap years; see
+/// `Month::num_days` for a month and a year given separately.
 pub fn NaiveDate::num_days_in_month(self : NaiveDate) -> Int {
   self.month().num_days(self.year())
 }

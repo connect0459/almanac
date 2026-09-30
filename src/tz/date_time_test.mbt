@@ -417,8 +417,8 @@ test "DateTime calendar accessors report the local date, not the UTC date" {
   assert_eq(dt.day(), 1)
   assert_eq(dt.ordinal(), 1)
   assert_eq(dt.weekday(), @core.Weekday::Mon)
-  assert_eq(dt.iso_week(), dt.date_naive().iso_week())
-  assert_eq(dt.date_naive(), @core.NaiveDate::from_ymd(2024, 1, 1).unwrap())
+  assert_eq(dt.iso_week(), dt.date().iso_week())
+  assert_eq(dt.date(), @core.NaiveDate::from_ymd(2024, 1, 1).unwrap())
 }
 
 ///|
@@ -520,7 +520,7 @@ test "DateTime 0-based and derived calendar accessors report the local date, not
   assert_eq(dt.quarter(), 1)
   assert_eq(dt.year_ce(), (true, 2024))
   assert_eq(dt.num_days_in_month(), 31)
-  assert_eq(dt.num_days_from_ce(), dt.date_naive().num_days_from_ce())
+  assert_eq(dt.num_days_from_ce(), dt.date().num_days_from_ce())
 }
 
 ///|

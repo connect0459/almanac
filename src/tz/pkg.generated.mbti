@@ -34,7 +34,7 @@ pub fn[Tz] DateTime::checked_sub_signed(Self[Tz], @core.TimeDelta) -> Self[Tz]?
 pub fn[Tz] DateTime::checked_sub_years(Self[Tz], Int) -> Self[Tz]?
 pub fn[Tz] DateTime::compare(Self[Tz], Self[Tz]) -> Int
 pub fn[Tz, Tz2] DateTime::compare_instant(Self[Tz], Self[Tz2]) -> Int
-pub fn[Tz : TimeZone] DateTime::date_naive(Self[Tz]) -> @core.NaiveDate
+pub fn[Tz : TimeZone] DateTime::date(Self[Tz]) -> @core.NaiveDate
 pub fn[Tz : TimeZone] DateTime::day(Self[Tz]) -> Int
 pub fn[Tz : TimeZone] DateTime::day0(Self[Tz]) -> Int
 pub fn DateTime::default() -> Self[Utc]

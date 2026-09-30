@@ -306,9 +306,7 @@ pub fn[Tz : TimeZone] DateTime::naive_local(
 
 ///|
 /// The local calendar date.
-pub fn[Tz : TimeZone] DateTime::date_naive(
-  self : DateTime[Tz],
-) -> @core.NaiveDate {
+pub fn[Tz : TimeZone] DateTime::date(self : DateTime[Tz]) -> @core.NaiveDate {
   self.naive_local().date()
 }
 
@@ -648,10 +646,7 @@ pub fn[Tz : TimeZone] DateTime::with_time(
   self : DateTime[Tz],
   time : @core.NaiveTime,
 ) -> MappedLocalTime[DateTime[Tz]] {
-  DateTime::from_local(
-    @core.NaiveDateTime::new(self.date_naive(), time),
-    self.tz,
-  )
+  DateTime::from_local(@core.NaiveDateTime::new(self.date(), time), self.tz)
 }
 
 ///|
@@ -663,7 +658,7 @@ pub fn[Tz : TimeZone, Tz2] DateTime::years_since(
   self : DateTime[Tz],
   base : DateTime[Tz2],
 ) -> Int? {
-  self.date_naive().years_since(base.with_timezone(self.tz).date_naive())
+  self.date().years_since(base.with_timezone(self.tz).date())
 }
 
 ///|

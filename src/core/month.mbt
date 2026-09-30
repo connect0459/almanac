@@ -162,7 +162,9 @@ pub fn Month::from_number(n : Int) -> Month? {
 
 ///|
 /// The number of days in the month for the given (proleptic Gregorian)
-/// `year`, accounting for leap years in `Feb`.
+/// `year`, accounting for leap years in `Feb`. A month alone does not know the
+/// year, hence the argument; see `NaiveDate::num_days_in_month` for the month
+/// of a date.
 pub fn Month::num_days(self : Month, year : Int) -> Int {
   match self {
     Jan => 31

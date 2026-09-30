@@ -218,7 +218,7 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 | `sub_days(Int)` | `-> Self[Tz]` | Move the date back by days |
 | `checked_add_signed(TimeDelta)` / `checked_sub_signed(TimeDelta)` | `-> Self[Tz]?` | Like `add_signed`/`sub_signed`, but `None` instead of aborting when the result leaves `NaiveDate`'s range |
 | `checked_add_months(Int)` / `checked_sub_months(Int)` / `checked_add_years(Int)` / `checked_sub_years(Int)` / `checked_add_days(Int)` / `checked_sub_days(Int)` | `-> Self[Tz]?` | Like the aborting forms above, but `None` instead of aborting when the date leaves `NaiveDate`'s range |
-| `date_naive()` / `time()` | `-> NaiveDate` / `-> NaiveTime` | The local calendar date / time of day |
+| `date()` / `time()` | `-> NaiveDate` / `-> NaiveTime` | The local calendar date / time of day |
 | `year()` / `month()` / `day()` / `ordinal()` / `weekday()` / `iso_week()` | `-> Int` / `-> Month` / `-> Int` / `-> Int` / `-> Weekday` / `-> IsoWeek` | Local calendar components, derived from `naive_local()` (requires `Tz : TimeZone`) |
 | `hour()` / `minute()` / `second()` / `nanosecond()` | `-> Int` | Local time-of-day components; a leap second reports `second() == 59` with `nanosecond() >= 1_000_000_000` |
 | `month0()` / `day0()` / `ordinal0()` / `quarter()` / `num_days_in_month()` / `num_days_from_ce()` | `-> Int` | Further local calendar components (0-based month/day/ordinal, quarter `1..=4`, month length, days since the start of the Common Era) |
