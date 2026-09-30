@@ -1,5 +1,5 @@
 ///|
-fn offset_secs(input : String) -> Int raise @format.ParseError {
+fn offset_secs(input : String) -> Int raise @format.FormatError {
   @format.parse_fixed_offset(input).local_minus_utc()
 }
 

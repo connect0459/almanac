@@ -30,74 +30,74 @@ pub const TIME_ONLY : String = "%T"
 
 pub const UNIX_DATE : String = "%a %b %e %H:%M:%S %Z %Y"
 
-pub fn format_date(@core.NaiveDate, String) -> String raise ParseError
+pub fn format_date(@core.NaiveDate, String) -> String raise FormatError
 
-pub fn format_date_items(@core.NaiveDate, Array[Item]) -> String raise ParseError
+pub fn format_date_items(@core.NaiveDate, Array[Item]) -> String raise FormatError
 
-pub fn format_date_time(@core.NaiveDateTime, String) -> String raise ParseError
+pub fn format_date_time(@core.NaiveDateTime, String) -> String raise FormatError
 
-pub fn format_date_time_items(@core.NaiveDateTime, Array[Item]) -> String raise ParseError
+pub fn format_date_time_items(@core.NaiveDateTime, Array[Item]) -> String raise FormatError
 
-pub fn[Tz : @tz.TimeZone] format_date_time_tz(@tz.DateTime[Tz], String) -> String raise ParseError
+pub fn[Tz : @tz.TimeZone] format_date_time_tz(@tz.DateTime[Tz], String) -> String raise FormatError
 
-pub fn[Tz : @tz.TimeZone] format_date_time_tz_items(@tz.DateTime[Tz], Array[Item]) -> String raise ParseError
+pub fn[Tz : @tz.TimeZone] format_date_time_tz_items(@tz.DateTime[Tz], Array[Item]) -> String raise FormatError
 
-pub fn format_time(@core.NaiveTime, String) -> String raise ParseError
+pub fn format_time(@core.NaiveTime, String) -> String raise FormatError
 
-pub fn format_time_items(@core.NaiveTime, Array[Item]) -> String raise ParseError
+pub fn format_time_items(@core.NaiveTime, Array[Item]) -> String raise FormatError
 
-pub fn parse_date(String, String) -> @core.NaiveDate raise ParseError
+pub fn parse_date(String, String) -> @core.NaiveDate raise FormatError
 
-pub fn parse_date_and_remainder(String, String) -> (@core.NaiveDate, String) raise ParseError
+pub fn parse_date_and_remainder(String, String) -> (@core.NaiveDate, String) raise FormatError
 
-pub fn parse_date_default(String) -> @core.NaiveDate raise ParseError
+pub fn parse_date_default(String) -> @core.NaiveDate raise FormatError
 
-pub fn parse_date_time(String, String) -> @core.NaiveDateTime raise ParseError
+pub fn parse_date_time(String, String) -> @core.NaiveDateTime raise FormatError
 
-pub fn parse_date_time_and_remainder(String, String) -> (@core.NaiveDateTime, String) raise ParseError
+pub fn parse_date_time_and_remainder(String, String) -> (@core.NaiveDateTime, String) raise FormatError
 
-pub fn parse_date_time_default(String) -> @core.NaiveDateTime raise ParseError
+pub fn parse_date_time_default(String) -> @core.NaiveDateTime raise FormatError
 
-pub fn parse_date_time_fixed_offset(String, String) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
+pub fn parse_date_time_fixed_offset(String, String) -> @tz.DateTime[@tz.FixedOffset] raise FormatError
 
-pub fn parse_date_time_fixed_offset_and_remainder(String, String) -> (@tz.DateTime[@tz.FixedOffset], String) raise ParseError
+pub fn parse_date_time_fixed_offset_and_remainder(String, String) -> (@tz.DateTime[@tz.FixedOffset], String) raise FormatError
 
-pub fn parse_date_time_fixed_offset_default(String) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
+pub fn parse_date_time_fixed_offset_default(String) -> @tz.DateTime[@tz.FixedOffset] raise FormatError
 
-pub fn[Tz : @tz.TimeZone] parse_date_time_in(String, String, Tz) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise ParseError
+pub fn[Tz : @tz.TimeZone] parse_date_time_in(String, String, Tz) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise FormatError
 
-pub fn[Tz : @tz.TimeZone] parse_date_time_in_and_remainder(String, String, Tz) -> (@tz.MappedLocalTime[@tz.DateTime[Tz]], String) raise ParseError
+pub fn[Tz : @tz.TimeZone] parse_date_time_in_and_remainder(String, String, Tz) -> (@tz.MappedLocalTime[@tz.DateTime[Tz]], String) raise FormatError
 
-pub fn parse_date_time_utc_default(String) -> @tz.DateTime[@tz.Utc] raise ParseError
+pub fn parse_date_time_utc_default(String) -> @tz.DateTime[@tz.Utc] raise FormatError
 
-pub fn parse_duration(String) -> @core.TimeDelta raise ParseError
+pub fn parse_duration(String) -> @core.TimeDelta raise FormatError
 
-pub fn parse_fixed_offset(String) -> @tz.FixedOffset raise ParseError
+pub fn parse_fixed_offset(String) -> @tz.FixedOffset raise FormatError
 
-pub fn parse_items(String, Array[Item]) -> Parsed raise ParseError
+pub fn parse_items(String, Array[Item]) -> Parsed raise FormatError
 
-pub fn parse_items_and_remainder(String, Array[Item]) -> (Parsed, String) raise ParseError
+pub fn parse_items_and_remainder(String, Array[Item]) -> (Parsed, String) raise FormatError
 
-pub fn parse_rfc2822(String) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
+pub fn parse_rfc2822(String) -> @tz.DateTime[@tz.FixedOffset] raise FormatError
 
-pub fn parse_rfc3339(String) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
+pub fn parse_rfc3339(String) -> @tz.DateTime[@tz.FixedOffset] raise FormatError
 
-pub fn parse_time(String, String) -> @core.NaiveTime raise ParseError
+pub fn parse_time(String, String) -> @core.NaiveTime raise FormatError
 
-pub fn parse_time_and_remainder(String, String) -> (@core.NaiveTime, String) raise ParseError
+pub fn parse_time_and_remainder(String, String) -> (@core.NaiveTime, String) raise FormatError
 
-pub fn parse_time_default(String) -> @core.NaiveTime raise ParseError
+pub fn parse_time_default(String) -> @core.NaiveTime raise FormatError
 
-pub fn[Tz : @tz.TimeZone] to_rfc2822(@tz.DateTime[Tz]) -> String raise ParseError
+pub fn[Tz : @tz.TimeZone] to_rfc2822(@tz.DateTime[Tz]) -> String raise FormatError
 
 pub fn[Tz : @tz.TimeZone] to_rfc3339(@tz.DateTime[Tz]) -> String
 
 pub fn[Tz : @tz.TimeZone] to_rfc3339_opts(@tz.DateTime[Tz], SecondsFormat, use_z? : Bool) -> String
 
-pub fn tokenize(String) -> Array[Item] raise ParseError
+pub fn tokenize(String) -> Array[Item] raise FormatError
 
 // Errors
-pub suberror ParseError {
+pub suberror FormatError {
   UnknownSpecifier(Char)
   TrailingPercent
   MissingField(Item)
@@ -112,12 +112,12 @@ pub suberror ParseError {
   InputTooShort
   TrailingInput
 } derive(Eq, @debug.Debug)
-pub fn ParseError::equal(Self, Self) -> Bool
-pub fn ParseError::not_equal(Self, Self) -> Bool
-pub fn ParseError::output(Self, &Logger) -> Unit
-pub fn ParseError::to_repr(Self) -> @debug.Repr
-pub fn ParseError::to_string(Self) -> String
-pub impl Show for ParseError
+pub fn FormatError::equal(Self, Self) -> Bool
+pub fn FormatError::not_equal(Self, Self) -> Bool
+pub fn FormatError::output(Self, &Logger) -> Unit
+pub fn FormatError::to_repr(Self) -> @debug.Repr
+pub fn FormatError::to_string(Self) -> String
+pub impl Show for FormatError
 
 // Types and methods
 pub(all) enum Fixed {
@@ -198,12 +198,12 @@ pub struct Parsed {
 } derive(Eq, @debug.Debug)
 pub fn Parsed::equal(Self, Self) -> Bool
 pub fn Parsed::not_equal(Self, Self) -> Bool
-pub fn Parsed::to_date(Self) -> @core.NaiveDate raise ParseError
-pub fn Parsed::to_date_time(Self) -> @core.NaiveDateTime raise ParseError
-pub fn Parsed::to_date_time_fixed_offset(Self) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
-pub fn[Tz : @tz.TimeZone] Parsed::to_date_time_in(Self, Tz) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise ParseError
+pub fn Parsed::to_date(Self) -> @core.NaiveDate raise FormatError
+pub fn Parsed::to_date_time(Self) -> @core.NaiveDateTime raise FormatError
+pub fn Parsed::to_date_time_fixed_offset(Self) -> @tz.DateTime[@tz.FixedOffset] raise FormatError
+pub fn[Tz : @tz.TimeZone] Parsed::to_date_time_in(Self, Tz) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise FormatError
 pub fn Parsed::to_repr(Self) -> @debug.Repr
-pub fn Parsed::to_time(Self) -> @core.NaiveTime raise ParseError
+pub fn Parsed::to_time(Self) -> @core.NaiveTime raise FormatError
 
 pub(all) enum SecondsFormat {
   Secs

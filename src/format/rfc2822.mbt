@@ -8,7 +8,7 @@
 /// outside RFC 2822's own `0..=9999` range.
 pub fn[Tz : @tz.TimeZone] to_rfc2822(
   dt : @tz.DateTime[Tz],
-) -> String raise ParseError {
+) -> String raise FormatError {
   let wall_clock = dt.naive_local()
   let date = wall_clock.date()
   let time = wall_clock.time()
@@ -53,7 +53,7 @@ fn parse_one_or_two_digits(chars : Array[Char], pos : Int) -> (Int, Int)? {
 /// Unwraps a positional parser's result, raising `InvalidRfc2822` on
 /// `None` — keeps `parse_rfc2822` a flat sequence of steps instead
 /// of a deeply nested `match` chain.
-fn[T] rfc2822_require(opt : T?) -> T raise ParseError {
+fn[T] rfc2822_require(opt : T?) -> T raise FormatError {
   match opt {
     None => raise InvalidRfc2822
     Some(v) => v
@@ -73,7 +73,7 @@ fn[T] rfc2822_require(opt : T?) -> T raise ParseError {
 /// rather than maximally lenient.
 pub fn parse_rfc2822(
   s : String,
-) -> @tz.DateTime[@tz.FixedOffset] raise ParseError {
+) -> @tz.DateTime[@tz.FixedOffset] raise FormatError {
   let chars = s.to_array()
   let (_, p1) = rfc2822_require(match_weekday_name(chars, 0))
   let p2 = rfc2822_require(expect_char(chars, p1, ','))

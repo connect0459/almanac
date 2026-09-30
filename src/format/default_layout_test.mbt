@@ -70,7 +70,7 @@ test "parse_date_time_fixed_offset_default treats the written clock as local tim
 }
 
 ///|
-fn default_layout_kind(f : () -> Unit raise @format.ParseError) -> String {
+fn default_layout_kind(f : () -> Unit raise @format.FormatError) -> String {
   try f() catch {
     @format.InputTooShort => "InputTooShort"
     @format.TrailingInput => "TrailingInput"

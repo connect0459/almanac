@@ -1,5 +1,5 @@
 ///|
-fn padded_kind(f : () -> Unit raise @format.ParseError) -> String {
+fn padded_kind(f : () -> Unit raise @format.FormatError) -> String {
   try f() catch {
     @format.InputTooShort => "InputTooShort"
     @format.TrailingInput => "TrailingInput"

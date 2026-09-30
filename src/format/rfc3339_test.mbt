@@ -289,3 +289,23 @@ test "to_rfc3339_opts renders a leap second as :60 with the requested fraction" 
   )
   assert_eq(@format.to_rfc3339_opts(leap, @format.Secs), "2016-12-31T23:59:60Z")
 }
+
+///|
+fn utc_at_year(year : Int) -> @tz.DateTime[@tz.Utc] {
+  @tz.DateTime::from_utc(
+    @core.NaiveDateTime::from_ymd_hms(year, 1, 2, 3, 4, 5).unwrap(),
+    @tz.Utc::new(),
+  )
+}
+
+///|
+test "to_rfc3339 writes a year outside 0..=9999 with an explicit sign, as ISO 8601 expands it" {
+  assert_eq(@format.to_rfc3339(utc_at_year(10000)), "+10000-01-02T03:04:05Z")
+  assert_eq(@format.to_rfc3339(utc_at_year(-44)), "-0044-01-02T03:04:05Z")
+  assert_eq(@format.to_rfc3339(utc_at_year(0)), "0000-01-02T03:04:05Z")
+  assert_eq(@format.to_rfc3339(utc_at_year(9999)), "9999-01-02T03:04:05Z")
+  assert_eq(
+    @format.to_rfc3339_opts(utc_at_year(10000), @format.Secs),
+    "+10000-01-02T03:04:05Z",
+  )
+}

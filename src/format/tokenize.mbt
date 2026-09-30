@@ -9,7 +9,7 @@ fn resolve_specifier(
   chars : Array[Char],
   pos : Int,
   n : Int,
-) -> (Array[Item], Int) raise ParseError {
+) -> (Array[Item], Int) raise FormatError {
   match chars[pos] {
     'Y' => ([Numeric(Year)], pos + 1)
     'm' => ([Numeric(MonthNumber)], pos + 1)
@@ -197,7 +197,7 @@ fn resolve_specifier(
 /// Parses a `%`-specifier format string into a sequence of `Item`s,
 /// coalescing consecutive literal characters into a single `Literal` item
 /// and expanding `%F`/`%T` into their equivalent specifier sequences.
-pub fn tokenize(fmt : String) -> Array[Item] raise ParseError {
+pub fn tokenize(fmt : String) -> Array[Item] raise FormatError {
   let chars = fmt.to_array()
   let n = chars.length()
   let items = []

@@ -1,5 +1,5 @@
 ///|
-fn message_of(f : () -> Unit raise @format.ParseError) -> String {
+fn message_of(f : () -> Unit raise @format.FormatError) -> String {
   try f() catch {
     e => e.to_string()
   } noraise {
@@ -8,7 +8,7 @@ fn message_of(f : () -> Unit raise @format.ParseError) -> String {
 }
 
 ///|
-test "ParseError renders a one-line human-readable message for each variant a real failure can raise" {
+test "FormatError renders a one-line human-readable message for each variant a real failure can raise" {
   assert_eq(
     message_of(() => @format.tokenize("%Q") |> ignore),
     "unknown format specifier '%Q'",
@@ -44,7 +44,7 @@ test "ParseError renders a one-line human-readable message for each variant a re
 }
 
 ///|
-test "ParseError MissingField names the item that could not be rendered" {
+test "FormatError MissingField names the item that could not be rendered" {
   let date = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
   assert_eq(
     message_of(() => @format.format_date(date, "%Z") |> ignore),
@@ -53,7 +53,7 @@ test "ParseError MissingField names the item that could not be rendered" {
 }
 
 ///|
-fn kind_of(f : () -> Unit raise @format.ParseError) -> String {
+fn kind_of(f : () -> Unit raise @format.FormatError) -> String {
   try f() catch {
     @format.InputTooShort => "InputTooShort"
     @format.TrailingInput => "TrailingInput"
@@ -193,7 +193,7 @@ test "FieldOutOfRange, InputTooShort and TrailingInput render one-line messages"
 }
 
 ///|
-test "ParseError ParseOnly names the item that can only be parsed" {
+test "FormatError ParseOnly names the item that can only be parsed" {
   let dt = @tz.DateTime::from_utc(
     @core.NaiveDateTime::unix_epoch(),
     @tz.FixedOffset::east(9 * 3600).unwrap(),

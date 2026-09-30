@@ -259,7 +259,7 @@ fn try_parse_rfc3339(s : String) -> @tz.DateTime[@tz.FixedOffset]? {
 /// convention.
 pub fn parse_rfc3339(
   s : String,
-) -> @tz.DateTime[@tz.FixedOffset] raise ParseError {
+) -> @tz.DateTime[@tz.FixedOffset] raise FormatError {
   match try_parse_rfc3339(s) {
     Some(dt) => dt
     None => raise InvalidRfc3339
@@ -350,7 +350,7 @@ fn render_rfc3339_opts(
   } else {
     format_offset_colon(offset_secs)
   }
-  pad_int(date.year(), 4) +
+  rfc3339_year(date.year()) +
   "-" +
   pad_int(date.month().number(), 2) +
   "-" +
@@ -366,6 +366,17 @@ fn render_rfc3339_opts(
 }
 
 ///|
+/// The year as four digits, or with an explicit sign beyond `0..=9999`
+/// (`+10000`, `-0044`), the ISO 8601 expanded representation.
+fn rfc3339_year(year : Int) -> String {
+  if year > 9999 {
+    "+" + pad_int(year, 4)
+  } else {
+    pad_int(year, 4)
+  }
+}
+
+///|
 /// `render_rfc3339_opts` with `to_rfc3339`'s defaults: `Auto` fractional
 /// digits and a zero offset as `Z`.
 fn render_rfc3339(
@@ -378,7 +389,10 @@ fn render_rfc3339(
 
 ///|
 /// Renders `dt` as RFC 3339, bypassing the general token engine. See
-/// `render_rfc3339`.
+/// `render_rfc3339`. Total: a year outside `0..=9999`, which RFC 3339's
+/// four-digit year cannot hold, is written with an explicit sign (`+10000`,
+/// `-0044`) as ISO 8601 expands it, and `parse_rfc3339` does not read such
+/// text back.
 pub fn[Tz : @tz.TimeZone] to_rfc3339(dt : @tz.DateTime[Tz]) -> String {
   let wall_clock = dt.naive_local()
   render_rfc3339(

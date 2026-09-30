@@ -95,7 +95,7 @@ fn numeric_value(
   date : @core.NaiveDate?,
   time : @core.NaiveTime?,
   item : Item,
-) -> (Int, Int) raise ParseError {
+) -> (Int, Int) raise FormatError {
   match kind {
     Year =>
       match date {
@@ -276,7 +276,7 @@ fn render(
   time : @core.NaiveTime?,
   tz_info : (Int, String)?,
   timestamp : Int64?,
-) -> String raise ParseError {
+) -> String raise FormatError {
   let out = StringBuilder()
   for item in items {
     match item {
@@ -554,7 +554,7 @@ fn render(
 pub fn format_date_items(
   date : @core.NaiveDate,
   items : Array[Item],
-) -> String raise ParseError {
+) -> String raise FormatError {
   render(items, Some(date), None, None, None)
 }
 
@@ -563,7 +563,7 @@ pub fn format_date_items(
 pub fn format_time_items(
   time : @core.NaiveTime,
   items : Array[Item],
-) -> String raise ParseError {
+) -> String raise FormatError {
   render(items, None, Some(time), None, None)
 }
 
@@ -572,7 +572,7 @@ pub fn format_time_items(
 pub fn format_date_time_items(
   dt : @core.NaiveDateTime,
   items : Array[Item],
-) -> String raise ParseError {
+) -> String raise FormatError {
   render(items, Some(dt.date()), Some(dt.time()), None, Some(dt.timestamp()))
 }
 
@@ -582,7 +582,7 @@ pub fn format_date_time_items(
 pub fn[Tz : @tz.TimeZone] format_date_time_tz_items(
   dt : @tz.DateTime[Tz],
   items : Array[Item],
-) -> String raise ParseError {
+) -> String raise FormatError {
   let wall_clock = dt.naive_local()
   let name = dt.timezone().zone_name(dt.naive_utc())
   let offset = dt.offset().local_minus_utc()
@@ -599,7 +599,7 @@ pub fn[Tz : @tz.TimeZone] format_date_time_tz_items(
 pub fn format_date(
   date : @core.NaiveDate,
   fmt : String,
-) -> String raise ParseError {
+) -> String raise FormatError {
   format_date_items(date, tokenize(fmt))
 }
 
@@ -607,7 +607,7 @@ pub fn format_date(
 pub fn format_time(
   time : @core.NaiveTime,
   fmt : String,
-) -> String raise ParseError {
+) -> String raise FormatError {
   format_time_items(time, tokenize(fmt))
 }
 
@@ -615,7 +615,7 @@ pub fn format_time(
 pub fn format_date_time(
   dt : @core.NaiveDateTime,
   fmt : String,
-) -> String raise ParseError {
+) -> String raise FormatError {
   format_date_time_items(dt, tokenize(fmt))
 }
 
@@ -628,6 +628,6 @@ pub fn format_date_time(
 pub fn[Tz : @tz.TimeZone] format_date_time_tz(
   dt : @tz.DateTime[Tz],
   fmt : String,
-) -> String raise ParseError {
+) -> String raise FormatError {
   format_date_time_tz_items(dt, tokenize(fmt))
 }

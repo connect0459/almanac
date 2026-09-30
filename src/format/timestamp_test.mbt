@@ -7,7 +7,7 @@ fn sample_utc() -> @core.NaiveDateTime {
 }
 
 ///|
-fn timestamp_kind(f : () -> Unit raise @format.ParseError) -> String {
+fn timestamp_kind(f : () -> Unit raise @format.FormatError) -> String {
   try f() catch {
     @format.InputTooShort => "InputTooShort"
     @format.TrailingInput => "TrailingInput"

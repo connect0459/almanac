@@ -1,5 +1,5 @@
 ///|
-fn parsed(input : String) -> @core.TimeDelta raise @format.ParseError {
+fn parsed(input : String) -> @core.TimeDelta raise @format.FormatError {
   @format.parse_duration(input)
 }
 

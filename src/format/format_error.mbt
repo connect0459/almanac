@@ -1,6 +1,6 @@
 ///|
 /// A format-string or parse-input error raised by the `format` package.
-pub suberror ParseError {
+pub suberror FormatError {
   UnknownSpecifier(Char)
   TrailingPercent
   MissingField(Item)
@@ -43,18 +43,18 @@ pub suberror ParseError {
 } derive(Eq, @debug.Debug)
 
 ///|
-pub extend ParseError with Eq::{equal}
+pub extend FormatError with Eq::{equal}
 
 ///|
-pub extend ParseError with Eq::{not_equal}
+pub extend FormatError with Eq::{not_equal}
 
 ///|
-pub extend ParseError with @debug.Debug::{to_repr}
+pub extend FormatError with @debug.Debug::{to_repr}
 
 ///|
 /// Renders a one-line, human-readable message for the failure, e.g.
 /// `input does not match the format`.
-pub impl Show for ParseError with fn output(self, logger) {
+pub impl Show for FormatError with fn output(self, logger) {
   let message = match self {
     UnknownSpecifier(c) => "unknown format specifier '%\{c}'"
     TrailingPercent => "format string ends with a dangling '%'"
@@ -77,4 +77,4 @@ pub impl Show for ParseError with fn output(self, logger) {
 }
 
 ///|
-pub extend ParseError with Show::{to_string, output}
+pub extend FormatError with Show::{to_string, output}

@@ -7,7 +7,7 @@
 /// (including a minutes or seconds field above 59), and
 /// `FieldOutOfRange` if it is well-shaped but beyond `FixedOffset`'s
 /// `±23:59:59` range.
-pub fn parse_fixed_offset(input : String) -> @tz.FixedOffset raise ParseError {
+pub fn parse_fixed_offset(input : String) -> @tz.FixedOffset raise FormatError {
   let chars = input.to_array()
   let parsers = [
     parse_offset_double_colon, parse_offset_colon, parse_offset_no_colon, parse_offset_triple_colon,

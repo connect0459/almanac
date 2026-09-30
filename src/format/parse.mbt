@@ -94,7 +94,7 @@ fn Parsed::empty() -> Parsed {
 /// against an already-recorded value for one seen again (e.g. the same
 /// specifier twice, or two specifiers that both determine it, like `%j`
 /// alongside `%m`/`%d`). Raises `InconsistentFields` on disagreement.
-fn[T : Eq] merge_field(existing : T?, value : T) -> T? raise ParseError {
+fn[T : Eq] merge_field(existing : T?, value : T) -> T? raise FormatError {
   match existing {
     None => Some(value)
     Some(v) => if v == value { Some(v) } else { raise InconsistentFields }
@@ -153,7 +153,7 @@ fn parse_signed_greedy_digits(chars : Array[Char], pos : Int) -> (Int, Int)? {
 fn parse_timestamp_digits(
   chars : Array[Char],
   pos : Int,
-) -> (Int64, Int)? raise ParseError {
+) -> (Int64, Int)? raise FormatError {
   let (sign, start) = if pos < chars.length() && chars[pos] == '-' {
     (-1L, pos + 1)
   } else if pos < chars.length() && chars[pos] == '+' {
@@ -384,7 +384,7 @@ fn apply_weekday_specifier(
   chars : Array[Char],
   pos : Int,
   parsed : Parsed,
-) -> (Parsed, Int) raise ParseError {
+) -> (Parsed, Int) raise FormatError {
   match match_weekday_name(chars, pos) {
     None => raise InputMismatch
     Some((wd, p)) =>
@@ -439,7 +439,7 @@ fn apply_month_name_specifier(
   chars : Array[Char],
   pos : Int,
   parsed : Parsed,
-) -> (Parsed, Int) raise ParseError {
+) -> (Parsed, Int) raise FormatError {
   match match_month_name(chars, pos) {
     None => raise InputMismatch
     Some((m, p)) =>
@@ -475,7 +475,7 @@ fn apply_ampm_specifier(
   chars : Array[Char],
   pos : Int,
   parsed : Parsed,
-) -> (Parsed, Int) raise ParseError {
+) -> (Parsed, Int) raise FormatError {
   match match_ampm(chars, pos) {
     None => raise InputMismatch
     Some((is_pm, p)) =>
@@ -573,7 +573,7 @@ fn apply_dot_fraction(
   parsed : Parsed,
   digits : Int,
   nanos_per_unit : Int,
-) -> (Parsed, Int) raise ParseError {
+) -> (Parsed, Int) raise FormatError {
   match expect_char(chars, pos, '.') {
     None => raise InputMismatch
     Some(after_dot) =>
@@ -603,7 +603,7 @@ fn apply_item(
   chars : Array[Char],
   pos : Int,
   pad : PadMode?,
-) -> (Parsed, Int) raise ParseError {
+) -> (Parsed, Int) raise FormatError {
   if pos >= chars.length() && item_needs_input(item) {
     raise InputTooShort
   }
@@ -910,7 +910,7 @@ fn apply_item(
 pub fn parse_items(
   input : String,
   items : Array[Item],
-) -> Parsed raise ParseError {
+) -> Parsed raise FormatError {
   let (parsed, rest) = parse_items_and_remainder(input, items)
   if rest != "" {
     raise TrailingInput
@@ -925,7 +925,7 @@ pub fn parse_items(
 pub fn parse_items_and_remainder(
   input : String,
   items : Array[Item],
-) -> (Parsed, String) raise ParseError {
+) -> (Parsed, String) raise FormatError {
   let chars = input.to_array()
   let (parsed, pos) = for i = 0, parsed = Parsed::empty(), pos = 0 {
     if i >= items.length() {
@@ -952,7 +952,7 @@ pub fn parse_items_and_remainder(
 /// interpreted via the conventional two-digit-year pivot (`< 70` -> 20xx,
 /// `>= 70` -> 19xx). `None` when
 /// none of the three fields is present at all.
-fn resolve_year(parsed : Parsed) -> Int? raise ParseError {
+fn resolve_year(parsed : Parsed) -> Int? raise FormatError {
   match (parsed.year, parsed.year_div_100, parsed.year_mod_100) {
     (Some(y), None, None) => Some(y)
     (Some(y), q, r) => {
@@ -994,7 +994,7 @@ fn week_based_yday(first_day_wday_x : Int, week : Int, wday_x : Int) -> Int {
 fn resolve_date_from_week(
   year : Int,
   parsed : Parsed,
-) -> @core.NaiveDate raise ParseError {
+) -> @core.NaiveDate raise FormatError {
   let weekday = match parsed.weekday {
     None => raise IncompleteFields
     Some(wd) => wd
@@ -1033,7 +1033,7 @@ fn resolve_date_from_week(
 /// (`iso_year_mod_100`), cross-checking both when both are present. A lone
 /// `%g` uses the same two-digit-year pivot as `resolve_year`. `None` when
 /// neither field is present.
-fn resolve_iso_year(parsed : Parsed) -> Int? raise ParseError {
+fn resolve_iso_year(parsed : Parsed) -> Int? raise FormatError {
   match (parsed.iso_year, parsed.iso_year_mod_100) {
     (None, None) => None
     (Some(y), None) => Some(y)
@@ -1055,7 +1055,7 @@ fn resolve_date_from_iso_week(
   iso_year : Int,
   iso_week : Int,
   parsed : Parsed,
-) -> @core.NaiveDate raise ParseError {
+) -> @core.NaiveDate raise FormatError {
   let weekday = match parsed.weekday {
     None => raise IncompleteFields
     Some(wd) => wd
@@ -1067,7 +1067,7 @@ fn resolve_date_from_iso_week(
 }
 
 ///|
-fn require_year(year : Int?) -> Int raise ParseError {
+fn require_year(year : Int?) -> Int raise FormatError {
   match year {
     None => raise IncompleteFields
     Some(y) => y
@@ -1075,7 +1075,7 @@ fn require_year(year : Int?) -> Int raise ParseError {
 }
 
 ///|
-fn resolve_date(parsed : Parsed) -> @core.NaiveDate raise ParseError {
+fn resolve_date(parsed : Parsed) -> @core.NaiveDate raise FormatError {
   let year = resolve_year(parsed)
   let iso_year = resolve_iso_year(parsed)
   let date = match (parsed.month, parsed.day) {
@@ -1149,7 +1149,7 @@ fn resolve_date(parsed : Parsed) -> @core.NaiveDate raise ParseError {
 /// disagreement-raises philosophy, applied across specifiers rather than
 /// within one). `hour12` alone (no am/pm marker) or `is_pm` alone (no
 /// 12-hour value) is incomplete: neither determines an hour by itself.
-fn resolve_hour(parsed : Parsed) -> Int raise ParseError {
+fn resolve_hour(parsed : Parsed) -> Int raise FormatError {
   let from_12h = match (parsed.hour12, parsed.is_pm) {
     (None, None) => None
     (Some(hour12), Some(is_pm)) => {
@@ -1175,7 +1175,7 @@ fn resolve_hour(parsed : Parsed) -> Int raise ParseError {
 /// default to `0`, so a minute-precision format (`%R`, `kitchen`) resolves. A `second` of `60` (a leap second) maps to
 /// `NaiveTime`'s `second() == 59, nanosecond() >= 1_000_000_000`
 /// convention.
-fn resolve_time(parsed : Parsed) -> @core.NaiveTime raise ParseError {
+fn resolve_time(parsed : Parsed) -> @core.NaiveTime raise FormatError {
   let hour = resolve_hour(parsed)
   let minute = match parsed.minute {
     None => raise IncompleteFields
@@ -1202,7 +1202,7 @@ fn resolve_time(parsed : Parsed) -> @core.NaiveTime raise ParseError {
 
 ///|
 /// Resolves `parsed`'s `%z` field into a `FixedOffset`.
-fn resolve_offset(parsed : Parsed) -> @tz.FixedOffset raise ParseError {
+fn resolve_offset(parsed : Parsed) -> @tz.FixedOffset raise FormatError {
   match parsed.offset_secs {
     None => raise IncompleteFields
     Some(secs) =>
@@ -1218,14 +1218,14 @@ fn resolve_offset(parsed : Parsed) -> @tz.FixedOffset raise ParseError {
 /// ISO year) plus `%m`/`%d`, `%j`, a week number and weekday, or an ISO
 /// week. Raises `IncompleteFields` if too few fields were parsed and
 /// `InconsistentFields` if they disagree or do not form a valid date.
-pub fn Parsed::to_date(self : Parsed) -> @core.NaiveDate raise ParseError {
+pub fn Parsed::to_date(self : Parsed) -> @core.NaiveDate raise FormatError {
   resolve_date(self)
 }
 
 ///|
 /// Resolves the time-of-day fields into a `NaiveTime`, with the same
 /// failures as `to_date`.
-pub fn Parsed::to_time(self : Parsed) -> @core.NaiveTime raise ParseError {
+pub fn Parsed::to_time(self : Parsed) -> @core.NaiveTime raise FormatError {
   resolve_time(self)
 }
 
@@ -1234,7 +1234,7 @@ pub fn Parsed::to_time(self : Parsed) -> @core.NaiveTime raise ParseError {
 /// `NaiveDateTime`.
 pub fn Parsed::to_date_time(
   self : Parsed,
-) -> @core.NaiveDateTime raise ParseError {
+) -> @core.NaiveDateTime raise FormatError {
   match self.timestamp {
     Some(ts) => resolve_at_timestamp(self, ts, 0)
     None => @core.NaiveDateTime::new(resolve_date(self), resolve_time(self))
@@ -1255,7 +1255,7 @@ fn[T] seed_missing(field : T?, seed : T) -> T? {
 fn timestamp_instant(
   parsed : Parsed,
   ts : Int64,
-) -> @core.NaiveDateTime raise ParseError {
+) -> @core.NaiveDateTime raise FormatError {
   match
     @core.NaiveDateTime::from_timestamp(ts, parsed.nanosecond.unwrap_or(0)) {
     Some(instant) => instant
@@ -1274,7 +1274,7 @@ fn resolve_at_timestamp(
   parsed : Parsed,
   ts : Int64,
   offset_secs : Int,
-) -> @core.NaiveDateTime raise ParseError {
+) -> @core.NaiveDateTime raise FormatError {
   let instant = timestamp_instant(parsed, ts)
   let wall_clock = match instant.checked_add_seconds(offset_secs.to_int64()) {
     Some(reading) => reading
@@ -1306,7 +1306,7 @@ fn resolve_at_timestamp(
 /// local wall-clock time.
 pub fn Parsed::to_date_time_fixed_offset(
   self : Parsed,
-) -> @tz.DateTime[@tz.FixedOffset] raise ParseError {
+) -> @tz.DateTime[@tz.FixedOffset] raise FormatError {
   let offset = resolve_offset(self)
   match self.timestamp {
     Some(ts) =>
@@ -1330,7 +1330,7 @@ pub fn Parsed::to_date_time_fixed_offset(
 pub fn[Tz : @tz.TimeZone] Parsed::to_date_time_in(
   self : Parsed,
   tz : Tz,
-) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise ParseError {
+) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise FormatError {
   if self.offset_secs is Some(_) {
     raise InconsistentFields
   }
@@ -1364,7 +1364,7 @@ pub fn[Tz : @tz.TimeZone] Parsed::to_date_time_in(
 pub fn parse_date(
   input : String,
   fmt : String,
-) -> @core.NaiveDate raise ParseError {
+) -> @core.NaiveDate raise FormatError {
   parse_items(input, tokenize(fmt)).to_date()
 }
 
@@ -1375,7 +1375,7 @@ pub fn parse_date(
 pub fn parse_date_and_remainder(
   input : String,
   fmt : String,
-) -> (@core.NaiveDate, String) raise ParseError {
+) -> (@core.NaiveDate, String) raise FormatError {
   let (parsed, rest) = parse_items_and_remainder(input, tokenize(fmt))
   (parsed.to_date(), rest)
 }
@@ -1386,7 +1386,7 @@ pub fn parse_date_and_remainder(
 pub fn parse_time(
   input : String,
   fmt : String,
-) -> @core.NaiveTime raise ParseError {
+) -> @core.NaiveTime raise FormatError {
   parse_items(input, tokenize(fmt)).to_time()
 }
 
@@ -1396,7 +1396,7 @@ pub fn parse_time(
 pub fn parse_time_and_remainder(
   input : String,
   fmt : String,
-) -> (@core.NaiveTime, String) raise ParseError {
+) -> (@core.NaiveTime, String) raise FormatError {
   let (parsed, rest) = parse_items_and_remainder(input, tokenize(fmt))
   (parsed.to_time(), rest)
 }
@@ -1406,7 +1406,7 @@ pub fn parse_time_and_remainder(
 pub fn parse_date_time(
   input : String,
   fmt : String,
-) -> @core.NaiveDateTime raise ParseError {
+) -> @core.NaiveDateTime raise FormatError {
   parse_items(input, tokenize(fmt)).to_date_time()
 }
 
@@ -1416,7 +1416,7 @@ pub fn parse_date_time(
 pub fn parse_date_time_and_remainder(
   input : String,
   fmt : String,
-) -> (@core.NaiveDateTime, String) raise ParseError {
+) -> (@core.NaiveDateTime, String) raise FormatError {
   let (parsed, rest) = parse_items_and_remainder(input, tokenize(fmt))
   (parsed.to_date_time(), rest)
 }
@@ -1428,7 +1428,7 @@ pub fn parse_date_time_and_remainder(
 pub fn parse_date_time_fixed_offset(
   input : String,
   fmt : String,
-) -> @tz.DateTime[@tz.FixedOffset] raise ParseError {
+) -> @tz.DateTime[@tz.FixedOffset] raise FormatError {
   parse_items(input, tokenize(fmt)).to_date_time_fixed_offset()
 }
 
@@ -1438,7 +1438,7 @@ pub fn parse_date_time_fixed_offset(
 pub fn parse_date_time_fixed_offset_and_remainder(
   input : String,
   fmt : String,
-) -> (@tz.DateTime[@tz.FixedOffset], String) raise ParseError {
+) -> (@tz.DateTime[@tz.FixedOffset], String) raise FormatError {
   let (parsed, rest) = parse_items_and_remainder(input, tokenize(fmt))
   (parsed.to_date_time_fixed_offset(), rest)
 }
@@ -1461,7 +1461,7 @@ pub fn[Tz : @tz.TimeZone] parse_date_time_in(
   input : String,
   fmt : String,
   tz : Tz,
-) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise ParseError {
+) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise FormatError {
   parse_items(input, tokenize(fmt)).to_date_time_in(tz)
 }
 
@@ -1472,7 +1472,7 @@ pub fn[Tz : @tz.TimeZone] parse_date_time_in_and_remainder(
   input : String,
   fmt : String,
   tz : Tz,
-) -> (@tz.MappedLocalTime[@tz.DateTime[Tz]], String) raise ParseError {
+) -> (@tz.MappedLocalTime[@tz.DateTime[Tz]], String) raise FormatError {
   let (parsed, rest) = parse_items_and_remainder(input, tokenize(fmt))
   (parsed.to_date_time_in(tz), rest)
 }

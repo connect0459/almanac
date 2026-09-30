@@ -19,7 +19,7 @@ fn add_nonneg(a : Int64, b : Int64) -> Int64? {
 }
 
 ///|
-fn[T] duration_require(value : T?) -> T raise ParseError {
+fn[T] duration_require(value : T?) -> T raise FormatError {
   match value {
     Some(v) => v
     None => raise InvalidDuration
@@ -50,7 +50,7 @@ fn duration_component(
   whole : Int64,
   fraction : Int64,
   unit_nanos : Int64,
-) -> @core.TimeDelta raise ParseError {
+) -> @core.TimeDelta raise FormatError {
   let one_second = 1_000_000_000L
   if unit_nanos >= one_second {
     let secs_per_unit = unit_nanos / one_second
@@ -83,7 +83,7 @@ fn duration_component(
 ///
 /// Raises `InvalidDuration` for malformed input or a value outside
 /// `TimeDelta`'s representable range.
-pub fn parse_duration(input : String) -> @core.TimeDelta raise ParseError {
+pub fn parse_duration(input : String) -> @core.TimeDelta raise FormatError {
   let chars = input.to_array()
   let len = chars.length()
   let mut pos = 0
