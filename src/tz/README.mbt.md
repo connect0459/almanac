@@ -224,7 +224,7 @@ A time zone backed by parsed IANA tzdata (TZif binary format, plus a POSIX TZ st
 | `tz_name(NaiveDateTime)` | `-> String` | The abbreviation in effect at a given instant, e.g. `"EDT"` |
 | `transition_bounds(NaiveDateTime)` | `-> TransitionBounds` | The validity window of the segment covering a given instant; see `TransitionBounds` |
 
-`Location` also implements `TimeZone`.
+`Location` also implements `TimeZone`. `==` is structural: two `Location`s are equal when their parsed TZif data, POSIX rule and `name()` all match, so an alias (e.g. `"Japan"`) is unequal to its canonical zone (`"Asia/Tokyo"`) even though both resolve identically. This also lets `DateTime[Location]` use `==` and the ordering operators.
 
 ### `TransitionBounds`
 

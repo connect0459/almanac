@@ -59,7 +59,13 @@ pub struct TzifData {
   priv local_time_types : Array[LocalTimeType]
   priv leap_seconds : Array[(Int64, Int)]
   priv posix_tz : String?
-}
+} derive(Eq)
+
+///|
+pub extend TzifData with Eq::{equal}
+
+///|
+pub extend TzifData with Eq::{not_equal}
 
 ///|
 pub fn TzifData::transitions(self : TzifData) -> Array[Int64] {

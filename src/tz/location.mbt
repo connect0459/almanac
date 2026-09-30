@@ -6,7 +6,13 @@ pub struct Location {
   priv tzif : TzifData
   priv posix_tz : PosixTz?
   priv name : String?
-}
+} derive(Eq)
+
+///|
+pub extend Location with Eq::{equal}
+
+///|
+pub extend Location with Eq::{not_equal}
 
 ///|
 /// Constructs a `Location` from raw TZif bytes, or `None` if the bytes

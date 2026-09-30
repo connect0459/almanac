@@ -360,3 +360,36 @@ test "Location::load loads a real embedded zone by name and rejects an unknown n
   )
   assert_true(@tz.Location::load("Not/A/Real/Zone") is None)
 }
+
+///|
+test "Location compares equal to another Location built from the same TZif bytes" {
+  let a = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let b = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  assert_true(a == b)
+  assert_true(a != @tz.Location::from_tzif_bytes(tzif_tokyo).unwrap())
+}
+
+///|
+test "Location compares unequal when only the POSIX footer presence differs" {
+  let with_footer = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let without_footer = @tz.Location::from_tzif_bytes(tzif_v1_only).unwrap()
+  assert_true(with_footer != without_footer)
+}
+
+///|
+test "Location compares equal for the same loaded zone and unequal for an alias of it" {
+  let tokyo = @tz.Location::load("Asia/Tokyo").unwrap()
+  assert_true(tokyo == @tz.Location::load("Asia/Tokyo").unwrap())
+  let japan = @tz.Location::load("Japan").unwrap()
+  assert_true(tokyo != japan)
+}
+
+///|
+test "DateTime in a Location supports equality and instant ordering" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let earlier = @tz.DateTime::from_timestamp(1_000L, 0, ny).unwrap()
+  let later = @tz.DateTime::from_timestamp(2_000L, 0, ny).unwrap()
+  assert_true(earlier == earlier)
+  assert_true(earlier != later)
+  assert_true(earlier < later)
+}

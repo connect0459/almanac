@@ -11,7 +11,7 @@ priv enum RuleDate {
   /// `Mm.w.d`: the `w`-th occurrence of weekday `d` (`0` = Sunday) in
   /// month `m` (`w = 5` means "the last occurrence").
   MonthWeekDay(Int, Int, Int)
-}
+} derive(Eq)
 
 ///|
 /// A POSIX TZ string's DST transition rule: when daylight saving starts
@@ -25,7 +25,7 @@ priv struct DstRule {
   /// Seconds after local midnight of `end`'s date, in daylight time (the
   /// time in effect immediately before this transition).
   end_time : Int
-}
+} derive(Eq)
 
 ///|
 /// A parsed POSIX TZ string (the format used in a TZif footer and the
@@ -37,7 +37,13 @@ pub struct PosixTz {
   priv dst_offset : Int?
   priv dst_name : String?
   priv rule : DstRule?
-}
+} derive(Eq)
+
+///|
+pub extend PosixTz with Eq::{equal}
+
+///|
+pub extend PosixTz with Eq::{not_equal}
 
 ///|
 fn is_ascii_alpha(c : Char) -> Bool {

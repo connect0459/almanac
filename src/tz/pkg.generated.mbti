@@ -127,12 +127,14 @@ pub fn LocalTimeType::utc_offset(Self) -> Int
 
 pub struct Location {
   // private fields
-}
+} derive(Eq)
+pub fn Location::equal(Self, Self) -> Bool
 pub fn Location::from_local_datetime(Self, @core.NaiveDateTime) -> MappedLocalTime[DateTime[Self]]
 pub fn Location::from_tzif_bytes(Bytes) -> Self?
 pub fn Location::from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self]
 pub fn Location::load(String) -> Self?
 pub fn Location::name(Self) -> String?
+pub fn Location::not_equal(Self, Self) -> Bool
 pub fn Location::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[FixedOffset]
 pub fn Location::offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
 pub fn Location::transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds
@@ -155,8 +157,10 @@ pub fn[T : @debug.Debug] MappedLocalTime::to_repr(Self[T]) -> @debug.Repr
 
 pub struct PosixTz {
   // private fields
-}
+} derive(Eq)
 pub fn PosixTz::bounds_at(Self, Int64) -> (Int64, Int64)?
+pub fn PosixTz::equal(Self, Self) -> Bool
+pub fn PosixTz::not_equal(Self, Self) -> Bool
 pub fn PosixTz::offset_at(Self, Int64) -> Int
 pub fn PosixTz::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[FixedOffset]
 pub fn PosixTz::type_at(Self, Int64) -> LocalTimeType
@@ -172,9 +176,11 @@ pub fn TransitionBounds::to_repr(Self) -> @debug.Repr
 
 pub struct TzifData {
   // private fields
-}
+} derive(Eq)
+pub fn TzifData::equal(Self, Self) -> Bool
 pub fn TzifData::leap_seconds(Self) -> Array[(Int64, Int)]
 pub fn TzifData::local_time_types(Self) -> Array[LocalTimeType]
+pub fn TzifData::not_equal(Self, Self) -> Bool
 pub fn TzifData::posix_tz(Self) -> String?
 pub fn TzifData::transition_types(Self) -> Array[Int]
 pub fn TzifData::transitions(Self) -> Array[Int64]
