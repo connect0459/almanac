@@ -131,6 +131,7 @@ pub struct Location {
 pub fn Location::equal(Self, Self) -> Bool
 pub fn Location::from_local_datetime(Self, @core.NaiveDateTime) -> MappedLocalTime[DateTime[Self]]
 pub fn Location::from_tzif_bytes(Bytes) -> Self?
+pub fn Location::from_tzif_bytes_named(String, Bytes) -> Self?
 pub fn Location::from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self]
 pub fn Location::load(String) -> Self?
 pub fn Location::name(Self) -> String?

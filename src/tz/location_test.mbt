@@ -393,3 +393,37 @@ test "DateTime in a Location supports equality and instant ordering" {
   assert_true(earlier != later)
   assert_true(earlier < later)
 }
+
+///|
+test "from_tzif_bytes_named reports the given name and resolves like from_tzif_bytes" {
+  let named = @tz.Location::from_tzif_bytes_named("Test/NewYork", tzif_new_york).unwrap()
+  let unnamed = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  assert_eq(named.name(), Some("Test/NewYork"))
+  let instant = @core.NaiveDateTime::from_timestamp(1_710_054_000L, 0).unwrap()
+  assert_eq(named.type_at(instant), unnamed.type_at(instant))
+  assert_true(named != unnamed)
+}
+
+///|
+test "from_tzif_bytes_named accepts any name text, including an empty one" {
+  let empty = @tz.Location::from_tzif_bytes_named("", tzif_tokyo).unwrap()
+  assert_eq(empty.name(), Some(""))
+}
+
+///|
+test "from_tzif_bytes_named rejects malformed bytes" {
+  assert_true(@tz.Location::from_tzif_bytes_named("Bad", b"nope") is None)
+  assert_true(
+    @tz.Location::from_tzif_bytes_named("Bad", tzif_bad_posix_footer) is None,
+  )
+}
+
+///|
+test "from_tzif_bytes_named equals a loaded zone built from identical bytes and name" {
+  let a = @tz.Location::from_tzif_bytes_named("X", tzif_tokyo).unwrap()
+  let b = @tz.Location::from_tzif_bytes_named("X", tzif_tokyo).unwrap()
+  assert_true(a == b)
+  assert_true(
+    a != @tz.Location::from_tzif_bytes_named("Y", tzif_tokyo).unwrap(),
+  )
+}

@@ -18,7 +18,8 @@ pub extend Location with Eq::{not_equal}
 /// Constructs a `Location` from raw TZif bytes, or `None` if the bytes
 /// are malformed, or its POSIX TZ footer (when present) is malformed.
 /// `name()` reports `None`, since raw bytes carry no IANA identifier; use
-/// `Location::load` to construct a `Location` whose `name()` is known.
+/// `Location::from_tzif_bytes_named` or `Location::load` to construct a
+/// `Location` whose `name()` is known.
 pub fn Location::from_tzif_bytes(data : Bytes) -> Location? {
   match parse_tzif(data) {
     None => None
@@ -32,6 +33,19 @@ pub fn Location::from_tzif_bytes(data : Bytes) -> Location? {
           }
       }
   }
+}
+
+///|
+/// Like `Location::from_tzif_bytes`, but `name()` reports `name`. Any text
+/// is accepted as given, without validation.
+pub fn Location::from_tzif_bytes_named(
+  name : String,
+  data : Bytes,
+) -> Location? {
+  Location::from_tzif_bytes(data).map(loc => Location::{
+    ..loc,
+    name: Some(name),
+  })
 }
 
 ///|
@@ -71,11 +85,7 @@ pub fn resolve_tzdata_bytes(
 pub fn Location::load(name : String) -> Location? {
   match resolve_tzdata_bytes(tzdata_zones, tzdata_aliases, name) {
     None => None
-    Some(bytes) =>
-      Location::from_tzif_bytes(bytes).map(loc => Location::{
-        ..loc,
-        name: Some(name),
-      })
+    Some(bytes) => Location::from_tzif_bytes_named(name, bytes)
   }
 }
 
