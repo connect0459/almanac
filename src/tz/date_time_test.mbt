@@ -649,3 +649,32 @@ test "fixed_offset freezes the offset in effect at the instant (America/New_York
   assert_eq(summer_fixed.compare_instant(summer), 0)
   assert_eq(winter_fixed.naive_local(), winter.naive_local())
 }
+
+///|
+test "with_time replaces the local time of day and keeps the local date" {
+  let dt = tokyo_new_year_morning()
+  let time = @core.NaiveTime::from_hms(23, 59, 58).unwrap()
+  assert_tokyo_reading(dt.with_time(time), (2024, 1, 1), (23, 59, 58), 0)
+}
+
+///|
+test "with_time reports Absent in a spring-forward gap and Ambiguous in a fall-back fold (America/New_York)" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let gap_time = @core.NaiveTime::from_hms(2, 30, 0).unwrap()
+  let fold_time = @core.NaiveTime::from_hms(1, 30, 0).unwrap()
+  let gap_day = @tz.DateTime::from_ymd_hms(2024, 3, 10, 12, 0, 0, ny)
+    .single()
+    .unwrap()
+  let fold_day = @tz.DateTime::from_ymd_hms(2024, 11, 3, 12, 0, 0, ny)
+    .single()
+    .unwrap()
+  assert_true(gap_day.with_time(gap_time) is @tz.Absent)
+  let folded = gap_day.with_time(fold_time)
+  assert_true(folded.single() is Some(_))
+  let ambiguous = fold_day.with_time(fold_time)
+  assert_true(ambiguous.single() is None)
+  assert_eq(
+    ambiguous.earliest().unwrap().compare_instant(ambiguous.latest().unwrap()),
+    -1,
+  )
+}

@@ -508,6 +508,20 @@ pub fn[Tz] DateTime::timestamp_subsec_micros(self : DateTime[Tz]) -> Int {
 }
 
 ///|
+/// This datetime with its local time of day replaced by `time`, keeping the
+/// local date and re-resolving the wall-clock reading through the time zone:
+/// `Absent` inside a DST gap, `Ambiguous` inside a DST fold.
+pub fn[Tz : TimeZone] DateTime::with_time(
+  self : DateTime[Tz],
+  time : @core.NaiveTime,
+) -> MappedLocalTime[DateTime[Tz]] {
+  DateTime::from_local(
+    @core.NaiveDateTime::new(self.date_naive(), time),
+    self.tz,
+  )
+}
+
+///|
 /// This datetime re-expressed in `tz`, keeping the same underlying UTC
 /// instant.
 pub fn[Tz, Tz2] DateTime::with_timezone(
