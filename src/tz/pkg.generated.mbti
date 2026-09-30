@@ -27,25 +27,33 @@ pub fn[Tz : Eq] DateTime::compare(Self[Tz], Self[Tz]) -> Int
 pub fn[Tz, Tz2] DateTime::compare_instant(Self[Tz], Self[Tz2]) -> Int
 pub fn[Tz : TimeZone] DateTime::date_naive(Self[Tz]) -> @core.NaiveDate
 pub fn[Tz : TimeZone] DateTime::day(Self[Tz]) -> Int
+pub fn[Tz : TimeZone] DateTime::day0(Self[Tz]) -> Int
 pub fn[Tz : Eq] DateTime::equal(Self[Tz], Self[Tz]) -> Bool
 pub fn[Tz : TimeZone] DateTime::from_local(@core.NaiveDateTime, Tz) -> MappedLocalTime[Self[Tz]]
 pub fn[Tz] DateTime::from_timestamp(Int64, Int, Tz) -> Self[Tz]?
 pub fn[Tz] DateTime::from_utc(@core.NaiveDateTime, Tz) -> Self[Tz]
 pub fn[Tz : TimeZone] DateTime::from_ymd_hms(Int, Int, Int, Int, Int, Int, Tz) -> MappedLocalTime[Self[Tz]]
 pub fn[Tz : TimeZone] DateTime::hour(Self[Tz]) -> Int
+pub fn[Tz : TimeZone] DateTime::hour12(Self[Tz]) -> (Bool, Int)
 pub fn[Tz : TimeZone] DateTime::iso_week(Self[Tz]) -> @core.IsoWeek
 pub fn[Tz : TimeZone] DateTime::minute(Self[Tz]) -> Int
 pub fn[Tz : TimeZone] DateTime::month(Self[Tz]) -> @core.Month
+pub fn[Tz : TimeZone] DateTime::month0(Self[Tz]) -> Int
 pub fn[Tz : TimeZone] DateTime::naive_local(Self[Tz]) -> @core.NaiveDateTime
 pub fn[Tz] DateTime::naive_utc(Self[Tz]) -> @core.NaiveDateTime
 pub fn[Tz : TimeZone] DateTime::nanosecond(Self[Tz]) -> Int
 pub fn[Tz : Eq] DateTime::not_equal(Self[Tz], Self[Tz]) -> Bool
+pub fn[Tz : TimeZone] DateTime::num_days_from_ce(Self[Tz]) -> Int
+pub fn[Tz : TimeZone] DateTime::num_days_in_month(Self[Tz]) -> Int
+pub fn[Tz : TimeZone] DateTime::num_seconds_from_midnight(Self[Tz]) -> Int
 pub fn[Tz : TimeZone] DateTime::offset(Self[Tz]) -> FixedOffset
 pub fn[Tz : Eq] DateTime::op_ge(Self[Tz], Self[Tz]) -> Bool
 pub fn[Tz : Eq] DateTime::op_gt(Self[Tz], Self[Tz]) -> Bool
 pub fn[Tz : Eq] DateTime::op_le(Self[Tz], Self[Tz]) -> Bool
 pub fn[Tz : Eq] DateTime::op_lt(Self[Tz], Self[Tz]) -> Bool
 pub fn[Tz : TimeZone] DateTime::ordinal(Self[Tz]) -> Int
+pub fn[Tz : TimeZone] DateTime::ordinal0(Self[Tz]) -> Int
+pub fn[Tz : TimeZone] DateTime::quarter(Self[Tz]) -> Int
 pub fn[Tz] DateTime::round(Self[Tz], @core.TimeDelta) -> Self[Tz]?
 pub fn[Tz] DateTime::round_subsecs(Self[Tz], Int) -> Self[Tz]?
 pub fn[Tz : TimeZone] DateTime::second(Self[Tz]) -> Int
@@ -70,6 +78,7 @@ pub fn[Tz : TimeZone] DateTime::with_second(Self[Tz], Int) -> MappedLocalTime[Se
 pub fn[Tz, Tz2] DateTime::with_timezone(Self[Tz], Tz2) -> Self[Tz2]
 pub fn[Tz : TimeZone] DateTime::with_year(Self[Tz], Int) -> MappedLocalTime[Self[Tz]]
 pub fn[Tz : TimeZone] DateTime::year(Self[Tz]) -> Int
+pub fn[Tz : TimeZone] DateTime::year_ce(Self[Tz]) -> (Bool, Int)
 pub impl[Tz : Eq] Compare for DateTime[Tz]
 
 pub struct FixedOffset {

@@ -335,6 +335,62 @@ pub fn[Tz : TimeZone] DateTime::with_nanosecond(
 }
 
 ///|
+/// The local month, counting from `0`.
+pub fn[Tz : TimeZone] DateTime::month0(self : DateTime[Tz]) -> Int {
+  self.naive_local().month0()
+}
+
+///|
+/// The local day of the month, counting from `0`.
+pub fn[Tz : TimeZone] DateTime::day0(self : DateTime[Tz]) -> Int {
+  self.naive_local().day0()
+}
+
+///|
+/// The local day of the year, counting from `0`.
+pub fn[Tz : TimeZone] DateTime::ordinal0(self : DateTime[Tz]) -> Int {
+  self.naive_local().ordinal0()
+}
+
+///|
+/// The local quarter of the year, `1..=4`.
+pub fn[Tz : TimeZone] DateTime::quarter(self : DateTime[Tz]) -> Int {
+  self.naive_local().quarter()
+}
+
+///|
+/// The local year as a Common Era flag and a positive year number. See `@core.NaiveDate::year_ce`.
+pub fn[Tz : TimeZone] DateTime::year_ce(self : DateTime[Tz]) -> (Bool, Int) {
+  self.naive_local().year_ce()
+}
+
+///|
+/// The number of days from the start of the Common Era to the local date, counting `0001-01-01` as day `1`.
+pub fn[Tz : TimeZone] DateTime::num_days_from_ce(self : DateTime[Tz]) -> Int {
+  self.naive_local().num_days_from_ce()
+}
+
+///|
+/// The number of days in the local month.
+pub fn[Tz : TimeZone] DateTime::num_days_in_month(self : DateTime[Tz]) -> Int {
+  self.naive_local().num_days_in_month()
+}
+
+///|
+/// The local hour on a 12-hour clock as a PM flag and an hour in `1..=12`.
+pub fn[Tz : TimeZone] DateTime::hour12(self : DateTime[Tz]) -> (Bool, Int) {
+  self.naive_local().hour12()
+}
+
+///|
+/// The number of seconds since local midnight.
+pub fn[Tz : TimeZone] DateTime::num_seconds_from_midnight(
+  self : DateTime[Tz],
+) -> Int {
+  self.naive_local().num_seconds_from_midnight()
+}
+
+///|
 /// This datetime re-expressed in `tz`, keeping the same underlying UTC
 /// instant.
 pub fn[Tz, Tz2] DateTime::with_timezone(
