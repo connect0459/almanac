@@ -6,7 +6,7 @@ A thin entry point over the three packages below. Importing this package alone g
 | :--- | :--- | :--- |
 | `connect0459/chrono` | `@chrono` | Re-exports of the everyday types (see below) |
 | `connect0459/chrono/core` | `@core` | Calendar and clock primitives with no time zone: `Weekday`, `WeekdaySet`, `Month`, `IsoWeek`, `NaiveDate`, `NaiveWeek`, `NaiveTime`, `TimeDelta`, `NaiveDateTime`, `RoundingError` |
-| `connect0459/chrono/tz` | `@tz` | Time zones: the `TimeZone` trait, `Utc`, `FixedOffset`, `FixedZone`, `Location` (IANA tzdata), `PosixTz`, `DateTime[Tz]`, `MappedLocalTime` |
+| `connect0459/chrono/tz` | `@tz` | Time zones: the `TimeZone` trait, `Utc`, `FixedOffset`, `FixedZone`, `Location` (IANA tzdata), `PosixTz`, `DateTime[Tz]`, `MappedLocalTime`, and on the `native` backend only, `Local` (the host's zone) |
 | `connect0459/chrono/format` | `@format` | `strftime`-style formatting and parsing, RFC 2822 and RFC 3339, plus the default-layout and duration parsers |
 
 ## Re-exported types

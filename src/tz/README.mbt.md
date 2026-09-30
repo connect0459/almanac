@@ -318,13 +318,12 @@ The offset, DST flag, and abbreviation for one segment of a `Location`'s timelin
 
 ### `Local` (native only)
 
-The OS-configured local time zone, resolved from `$TZ` or, when unset, `/etc/localtime`. Only compiled for the `native` backend: resolving it requires file I/O that `js`/`wasm`/`wasm-gc` have no host-provided access to.
+The OS-configured local time zone, resolved from `$TZ` or, when unset, `/etc/localtime`. Only compiled for the `native` backend: resolving it requires file I/O that `js`/`wasm`/`wasm-gc` have no host-provided access to. The generated `.mbti` of the default target (`wasm`) therefore omits `Local`; its `native` interface (`Local::new`, `Local::now` and the `TimeZone` methods) is the one to review for a release. The one place the host environment is read is `Local::new`; the rule it applies to `$TZ` and `/etc/localtime` is internal and not public API.
 
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `Local::new()` | `-> Self?` | Resolves the host's configured time zone; `None` if it could not be determined. Reads live OS state — not a pure function of its arguments. |
 | `Local::now()` | `-> DateTime[Local]?` | The current instant in the host's local zone, the counterpart of `Utc::now()`; `None` when `Local::new()` is `None`, that is, when the zone cannot be determined; the clock itself is read as in `Utc::now()` |
-| `Local::resolve(String?, Bytes?)` | `-> Self?` | The pure resolution logic `new()` wraps: given the `TZ` environment variable and `/etc/localtime`'s bytes, applies POSIX `TZ` precedence (empty `TZ` → UTC, a named zone via `Location::load`, else a bare POSIX rule via `parse_posix_tz`; when `TZ` is unset, the given bytes via `Location::from_tzif_bytes`) |
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | Delegates to the resolved zone |
 | `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | Delegates to the resolved zone |
 | `zone_name(NaiveDateTime)` | `-> String` | Delegates to the resolved zone |

@@ -8,7 +8,7 @@ import {
 options(
   targets: {
     "local.mbt": [ "native" ],
-    "local_test.mbt": [ "native" ],
+    "local_wbtest.mbt": [ "native" ],
     "local_native.mbt": [ "native" ],
     "local_native_test.mbt": [ "native" ],
   },

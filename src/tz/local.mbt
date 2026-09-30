@@ -21,7 +21,7 @@ pub struct Local {
 /// that, parsed as a bare POSIX rule (e.g. `JST-9`); `None` if it is
 /// neither, regardless of `localtime_bytes`. `localtime_bytes` is only
 /// consulted when `TZ` is unset entirely.
-pub fn Local::resolve(tz_env : String?, localtime_bytes : Bytes?) -> Local? {
+fn Local::resolve(tz_env : String?, localtime_bytes : Bytes?) -> Local? {
   match tz_env {
     Some("") => Some(Local::{ kind: Fixed(FixedOffset::east(0).unwrap()), })
     Some(name) =>
