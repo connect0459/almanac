@@ -249,7 +249,8 @@ A time zone backed by parsed IANA tzdata (TZif binary format, plus a POSIX TZ st
 
 | Method | Signature | Description |
 | :--- | :--- | :--- |
-| `Location::load(String)` | `-> Self?` | Look up an embedded IANA zone by name (e.g. `"Asia/Tokyo"`), following aliases; `None` if the name is unknown |
+| `Location::load(String)` | `-> Self?` | Look up an embedded IANA zone by name (e.g. `"Asia/Tokyo"`), following aliases; `None` if the name is unknown, including the empty string (which, unlike in Go's `LoadLocation`, is not an alias for UTC); `"UTC"` resolves like any other zone |
+| `Location::utc()` | `-> Self` | The UTC zone as a `Location` (equal to `Location::load("UTC")`, `name()` is `Some("UTC")`), for APIs taking a `Location` rather than the separate `Utc` type |
 | `Location::from_tzif_bytes(Bytes)` | `-> Self?` | Parse a zone directly from raw TZif bytes; `None` if malformed |
 | `Location::from_tzif_bytes_named(String, Bytes)` | `-> Self?` | Like `from_tzif_bytes`, but `name()` reports the given name; any text is accepted as given, without validation |
 | `name()` | `-> String?` | The IANA identifier this `Location` was loaded with (the name as given to `Location::load`, not canonicalized through an alias); `None` for one built via `from_tzif_bytes` |

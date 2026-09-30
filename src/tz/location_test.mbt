@@ -488,3 +488,39 @@ test "offset_from_abbreviation resolves a fixed zone's only abbreviation (Asia/T
     @tz.FixedOffset::east(9 * 3600),
   )
 }
+
+///|
+test "utc is a Location named UTC with a zero offset and no daylight saving" {
+  let utc = @tz.Location::utc()
+  let epoch = @core.NaiveDateTime::unix_epoch()
+  assert_eq(utc.name(), Some("UTC"))
+  assert_eq(utc.offset_from_utc(epoch), @tz.FixedOffset::east(0).unwrap())
+  assert_eq(utc.tz_name(epoch), "UTC")
+  assert_eq(utc.is_dst(epoch), false)
+}
+
+///|
+test "utc is the same zone that load resolves for the name UTC" {
+  assert_true(@tz.Location::utc() == @tz.Location::load("UTC").unwrap())
+}
+
+///|
+test "utc agrees with the Utc zone at any instant" {
+  let dt = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),
+    @core.NaiveTime::from_hms(12, 0, 0).unwrap(),
+  )
+  assert_eq(
+    @tz.Location::utc().offset_from_utc(dt),
+    @tz.Utc::new().offset_from_utc(dt),
+  )
+  assert_eq(
+    @tz.Location::utc().offset_from_local(dt),
+    @tz.Utc::new().offset_from_local(dt),
+  )
+}
+
+///|
+test "load rejects an empty zone name instead of treating it as UTC" {
+  assert_true(@tz.Location::load("") is None)
+}

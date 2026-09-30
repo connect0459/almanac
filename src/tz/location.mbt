@@ -102,6 +102,17 @@ pub fn Location::load(name : String) -> Location? {
 }
 
 ///|
+/// The UTC zone as a `Location`, for APIs that take a `Location` rather than
+/// the separate `Utc` type: the embedded `"UTC"` zone, so `name()` is
+/// `Some("UTC")`. Equal to `Location::load("UTC")`.
+///
+/// `Location::load("")` is not an alias for UTC (unlike Go's `LoadLocation`)
+/// and returns `None`, so an empty name cannot silently become UTC.
+pub fn Location::utc() -> Location {
+  Location::load("UTC").unwrap()
+}
+
+///|
 /// The local time type in effect before this zone's first recorded
 /// transition (or for its entire timeline, if it has none): the first
 /// non-DST type, or the first type if every type observes DST (RFC
