@@ -10,3 +10,11 @@ extern "C" fn read_etc_localtime() -> Bytes = "chrono_read_etc_localtime"
 pub fn Local::new() -> Local? {
   Local::resolve(@env.get_env_var("TZ"), Some(read_etc_localtime()))
 }
+
+///|
+/// The current instant expressed in the host's local time zone, or `None`
+/// if that zone could not be determined (see `Local::new`). The counterpart
+/// of `Utc::now`.
+pub fn Local::now() -> DateTime[Local]? {
+  Local::new().map(zone => Utc::now().with_timezone(zone))
+}
