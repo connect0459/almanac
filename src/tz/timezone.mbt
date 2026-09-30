@@ -127,6 +127,10 @@ pub trait TimeZone {
   /// datetime. `false` by default: a zone with no daylight saving (`Utc`,
   /// `FixedOffset`) never observes it.
   fn is_dst(Self, @core.NaiveDateTime) -> Bool = _
+  /// The validity window of the offset in effect at the given UTC naive
+  /// datetime. Unbounded on both sides by default: a zone with a single
+  /// fixed offset (`Utc`, `FixedOffset`) never changes it.
+  fn transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds = _
   /// A `DateTime` for the given UTC naive datetime, expressed in this zone.
   /// See `DateTime::from_utc`.
   fn from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self] = _
@@ -140,6 +144,11 @@ pub trait TimeZone {
 ///|
 impl TimeZone with fn is_dst(_self, _utc) {
   false
+}
+
+///|
+impl TimeZone with fn transition_bounds(_self, _utc) {
+  TransitionBounds::{ start: None, end: None, }
 }
 
 ///|

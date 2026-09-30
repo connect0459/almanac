@@ -390,6 +390,11 @@ pub impl TimeZone for Location with fn is_dst(self, utc) {
 }
 
 ///|
+pub impl TimeZone for Location with fn transition_bounds(self, utc) {
+  Location::transition_bounds(self, utc)
+}
+
+///|
 pub extend Location with TimeZone::{
   offset_from_utc,
   offset_from_local,

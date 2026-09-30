@@ -106,3 +106,17 @@ test "a Local resolved from each source reports DST like the underlying zone" {
   assert_false(posix.is_dst(winter))
   assert_false(fixed.is_dst(summer))
 }
+
+///|
+test "a Local resolved from each source reports the same zone bounds as the underlying zone" {
+  let summer = @core.NaiveDateTime::from_timestamp(1_719_835_200L, 0).unwrap()
+  let ny = @tz.Location::load("America/New_York").unwrap()
+  let rule = @tz.parse_posix_tz("FOO5BAR4,M3.2.0,M11.1.0").unwrap()
+  let iana = @tz.Local::resolve(Some("America/New_York"), None).unwrap()
+  let posix = @tz.Local::resolve(Some("FOO5BAR4,M3.2.0,M11.1.0"), None).unwrap()
+  let fixed = @tz.Local::resolve(Some(""), None).unwrap()
+  assert_eq(iana.transition_bounds(summer), ny.transition_bounds(summer))
+  assert_eq(posix.transition_bounds(summer), rule.transition_bounds(summer))
+  assert_eq(fixed.transition_bounds(summer).start(), None)
+  assert_eq(fixed.transition_bounds(summer).end(), None)
+}

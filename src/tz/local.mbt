@@ -73,11 +73,21 @@ pub impl TimeZone for Local with fn is_dst(self, utc) {
 }
 
 ///|
+pub impl TimeZone for Local with fn transition_bounds(self, utc) {
+  match self.kind {
+    Iana(loc) => loc.transition_bounds(utc)
+    Fixed(off) => off.transition_bounds(utc)
+    Posix(p) => p.transition_bounds(utc)
+  }
+}
+
+///|
 pub extend Local with TimeZone::{
   offset_from_utc,
   offset_from_local,
   tz_name,
   is_dst,
+  transition_bounds,
   from_utc_datetime,
   from_local_datetime,
 }

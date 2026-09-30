@@ -505,10 +505,23 @@ pub impl TimeZone for PosixTz with fn is_dst(self, utc) {
 }
 
 ///|
+pub impl TimeZone for PosixTz with fn transition_bounds(self, utc) {
+  match self.bounds_at(utc.timestamp()) {
+    None => TransitionBounds::{ start: None, end: None, }
+    Some((start, end)) =>
+      TransitionBounds::{
+        start: Some(@core.NaiveDateTime::from_timestamp(start, 0).unwrap()),
+        end: Some(@core.NaiveDateTime::from_timestamp(end, 0).unwrap()),
+      }
+  }
+}
+
+///|
 pub extend PosixTz with TimeZone::{
   offset_from_utc,
   tz_name,
   is_dst,
+  transition_bounds,
   from_utc_datetime,
   from_local_datetime,
 }

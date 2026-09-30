@@ -50,6 +50,7 @@ pub extend Utc with TimeZone::{
   offset_from_local,
   tz_name,
   is_dst,
+  transition_bounds,
   from_utc_datetime,
   from_local_datetime,
 }

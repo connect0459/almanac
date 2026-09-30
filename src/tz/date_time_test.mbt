@@ -856,3 +856,40 @@ test "DateTime in a PosixTz reports DST from its rule, and never for a rule with
     @tz.DateTime::from_timestamp(1_719_835_200L, 0, jst).unwrap().is_dst(),
   )
 }
+
+///|
+fn instant_naive(secs : Int64) -> @core.NaiveDateTime? {
+  Some(@core.NaiveDateTime::from_timestamp(secs, 0).unwrap())
+}
+
+///|
+test "zone_bounds is unbounded on both sides for a zone with a single fixed offset" {
+  let utc = @tz.DateTime::from_timestamp(1_719_835_200L, 0, @tz.Utc::new()).unwrap()
+  let tokyo = utc.with_timezone(@tz.FixedOffset::east(9 * 3600).unwrap())
+  assert_eq(utc.zone_bounds().start(), None)
+  assert_eq(utc.zone_bounds().end(), None)
+  assert_eq(tokyo.zone_bounds().start(), None)
+  assert_eq(tokyo.zone_bounds().end(), None)
+}
+
+///|
+test "zone_bounds of a DateTime in a Location is the window of its DST segment (America/New_York, 2024)" {
+  let ny = @tz.Location::load("America/New_York").unwrap()
+  let summer = @tz.DateTime::from_timestamp(1_719_835_200L, 0, ny).unwrap()
+  let bounds = summer.zone_bounds()
+  assert_eq(bounds.start(), instant_naive(1_710_054_000L))
+  assert_eq(bounds.end(), instant_naive(1_730_613_600L))
+  assert_eq(bounds, ny.transition_bounds(summer.naive_utc()))
+}
+
+///|
+test "zone_bounds of a DateTime in a PosixTz is the window of its DST or standard-time interval" {
+  let rule = @tz.parse_posix_tz("EST5EDT,M3.2.0,M11.1.0").unwrap()
+  let summer = @tz.DateTime::from_timestamp(1_719_835_200L, 0, rule).unwrap()
+  assert_eq(summer.zone_bounds().start(), instant_naive(1_710_054_000L))
+  assert_eq(summer.zone_bounds().end(), instant_naive(1_730_613_600L))
+  let jst = @tz.parse_posix_tz("JST-9").unwrap()
+  let fixed = @tz.DateTime::from_timestamp(1_719_835_200L, 0, jst).unwrap()
+  assert_eq(fixed.zone_bounds().start(), None)
+  assert_eq(fixed.zone_bounds().end(), None)
+}

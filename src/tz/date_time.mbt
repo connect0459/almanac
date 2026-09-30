@@ -566,6 +566,16 @@ pub fn[Tz : TimeZone] DateTime::is_dst(self : DateTime[Tz]) -> Bool {
 }
 
 ///|
+/// The validity window of the offset in effect at this instant: from the
+/// transition that began it until the next one, either side `None` when
+/// unbounded. See `TransitionBounds`.
+pub fn[Tz : TimeZone] DateTime::zone_bounds(
+  self : DateTime[Tz],
+) -> TransitionBounds {
+  self.tz.transition_bounds(self.datetime)
+}
+
+///|
 /// This datetime re-expressed in UTC, keeping the same underlying instant.
 pub fn[Tz] DateTime::to_utc(self : DateTime[Tz]) -> DateTime[Utc] {
   self.with_timezone(Utc::new())

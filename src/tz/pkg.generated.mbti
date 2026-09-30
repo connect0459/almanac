@@ -101,6 +101,7 @@ pub fn[Tz : TimeZone] DateTime::with_year(Self[Tz], Int) -> MappedLocalTime[Self
 pub fn[Tz : TimeZone] DateTime::year(Self[Tz]) -> Int
 pub fn[Tz : TimeZone] DateTime::year_ce(Self[Tz]) -> (Bool, Int)
 pub fn[Tz : TimeZone] DateTime::years_since(Self[Tz], Self[Tz]) -> Int?
+pub fn[Tz : TimeZone] DateTime::zone_bounds(Self[Tz]) -> TransitionBounds
 pub impl[Tz : Eq] Compare for DateTime[Tz]
 pub impl[Tz : TimeZone] Show for DateTime[Tz]
 
@@ -121,6 +122,7 @@ pub fn FixedOffset::offset_from_utc(Self, @core.NaiveDateTime) -> Self
 pub fn FixedOffset::output(Self, &Logger) -> Unit
 pub fn FixedOffset::to_repr(Self) -> @debug.Repr
 pub fn FixedOffset::to_string(Self) -> String
+pub fn FixedOffset::transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds
 pub fn FixedOffset::tz_name(Self, @core.NaiveDateTime) -> String
 pub fn FixedOffset::west(Int) -> Self?
 pub impl TimeZone for FixedOffset
@@ -192,6 +194,7 @@ pub fn PosixTz::offset_at(Self, Int64) -> Int
 pub fn PosixTz::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[FixedOffset]
 pub fn PosixTz::offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
 pub fn PosixTz::to_repr(Self) -> @debug.Repr
+pub fn PosixTz::transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds
 pub fn PosixTz::type_at(Self, Int64) -> LocalTimeType
 pub fn PosixTz::tz_name(Self, @core.NaiveDateTime) -> String
 pub impl TimeZone for PosixTz
@@ -236,6 +239,7 @@ pub fn Utc::offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
 pub fn Utc::output(Self, &Logger) -> Unit
 pub fn Utc::to_repr(Self) -> @debug.Repr
 pub fn Utc::to_string(Self) -> String
+pub fn Utc::transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds
 pub fn Utc::tz_name(Self, @core.NaiveDateTime) -> String
 pub impl TimeZone for Utc
 pub impl Show for Utc
@@ -248,6 +252,7 @@ pub trait TimeZone {
   fn offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[FixedOffset]
   fn tz_name(Self, @core.NaiveDateTime) -> String
   fn is_dst(Self, @core.NaiveDateTime) -> Bool
+  fn transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds
   fn from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self]
   fn from_local_datetime(Self, @core.NaiveDateTime) -> MappedLocalTime[DateTime[Self]]
 }
