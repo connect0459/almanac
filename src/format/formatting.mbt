@@ -198,8 +198,14 @@ fn numeric_value(
           (week_number(d.ordinal(), d.weekday().num_days_from_monday()), 2)
         None => raise MissingField(item)
       }
-    Nanosecond | DotFraction | Nanosecond3 | Nanosecond6 | Timestamp =>
-      raise MissingField(item)
+    Nanosecond
+    | DotFraction
+    | Nanosecond3
+    | Nanosecond6
+    | DotNanosecond3
+    | DotNanosecond6
+    | DotNanosecond9
+    | Timestamp => raise MissingField(item)
   }
 }
 
@@ -337,6 +343,28 @@ fn render(
         match time {
           Some(t) =>
             out.write_string(pad_int(t.nanosecond() % 1_000_000_000 / 1_000, 6))
+          None => raise MissingField(item)
+        }
+      Numeric(DotNanosecond3) =>
+        match time {
+          Some(t) =>
+            out.write_string(
+              "." + pad_int(t.nanosecond() % 1_000_000_000 / 1_000_000, 3),
+            )
+          None => raise MissingField(item)
+        }
+      Numeric(DotNanosecond6) =>
+        match time {
+          Some(t) =>
+            out.write_string(
+              "." + pad_int(t.nanosecond() % 1_000_000_000 / 1_000, 6),
+            )
+          None => raise MissingField(item)
+        }
+      Numeric(DotNanosecond9) =>
+        match time {
+          Some(t) =>
+            out.write_string("." + pad_int(t.nanosecond() % 1_000_000_000, 9))
           None => raise MissingField(item)
         }
       Fixed(LongWeekdayName) =>

@@ -631,3 +631,48 @@ test "format renders %n as a newline and %t as a tab" {
   let time = @core.NaiveTime::from_hms(9, 5, 7).unwrap()
   assert_eq(@format.format_time(time, "%H%t%M%n%S"), "09\t05\n07")
 }
+
+///|
+test "format_time renders %.3f, %.6f and %.9f as a dot followed by a fixed-width truncated fraction" {
+  let time = @core.NaiveTime::from_hms_nano(9, 5, 3, 123_456_789).unwrap()
+  assert_eq(@format.format_time(time, "%.3f"), ".123")
+  assert_eq(@format.format_time(time, "%.6f"), ".123456")
+  assert_eq(@format.format_time(time, "%.9f"), ".123456789")
+}
+
+///|
+test "the dot-prefixed fixed-width fractions render zeros for a whole second, unlike %.f" {
+  let time = @core.NaiveTime::from_hms(9, 5, 3).unwrap()
+  assert_eq(@format.format_time(time, "%.3f"), ".000")
+  assert_eq(@format.format_time(time, "%.6f"), ".000000")
+  assert_eq(@format.format_time(time, "%.9f"), ".000000000")
+  assert_eq(@format.format_time(time, "%.f"), "")
+}
+
+///|
+test "the dot-prefixed fixed-width fractions truncate rather than round" {
+  let time = @core.NaiveTime::from_hms_nano(9, 5, 3, 999_999_999).unwrap()
+  assert_eq(@format.format_time(time, "%.3f"), ".999")
+  assert_eq(@format.format_time(time, "%.6f"), ".999999")
+}
+
+///|
+test "the dot-prefixed fixed-width fractions render a leap second's fraction without its whole second" {
+  let leap = @core.NaiveTime::from_hms_nano(23, 59, 59, 1_500_000_000).unwrap()
+  assert_eq(@format.format_time(leap, "%T%.3f"), "23:59:60.500")
+}
+
+///|
+test "format_date raises MissingField for a dot-prefixed fraction with no time of day" {
+  for spec in ["%.3f", "%.6f", "%.9f"] {
+    try
+      @format.format_date(@core.NaiveDate::from_ymd(2024, 3, 5).unwrap(), spec)
+      |> ignore
+    catch {
+      @format.MissingField(_) => ()
+      _ => fail("expected MissingField for \{spec}")
+    } noraise {
+      _ => fail("expected format_date to reject \{spec}")
+    }
+  }
+}

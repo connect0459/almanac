@@ -36,6 +36,9 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%3f` | Fractional second, milliseconds | 3 digits, no leading dot, truncated (not rounded); mandatory on parse |
 | `%6f` | Fractional second, microseconds | 6 digits, no leading dot; see `%3f` |
 | `%9f` | Fractional second | 9 digits, no leading dot; identical to `%f` |
+| `%.3f` | Dot-prefixed fractional second, milliseconds | A dot then exactly 3 digits, truncated (not rounded), present even for a whole second (`.000`); on parse the dot and all 3 digits are mandatory, unlike the optional `%.f` |
+| `%.6f` | Dot-prefixed fractional second, microseconds | Like `%.3f` with 6 digits |
+| `%.9f` | Dot-prefixed fractional second, nanoseconds | Like `%.3f` with 9 digits |
 | `%A` | Long weekday name | e.g. `"Monday"` |
 | `%a` | Short weekday name | e.g. `"Mon"` |
 | `%B` | Long month name | e.g. `"March"`; on parse, resolves `%m`'s field directly |
@@ -244,6 +247,9 @@ pub(all) enum Numeric {
   DotFraction
   Nanosecond3
   Nanosecond6
+  DotNanosecond3
+  DotNanosecond6
+  DotNanosecond9
 }
 
 ///|

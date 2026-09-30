@@ -161,6 +161,12 @@ fn resolve_specifier(
     '.' =>
       if pos + 1 < n && chars[pos + 1] == 'f' {
         ([Numeric(DotFraction)], pos + 2)
+      } else if pos + 2 < n && chars[pos + 2] == 'f' && chars[pos + 1] == '3' {
+        ([Numeric(DotNanosecond3)], pos + 3)
+      } else if pos + 2 < n && chars[pos + 2] == 'f' && chars[pos + 1] == '6' {
+        ([Numeric(DotNanosecond6)], pos + 3)
+      } else if pos + 2 < n && chars[pos + 2] == 'f' && chars[pos + 1] == '9' {
+        ([Numeric(DotNanosecond9)], pos + 3)
       } else {
         raise UnknownSpecifier('.')
       }
@@ -252,6 +258,9 @@ pub fn tokenize(fmt : String) -> Array[Item] raise ParseError {
               | DotFraction
               | Nanosecond3
               | Nanosecond6
+              | DotNanosecond3
+              | DotNanosecond6
+              | DotNanosecond9
               | Timestamp
             ) => raise UnknownSpecifier(chars[i + 1])
             Numeric(kind) => items.push(PaddedNumeric(kind, mode))

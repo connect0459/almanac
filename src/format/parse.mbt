@@ -465,6 +465,33 @@ fn item_needs_input(item : Item) -> Bool {
 }
 
 ///|
+/// Applies `%.3f`/`%.6f`/`%.9f`: a mandatory `.` then exactly `digits`
+/// digits, scaled by `nanos_per_unit` into the nanosecond field.
+fn apply_dot_fraction(
+  chars : Array[Char],
+  pos : Int,
+  parsed : Parsed,
+  digits : Int,
+  nanos_per_unit : Int,
+) -> (Parsed, Int) raise ParseError {
+  match expect_char(chars, pos, '.') {
+    None => raise InputMismatch
+    Some(after_dot) =>
+      match parse_fixed_digits(chars, after_dot, digits) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          (
+            {
+              ..parsed,
+              nanosecond: merge_field(parsed.nanosecond, value * nanos_per_unit),
+            },
+            p,
+          )
+      }
+  }
+}
+
+///|
 /// Applies a single token against `input` at `pos`, returning the
 /// updated accumulator and the new position. `%Z` consumes and discards a
 /// run of one or more non-whitespace characters: a zone name (an IANA
@@ -589,6 +616,10 @@ fn apply_item(
             p,
           )
       }
+    Numeric(DotNanosecond3) =>
+      apply_dot_fraction(chars, pos, parsed, 3, 1_000_000)
+    Numeric(DotNanosecond6) => apply_dot_fraction(chars, pos, parsed, 6, 1_000)
+    Numeric(DotNanosecond9) => apply_dot_fraction(chars, pos, parsed, 9, 1)
     Fixed(LongWeekdayName) => apply_weekday_specifier(chars, pos, parsed)
     Fixed(ShortWeekdayName) => apply_weekday_specifier(chars, pos, parsed)
     Fixed(TimezoneName) => {

@@ -325,3 +325,34 @@ test "tokenize expands %n and %t to a literal newline and tab" {
     @format.Literal("\n"),
   ])
 }
+
+///|
+test "tokenize recognizes %.3f, %.6f and %.9f as dot-prefixed fixed-width fractions" {
+  assert_eq(@format.tokenize("%.3f"), [@format.Numeric(@format.DotNanosecond3)])
+  assert_eq(@format.tokenize("%.6f"), [@format.Numeric(@format.DotNanosecond6)])
+  assert_eq(@format.tokenize("%.9f"), [@format.Numeric(@format.DotNanosecond9)])
+}
+
+///|
+test "tokenize rejects a dot-prefixed fraction width other than 3, 6 or 9 and an unfinished %.3" {
+  for spec in ["%.4f", "%.3", "%.3x", "%.0f"] {
+    try @format.tokenize(spec) |> ignore catch {
+      @format.UnknownSpecifier('.') => ()
+      _ => fail("expected UnknownSpecifier('.') for \{spec}")
+    } noraise {
+      _ => fail("expected tokenize to reject \{spec}")
+    }
+  }
+}
+
+///|
+test "tokenize rejects a padding flag on the dot-prefixed fixed-width fractions" {
+  for spec in ["%-.3f", "%0.6f", "%_.9f"] {
+    try @format.tokenize(spec) |> ignore catch {
+      @format.UnknownSpecifier(_) => ()
+      _ => fail("expected UnknownSpecifier for \{spec}")
+    } noraise {
+      _ => fail("expected tokenize to reject \{spec}")
+    }
+  }
+}

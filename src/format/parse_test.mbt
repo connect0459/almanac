@@ -1564,3 +1564,73 @@ test "parsing %Z rejects a zone name that begins with whitespace" {
     _ => fail("expected a whitespace-led zone name to be rejected")
   }
 }
+
+///|
+test "parse_time reads %.3f, %.6f and %.9f as a mandatory dot and an exact number of digits" {
+  assert_eq(
+    @format.parse_time("09:05:03.123", "%T%.3f"),
+    @core.NaiveTime::from_hms_nano(9, 5, 3, 123_000_000).unwrap(),
+  )
+  assert_eq(
+    @format.parse_time("09:05:03.123456", "%T%.6f"),
+    @core.NaiveTime::from_hms_nano(9, 5, 3, 123_456_000).unwrap(),
+  )
+  assert_eq(
+    @format.parse_time("09:05:03.123456789", "%T%.9f"),
+    @core.NaiveTime::from_hms_nano(9, 5, 3, 123_456_789).unwrap(),
+  )
+}
+
+///|
+test "parse_time round-trips the dot-prefixed fixed-width fractions through format_time" {
+  let time = @core.NaiveTime::from_hms_nano(9, 5, 3, 120_000_000).unwrap()
+  for fmt in ["%T%.3f", "%T%.6f", "%T%.9f"] {
+    assert_eq(@format.parse_time(@format.format_time(time, fmt), fmt), time)
+  }
+}
+
+///|
+test "the dot-prefixed fixed-width fractions require the dot and every digit" {
+  for
+    case in [
+      ("09:05:03123", "%T%.3f"),
+      ("09:05:03.12", "%T%.3f"),
+      ("09:05:03.12x", "%T%.3f"),
+      ("09:05:03.12345", "%T%.6f"),
+      ("09:05:03,123", "%T%.3f"),
+    ] {
+    let (input, fmt) = case
+    try @format.parse_time(input, fmt) |> ignore catch {
+      @format.InputMismatch => ()
+      _ => fail("expected InputMismatch for \{input}")
+    } noraise {
+      _ => fail("expected parse_time to reject \{input}")
+    }
+  }
+}
+
+///|
+test "the dot-prefixed fixed-width fractions report input that ends before them as InputTooShort" {
+  try @format.parse_time("09:05:03", "%T%.3f") |> ignore catch {
+    @format.InputTooShort => ()
+    _ => fail("expected InputTooShort")
+  } noraise {
+    _ => fail("expected parse_time to reject a missing fraction")
+  }
+}
+
+///|
+test "a dot-prefixed fixed-width fraction and an explicit nanosecond field must agree" {
+  assert_eq(
+    @format.parse_time("09:05:03.123 123000000", "%T%.3f %f"),
+    @core.NaiveTime::from_hms_nano(9, 5, 3, 123_000_000).unwrap(),
+  )
+  try
+    @format.parse_time("09:05:03.123 124000000", "%T%.3f %f") |> ignore
+  catch {
+    @format.InconsistentFields => ()
+    _ => fail("expected InconsistentFields")
+  } noraise {
+    _ => fail("expected disagreeing fractions to be rejected")
+  }
+}

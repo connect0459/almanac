@@ -57,6 +57,15 @@ pub(all) enum Numeric {
   /// `%6f`: a fractional second truncated to 6 digits (microseconds), no
   /// leading dot. Mandatory on parse, like `Nanosecond3`.
   Nanosecond6
+  /// `%.3f`: a dot followed by exactly three digits of the fractional
+  /// second (milliseconds), truncated, present even when zero. Mandatory on
+  /// parse, dot included; unlike `DotFraction`, which is optional and
+  /// minimal-width.
+  DotNanosecond3
+  /// `%.6f`: like `DotNanosecond3` with six digits (microseconds).
+  DotNanosecond6
+  /// `%.9f`: like `DotNanosecond3` with nine digits (nanoseconds).
+  DotNanosecond9
 } derive(Eq, @debug.Debug)
 
 ///|
