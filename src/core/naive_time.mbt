@@ -340,6 +340,10 @@ pub fn NaiveTime::overflowing_sub_signed(
 /// This time advanced by the signed duration `delta`, wrapping at midnight
 /// and discarding the number of days crossed (use `overflowing_add_signed`
 /// to get it). See `overflowing_add_signed` for the leap-second rules.
+///
+/// There is no aborting `add_signed` or `checked_add_signed` for a time of
+/// day: it cannot leave its range, so the vocabulary is that of Rust's
+/// integers, `wrapping_*` and `overflowing_*`.
 pub fn NaiveTime::wrapping_add_signed(
   self : NaiveTime,
   delta : TimeDelta,
