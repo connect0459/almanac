@@ -10,6 +10,7 @@ pub(all) enum Numeric {
   Hour
   Minute
   Second
+  /// `%f`: the fractional second as exactly nine digits, no leading dot.
   Nanosecond9
   /// `%I`: the hour on a 12-hour clock, zero-padded (`01`..=`12`).
   Hour12
@@ -147,6 +148,10 @@ pub extend PadMode with @debug.Debug::{to_repr}
 ///|
 /// A single formatting/parsing item produced by `tokenize` from a
 /// `%`-specifier format string.
+///
+/// Equality is structural, that is, of the specifier as written: `%H` and `%0H`
+/// render alike but are different items (`Numeric(Hour)` versus
+/// `PaddedNumeric(Hour, ZeroPad)`).
 pub(all) enum Item {
   Literal(String)
   Numeric(Numeric)
