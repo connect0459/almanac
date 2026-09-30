@@ -151,7 +151,7 @@ The UTC zone, always offset zero.
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `Utc::new()` | `-> Self` | Construct the (zero-sized) UTC zone value |
-| `Utc::now()` | `-> DateTime[Utc]` | The current UTC instant, read from the host's wall clock. Unlike every other function in this package, not a pure function of its arguments. |
+| `Utc::now()` | `-> DateTime[Utc]` | The current UTC instant, read from the host's wall clock. Unlike every other function in this package, not a pure function of its arguments. Total: a host clock outside `NaiveDate`'s range (about 5.8 million years either side of 1970) is a broken environment, and aborts. |
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | Always `FixedOffset::east(0)` |
 | `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | Always `Single(FixedOffset::east(0))` |
 | `tz_name(NaiveDateTime)` | `-> String` | Always `"UTC"` |
@@ -321,7 +321,7 @@ The OS-configured local time zone, resolved from `$TZ` or, when unset, `/etc/loc
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `Local::new()` | `-> Self?` | Resolves the host's configured time zone; `None` if it could not be determined. Reads live OS state — not a pure function of its arguments. |
-| `Local::now()` | `-> DateTime[Local]?` | The current instant in the host's local zone, the counterpart of `Utc::now()`; `None` when `Local::new()` is `None` |
+| `Local::now()` | `-> DateTime[Local]?` | The current instant in the host's local zone, the counterpart of `Utc::now()`; `None` when `Local::new()` is `None`, that is, when the zone cannot be determined; the clock itself is read as in `Utc::now()` |
 | `Local::resolve(String?, Bytes?)` | `-> Self?` | The pure resolution logic `new()` wraps: given the `TZ` environment variable and `/etc/localtime`'s bytes, applies POSIX `TZ` precedence (empty `TZ` → UTC, a named zone via `Location::load`, else a bare POSIX rule via `parse_posix_tz`; when `TZ` is unset, the given bytes via `Location::from_tzif_bytes`) |
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | Delegates to the resolved zone |
 | `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | Delegates to the resolved zone |

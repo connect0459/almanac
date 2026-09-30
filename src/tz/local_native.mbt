@@ -14,7 +14,8 @@ pub fn Local::new() -> Local? {
 ///|
 /// The current instant expressed in the host's local time zone, or `None`
 /// if that zone could not be determined (see `Local::new`). The counterpart
-/// of `Utc::now`.
+/// of `Utc::now`, and like it reads the host clock; the `None` is about the
+/// zone, not the clock.
 pub fn Local::now() -> DateTime[Local]? {
   Local::new().map(zone => Utc::now().with_timezone(zone))
 }
