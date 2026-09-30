@@ -201,7 +201,7 @@ pub fn Location::type_at(
   let target = utc.timestamp()
   if self.past_last_transition(target) {
     match self.posix_tz {
-      Some(p) => p.type_at(target)
+      Some(p) => p.type_at_secs(target)
       None => self.type_at_segment(self.tzif.transitions.length() - 1)
     }
   } else {
@@ -271,7 +271,7 @@ pub fn Location::transition_bounds(
     match self.posix_tz {
       None => unbounded_forward
       Some(p) =>
-        match p.bounds_at(target) {
+        match p.bounds_at_secs(target) {
           None => unbounded_forward
           Some((start, end)) =>
             TransitionBounds::{ start: Some(at(start)), end: Some(at(end)), }

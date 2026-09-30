@@ -376,7 +376,7 @@ fn PosixTz::is_dst_at(self : PosixTz, utc_instant : Int64) -> Bool {
 /// margin regardless of hemisphere: a wraparound rule's two same-year
 /// instants are not chronologically adjacent), rather than approximated
 /// near a year boundary.
-pub fn PosixTz::bounds_at(
+fn PosixTz::bounds_at_secs(
   self : PosixTz,
   utc_instant : Int64,
 ) -> (Int64, Int64)? {
@@ -423,23 +423,27 @@ pub fn PosixTz::bounds_at(
 
 ///|
 /// The local time type (offset, DST flag, and abbreviation) in effect at
+/// the given UTC naive datetime, like `Location::type_at`.
+pub fn PosixTz::type_at(
+  self : PosixTz,
+  utc : @core.NaiveDateTime,
+) -> LocalTimeType {
+  self.type_at_secs(utc.timestamp())
+}
+
+///|
+/// The local time type (offset, DST flag, and abbreviation) in effect at
 /// the given UTC instant.
 ///
 /// Unwrapping `dst_name`/`dst_offset` is safe: `parse_posix_tz` only ever
 /// produces a `PosixTz` with `rule` present exactly when both are
 /// present too.
-pub fn PosixTz::type_at(self : PosixTz, utc_instant : Int64) -> LocalTimeType {
+fn PosixTz::type_at_secs(self : PosixTz, utc_instant : Int64) -> LocalTimeType {
   if self.is_dst_at(utc_instant) {
     LocalTimeType::new(self.dst_offset.unwrap(), true, self.dst_name.unwrap())
   } else {
     LocalTimeType::new(self.std_offset, false, self.std_name)
   }
-}
-
-///|
-/// The UTC offset in effect at the given UTC instant.
-pub fn PosixTz::offset_at(self : PosixTz, utc_instant : Int64) -> Int {
-  self.type_at(utc_instant).utc_offset()
 }
 
 ///|
@@ -485,7 +489,7 @@ pub fn PosixTz::offset_from_local(
 
 ///|
 pub impl TimeZone for PosixTz with fn offset_from_utc(self, utc) {
-  FixedOffset::east(self.offset_at(utc.timestamp())).unwrap()
+  FixedOffset::east(self.type_at_secs(utc.timestamp()).utc_offset()).unwrap()
 }
 
 ///|
@@ -495,17 +499,17 @@ pub impl TimeZone for PosixTz with fn offset_from_local(self, naive_local) {
 
 ///|
 pub impl TimeZone for PosixTz with fn tz_name(self, utc) {
-  self.type_at(utc.timestamp()).abbreviation()
+  self.type_at_secs(utc.timestamp()).abbreviation()
 }
 
 ///|
 pub impl TimeZone for PosixTz with fn is_dst(self, utc) {
-  self.type_at(utc.timestamp()).is_dst()
+  self.type_at_secs(utc.timestamp()).is_dst()
 }
 
 ///|
 pub impl TimeZone for PosixTz with fn transition_bounds(self, utc) {
-  match self.bounds_at(utc.timestamp()) {
+  match self.bounds_at_secs(utc.timestamp()) {
     None => TransitionBounds::{ start: None, end: None, }
     Some((start, end)) =>
       TransitionBounds::{

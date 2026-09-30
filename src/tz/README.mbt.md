@@ -154,6 +154,8 @@ The UTC zone, always offset zero.
 
 A constant UTC offset, in seconds, within `±23:59:59`.
 
+Naming rule: a name with `offset` (`DateTime::offset`, `offset_from_utc`, `offset_from_local`) yields a `FixedOffset` value, while `utc_offset` and `local_minus_utc` yield the same quantity as a plain `Int` number of seconds.
+
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `FixedOffset::east(Int)` | `-> Self?` | An offset east of UTC by the given seconds; `None` outside `±23:59:59` |
@@ -323,4 +325,4 @@ These back `Location` and are not usually needed directly; use `Location::load`/
 | Type | Key methods | Description |
 | :--- | :--- | :--- |
 | `TzifData` | `transitions()`, `transition_types()`, `local_time_types()`, `leap_seconds()`, `posix_tz()` | The parsed contents of a TZif file; the array accessors return copies |
-| `PosixTz` | `type_at(Int64)`, `offset_at(Int64)`, `offset_from_local(NaiveDateTime)` | An evaluated POSIX TZ rule, for extrapolating past a TZif file's last recorded transition; also a `TimeZone` in its own right (a constant offset when the rule has no DST part, e.g. `JST-9`) |
+| `PosixTz` | `type_at(NaiveDateTime)` (a UTC reading, like `Location::type_at`), `offset_from_local(NaiveDateTime)` | An evaluated POSIX TZ rule, for extrapolating past a TZif file's last recorded transition; also a `TimeZone` in its own right (a constant offset when the rule has no DST part, e.g. `JST-9`) |

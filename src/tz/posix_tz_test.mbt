@@ -1,25 +1,34 @@
 ///|
+fn bounds_secs(tz : @tz.PosixTz, secs : Int64) -> (Int64, Int64)? {
+  let bounds = tz.transition_bounds(utc_at(secs))
+  match (bounds.start(), bounds.end()) {
+    (Some(start), Some(end)) => Some((start.timestamp(), end.timestamp()))
+    _ => None
+  }
+}
+
+///|
 test "type_at reports the standard/DST abbreviation and flag alongside the offset" {
   let tz = @tz.parse_posix_tz("EST5EDT,M3.2.0,M11.1.0").unwrap()
   let dst_start = 2_152_162_800L
-  let std_type = tz.type_at(dst_start - 1L)
+  let std_type = tz.type_at(utc_at(dst_start - 1L))
   assert_eq(std_type.utc_offset(), -18000)
   assert_eq(std_type.is_dst(), false)
   assert_eq(std_type.abbreviation(), "EST")
-  let dst_type = tz.type_at(dst_start)
+  let dst_type = tz.type_at(utc_at(dst_start))
   assert_eq(dst_type.utc_offset(), -14400)
   assert_eq(dst_type.is_dst(), true)
   assert_eq(dst_type.abbreviation(), "EDT")
 }
 
 ///|
-test "parse_posix_tz parses a zone with no DST rule, offset_at is constant regardless of instant" {
+test "parse_posix_tz parses a zone with no DST rule, type_at is constant regardless of instant" {
   let tz = @tz.parse_posix_tz("UTC0").unwrap()
-  assert_eq(tz.offset_at(0L), 0)
-  assert_eq(tz.offset_at(1_700_000_000L), 0)
-  assert_eq(tz.offset_at(-1_700_000_000L), 0)
-  assert_eq(tz.type_at(0L).abbreviation(), "UTC")
-  assert_eq(tz.type_at(0L).is_dst(), false)
+  assert_eq(tz.type_at(utc_at(0L)).utc_offset(), 0)
+  assert_eq(tz.type_at(utc_at(1_700_000_000L)).utc_offset(), 0)
+  assert_eq(tz.type_at(utc_at(-1_700_000_000L)).utc_offset(), 0)
+  assert_eq(tz.type_at(utc_at(0L)).abbreviation(), "UTC")
+  assert_eq(tz.type_at(utc_at(0L)).is_dst(), false)
   let dt = @core.NaiveDateTime::new(
     @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),
     @core.NaiveTime::from_hms(12, 0, 0).unwrap(),
@@ -33,8 +42,8 @@ test "parse_posix_tz parses a zone with no DST rule, offset_at is constant regar
 ///|
 test "parse_posix_tz parses a positive (east-of-UTC) offset with no DST rule" {
   let tz = @tz.parse_posix_tz("JST-9").unwrap()
-  assert_eq(tz.offset_at(0L), 32400)
-  assert_eq(tz.offset_at(1_700_000_000L), 32400)
+  assert_eq(tz.type_at(utc_at(0L)).utc_offset(), 32400)
+  assert_eq(tz.type_at(utc_at(1_700_000_000L)).utc_offset(), 32400)
 }
 
 ///|
@@ -67,31 +76,31 @@ test "parse_posix_tz parses a quoted name, an explicit '+' sign, and an explicit
   let tz = @tz.parse_posix_tz("<STD>+5<DST>3,M3.2.0,M11.1.0").unwrap()
   let dst_start = 2_152_162_800L
   let dst_end = 2_172_718_800L
-  assert_eq(tz.offset_at(dst_start - 1L), -18000)
-  assert_eq(tz.offset_at(dst_start), -10800)
-  assert_eq(tz.offset_at(dst_end - 1L), -10800)
-  assert_eq(tz.offset_at(dst_end), -18000)
+  assert_eq(tz.type_at(utc_at(dst_start - 1L)).utc_offset(), -18000)
+  assert_eq(tz.type_at(utc_at(dst_start)).utc_offset(), -10800)
+  assert_eq(tz.type_at(utc_at(dst_end - 1L)).utc_offset(), -10800)
+  assert_eq(tz.type_at(utc_at(dst_end)).utc_offset(), -18000)
 }
 
 ///|
 test "parse_posix_tz parses minute/second-precision offsets and an explicit (non-default) rule time" {
   let tz = @tz.parse_posix_tz("STD-1DST,M3.5.0/1:30:15,M9.5.0").unwrap()
-  assert_eq(tz.offset_at(1_902_484_800L), 7200)
-  assert_eq(tz.offset_at(1_965_643_200L), 7200)
+  assert_eq(tz.type_at(utc_at(1_902_484_800L)).utc_offset(), 7200)
+  assert_eq(tz.type_at(utc_at(1_965_643_200L)).utc_offset(), 7200)
 }
 
 ///|
 test "parse_posix_tz evaluates a Julian-no-leap (Jn) rule" {
   let tz = @tz.parse_posix_tz("STD-1DST,J100,J200").unwrap()
-  assert_eq(tz.offset_at(1_906_372_800L), 7200)
-  assert_eq(tz.offset_at(1_915_012_800L), 3600)
+  assert_eq(tz.type_at(utc_at(1_906_372_800L)).utc_offset(), 7200)
+  assert_eq(tz.type_at(utc_at(1_915_012_800L)).utc_offset(), 3600)
 }
 
 ///|
 test "parse_posix_tz evaluates a Julian-with-leap (n) rule" {
   let tz = @tz.parse_posix_tz("STD-1DST,99,199").unwrap()
-  assert_eq(tz.offset_at(1_906_372_800L), 7200)
-  assert_eq(tz.offset_at(1_915_012_800L), 3600)
+  assert_eq(tz.type_at(utc_at(1_906_372_800L)).utc_offset(), 7200)
+  assert_eq(tz.type_at(utc_at(1_915_012_800L)).utc_offset(), 3600)
 }
 
 ///|
@@ -121,63 +130,69 @@ test "offset_from_local falls through to a Single resolution when the DST offset
 }
 
 ///|
-test "offset_at resolves a non-wraparound DST rule (America/New_York) either side of both transitions" {
+test "type_at resolves a non-wraparound DST rule (America/New_York) either side of both transitions" {
   let tz = @tz.parse_posix_tz("EST5EDT,M3.2.0,M11.1.0").unwrap()
   let dst_start = 2_152_162_800L
   let dst_end = 2_172_722_400L
-  assert_eq(tz.offset_at(dst_start - 1L), -18000)
-  assert_eq(tz.offset_at(dst_start), -14400)
-  assert_eq(tz.offset_at(dst_end - 1L), -14400)
-  assert_eq(tz.offset_at(dst_end), -18000)
+  assert_eq(tz.type_at(utc_at(dst_start - 1L)).utc_offset(), -18000)
+  assert_eq(tz.type_at(utc_at(dst_start)).utc_offset(), -14400)
+  assert_eq(tz.type_at(utc_at(dst_end - 1L)).utc_offset(), -14400)
+  assert_eq(tz.type_at(utc_at(dst_end)).utc_offset(), -18000)
 }
 
 ///|
-test "offset_at resolves a wraparound DST rule (Australia/Sydney) that spans the year boundary" {
+test "type_at resolves a wraparound DST rule (Australia/Sydney) that spans the year boundary" {
   let tz = @tz.parse_posix_tz("AEST-10AEDT,M10.1.0,M4.1.0/3").unwrap()
   let southern_summer = 2_208_988_800L
   let southern_winter = 2_224_713_600L
-  assert_eq(tz.offset_at(southern_summer), 39600)
-  assert_eq(tz.offset_at(southern_winter), 36000)
+  assert_eq(tz.type_at(utc_at(southern_summer)).utc_offset(), 39600)
+  assert_eq(tz.type_at(utc_at(southern_winter)).utc_offset(), 36000)
 }
 
 ///|
-test "bounds_at reports None when the rule has no DST component" {
+test "transition_bounds reports None when the rule has no DST component" {
   let tz = @tz.parse_posix_tz("JST-9").unwrap()
-  assert_eq(tz.bounds_at(0L), None)
+  assert_eq(bounds_secs(tz, 0L), None)
 }
 
 ///|
-test "bounds_at computes the exact DST interval bounds for a non-wraparound rule (America/New_York)" {
+test "transition_bounds computes the exact DST interval bounds for a non-wraparound rule (America/New_York)" {
   let tz = @tz.parse_posix_tz("EST5EDT,M3.2.0,M11.1.0").unwrap()
   let dst_start = 2_152_162_800L
   let dst_end = 2_172_722_400L
-  assert_eq(tz.bounds_at(dst_start), Some((dst_start, dst_end)))
+  assert_eq(bounds_secs(tz, dst_start), Some((dst_start, dst_end)))
 }
 
 ///|
-test "bounds_at computes the exact standard-time interval bounds spanning a year boundary (America/New_York)" {
+test "transition_bounds computes the exact standard-time interval bounds spanning a year boundary (America/New_York)" {
   let tz = @tz.parse_posix_tz("EST5EDT,M3.2.0,M11.1.0").unwrap()
   let dst_end_2038 = 2_172_722_400L
   let dst_start_2039 = 2_183_612_400L
-  assert_eq(tz.bounds_at(dst_end_2038), Some((dst_end_2038, dst_start_2039)))
+  assert_eq(bounds_secs(tz, dst_end_2038), Some((dst_end_2038, dst_start_2039)))
 }
 
 ///|
-test "bounds_at computes the exact DST interval bounds for a wraparound rule spanning a year boundary (Australia/Sydney)" {
+test "transition_bounds computes the exact DST interval bounds for a wraparound rule spanning a year boundary (Australia/Sydney)" {
   let tz = @tz.parse_posix_tz("AEST-10AEDT,M10.1.0,M4.1.0/3").unwrap()
   let southern_summer = 2_208_988_800L
   let dst_start_2039 = 2_201_097_600L
   let dst_end_2040 = 2_216_822_400L
-  assert_eq(tz.bounds_at(southern_summer), Some((dst_start_2039, dst_end_2040)))
+  assert_eq(
+    bounds_secs(tz, southern_summer),
+    Some((dst_start_2039, dst_end_2040)),
+  )
 }
 
 ///|
-test "bounds_at computes the exact standard-time interval bounds for a wraparound rule (Australia/Sydney)" {
+test "transition_bounds computes the exact standard-time interval bounds for a wraparound rule (Australia/Sydney)" {
   let tz = @tz.parse_posix_tz("AEST-10AEDT,M10.1.0,M4.1.0/3").unwrap()
   let southern_winter = 2_224_713_600L
   let dst_end_2040 = 2_216_822_400L
   let dst_start_2040 = 2_233_152_000L
-  assert_eq(tz.bounds_at(southern_winter), Some((dst_end_2040, dst_start_2040)))
+  assert_eq(
+    bounds_secs(tz, southern_winter),
+    Some((dst_end_2040, dst_start_2040)),
+  )
 }
 
 ///|
