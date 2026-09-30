@@ -259,13 +259,13 @@ pub fn Location::transition_bounds(
 ) -> TransitionBounds {
   let target = utc.timestamp()
   let transitions = self.tzif.transitions
-  fn at(secs : Int64) -> @core.NaiveDateTime {
-    @core.NaiveDateTime::from_timestamp(secs, 0).unwrap()
+  fn at(secs : Int64) -> @core.NaiveDateTime? {
+    @core.NaiveDateTime::from_timestamp(secs, 0)
   }
 
   if self.past_last_transition(target) {
     let unbounded_forward = TransitionBounds::{
-      start: Some(at(transitions[transitions.length() - 1])),
+      start: at(transitions[transitions.length() - 1]),
       end: None,
     }
     match self.posix_tz {
@@ -274,7 +274,7 @@ pub fn Location::transition_bounds(
         match p.bounds_at_secs(target) {
           None => unbounded_forward
           Some((start, end)) =>
-            TransitionBounds::{ start: Some(at(start)), end: Some(at(end)), }
+            TransitionBounds::{ start: at(start), end: at(end), }
         }
     }
   } else {
@@ -285,15 +285,15 @@ pub fn Location::transition_bounds(
           end: if transitions.is_empty() {
             None
           } else {
-            Some(at(transitions[0]))
+            at(transitions[0])
           },
         }
       Some(segment) => {
         let n = transitions.length()
         TransitionBounds::{
-          start: Some(at(transitions[segment])),
+          start: at(transitions[segment]),
           end: if segment + 1 < n {
-            Some(at(transitions[segment + 1]))
+            at(transitions[segment + 1])
           } else {
             None
           },

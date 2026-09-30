@@ -283,30 +283,37 @@ pub fn parse_posix_tz(s : String) -> PosixTz? {
 }
 
 ///|
-/// The date the given rule falls on in `year`.
-fn date_for_rule(date : RuleDate, year : Int) -> @core.NaiveDate {
+/// The date the given rule falls on in `year`, or `None` if that date is
+/// outside `NaiveDate`'s representable range.
+fn date_for_rule(date : RuleDate, year : Int) -> @core.NaiveDate? {
   match date {
     JulianNoLeap(n) => {
       let ordinal = if @core.is_leap_year(year) && n > 59 { n + 1 } else { n }
-      @core.NaiveDate::from_yo(year, ordinal).unwrap()
+      @core.NaiveDate::from_yo(year, ordinal)
     }
-    JulianWithLeap(n) => @core.NaiveDate::from_yo(year, n + 1).unwrap()
-    MonthWeekDay(m, w, d) => {
-      let first = @core.NaiveDate::from_ymd(year, m, 1).unwrap()
-      let first_dow = first.weekday().num_days_from_sunday()
-      let delta = (d - first_dow + 7) % 7
-      let first_occurrence = first.add_days(delta)
-      if w >= 5 {
-        let candidate = first_occurrence.add_days(28)
-        if candidate.month() == first.month() {
-          candidate
-        } else {
-          candidate.add_days(-7)
-        }
-      } else {
-        first_occurrence.add_days((w - 1) * 7)
-      }
-    }
+    JulianWithLeap(n) => @core.NaiveDate::from_yo(year, n + 1)
+    MonthWeekDay(m, w, d) =>
+      @core.NaiveDate::from_ymd(year, m, 1).bind(first => {
+        let first_dow = first.weekday().num_days_from_sunday()
+        let delta = (d - first_dow + 7) % 7
+        first
+        .checked_add_days(delta)
+        .bind(first_occurrence => {
+          if w >= 5 {
+            first_occurrence
+            .checked_add_days(28)
+            .bind(candidate => {
+              if candidate.month() == first.month() {
+                Some(candidate)
+              } else {
+                candidate.checked_add_days(-7)
+              }
+            })
+          } else {
+            first_occurrence.checked_add_days((w - 1) * 7)
+          }
+        })
+      })
   }
 }
 
@@ -324,22 +331,27 @@ fn local_clock_value(date : @core.NaiveDate, time_seconds : Int) -> Int64 {
 
 ///|
 /// The UTC instants, in `year`, at which daylight saving starts and ends
-/// under `rule`.
+/// under `rule`, or `None` if either date is outside `NaiveDate`'s
+/// representable range.
 fn compute_transitions(
   rule : DstRule,
   std_offset : Int,
   dst_offset : Int,
   year : Int,
-) -> (Int64, Int64) {
-  let start_date = date_for_rule(rule.start, year)
-  let end_date = date_for_rule(rule.end, year)
-  let start_local = local_clock_value(start_date, rule.start_time)
-  let end_local = local_clock_value(end_date, rule.end_time)
-  (start_local - std_offset.to_int64(), end_local - dst_offset.to_int64())
+) -> (Int64, Int64)? {
+  date_for_rule(rule.start, year).bind(start_date => {
+    date_for_rule(rule.end, year).map(end_date => {
+      let start_local = local_clock_value(start_date, rule.start_time)
+      let end_local = local_clock_value(end_date, rule.end_time)
+      (start_local - std_offset.to_int64(), end_local - dst_offset.to_int64())
+    })
+  })
 }
 
 ///|
-/// Whether daylight saving is in effect for the given UTC instant.
+/// Whether daylight saving is in effect for the given UTC instant. Standard
+/// time applies in a year whose rule dates fall outside the representable
+/// date range.
 ///
 /// Unwrapping `dst_offset` is safe: `parse_posix_tz` only ever produces a
 /// `PosixTz` with `rule` present exactly when `dst_offset` is present.
@@ -352,16 +364,14 @@ fn PosixTz::is_dst_at(self : PosixTz, utc_instant : Int64) -> Bool {
         .unwrap()
         .date()
         .year()
-      let (start_utc, end_utc) = compute_transitions(
-        rule,
-        self.std_offset,
-        dst_offset,
-        year,
-      )
-      if start_utc < end_utc {
-        utc_instant >= start_utc && utc_instant < end_utc
-      } else {
-        utc_instant >= start_utc || utc_instant < end_utc
+      match compute_transitions(rule, self.std_offset, dst_offset, year) {
+        None => false
+        Some((start_utc, end_utc)) =>
+          if start_utc < end_utc {
+            utc_instant >= start_utc && utc_instant < end_utc
+          } else {
+            utc_instant >= start_utc || utc_instant < end_utc
+          }
       }
     }
   }
@@ -373,7 +383,9 @@ fn PosixTz::is_dst_at(self : PosixTz, utc_instant : Int64) -> Bool {
 /// component at all (`self.rule` is `None`: every instant then belongs to
 /// the same unbounded interval, which this type alone cannot bound — the
 /// caller knows where that interval actually began, e.g. a TZif file's
-/// last recorded transition).
+/// last recorded transition), or if its dates for `utc_instant`'s own year
+/// fall outside the representable date range. When a neighbouring year is
+/// outside that range, the window on that side extends to `Int64`'s extreme.
 ///
 /// Recomputed exactly by bracketing `utc_instant` against the DST
 /// start/end instants of the surrounding three calendar years (ample
@@ -392,35 +404,36 @@ fn PosixTz::bounds_at_secs(
         .unwrap()
         .date()
         .year()
-      let (a0, b0) = compute_transitions(
-        rule,
-        self.std_offset,
-        dst_offset,
-        year - 1,
-      )
-      let (a1, b1) = compute_transitions(
-        rule,
-        self.std_offset,
-        dst_offset,
-        year,
-      )
-      let (a2, b2) = compute_transitions(
-        rule,
-        self.std_offset,
-        dst_offset,
-        year + 1,
-      )
-      let mut start = b0
-      let mut end = a2
-      for candidate in [a0, b0, a1, b1, a2, b2] {
-        if candidate <= utc_instant && candidate > start {
-          start = candidate
-        }
-        if candidate > utc_instant && candidate < end {
-          end = candidate
+      match compute_transitions(rule, self.std_offset, dst_offset, year) {
+        None => None
+        Some((a1, b1)) => {
+          let (a0, b0) = compute_transitions(
+            rule,
+            self.std_offset,
+            dst_offset,
+            year - 1,
+          ).unwrap_or(
+            (-9_223_372_036_854_775_807L - 1L, -9_223_372_036_854_775_807L - 1L),
+          )
+          let (a2, b2) = compute_transitions(
+            rule,
+            self.std_offset,
+            dst_offset,
+            year + 1,
+          ).unwrap_or((9_223_372_036_854_775_807L, 9_223_372_036_854_775_807L))
+          let mut start = b0
+          let mut end = a2
+          for candidate in [a0, b0, a1, b1, a2, b2] {
+            if candidate <= utc_instant && candidate > start {
+              start = candidate
+            }
+            if candidate > utc_instant && candidate < end {
+              end = candidate
+            }
+          }
+          Some((start, end))
         }
       }
-      Some((start, end))
     }
   }
 }
@@ -471,29 +484,31 @@ pub fn PosixTz::offset_from_local(
       let std_off = self.std_offset
       let dst_off = self.dst_offset.unwrap()
       let year = naive_local.date().year()
-      let (start_utc, end_utc) = compute_transitions(
-        rule, std_off, dst_off, year,
-      )
-      let local_ts = naive_local.timestamp()
-      match resolve_transition(local_ts, start_utc, std_off, dst_off) {
-        Some(result) => result
-        None =>
-          match resolve_transition(local_ts, end_utc, dst_off, std_off) {
+      match compute_transitions(rule, std_off, dst_off, year) {
+        None => Single(FixedOffset::east(std_off).unwrap())
+        Some((start_utc, end_utc)) => {
+          let local_ts = naive_local.timestamp()
+          match resolve_transition(local_ts, start_utc, std_off, dst_off) {
             Some(result) => result
-            None => {
-              let via_dst = local_ts - dst_off.to_int64()
-              let dst_active = if start_utc < end_utc {
-                via_dst >= start_utc && via_dst < end_utc
-              } else {
-                via_dst >= start_utc || via_dst < end_utc
+            None =>
+              match resolve_transition(local_ts, end_utc, dst_off, std_off) {
+                Some(result) => result
+                None => {
+                  let via_dst = local_ts - dst_off.to_int64()
+                  let dst_active = if start_utc < end_utc {
+                    via_dst >= start_utc && via_dst < end_utc
+                  } else {
+                    via_dst >= start_utc || via_dst < end_utc
+                  }
+                  if dst_active {
+                    Single(FixedOffset::east(dst_off).unwrap())
+                  } else {
+                    Single(FixedOffset::east(std_off).unwrap())
+                  }
+                }
               }
-              if dst_active {
-                Single(FixedOffset::east(dst_off).unwrap())
-              } else {
-                Single(FixedOffset::east(std_off).unwrap())
-              }
-            }
           }
+        }
       }
     }
   }
@@ -525,8 +540,8 @@ pub impl TimeZone for PosixTz with fn transition_bounds(self, utc) {
     None => TransitionBounds::{ start: None, end: None, }
     Some((start, end)) =>
       TransitionBounds::{
-        start: Some(@core.NaiveDateTime::from_timestamp(start, 0).unwrap()),
-        end: Some(@core.NaiveDateTime::from_timestamp(end, 0).unwrap()),
+        start: @core.NaiveDateTime::from_timestamp(start, 0),
+        end: @core.NaiveDateTime::from_timestamp(end, 0),
       }
   }
 }
