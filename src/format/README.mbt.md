@@ -71,7 +71,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%T` | `%H:%M:%S` | Expands to that specifier sequence |
 | `%D`, `%x` | `%m/%d/%y` | Expands to that specifier sequence (no locale support, so `%x` is identical to `%D`) |
 | `%v` | `%e-%b-%Y` | VMS-style date, e.g. `" 5-Mar-2024"`; expands to that specifier sequence |
-| `%R` | `%H:%M` | Expands to that specifier sequence; carries no seconds, so `parse_time` needs a separate `%S` to fully resolve a time (see `%r`/`%X` for a self-sufficient alternative) |
+| `%R` | `%H:%M` | Expands to that specifier sequence; carries no seconds, which `parse_time` reads as zero (add `%S` for a seconds field, or see `%X`) |
 | `%X` | `%H:%M:%S` | Expands to that specifier sequence (identical to `%T`) |
 | `%r` | `%I:%M:%S %p` | Expands to that specifier sequence |
 | `%c` | `%a %b %e %H:%M:%S %Y` | ctime-style, e.g. `"Tue Mar  5 09:05:30 2024"`; expands to that specifier sequence |
@@ -147,7 +147,7 @@ test {
 | Function | Signature | Description |
 | :--- | :--- | :--- |
 | `parse_date(String, String)` | `-> NaiveDate raise ParseError` | Parse against a format string's date fields (`%Y` plus `%m`/`%d` or `%j`) |
-| `parse_time(String, String)` | `-> NaiveTime raise ParseError` | Parse against a format string's time-of-day fields (`%H`/`%M`/`%S`, `%f` optional) |
+| `parse_time(String, String)` | `-> NaiveTime raise ParseError` | Parse against a format string's time-of-day fields: an hour and a minute are required, while `%S` and `%f` are optional and default to zero (so `%R` and `kitchen` resolve) |
 | `parse_date_time(String, String)` | `-> NaiveDateTime raise ParseError` | Parse against a format string's date and time-of-day fields together |
 | `parse_date_time_tz(String, String)` | `-> DateTime[FixedOffset] raise ParseError` | Parse against a format string's date, time-of-day, and `%z` fields, interpreting them as the zone's local wall-clock reading |
 | `parse_date_time_in[Tz : TimeZone](String, String, Tz)` | `-> MappedLocalTime[DateTime[Tz]] raise ParseError` | Parse a zone-less format's date and time-of-day fields and resolve the reading in `tz` (`Ambiguous` in a DST fold, `Absent` in a gap); raises `InconsistentFields` if the format yields an offset (`%z`, `%+`, ...); a `%Z` name the zone recognizes fixes the offset (Go's `ParseInLocation`), so an abbreviation like `EDT` resolves a DST fold to `Single`, and an unrecognized name is ignored |
@@ -188,7 +188,7 @@ Convenience format-string constants, mirroring Go's `time` package layouts (tran
 | `date_only` | `"%F"` | `DateOnly` | `"2024-03-05"` |
 | `time_only` | `"%T"` | `TimeOnly` | `"09:05:03"` |
 
-`kitchen` (no seconds), and the `stamp*` family (no year) don't carry enough fields to round-trip through the matching `parse_*` function on their own — matching Go's own `Stamp` family, meant for display alongside separately-known context. Only `date_only`/`time_only` are self-sufficient for parsing.
+The `stamp*` family (no year) doesn't carry enough fields to round-trip through the matching `parse_*` function on its own — matching Go's own `Stamp` family, meant for display alongside separately-known context. `date_only`/`time_only` are self-sufficient for parsing, and so is `kitchen` for a time on the minute, since `parse_time` reads a time without seconds as having zero seconds (a value with seconds loses them when rendered with `kitchen`).
 
 ### `tokenize`
 

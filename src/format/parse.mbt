@@ -1172,8 +1172,8 @@ fn resolve_hour(parsed : Parsed) -> Int raise ParseError {
 
 ///|
 /// Resolves `parsed`'s time fields into a `NaiveTime`: an hour (via
-/// `resolve_hour`), `minute`, and `second` are required; `nanosecond`
-/// defaults to `0`. A `second` of `60` (a leap second) maps to
+/// `resolve_hour`) and `minute` are required; `second` and `nanosecond`
+/// default to `0`, so a minute-precision format (`%R`, `kitchen`) resolves. A `second` of `60` (a leap second) maps to
 /// `NaiveTime`'s `second() == 59, nanosecond() >= 1_000_000_000`
 /// convention.
 fn resolve_time(parsed : Parsed) -> @core.NaiveTime raise ParseError {
@@ -1183,7 +1183,7 @@ fn resolve_time(parsed : Parsed) -> @core.NaiveTime raise ParseError {
     Some(m) => m
   }
   let second = match parsed.second {
-    None => raise IncompleteFields
+    None => 0
     Some(s) => s
   }
   let nanosecond = match parsed.nanosecond {

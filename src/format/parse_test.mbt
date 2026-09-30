@@ -211,8 +211,8 @@ test "parse_time rejects an out-of-range hour" {
 }
 
 ///|
-test "parse_time rejects a format missing the hour, minute, or second field" {
-  for case in [("30:00", "%M:%S"), ("09:00", "%H:%S"), ("09:30", "%H:%M")] {
+test "parse_time rejects a format missing the hour or the minute field" {
+  for case in [("30:00", "%M:%S"), ("09:00", "%H:%S")] {
     let (input, fmt) = case
     try @format.parse_time(input, fmt) |> ignore catch {
       @format.IncompleteFields => ()
@@ -911,17 +911,11 @@ test "parse_time round-trips through the compound time specifiers %X and %r" {
 }
 
 ///|
-test "parse_time parses %R's hour and minute fields, but rejects it alone since %R carries no seconds" {
+test "parse_time parses %R's hour and minute fields, with a following %S giving the seconds" {
   assert_eq(
     @format.parse_time("09:05 30", "%R %S"),
     @core.NaiveTime::from_hms(9, 5, 30).unwrap(),
   )
-  try @format.parse_time("09:05", "%R") |> ignore catch {
-    @format.IncompleteFields => ()
-    _ => fail("expected IncompleteFields")
-  } noraise {
-    _ => fail("expected parse_time to reject a bare %R with no seconds field")
-  }
 }
 
 ///|
@@ -1681,5 +1675,69 @@ test "a year sign must be followed by digits, and only one sign is allowed" {
     _ => fail("expected InputMismatch")
   } noraise {
     _ => fail("expected a lone sign to be rejected")
+  }
+}
+
+///|
+test "parse_time reads a time with no seconds field as having zero seconds" {
+  assert_eq(
+    @format.parse_time("09:05", "%R"),
+    @core.NaiveTime::from_hms(9, 5, 0).unwrap(),
+  )
+  assert_eq(
+    @format.parse_time("09:05", "%H:%M"),
+    @core.NaiveTime::from_hms(9, 5, 0).unwrap(),
+  )
+  assert_eq(
+    @format.parse_time("9:05 PM", "%-I:%M %p"),
+    @core.NaiveTime::from_hms(21, 5, 0).unwrap(),
+  )
+}
+
+///|
+test "parse_date_time reads a date and a minute-precision time" {
+  assert_eq(
+    @format.parse_date_time("2024-03-05 09:05", "%F %R"),
+    @core.NaiveDateTime::new(
+      @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+      @core.NaiveTime::from_hms(9, 5, 0).unwrap(),
+    ),
+  )
+}
+
+///|
+test "the kitchen layout reads back what it renders, for times on the minute" {
+  for case in [(0, 0), (1, 5), (9, 30), (12, 0), (13, 45), (23, 59)] {
+    let (hour, minute) = case
+    let time = @core.NaiveTime::from_hms(hour, minute, 0).unwrap()
+    assert_eq(
+      @format.parse_time(
+        @format.format_time(time, @format.kitchen),
+        @format.kitchen,
+      ),
+      time,
+    )
+  }
+}
+
+///|
+test "a seconds field still wins over the default when it is present" {
+  assert_eq(
+    @format.parse_time("09:05:07", "%H:%M:%S"),
+    @core.NaiveTime::from_hms(9, 5, 7).unwrap(),
+  )
+}
+
+///|
+test "a time still needs its hour and its minute: only the seconds may be omitted" {
+  for
+    case in [("09", "%H"), ("09:07", "%H:%S"), ("05:07", "%M:%S"), ("05", "%M")] {
+    let (input, fmt) = case
+    try @format.parse_time(input, fmt) |> ignore catch {
+      @format.IncompleteFields => ()
+      _ => fail("expected IncompleteFields for \{fmt}")
+    } noraise {
+      _ => fail("expected parse_time to reject \{fmt}")
+    }
   }
 }
