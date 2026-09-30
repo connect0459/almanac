@@ -722,6 +722,34 @@ test "years_since compares local dates, not UTC dates" {
 }
 
 ///|
+test "years_since reads both datetimes in the calendar of the receiver's time zone" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let born = @tz.DateTime::from_ymd_hms(2000, 6, 15, 16, 0, 0, @tz.Utc::new())
+    .single()
+    .unwrap()
+  let day_before = @tz.DateTime::from_ymd_hms(2024, 6, 15, 12, 0, 0, tokyo)
+    .single()
+    .unwrap()
+  let birthday = @tz.DateTime::from_ymd_hms(2024, 6, 16, 12, 0, 0, tokyo)
+    .single()
+    .unwrap()
+  assert_eq(day_before.years_since(born), Some(23))
+  assert_eq(birthday.years_since(born), Some(24))
+}
+
+///|
+test "years_since across time zones is None when the base is a later instant" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let earlier = @tz.DateTime::from_ymd_hms(2000, 6, 15, 0, 0, 0, tokyo)
+    .single()
+    .unwrap()
+  let later = @tz.DateTime::from_ymd_hms(2024, 6, 15, 0, 0, 0, @tz.Utc::new())
+    .single()
+    .unwrap()
+  assert_eq(earlier.years_since(later), None)
+}
+
+///|
 test "Utc renders as UTC and FixedOffset as a colon-separated offset" {
   assert_eq(@tz.Utc::new().to_string(), "UTC")
   assert_eq(@tz.FixedOffset::east(9 * 3600).unwrap().to_string(), "+09:00")
