@@ -12,6 +12,18 @@ fn pad_int(n : Int, width : Int) -> String {
 }
 
 ///|
+/// Renders a calendar or ISO year as `%Y`/`%G` do: zero-padded to `width`
+/// digits after a `-` for a negative year, and with an explicit `+` beyond
+/// `9999`, as ISO 8601 requires for a year past four digits.
+fn year_text(year : Int, width : Int) -> String {
+  if year > 9999 {
+    "+" + pad_int(year, width)
+  } else {
+    pad_int(year, width)
+  }
+}
+
+///|
 fn weekday_short_name(w : @core.Weekday) -> String {
   match w {
     Mon => "Mon"
@@ -271,7 +283,11 @@ fn render(
       Literal(s) => out.write_string(s)
       PaddedNumeric(kind, mode) => {
         let (value, width) = numeric_value(kind, date, time, item)
-        out.write_string(render_padded(value, width, mode))
+        let text = render_padded(value, width, mode)
+        match kind {
+          Year | IsoYear if value > 9999 => out.write_string("+" + text)
+          _ => out.write_string(text)
+        }
       }
       Rfc3339 =>
         match (date, time, tz_info) {
@@ -281,7 +297,7 @@ fn render(
         }
       Numeric(Year) =>
         match date {
-          Some(d) => out.write_string(pad_int(d.year(), 4))
+          Some(d) => out.write_string(year_text(d.year(), 4))
           None => raise MissingField(item)
         }
       Numeric(Month) =>
@@ -461,7 +477,7 @@ fn render(
         }
       Numeric(IsoYear) =>
         match date {
-          Some(d) => out.write_string(pad_int(d.iso_week().year(), 4))
+          Some(d) => out.write_string(year_text(d.iso_week().year(), 4))
           None => raise MissingField(item)
         }
       Numeric(IsoYear2) =>

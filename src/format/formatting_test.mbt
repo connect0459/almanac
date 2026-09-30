@@ -676,3 +676,50 @@ test "format_date raises MissingField for a dot-prefixed fraction with no time o
     }
   }
 }
+
+///|
+test "%Y renders an explicit plus sign for a year beyond 9999 and no sign up to it" {
+  for
+    case in [
+      (0, "0000"),
+      (1, "0001"),
+      (9999, "9999"),
+      (10000, "+10000"),
+      (12345, "+12345"),
+      (-1, "-0001"),
+      (-10000, "-10000"),
+    ] {
+    let (year, expected) = case
+    let date = @core.NaiveDate::from_ymd(year, 1, 1).unwrap()
+    assert_eq(@format.format_date(date, "%Y"), expected)
+  }
+}
+
+///|
+test "%F renders the same text as NaiveDate's Show for a year beyond 9999" {
+  for year in [-1, 0, 9999, 10000, 123456] {
+    let date = @core.NaiveDate::from_ymd(year, 3, 5).unwrap()
+    assert_eq(@format.format_date(date, "%F"), date.to_string())
+  }
+}
+
+///|
+test "%G renders an explicit plus sign for an ISO year beyond 9999" {
+  let date = @core.NaiveDate::from_ymd(10000, 6, 15).unwrap()
+  assert_eq(date.iso_week().year(), 10000)
+  assert_eq(@format.format_date(date, "%G"), "+10000")
+  assert_eq(
+    @format.format_date(@core.NaiveDate::from_ymd(2024, 6, 15).unwrap(), "%G"),
+    "2024",
+  )
+}
+
+///|
+test "a padding flag on %Y keeps the explicit plus sign beyond 9999 and leaves other years alone" {
+  let big = @core.NaiveDate::from_ymd(10000, 1, 1).unwrap()
+  let small = @core.NaiveDate::from_ymd(12, 1, 1).unwrap()
+  assert_eq(@format.format_date(big, "%-Y"), "+10000")
+  assert_eq(@format.format_date(big, "%_Y"), "+10000")
+  assert_eq(@format.format_date(small, "%-Y"), "12")
+  assert_eq(@format.format_date(small, "%0Y"), "0012")
+}

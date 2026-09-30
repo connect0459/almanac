@@ -1634,3 +1634,60 @@ test "a dot-prefixed fixed-width fraction and an explicit nanosecond field must 
     _ => fail("expected disagreeing fractions to be rejected")
   }
 }
+
+///|
+test "parse_date reads a year written with an explicit plus sign" {
+  assert_eq(
+    @format.parse_date("+10000-01-01", "%F"),
+    @core.NaiveDate::from_ymd(10000, 1, 1).unwrap(),
+  )
+  assert_eq(
+    @format.parse_date("+2024-03-05", "%F"),
+    @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+  )
+}
+
+///|
+test "parse_date still reads an unsigned year beyond 9999 and a negative year" {
+  assert_eq(
+    @format.parse_date("10000-01-01", "%F"),
+    @core.NaiveDate::from_ymd(10000, 1, 1).unwrap(),
+  )
+  assert_eq(
+    @format.parse_date("-0001-12-31", "%F"),
+    @core.NaiveDate::from_ymd(-1, 12, 31).unwrap(),
+  )
+}
+
+///|
+test "parse_date round-trips %Y through format_date for years on both sides of the 4-digit range" {
+  for year in [-10000, -1, 0, 9999, 10000, 123456] {
+    let date = @core.NaiveDate::from_ymd(year, 3, 5).unwrap()
+    assert_eq(@format.parse_date(@format.format_date(date, "%F"), "%F"), date)
+  }
+}
+
+///|
+test "parse_date reads a plus-signed ISO year for %G" {
+  let date = @core.NaiveDate::from_ymd(10000, 6, 15).unwrap()
+  let text = @format.format_date(date, "%G-W%V-%u")
+  assert_eq(@format.parse_date(text, "%G-W%V-%u"), date)
+}
+
+///|
+test "a year sign must be followed by digits, and only one sign is allowed" {
+  for input in ["+-2024-03-05", "--2024-03-05", "+ 2024-03-05", "+-03-05"] {
+    try @format.parse_date(input, "%F") |> ignore catch {
+      @format.InputMismatch => ()
+      _ => fail("expected InputMismatch for \{input}")
+    } noraise {
+      _ => fail("expected parse_date to reject \{input}")
+    }
+  }
+  try @format.parse_date("+", "%Y") |> ignore catch {
+    @format.InputMismatch => ()
+    _ => fail("expected InputMismatch")
+  } noraise {
+    _ => fail("expected a lone sign to be rejected")
+  }
+}

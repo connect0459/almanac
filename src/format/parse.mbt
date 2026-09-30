@@ -113,12 +113,14 @@ fn match_literal(chars : Array[Char], pos : Int, literal : String) -> Int? {
 
 ///|
 /// Parses `%Y`'s variable-width, optionally-signed decimal field: an
-/// optional `-`, then one or more digits, greedily. Unlike every other
+/// optional `-` or `+`, then one or more digits, greedily. Unlike every other
 /// numeric specifier, `%Y`'s render width isn't fixed (a year can exceed
 /// 4 digits), so it isn't parsed via `parse_fixed_digits`.
 fn parse_signed_greedy_digits(chars : Array[Char], pos : Int) -> (Int, Int)? {
   let (sign, p0) = if pos < chars.length() && chars[pos] == '-' {
     (-1, pos + 1)
+  } else if pos < chars.length() && chars[pos] == '+' {
+    (1, pos + 1)
   } else {
     (1, pos)
   }
