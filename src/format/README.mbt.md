@@ -137,7 +137,7 @@ test {
 
 Every `format_*` and `parse_*` function takes the subject first (the value to render or the input text) and the pattern (a format string or an `Item` array) second.
 
-Suffixes name where the zone comes from: `_tz` renders any `DateTime[Tz]` (`format_date_time_tz`), `_in` reads the local clock in a `Tz` the caller passes (`parse_date_time_in`), and `_fixed_offset` reads the offset written in the input (`parse_date_time_fixed_offset`). A `_default` function is the exact inverse of a type's `Show` (there is deliberately no fmt-taking `parse_date_time_utc`; use `parse_date_time_in(input, fmt, Utc::new())`).
+Suffixes name where the zone comes from: `_tz` renders any `DateTime[Tz]` (`format_date_time_tz`), `_in` reads the local clock in a `Tz` the caller passes (`parse_date_time_in`), and `_fixed_offset` reads the offset written in the input (`parse_date_time_fixed_offset`). A `_default` function is the one-argument form that pairs with a parser taking a format string, and reads exactly what the type's `Show` renders (there is deliberately no fmt-taking `parse_date_time_utc`; use `parse_date_time_in(input, fmt, Utc::new())`). `parse_duration` and `parse_fixed_offset` have no format-string counterpart, so they carry no suffix; each is also the inverse of its type's `Show`, and each accepts a wider grammar than `Show` writes (for instance `"Z"`, `"+09"` and `".5s"`).
 
 ### Formatting
 
