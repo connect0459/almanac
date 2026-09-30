@@ -244,8 +244,10 @@ test "PosixTz as a TimeZone resolves a local reading to Single, Absent in a gap 
   assert_true(
     tz.offset_from_local(reading(2024, 7, 1, 12, 0)).single() is Some(_),
   )
-  assert_true(tz.from_local_datetime(reading(2024, 3, 10, 2, 30)) is @tz.Absent)
-  let fold = tz.from_local_datetime(reading(2024, 11, 3, 1, 30))
+  assert_true(
+    @tz.DateTime::from_local(reading(2024, 3, 10, 2, 30), tz) is @tz.Absent,
+  )
+  let fold = @tz.DateTime::from_local(reading(2024, 11, 3, 1, 30), tz)
   assert_eq(
     fold.earliest().unwrap().compare_instant(fold.latest().unwrap()),
     -1,

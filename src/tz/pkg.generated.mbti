@@ -131,8 +131,6 @@ pub struct FixedOffset {
 } derive(Eq, Hash, @debug.Debug)
 pub fn FixedOffset::east(Int) -> Self?
 pub fn FixedOffset::equal(Self, Self) -> Bool
-pub fn FixedOffset::from_local_datetime(Self, @core.NaiveDateTime) -> MappedLocalTime[DateTime[Self]]
-pub fn FixedOffset::from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self]
 pub fn FixedOffset::hash(Self) -> Int
 pub fn FixedOffset::hash_combine(Self, Hasher) -> Unit
 pub fn FixedOffset::is_dst(Self, @core.NaiveDateTime) -> Bool
@@ -155,8 +153,6 @@ pub struct FixedZone {
   // private fields
 } derive(Eq, Hash, @debug.Debug)
 pub fn FixedZone::equal(Self, Self) -> Bool
-pub fn FixedZone::from_local_datetime(Self, @core.NaiveDateTime) -> MappedLocalTime[DateTime[Self]]
-pub fn FixedZone::from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self]
 pub fn FixedZone::hash(Self) -> Int
 pub fn FixedZone::hash_combine(Self, Hasher) -> Unit
 pub fn FixedZone::is_dst(Self, @core.NaiveDateTime) -> Bool
@@ -192,10 +188,8 @@ pub struct Location {
   // private fields
 } derive(Eq, Hash)
 pub fn Location::equal(Self, Self) -> Bool
-pub fn Location::from_local_datetime(Self, @core.NaiveDateTime) -> MappedLocalTime[DateTime[Self]]
 pub fn Location::from_tzif_bytes(Bytes) -> Self?
 pub fn Location::from_tzif_bytes_named(String, Bytes) -> Self?
-pub fn Location::from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self]
 pub fn Location::hash(Self) -> Int
 pub fn Location::hash_combine(Self, Hasher) -> Unit
 pub fn Location::is_dst(Self, @core.NaiveDateTime) -> Bool
@@ -233,8 +227,6 @@ pub struct PosixTz {
 } derive(Eq, Hash, @debug.Debug)
 pub fn PosixTz::bounds_at(Self, Int64) -> (Int64, Int64)?
 pub fn PosixTz::equal(Self, Self) -> Bool
-pub fn PosixTz::from_local_datetime(Self, @core.NaiveDateTime) -> MappedLocalTime[DateTime[Self]]
-pub fn PosixTz::from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self]
 pub fn PosixTz::hash(Self) -> Int
 pub fn PosixTz::hash_combine(Self, Hasher) -> Unit
 pub fn PosixTz::is_dst(Self, @core.NaiveDateTime) -> Bool
@@ -276,8 +268,6 @@ pub fn TzifData::transitions(Self) -> Array[Int64]
 pub struct Utc {
 } derive(Eq, Hash, @debug.Debug)
 pub fn Utc::equal(Self, Self) -> Bool
-pub fn Utc::from_local_datetime(Self, @core.NaiveDateTime) -> MappedLocalTime[DateTime[Self]]
-pub fn Utc::from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self]
 pub fn Utc::hash(Self) -> Int
 pub fn Utc::hash_combine(Self, Hasher) -> Unit
 pub fn Utc::is_dst(Self, @core.NaiveDateTime) -> Bool
@@ -305,6 +295,4 @@ pub trait TimeZone {
   fn is_dst(Self, @core.NaiveDateTime) -> Bool
   fn transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds
   fn offset_from_abbreviation(Self, String, @core.NaiveDateTime) -> FixedOffset?
-  fn from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self]
-  fn from_local_datetime(Self, @core.NaiveDateTime) -> MappedLocalTime[DateTime[Self]]
 }

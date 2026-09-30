@@ -93,16 +93,16 @@ test {
 
 Implemented by `Utc`, `FixedOffset`, `FixedZone`, `Location`, and `PosixTz`. The trait is readonly: other packages can use `Tz : TimeZone` as a bound but cannot implement it, so these are the only zones. `DateTime[Tz]::offset`/`naive_local` require `Tz : TimeZone`.
 
+Every `NaiveDateTime` argument is a UTC reading except the one taken by `offset_from_local`, which is a local (wall-clock) reading. The type does not tell them apart, so pass `DateTime::naive_utc()` for the former and `DateTime::naive_local()` for the latter. To build a `DateTime` from either reading, use `DateTime::from_utc`/`DateTime::from_local`.
+
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | The offset in effect at a given UTC instant; never ambiguous |
 | `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | The offset(s) for a given local (wall-clock) instant, handling DST ambiguity/gaps |
-| `tz_name(NaiveDateTime)` | `-> String` | The zone abbreviation/name in effect at a given instant |
+| `tz_name(NaiveDateTime)` | `-> String` | The zone abbreviation/name in effect at a given UTC instant |
 | `is_dst(NaiveDateTime)` | `-> Bool` | Whether daylight saving time is in effect at a given UTC instant; `false` by default, overridden by `Location`, `PosixTz` and `Local` |
 | `transition_bounds(NaiveDateTime)` | `-> TransitionBounds` | The validity window of the offset in effect at a given UTC instant; unbounded on both sides by default, overridden by `Location` (its own `transition_bounds`), `PosixTz` and `Local` |
 | `offset_from_abbreviation(String, NaiveDateTime)` | `-> FixedOffset?` | The offset a zone abbreviation (e.g. `"EST"`) denotes in this zone, resolved at a given UTC instant; `None` by default (`Utc`, `FixedOffset`), overridden by `Location` (see its own method), `PosixTz` (its standard and DST names) and `Local` |
-| `from_utc_datetime(NaiveDateTime)` | `-> DateTime[Self]` | Interpret a naive datetime as UTC and express it in this zone; same as `DateTime::from_utc` (default implementation) |
-| `from_local_datetime(NaiveDateTime)` | `-> MappedLocalTime[DateTime[Self]]` | Interpret a naive datetime as wall-clock time in this zone; same as `DateTime::from_local` (default implementation) |
 
 ---
 

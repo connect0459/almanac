@@ -134,6 +134,11 @@ fn resolve_transition(
 /// but cannot implement it, so the zones are the ones this package provides
 /// (`Utc`, `FixedOffset`, `FixedZone`, `Location`, `PosixTz` and, on
 /// native, `Local`).
+///
+/// Every `NaiveDateTime` argument is a UTC reading except the one taken by
+/// `offset_from_local`, which is a local (wall-clock) reading; the type does
+/// not distinguish them, so pass `DateTime::naive_utc` for the former and
+/// `DateTime::naive_local` for the latter.
 pub trait TimeZone {
   /// The offset in effect for the given UTC naive datetime. Always a
   /// single answer: UTC has no daylight saving, so this mapping is never
@@ -162,14 +167,6 @@ pub trait TimeZone {
   /// does not know it. `None` by default: `Utc` and `FixedOffset` carry no
   /// abbreviation of their own to look up.
   fn offset_from_abbreviation(Self, String, @core.NaiveDateTime) -> FixedOffset? = _
-  /// A `DateTime` for the given UTC naive datetime, expressed in this zone.
-  /// See `DateTime::from_utc`.
-  fn from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self] = _
-  /// A `DateTime` for the given local (wall-clock) naive datetime in this
-  /// zone. See `DateTime::from_local`.
-  fn from_local_datetime(Self, @core.NaiveDateTime) -> MappedLocalTime[
-    DateTime[Self],
-  ] = _
 }
 
 ///|
@@ -185,14 +182,4 @@ impl TimeZone with fn offset_from_abbreviation(_self, _abbreviation, _near) {
 ///|
 impl TimeZone with fn transition_bounds(_self, _utc) {
   TransitionBounds::{ start: None, end: None, }
-}
-
-///|
-impl TimeZone with fn from_utc_datetime(self, naive) {
-  DateTime::from_utc(naive, self)
-}
-
-///|
-impl TimeZone with fn from_local_datetime(self, naive) {
-  DateTime::from_local(naive, self)
 }

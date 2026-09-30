@@ -1345,9 +1345,9 @@ pub fn[Tz : @tz.TimeZone] Parsed::to_date_time_in(
               tz,
             ),
           )
-        None => tz.from_local_datetime(local_naive)
+        None => @tz.DateTime::from_local(local_naive, tz)
       }
-    None => tz.from_local_datetime(local_naive)
+    None => @tz.DateTime::from_local(local_naive, tz)
   }
 }
 

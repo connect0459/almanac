@@ -537,6 +537,4 @@ pub extend PosixTz with TimeZone::{
   is_dst,
   transition_bounds,
   offset_from_abbreviation,
-  from_utc_datetime,
-  from_local_datetime,
 }
