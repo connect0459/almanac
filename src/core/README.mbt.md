@@ -193,8 +193,9 @@ A proleptic Gregorian calendar date. Constructors are `Option`-returning: an inv
 | `pred()` | `-> Self` | The previous day |
 | `add_days(Int)` | `-> Self` | Shift forward (or back, if negative) by a day count |
 | `sub_days(Int)` | `-> Self` | Shift backward by a day count |
-| `add_signed(TimeDelta)` | `-> Self?` | Shift forward by the duration's whole days (sub-day remainder truncated toward zero); `None` if out of range |
-| `sub_signed(TimeDelta)` | `-> Self?` | Shift backward by the duration's whole days; `None` if out of range |
+| `add_signed(TimeDelta)` | `-> Self` | Shift forward by the duration's whole days (sub-day remainder truncated toward zero); aborts if out of range |
+| `sub_signed(TimeDelta)` | `-> Self` | Shift backward by the duration's whole days; aborts if out of range |
+| `checked_add_signed(TimeDelta)` / `checked_sub_signed(TimeDelta)` | `-> Self?` | As `add_signed`/`sub_signed`, but `None` if out of range |
 | `signed_duration_since(Self)` | `-> TimeDelta` | Whole-day duration from `other` to this date |
 | `and_time(NaiveTime)` | `-> NaiveDateTime` | Combine with a time of day |
 | `and_hms(Int, Int, Int)` | `-> NaiveDateTime?` | Combine with `hour:min:sec`; `None` if a component is out of range |

@@ -77,7 +77,7 @@ pub struct NaiveDate {
 pub fn NaiveDate::abs_diff(Self, Self) -> Int64
 pub fn NaiveDate::add_days(Self, Int) -> Self
 pub fn NaiveDate::add_months(Self, Int) -> Self
-pub fn NaiveDate::add_signed(Self, TimeDelta) -> Self?
+pub fn NaiveDate::add_signed(Self, TimeDelta) -> Self
 pub fn NaiveDate::add_years(Self, Int) -> Self
 pub fn NaiveDate::and_hms(Self, Int, Int, Int) -> NaiveDateTime?
 pub fn NaiveDate::and_hms_micro(Self, Int, Int, Int, Int) -> NaiveDateTime?
@@ -86,9 +86,11 @@ pub fn NaiveDate::and_hms_nano(Self, Int, Int, Int, Int) -> NaiveDateTime?
 pub fn NaiveDate::and_time(Self, NaiveTime) -> NaiveDateTime
 pub fn NaiveDate::checked_add_days(Self, Int) -> Self?
 pub fn NaiveDate::checked_add_months(Self, Int) -> Self?
+pub fn NaiveDate::checked_add_signed(Self, TimeDelta) -> Self?
 pub fn NaiveDate::checked_add_years(Self, Int) -> Self?
 pub fn NaiveDate::checked_sub_days(Self, Int) -> Self?
 pub fn NaiveDate::checked_sub_months(Self, Int) -> Self?
+pub fn NaiveDate::checked_sub_signed(Self, TimeDelta) -> Self?
 pub fn NaiveDate::checked_sub_years(Self, Int) -> Self?
 pub fn NaiveDate::compare(Self, Self) -> Int
 pub fn NaiveDate::day(Self) -> Int
@@ -126,7 +128,7 @@ pub fn NaiveDate::quarter(Self) -> Int
 pub fn NaiveDate::signed_duration_since(Self, Self) -> TimeDelta
 pub fn NaiveDate::sub_days(Self, Int) -> Self
 pub fn NaiveDate::sub_months(Self, Int) -> Self
-pub fn NaiveDate::sub_signed(Self, TimeDelta) -> Self?
+pub fn NaiveDate::sub_signed(Self, TimeDelta) -> Self
 pub fn NaiveDate::sub_years(Self, Int) -> Self
 pub fn NaiveDate::succ(Self) -> Self
 pub fn NaiveDate::succ_opt(Self) -> Self?

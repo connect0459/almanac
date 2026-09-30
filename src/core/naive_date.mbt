@@ -383,21 +383,44 @@ pub fn NaiveDate::and_hms_nano(
 const MAX_ABS_EPOCH_DAYS : Int64 = 2_147_483_647L - 719_468L
 
 ///|
-/// The date `delta`'s whole days after this one, or `None` if that day
-/// count falls outside `NaiveDate`'s representable range. A sub-day
-/// remainder of `delta` is discarded (truncation toward zero), since a
-/// date carries no time-of-day.
-pub fn NaiveDate::add_signed(self : NaiveDate, delta : TimeDelta) -> NaiveDate? {
-  let days = self.days.to_int64() + delta.num_days()
-  NaiveDate::from_epoch_days64(days)
+/// The date `delta`'s whole days after this one. A sub-day remainder of
+/// `delta` is discarded (truncation toward zero), since a date carries no
+/// time-of-day.
+///
+/// Aborts if the day count falls outside `NaiveDate`'s representable range;
+/// use `checked_add_signed` to get `None` instead.
+pub fn NaiveDate::add_signed(self : NaiveDate, delta : TimeDelta) -> NaiveDate {
+  expect_in_range(self.checked_add_signed(delta), "NaiveDate::add_signed")
 }
 
 ///|
-/// The date `delta`'s whole days before this one, or `None` if that day
-/// count falls outside `NaiveDate`'s representable range. A sub-day
-/// remainder of `delta` is discarded (truncation toward zero).
-pub fn NaiveDate::sub_signed(self : NaiveDate, delta : TimeDelta) -> NaiveDate? {
-  self.add_signed(delta.neg())
+/// The date `delta`'s whole days before this one. A sub-day remainder of
+/// `delta` is discarded (truncation toward zero).
+///
+/// Aborts if the day count falls outside `NaiveDate`'s representable range;
+/// use `checked_sub_signed` to get `None` instead.
+pub fn NaiveDate::sub_signed(self : NaiveDate, delta : TimeDelta) -> NaiveDate {
+  expect_in_range(self.checked_sub_signed(delta), "NaiveDate::sub_signed")
+}
+
+///|
+/// Like `add_signed`, but `None` if the day count falls outside
+/// `NaiveDate`'s representable range.
+pub fn NaiveDate::checked_add_signed(
+  self : NaiveDate,
+  delta : TimeDelta,
+) -> NaiveDate? {
+  NaiveDate::from_epoch_days64(self.days.to_int64() + delta.num_days())
+}
+
+///|
+/// Like `sub_signed`, but `None` if the day count falls outside
+/// `NaiveDate`'s representable range.
+pub fn NaiveDate::checked_sub_signed(
+  self : NaiveDate,
+  delta : TimeDelta,
+) -> NaiveDate? {
+  self.checked_add_signed(delta.neg())
 }
 
 ///|
