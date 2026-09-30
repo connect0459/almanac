@@ -1175,3 +1175,85 @@ test "parse_date_time_in propagates a parse failure and an incomplete layout" {
     _ => fail("expected rejection")
   }
 }
+
+///|
+test "parse_date_time_in resolves a fall-back fold by the zone abbreviation in the input (America/New_York)" {
+  let ny = @tz.Location::load("America/New_York").unwrap()
+  let edt = @format.parse_date_time_in(
+      "2024-11-03 01:30:00 EDT", "%F %T %Z", ny,
+    )
+    .single()
+    .unwrap()
+  let est = @format.parse_date_time_in(
+      "2024-11-03 01:30:00 EST", "%F %T %Z", ny,
+    )
+    .single()
+    .unwrap()
+  assert_eq(edt.offset(), @tz.FixedOffset::east(-4 * 3600).unwrap())
+  assert_eq(est.offset(), @tz.FixedOffset::east(-5 * 3600).unwrap())
+  assert_eq(edt.naive_utc(), local_reading(2024, 11, 3, 5, 30))
+  assert_eq(est.naive_utc(), local_reading(2024, 11, 3, 6, 30))
+  assert_true(edt.timezone() == ny)
+}
+
+///|
+test "parse_date_time_in trusts the abbreviation's offset over the wall clock, keeping the instant as written" {
+  let ny = @tz.Location::load("America/New_York").unwrap()
+  let dt = @format.parse_date_time_in("2024-07-01 12:00:00 EST", "%F %T %Z", ny)
+    .single()
+    .unwrap()
+  assert_eq(dt.naive_utc(), local_reading(2024, 7, 1, 17, 0))
+  assert_eq(dt.naive_local(), local_reading(2024, 7, 1, 13, 0))
+}
+
+///|
+test "parse_date_time_in falls back to ordinary local resolution for an abbreviation the zone does not know" {
+  let ny = @tz.Location::load("America/New_York").unwrap()
+  assert_true(
+    @format.parse_date_time_in("2024-03-10 02:30:00 XXX", "%F %T %Z", ny)
+    is @tz.Absent,
+  )
+  let fold = @format.parse_date_time_in(
+    "2024-11-03 01:30:00 XXX", "%F %T %Z", ny,
+  )
+  assert_eq(
+    fold.earliest().unwrap().compare_instant(fold.latest().unwrap()),
+    -1,
+  )
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let named = @format.parse_date_time_in(
+      "2024-03-05 09:30:00 JST", "%F %T %Z", tokyo,
+    )
+    .single()
+    .unwrap()
+  assert_eq(named.naive_local(), local_reading(2024, 3, 5, 9, 30))
+}
+
+///|
+test "parse_date_time_in resolves a POSIX rule's own abbreviations" {
+  let rule = @tz.parse_posix_tz("FOO5BAR4,M3.2.0,M11.1.0").unwrap()
+  let dt = @format.parse_date_time_in(
+      "2024-03-10 02:30:00 BAR", "%F %T %Z", rule,
+    )
+    .single()
+    .unwrap()
+  assert_eq(dt.naive_utc(), local_reading(2024, 3, 10, 6, 30))
+}
+
+///|
+test "parsing repeated %Z accepts the same name and rejects differing names" {
+  let ny = @tz.Location::load("America/New_York").unwrap()
+  assert_true(
+    @format.parse_date_time_in("2024-07-01 12:00:00 EDT EDT", "%F %T %Z %Z", ny).single()
+    is Some(_),
+  )
+  try
+    @format.parse_date_time_in("2024-07-01 12:00:00 EDT EST", "%F %T %Z %Z", ny)
+    |> ignore
+  catch {
+    @format.InconsistentFields => ()
+    _ => fail("expected InconsistentFields")
+  } noraise {
+    _ => fail("expected rejection")
+  }
+}

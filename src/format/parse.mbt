@@ -36,6 +36,10 @@ priv struct Parsed {
   week_sunday : Int?
   /// `%W`: the Monday-based week number. See `week_sunday`.
   week_monday : Int?
+  /// `%Z`: the zone name text as it appeared (never validated). Only
+  /// `parse_date_time_in` consults it, to resolve an abbreviation through
+  /// the target zone; every other entry point discards it.
+  zone_name : String?
 }
 
 ///|
@@ -58,6 +62,7 @@ fn Parsed::empty() -> Parsed {
     quarter: None,
     week_sunday: None,
     week_monday: None,
+    zone_name: None,
   }
 }
 
@@ -571,7 +576,8 @@ fn apply_item(
       if end == pos {
         raise InputMismatch
       }
-      (parsed, end)
+      let name = String::from_array(chars[pos:end])
+      ({ ..parsed, zone_name: merge_field(parsed.zone_name, name), }, end)
     }
     Fixed(TimezoneOffset) =>
       match parse_offset_no_colon(chars, pos) {
@@ -1002,6 +1008,13 @@ pub fn parse_date_time_tz(
 /// gap). Raises `InconsistentFields` if `fmt` yields an offset (`%z` and
 /// friends, or a compound like `%+`), since it would be silently discarded
 /// or contradict `tz`.
+///
+/// A `%Z` zone name that `tz` recognizes (`TimeZone::offset_from_abbreviation`)
+/// fixes the offset, like Go's `ParseInLocation`: the reading is taken as
+/// that offset's instant even if the wall clock disagrees, and the result is
+/// `Single`, which is how an abbreviation such as `EDT` picks a side of a
+/// DST fold. A name `tz` does not recognize is ignored, resolving the
+/// reading as usual.
 pub fn[Tz : @tz.TimeZone] parse_date_time_in(
   input : String,
   fmt : String,
@@ -1015,5 +1028,18 @@ pub fn[Tz : @tz.TimeZone] parse_date_time_in(
     resolve_date(parsed),
     resolve_time(parsed),
   )
-  tz.from_local_datetime(local_naive)
+  match parsed.zone_name {
+    Some(name) =>
+      match tz.offset_from_abbreviation(name, local_naive) {
+        Some(offset) =>
+          Single(
+            @tz.DateTime::from_utc(
+              local_naive.sub_seconds(offset.local_minus_utc()),
+              tz,
+            ),
+          )
+        None => tz.from_local_datetime(local_naive)
+      }
+    None => tz.from_local_datetime(local_naive)
+  }
 }
