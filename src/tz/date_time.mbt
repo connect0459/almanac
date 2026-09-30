@@ -144,6 +144,13 @@ fn[Tz : TimeZone] offset_before_gap(
 /// A zone that reports a gap but exposes no transition bounds to find the
 /// earlier offset from resolves the reading with its offset at that reading
 /// taken as a UTC instant.
+///
+/// This is the single policy of the library, also used by the calendar steps
+/// (`add_days` and the like); it is the `compatible` disambiguation of the
+/// JavaScript Temporal proposal. For another choice, resolve with
+/// `from_local` and pick from the result: `.latest()` takes the later
+/// occurrence of a fold, and `.single()` rejects both a fold and a gap. To
+/// build one from components, go through `NaiveDateTime::from_ymd_hms`.
 pub fn[Tz : TimeZone] DateTime::from_local_lenient(
   naive_local : @core.NaiveDateTime,
   tz : Tz,

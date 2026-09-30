@@ -1444,3 +1444,14 @@ test "checked calendar steps return None past the representable range, including
   assert_eq(dt.checked_add_days(to_limit), None)
   assert_true(dt.checked_add_days(to_limit - 5) is Some(_))
 }
+
+///|
+test "from_local_lenient resolves a fold to the earlier occurrence while from_local offers the later one" {
+  let ny = @tz.Location::load("America/New_York").unwrap()
+  let reading = @core.NaiveDateTime::from_ymd_hms(2024, 11, 3, 1, 30, 0).unwrap()
+  let lenient = @tz.DateTime::from_local_lenient(reading, ny)
+  let resolved = @tz.DateTime::from_local(reading, ny)
+  assert_eq(lenient, resolved.earliest().unwrap())
+  assert_true(resolved.latest().unwrap() != lenient)
+  assert_true(resolved.single() is None)
+}
