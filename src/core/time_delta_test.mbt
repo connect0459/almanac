@@ -64,17 +64,17 @@ test "constructors reject a total duration exceeding the representable range" {
 }
 
 ///|
-test "mul reports None when combining an overflowing seconds product with the carried nanosecond remainder" {
+test "checked_mul reports None when combining an overflowing seconds product with the carried nanosecond remainder" {
   // seconds=4_294_967_298, nanoseconds=999_999_999: seconds * scalar alone
   // fits in Int64, but adding the nanosecond remainder's carried seconds
   // overflows past Int64::max_value.
   let delta = @core.TimeDelta::nanoseconds(4_294_967_298_999_999_999L).unwrap()
-  assert_eq(delta.mul(2_147_483_647), None)
+  assert_eq(delta.checked_mul(2_147_483_647), None)
 }
 
 ///|
-test "mul reports None when the seconds component alone overflows Int64" {
-  assert_eq(@core.TimeDelta::max_value().mul(1001), None)
+test "checked_mul reports None when the seconds component alone overflows Int64" {
+  assert_eq(@core.TimeDelta::max_value().checked_mul(1001), None)
 }
 
 ///|
@@ -104,31 +104,31 @@ test "num_microseconds and num_nanoseconds round-trip within their representable
 }
 
 ///|
-test "add and sub perform checked arithmetic, reporting None on overflow past max_value or min_value" {
+test "checked_add and sub perform checked arithmetic, reporting None on overflow past max_value or min_value" {
   let max = @core.TimeDelta::max_value()
   let one_second = @core.TimeDelta::seconds(1L).unwrap()
-  assert_eq(max.add(one_second), None)
+  assert_eq(max.checked_add(one_second), None)
   let min = @core.TimeDelta::min_value()
-  assert_eq(min.sub(one_second), None)
+  assert_eq(min.checked_sub(one_second), None)
 }
 
 ///|
-test "add and sub are inverse operations for representable durations" {
+test "checked_add and sub are inverse operations for representable durations" {
   let a = @core.TimeDelta::seconds(100L).unwrap()
   let b = @core.TimeDelta::milliseconds(250L).unwrap()
-  assert_eq(a.add(b).unwrap().sub(b), Some(a))
+  assert_eq(a.checked_add(b).unwrap().checked_sub(b), Some(a))
 }
 
 ///|
-test "mul and div are inverse operations for exact multiples" {
+test "checked_mul and div are inverse operations for exact multiples" {
   let delta = @core.TimeDelta::milliseconds(1500L).unwrap()
-  assert_eq(delta.mul(3).unwrap().div(3), Some(delta))
+  assert_eq(delta.checked_mul(3).unwrap().checked_div(3), Some(delta))
 }
 
 ///|
-test "div rejects division by zero" {
+test "checked_div rejects division by zero" {
   let delta = @core.TimeDelta::seconds(1L).unwrap()
-  assert_eq(delta.div(0), None)
+  assert_eq(delta.checked_div(0), None)
 }
 
 ///|
@@ -155,10 +155,10 @@ test "is_zero reports true only for the zero duration" {
 ///|
 test "min_value and max_value sit exactly one second away from overflow in each direction" {
   let one_second = @core.TimeDelta::seconds(1L).unwrap()
-  assert_true(@core.TimeDelta::max_value().add(one_second) is None)
-  assert_true(@core.TimeDelta::max_value().sub(one_second) is Some(_))
-  assert_true(@core.TimeDelta::min_value().sub(one_second) is None)
-  assert_true(@core.TimeDelta::min_value().add(one_second) is Some(_))
+  assert_true(@core.TimeDelta::max_value().checked_add(one_second) is None)
+  assert_true(@core.TimeDelta::max_value().checked_sub(one_second) is Some(_))
+  assert_true(@core.TimeDelta::min_value().checked_sub(one_second) is None)
+  assert_true(@core.TimeDelta::min_value().checked_add(one_second) is Some(_))
 }
 
 ///|
@@ -198,7 +198,7 @@ test "round rounds away from zero when a sub-second remainder alone pushes the d
   let hour = @core.TimeDelta::hours(1L).unwrap()
   let just_past_half_hour = @core.TimeDelta::minutes(30L)
     .unwrap()
-    .add(@core.TimeDelta::milliseconds(700L).unwrap())
+    .checked_add(@core.TimeDelta::milliseconds(700L).unwrap())
     .unwrap()
   assert_eq(just_past_half_hour.round(hour), Ok(hour))
 }
@@ -333,7 +333,7 @@ test "a negative duration compares less than a positive one" {
 }
 
 ///|
-test "sub-second precision is reflected in ordering for negative durations" {
+test "checked_sub-second precision is reflected in ordering for negative durations" {
   let more_negative = @core.TimeDelta::milliseconds(-900L).unwrap()
   let less_negative = @core.TimeDelta::milliseconds(-100L).unwrap()
   assert_true(more_negative < less_negative)
@@ -654,7 +654,7 @@ test "round_up agrees with truncate for a negative duration and exceeds it by on
   let positive = @core.TimeDelta::milliseconds(2_700L).unwrap()
   assert_eq(
     positive.round_up(second),
-    Ok(positive.truncate(second).unwrap().add(second).unwrap()),
+    Ok(positive.truncate(second).unwrap().checked_add(second).unwrap()),
   )
 }
 
@@ -710,21 +710,21 @@ test "the default duration is zero" {
 }
 
 ///|
-test "sum of an empty array is zero" {
-  assert_eq(@core.TimeDelta::sum([]), Some(@core.TimeDelta::zero()))
+test "checked_sum of an empty array is zero" {
+  assert_eq(@core.TimeDelta::checked_sum([]), Some(@core.TimeDelta::zero()))
 }
 
 ///|
-test "sum adds durations, carrying nanoseconds into seconds" {
+test "checked_sum adds durations, carrying nanoseconds into seconds" {
   assert_eq(
-    @core.TimeDelta::sum([
+    @core.TimeDelta::checked_sum([
       @core.TimeDelta::seconds(1L).unwrap(),
       @core.TimeDelta::seconds(2L).unwrap(),
     ]),
     @core.TimeDelta::seconds(3L),
   )
   assert_eq(
-    @core.TimeDelta::sum([
+    @core.TimeDelta::checked_sum([
       @core.TimeDelta::milliseconds(600L).unwrap(),
       @core.TimeDelta::milliseconds(600L).unwrap(),
     ]),
@@ -733,16 +733,16 @@ test "sum adds durations, carrying nanoseconds into seconds" {
 }
 
 ///|
-test "sum handles negative and mixed-sign durations" {
+test "checked_sum handles negative and mixed-sign durations" {
   assert_eq(
-    @core.TimeDelta::sum([
+    @core.TimeDelta::checked_sum([
       @core.TimeDelta::seconds(1L).unwrap(),
       @core.TimeDelta::seconds(-3L).unwrap(),
     ]),
     @core.TimeDelta::seconds(-2L),
   )
   assert_eq(
-    @core.TimeDelta::sum([
+    @core.TimeDelta::checked_sum([
       @core.TimeDelta::milliseconds(-500L).unwrap(),
       @core.TimeDelta::milliseconds(250L).unwrap(),
     ]),
@@ -751,13 +751,13 @@ test "sum handles negative and mixed-sign durations" {
 }
 
 ///|
-test "sum of a single duration is that duration" {
+test "checked_sum of a single duration is that duration" {
   let delta = @core.TimeDelta::new(-7L, 123_456_789).unwrap()
-  assert_eq(@core.TimeDelta::sum([delta]), Some(delta))
+  assert_eq(@core.TimeDelta::checked_sum([delta]), Some(delta))
 }
 
 ///|
-test "sum agrees with adding one at a time when no step overflows" {
+test "checked_sum agrees with adding one at a time when no step overflows" {
   let deltas = [
     @core.TimeDelta::hours(3L).unwrap(),
     @core.TimeDelta::minutes(-45L).unwrap(),
@@ -765,25 +765,28 @@ test "sum agrees with adding one at a time when no step overflows" {
     @core.TimeDelta::seconds(-1L).unwrap(),
   ]
   let stepwise = deltas.fold(init=Some(@core.TimeDelta::zero()), (acc, d) => {
-    acc.bind(a => a.add(d))
+    acc.bind(a => a.checked_add(d))
   })
-  assert_eq(@core.TimeDelta::sum(deltas), stepwise)
+  assert_eq(@core.TimeDelta::checked_sum(deltas), stepwise)
 }
 
 ///|
-test "sum does not depend on the order, even when a partial sum would leave the range" {
+test "checked_sum does not depend on the order, even when a partial sum would leave the range" {
   let max = @core.TimeDelta::max_value()
   let min = @core.TimeDelta::min_value()
   let seven = @core.TimeDelta::seconds(7L).unwrap()
   let expected = @core.TimeDelta::seconds(7L)
-  assert_eq(@core.TimeDelta::sum([max, max, min, min, seven]), expected)
-  assert_eq(@core.TimeDelta::sum([max, min, max, seven, min]), expected)
-  assert_eq(@core.TimeDelta::sum([seven, min, min, max, max]), expected)
-  assert_eq(@core.TimeDelta::sum([max, min]), Some(@core.TimeDelta::zero()))
+  assert_eq(@core.TimeDelta::checked_sum([max, max, min, min, seven]), expected)
+  assert_eq(@core.TimeDelta::checked_sum([max, min, max, seven, min]), expected)
+  assert_eq(@core.TimeDelta::checked_sum([seven, min, min, max, max]), expected)
+  assert_eq(
+    @core.TimeDelta::checked_sum([max, min]),
+    Some(@core.TimeDelta::zero()),
+  )
 }
 
 ///|
-test "sum of many extreme durations that cancel still succeeds" {
+test "checked_sum of many extreme durations that cancel still succeeds" {
   let deltas : Array[@core.TimeDelta] = []
   for _ in 0..<1_000 {
     deltas.push(@core.TimeDelta::max_value())
@@ -792,27 +795,30 @@ test "sum of many extreme durations that cancel still succeeds" {
     deltas.push(@core.TimeDelta::min_value())
   }
   deltas.push(@core.TimeDelta::milliseconds(1_500L).unwrap())
-  assert_eq(@core.TimeDelta::sum(deltas), @core.TimeDelta::milliseconds(1_500L))
+  assert_eq(
+    @core.TimeDelta::checked_sum(deltas),
+    @core.TimeDelta::milliseconds(1_500L),
+  )
 }
 
 ///|
-test "sum returns None when the true total is outside the representable range" {
+test "checked_sum returns None when the true total is outside the representable range" {
   let max = @core.TimeDelta::max_value()
   let min = @core.TimeDelta::min_value()
   assert_eq(
-    @core.TimeDelta::sum([max, @core.TimeDelta::seconds(1L).unwrap()]),
+    @core.TimeDelta::checked_sum([max, @core.TimeDelta::seconds(1L).unwrap()]),
     None,
   )
-  assert_eq(@core.TimeDelta::sum([max, max]), None)
+  assert_eq(@core.TimeDelta::checked_sum([max, max]), None)
   assert_eq(
-    @core.TimeDelta::sum([min, @core.TimeDelta::seconds(-1L).unwrap()]),
+    @core.TimeDelta::checked_sum([min, @core.TimeDelta::seconds(-1L).unwrap()]),
     None,
   )
   let many : Array[@core.TimeDelta] = []
   for _ in 0..<2_000 {
     many.push(max)
   }
-  assert_eq(@core.TimeDelta::sum(many), None)
+  assert_eq(@core.TimeDelta::checked_sum(many), None)
 }
 
 ///|
@@ -989,11 +995,15 @@ test "max_value is exactly the largest whole-second duration, with no nanosecond
   assert_eq(@core.TimeDelta::max_value().subsec_nanoseconds(), 0)
   assert_eq(@core.TimeDelta::new(9_223_372_036_854_774L, 1), None)
   assert_eq(
-    @core.TimeDelta::max_value().add(@core.TimeDelta::nanoseconds(1L).unwrap()),
+    @core.TimeDelta::max_value().checked_add(
+      @core.TimeDelta::nanoseconds(1L).unwrap(),
+    ),
     None,
   )
   assert_eq(
-    @core.TimeDelta::min_value().sub(@core.TimeDelta::nanoseconds(1L).unwrap()),
+    @core.TimeDelta::min_value().checked_sub(
+      @core.TimeDelta::nanoseconds(1L).unwrap(),
+    ),
     None,
   )
 }
@@ -1001,12 +1011,12 @@ test "max_value is exactly the largest whole-second duration, with no nanosecond
 ///|
 test "a duration just inside each extreme is representable and its negation is too" {
   let just_below_max = @core.TimeDelta::max_value()
-    .sub(@core.TimeDelta::nanoseconds(1L).unwrap())
+    .checked_sub(@core.TimeDelta::nanoseconds(1L).unwrap())
     .unwrap()
   assert_eq(just_below_max.subsec_nanoseconds(), 999_999_999)
   assert_eq(just_below_max.neg().neg(), just_below_max)
   let just_above_min = @core.TimeDelta::min_value()
-    .add(@core.TimeDelta::nanoseconds(1L).unwrap())
+    .checked_add(@core.TimeDelta::nanoseconds(1L).unwrap())
     .unwrap()
   assert_eq(just_above_min.neg().neg(), just_above_min)
   assert_eq(just_above_min.neg(), just_below_max)
@@ -1037,4 +1047,46 @@ test "every duration built through the constructors stays within the range negat
     assert_true(delta.neg() <= @core.TimeDelta::max_value())
     assert_true(delta.neg() >= @core.TimeDelta::min_value())
   }
+}
+
+///|
+test "add, sub, mul, div and sum return the exact result for representable operands" {
+  let a = @core.TimeDelta::seconds(90L).unwrap()
+  let b = @core.TimeDelta::seconds(30L).unwrap()
+  assert_eq(a.add(b), @core.TimeDelta::seconds(120L).unwrap())
+  assert_eq(a.sub(b), @core.TimeDelta::seconds(60L).unwrap())
+  assert_eq(a.mul(2), @core.TimeDelta::seconds(180L).unwrap())
+  assert_eq(a.div(3), b)
+  assert_eq(@core.TimeDelta::sum([a, b]), a.add(b))
+  assert_eq(@core.TimeDelta::sum([]), @core.TimeDelta::zero())
+}
+
+///|
+test "panic add aborts when the sum leaves the representable range" {
+  ignore(
+    @core.TimeDelta::max_value().add(@core.TimeDelta::seconds(1L).unwrap()),
+  )
+}
+
+///|
+test "panic sub aborts when the difference leaves the representable range" {
+  ignore(
+    @core.TimeDelta::min_value().sub(@core.TimeDelta::seconds(1L).unwrap()),
+  )
+}
+
+///|
+test "panic mul aborts when the product leaves the representable range" {
+  ignore(@core.TimeDelta::max_value().mul(2))
+}
+
+///|
+test "panic div aborts on a zero scalar" {
+  ignore(@core.TimeDelta::seconds(1L).unwrap().div(0))
+}
+
+///|
+test "panic sum aborts when the total leaves the representable range" {
+  let max = @core.TimeDelta::max_value()
+  ignore(@core.TimeDelta::sum([max, max]))
 }

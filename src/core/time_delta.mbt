@@ -410,15 +410,63 @@ pub fn TimeDelta::num_nanoseconds(self : TimeDelta) -> Int64? {
 }
 
 ///|
+/// The total of `deltas`; an empty array totals `zero()`. The result does
+/// not depend on the order of `deltas` (see `checked_sum`).
+///
+/// Aborts if the true total falls outside the representable range; use
+/// `checked_sum` to get `None` instead.
+pub fn TimeDelta::sum(deltas : Array[TimeDelta]) -> TimeDelta {
+  expect_in_range(TimeDelta::checked_sum(deltas), "TimeDelta::sum")
+}
+
+///|
+/// The sum of two durations.
+///
+/// Aborts if it overflows the representable range; use `checked_add` to get
+/// `None` instead.
+pub fn TimeDelta::add(self : TimeDelta, other : TimeDelta) -> TimeDelta {
+  expect_in_range(self.checked_add(other), "TimeDelta::add")
+}
+
+///|
+/// The difference of two durations.
+///
+/// Aborts if it overflows the representable range; use `checked_sub` to get
+/// `None` instead.
+pub fn TimeDelta::sub(self : TimeDelta, other : TimeDelta) -> TimeDelta {
+  expect_in_range(self.checked_sub(other), "TimeDelta::sub")
+}
+
+///|
+/// This duration multiplied by the integer `scalar`.
+///
+/// Aborts if it overflows the representable range; use `checked_mul` to get
+/// `None` instead.
+pub fn TimeDelta::mul(self : TimeDelta, scalar : Int) -> TimeDelta {
+  expect_in_range(self.checked_mul(scalar), "TimeDelta::mul")
+}
+
+///|
+/// This duration divided by the integer `scalar`, truncated toward zero.
+///
+/// Aborts if `scalar` is zero; use `checked_div` to get `None` instead.
+pub fn TimeDelta::div(self : TimeDelta, scalar : Int) -> TimeDelta {
+  if scalar == 0 {
+    abort("TimeDelta::div: division by zero")
+  }
+  expect_in_range(self.checked_div(scalar), "TimeDelta::div")
+}
+
+///|
 /// The total of `deltas`, or `None` if the true total falls outside the
 /// representable range; an empty array totals `zero()`. Unlike folding with
-/// `add`, the result does not depend on the order of `deltas`: a partial sum
+/// `checked_add`, the result does not depend on the order of `deltas`: a partial sum
 /// that would leave the range does not make the whole sum `None`, as long
 /// as the true total is representable. (Seconds are accumulated as
 /// `high * 2^31 + low`, so no partial sum can overflow `Int64` whatever the
 /// order or length; `scaled + total_low` cannot overflow either, since
 /// `scaled` is a multiple of `2^31` and `total_low` is below it.)
-pub fn TimeDelta::sum(deltas : Array[TimeDelta]) -> TimeDelta? {
+pub fn TimeDelta::checked_sum(deltas : Array[TimeDelta]) -> TimeDelta? {
   let block = 2_147_483_648L
   let mut high = 0L
   let mut low = 0L
@@ -444,7 +492,10 @@ pub fn TimeDelta::sum(deltas : Array[TimeDelta]) -> TimeDelta? {
 /// by the representable-range check every `TimeDelta` satisfies), so no
 /// separate overflow check is needed here beyond the one `from_secs_nanos`
 /// already performs.
-pub fn TimeDelta::add(self : TimeDelta, other : TimeDelta) -> TimeDelta? {
+pub fn TimeDelta::checked_add(
+  self : TimeDelta,
+  other : TimeDelta,
+) -> TimeDelta? {
   from_secs_nanos(
     self.seconds + other.seconds,
     self.nanoseconds.to_int64() + other.nanoseconds.to_int64(),
@@ -454,7 +505,10 @@ pub fn TimeDelta::add(self : TimeDelta, other : TimeDelta) -> TimeDelta? {
 ///|
 /// The difference of two durations, or `None` if it overflows the
 /// representable range.
-pub fn TimeDelta::sub(self : TimeDelta, other : TimeDelta) -> TimeDelta? {
+pub fn TimeDelta::checked_sub(
+  self : TimeDelta,
+  other : TimeDelta,
+) -> TimeDelta? {
   from_secs_nanos(
     self.seconds - other.seconds,
     self.nanoseconds.to_int64() - other.nanoseconds.to_int64(),
@@ -469,7 +523,7 @@ pub fn TimeDelta::sub(self : TimeDelta, other : TimeDelta) -> TimeDelta? {
 /// (`Int64`-overflowing) guard: `nanoseconds` is always below one second,
 /// so `nanoseconds * scalar` stays well within `Int64` for any `Int`
 /// `scalar`.
-pub fn TimeDelta::mul(self : TimeDelta, scalar : Int) -> TimeDelta? {
+pub fn TimeDelta::checked_mul(self : TimeDelta, scalar : Int) -> TimeDelta? {
   let scalar64 = scalar.to_int64()
   match checked_mul64(self.seconds, scalar64) {
     None => None
@@ -480,7 +534,7 @@ pub fn TimeDelta::mul(self : TimeDelta, scalar : Int) -> TimeDelta? {
 ///|
 /// This duration divided by the integer `scalar`, truncated toward zero, or
 /// `None` if `scalar` is zero.
-pub fn TimeDelta::div(self : TimeDelta, scalar : Int) -> TimeDelta? {
+pub fn TimeDelta::checked_div(self : TimeDelta, scalar : Int) -> TimeDelta? {
   if scalar == 0 {
     None
   } else {
@@ -675,7 +729,7 @@ pub fn TimeDelta::truncate(
     Ok(v) => v
     Err(e) => return Err(e)
   }
-  in_range(self.sub(signed_remainder(self, kind)))
+  in_range(self.checked_sub(signed_remainder(self, kind)))
 }
 
 ///|
@@ -691,7 +745,7 @@ pub fn TimeDelta::round(
     Err(e) => return Err(e)
   }
   let remainder = signed_remainder(self, kind)
-  let truncated = self.sub(remainder)
+  let truncated = self.checked_sub(remainder)
   in_range(
     if compare_magnitude(
         double_magnitude(remainder.abs()),
@@ -700,9 +754,9 @@ pub fn TimeDelta::round(
       0 {
       truncated
     } else if self.seconds < 0L {
-      truncated.bind(t => t.sub(granularity_magnitude(kind)))
+      truncated.bind(t => t.checked_sub(granularity_magnitude(kind)))
     } else {
-      truncated.bind(t => t.add(granularity_magnitude(kind)))
+      truncated.bind(t => t.checked_add(granularity_magnitude(kind)))
     },
   )
 }
@@ -727,9 +781,11 @@ pub fn TimeDelta::round_up(
     if remainder.is_zero() {
       Some(self)
     } else if self.seconds < 0L {
-      self.sub(remainder)
+      self.checked_sub(remainder)
     } else {
-      self.sub(remainder).bind(t => t.add(granularity_magnitude(kind)))
+      self
+      .checked_sub(remainder)
+      .bind(t => t.checked_add(granularity_magnitude(kind)))
     },
   )
 }

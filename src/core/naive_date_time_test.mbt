@@ -163,7 +163,7 @@ test "signed_duration_since measures the elapsed duration between two datetimes"
     later.signed_duration_since(earlier),
     @core.TimeDelta::hours(25L)
     .unwrap()
-    .add(@core.TimeDelta::minutes(30L).unwrap())
+    .checked_add(@core.TimeDelta::minutes(30L).unwrap())
     .unwrap(),
   )
 }

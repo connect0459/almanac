@@ -59,7 +59,7 @@ fn duration_component(
     let fraction_part = duration_require(
       @core.TimeDelta::nanoseconds(fraction * secs_per_unit),
     )
-    duration_require(whole_part.add(fraction_part))
+    duration_require(whole_part.checked_add(fraction_part))
   } else {
     let nanos = duration_require(
       add_nonneg(
@@ -138,7 +138,7 @@ pub fn parse_duration(input : String) -> @core.TimeDelta raise ParseError {
     }
     let unit_nanos = duration_require(duration_unit_nanos(unit.to_string()))
     total = duration_require(
-      total.add(duration_component(whole, fraction, unit_nanos)),
+      total.checked_add(duration_component(whole, fraction, unit_nanos)),
     )
   }
   if negative {

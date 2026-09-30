@@ -317,11 +317,15 @@ A signed duration, precise to the nanosecond. Constructors and checked arithmeti
 | `as_seconds_float()` | `-> Float` | Total length in fractional seconds, as a 32-bit float; same precision caveat |
 | `as_minutes_double()` / `as_hours_double()` | `-> Double` | Total length in fractional minutes / hours, as a 64-bit float; same precision caveat |
 | `as_minutes_float()` / `as_hours_float()` | `-> Float` | Total length in fractional minutes / hours, as a 32-bit float; same precision caveat |
-| `add(TimeDelta)` | `-> Self?` | Sum; `None` on overflow |
-| `sub(TimeDelta)` | `-> Self?` | Difference; `None` on overflow |
-| `TimeDelta::sum(Array[TimeDelta])` | `-> Self?` | Total of an array, `zero()` when empty; `None` only if the true total is out of range — unlike folding with `add`, independent of order, so a partial sum that would leave the range does not spoil a representable total |
-| `mul(Int)` | `-> Self?` | Scale by an integer scalar; `None` on overflow |
-| `div(Int)` | `-> Self?` | Divide by an integer scalar, truncated toward zero; `None` if the scalar is zero |
+| `add(TimeDelta)` | `-> Self` | Sum; aborts on overflow |
+| `sub(TimeDelta)` | `-> Self` | Difference; aborts on overflow |
+| `mul(Int)` | `-> Self` | Scale by an integer scalar; aborts on overflow |
+| `div(Int)` | `-> Self` | Divide by an integer scalar, truncated toward zero; aborts if the scalar is zero |
+| `TimeDelta::sum(Array[TimeDelta])` | `-> Self` | Total of an array, `zero()` when empty; aborts only if the true total is out of range (see `checked_sum`) |
+| `checked_add(TimeDelta)` / `checked_sub(TimeDelta)` | `-> Self?` | As `add`/`sub`, but `None` on overflow |
+| `checked_mul(Int)` | `-> Self?` | As `mul`, but `None` on overflow |
+| `checked_div(Int)` | `-> Self?` | As `div`, but `None` if the scalar is zero |
+| `TimeDelta::checked_sum(Array[TimeDelta])` | `-> Self?` | As `sum`, but `None` if the true total is out of range; unlike folding with `checked_add`, independent of order, so a partial sum that would leave the range does not spoil a representable total |
 | `neg()` | `-> Self` | Negation |
 | `abs()` | `-> Self` | Absolute value |
 | `is_zero()` | `-> Bool` | Whether this duration is exactly zero |

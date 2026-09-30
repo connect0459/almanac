@@ -722,7 +722,6 @@ pub fn NaiveDateTime::signed_duration_since(
   TimeDelta::days(day_diff)
   .unwrap()
   .add(TimeDelta::nanoseconds(self_nanos - other_nanos).unwrap())
-  .unwrap()
 }
 
 ///|

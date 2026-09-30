@@ -125,7 +125,7 @@ test "overflowing_add_signed carries a multi-day duration into the returned day 
   let time = @core.NaiveTime::from_hms(6, 0, 0).unwrap()
   let delta = @core.TimeDelta::days(3L)
     .unwrap()
-    .add(@core.TimeDelta::hours(1L).unwrap())
+    .checked_add(@core.TimeDelta::hours(1L).unwrap())
     .unwrap()
   let (result, days) = time.overflowing_add_signed(delta)
   assert_eq(result, @core.NaiveTime::from_hms(7, 0, 0).unwrap())
@@ -249,7 +249,7 @@ test "signed_duration_since measures the elapsed time between two ordinary times
     later.signed_duration_since(earlier),
     @core.TimeDelta::hours(1L)
     .unwrap()
-    .add(@core.TimeDelta::minutes(30L).unwrap())
+    .checked_add(@core.TimeDelta::minutes(30L).unwrap())
     .unwrap(),
   )
 }

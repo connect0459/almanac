@@ -340,17 +340,22 @@ pub struct TimeDelta {
   // private fields
 } derive(Compare, Eq, Hash, @debug.Debug)
 pub fn TimeDelta::abs(Self) -> Self
-pub fn TimeDelta::add(Self, Self) -> Self?
+pub fn TimeDelta::add(Self, Self) -> Self
 pub fn TimeDelta::as_hours_double(Self) -> Double
 pub fn TimeDelta::as_hours_float(Self) -> Float
 pub fn TimeDelta::as_minutes_double(Self) -> Double
 pub fn TimeDelta::as_minutes_float(Self) -> Float
 pub fn TimeDelta::as_seconds_double(Self) -> Double
 pub fn TimeDelta::as_seconds_float(Self) -> Float
+pub fn TimeDelta::checked_add(Self, Self) -> Self?
+pub fn TimeDelta::checked_div(Self, Int) -> Self?
+pub fn TimeDelta::checked_mul(Self, Int) -> Self?
+pub fn TimeDelta::checked_sub(Self, Self) -> Self?
+pub fn TimeDelta::checked_sum(Array[Self]) -> Self?
 pub fn TimeDelta::compare(Self, Self) -> Int
 pub fn TimeDelta::days(Int64) -> Self?
 pub fn TimeDelta::default() -> Self
-pub fn TimeDelta::div(Self, Int) -> Self?
+pub fn TimeDelta::div(Self, Int) -> Self
 pub fn TimeDelta::equal(Self, Self) -> Bool
 pub fn TimeDelta::from_seconds_double(Double) -> Self?
 pub fn TimeDelta::hash(Self) -> Int
@@ -362,7 +367,7 @@ pub fn TimeDelta::microseconds(Int64) -> Self?
 pub fn TimeDelta::milliseconds(Int64) -> Self?
 pub fn TimeDelta::min_value() -> Self
 pub fn TimeDelta::minutes(Int64) -> Self?
-pub fn TimeDelta::mul(Self, Int) -> Self?
+pub fn TimeDelta::mul(Self, Int) -> Self
 pub fn TimeDelta::nanoseconds(Int64) -> Self?
 pub fn TimeDelta::neg(Self) -> Self
 pub fn TimeDelta::new(Int64, Int) -> Self?
@@ -383,11 +388,11 @@ pub fn TimeDelta::output(Self, &Logger) -> Unit
 pub fn TimeDelta::round(Self, Self) -> Result[Self, RoundingError]
 pub fn TimeDelta::round_up(Self, Self) -> Result[Self, RoundingError]
 pub fn TimeDelta::seconds(Int64) -> Self?
-pub fn TimeDelta::sub(Self, Self) -> Self?
+pub fn TimeDelta::sub(Self, Self) -> Self
 pub fn TimeDelta::subsec_microseconds(Self) -> Int
 pub fn TimeDelta::subsec_milliseconds(Self) -> Int
 pub fn TimeDelta::subsec_nanoseconds(Self) -> Int
-pub fn TimeDelta::sum(Array[Self]) -> Self?
+pub fn TimeDelta::sum(Array[Self]) -> Self
 pub fn TimeDelta::to_repr(Self) -> @debug.Repr
 pub fn TimeDelta::to_string(Self) -> String
 pub fn TimeDelta::truncate(Self, Self) -> Result[Self, RoundingError]
