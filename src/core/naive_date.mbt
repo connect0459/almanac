@@ -273,9 +273,9 @@ pub fn NaiveDate::with_ordinal0(self : NaiveDate, ordinal0 : Int) -> NaiveDate? 
 /// The next calendar day.
 ///
 /// Aborts if the result falls outside `NaiveDate`'s representable range; use
-/// `succ_opt` to get `None` instead.
+/// `checked_succ` to get `None` instead.
 pub fn NaiveDate::succ(self : NaiveDate) -> NaiveDate {
-  expect_in_range(self.succ_opt(), "NaiveDate::succ")
+  expect_in_range(self.checked_succ(), "NaiveDate::succ")
 }
 
 ///|
@@ -440,9 +440,9 @@ pub fn NaiveDate::signed_duration_since(
 /// The previous calendar day.
 ///
 /// Aborts if the result falls outside `NaiveDate`'s representable range; use
-/// `pred_opt` to get `None` instead.
+/// `checked_pred` to get `None` instead.
 pub fn NaiveDate::pred(self : NaiveDate) -> NaiveDate {
-  expect_in_range(self.pred_opt(), "NaiveDate::pred")
+  expect_in_range(self.checked_pred(), "NaiveDate::pred")
 }
 
 ///|
@@ -479,14 +479,14 @@ fn NaiveDate::checked_add_days64(self : NaiveDate, days : Int64) -> NaiveDate? {
 ///|
 /// The next calendar day, or `None` if this is the last representable
 /// date.
-pub fn NaiveDate::succ_opt(self : NaiveDate) -> NaiveDate? {
+pub fn NaiveDate::checked_succ(self : NaiveDate) -> NaiveDate? {
   self.checked_add_days(1)
 }
 
 ///|
 /// The previous calendar day, or `None` if this is the first representable
 /// date.
-pub fn NaiveDate::pred_opt(self : NaiveDate) -> NaiveDate? {
+pub fn NaiveDate::checked_pred(self : NaiveDate) -> NaiveDate? {
   self.checked_sub_days(1)
 }
 

@@ -732,14 +732,14 @@ test "checked_add_days and checked_sub_days reject extreme arguments without wra
 }
 
 ///|
-test "succ_opt and pred_opt step one day and stop at the range boundary" {
+test "checked_succ and checked_pred step one day and stop at the range boundary" {
   let date = @core.NaiveDate::from_ymd(2024, 2, 28).unwrap()
-  assert_eq(date.succ_opt(), @core.NaiveDate::from_ymd(2024, 2, 29))
-  assert_eq(date.pred_opt(), @core.NaiveDate::from_ymd(2024, 2, 27))
-  assert_eq(max_date().succ_opt(), None)
-  assert_eq(min_date().pred_opt(), None)
-  assert_eq(max_date().pred_opt().unwrap().succ_opt(), Some(max_date()))
-  assert_eq(min_date().succ_opt().unwrap().pred_opt(), Some(min_date()))
+  assert_eq(date.checked_succ(), @core.NaiveDate::from_ymd(2024, 2, 29))
+  assert_eq(date.checked_pred(), @core.NaiveDate::from_ymd(2024, 2, 27))
+  assert_eq(max_date().checked_succ(), None)
+  assert_eq(min_date().checked_pred(), None)
+  assert_eq(max_date().checked_pred().unwrap().checked_succ(), Some(max_date()))
+  assert_eq(min_date().checked_succ().unwrap().checked_pred(), Some(min_date()))
 }
 
 ///|

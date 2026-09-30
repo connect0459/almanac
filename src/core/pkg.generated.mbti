@@ -95,10 +95,12 @@ pub fn NaiveDate::checked_add_days(Self, Int) -> Self?
 pub fn NaiveDate::checked_add_months(Self, Int) -> Self?
 pub fn NaiveDate::checked_add_signed(Self, TimeDelta) -> Self?
 pub fn NaiveDate::checked_add_years(Self, Int) -> Self?
+pub fn NaiveDate::checked_pred(Self) -> Self?
 pub fn NaiveDate::checked_sub_days(Self, Int) -> Self?
 pub fn NaiveDate::checked_sub_months(Self, Int) -> Self?
 pub fn NaiveDate::checked_sub_signed(Self, TimeDelta) -> Self?
 pub fn NaiveDate::checked_sub_years(Self, Int) -> Self?
+pub fn NaiveDate::checked_succ(Self) -> Self?
 pub fn NaiveDate::compare(Self, Self) -> Int
 pub fn NaiveDate::day(Self) -> Int
 pub fn NaiveDate::day0(Self) -> Int
@@ -130,7 +132,6 @@ pub fn NaiveDate::ordinal(Self) -> Int
 pub fn NaiveDate::ordinal0(Self) -> Int
 pub fn NaiveDate::output(Self, &Logger) -> Unit
 pub fn NaiveDate::pred(Self) -> Self
-pub fn NaiveDate::pred_opt(Self) -> Self?
 pub fn NaiveDate::quarter(Self) -> Int
 pub fn NaiveDate::signed_duration_since(Self, Self) -> TimeDelta
 pub fn NaiveDate::sub_days(Self, Int) -> Self
@@ -138,7 +139,6 @@ pub fn NaiveDate::sub_months(Self, Int) -> Self
 pub fn NaiveDate::sub_signed(Self, TimeDelta) -> Self
 pub fn NaiveDate::sub_years(Self, Int) -> Self
 pub fn NaiveDate::succ(Self) -> Self
-pub fn NaiveDate::succ_opt(Self) -> Self?
 pub fn NaiveDate::to_repr(Self) -> @debug.Repr
 pub fn NaiveDate::to_string(Self) -> String
 pub fn NaiveDate::week(Self, Weekday) -> NaiveWeek
