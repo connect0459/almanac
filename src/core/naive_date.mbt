@@ -114,14 +114,16 @@ pub fn NaiveDate::year(self : NaiveDate) -> Int {
 }
 
 ///|
-/// The month of the year.
+/// The month of the year, as the typed `Month`; `month().number()` is the
+/// one-based number and `month0()` the zero-based one.
 pub fn NaiveDate::month(self : NaiveDate) -> Month {
   let (_, month, _) = civil_from_days(self.days)
   Month::from_number(month).unwrap()
 }
 
 ///|
-/// The year, month, and day of month together.
+/// The year, month, and day of month together. The month is a `Month`, so
+/// pass `month.number()` to `from_ymd` to rebuild the date.
 pub fn NaiveDate::ymd(self : NaiveDate) -> (Int, Month, Int) {
   (self.year(), self.month(), self.day())
 }

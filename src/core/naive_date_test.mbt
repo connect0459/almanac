@@ -1106,3 +1106,17 @@ test "calling iter on an iterator does not advance it, and the Iter it returns s
   assert_eq(taken.length(), 3)
   assert_eq(iterator.length(), before - 3)
 }
+
+///|
+test "ymd reports a Month that converts back through number to rebuild the same date" {
+  for
+    date in [
+      @core.NaiveDate::from_ymd(2024, 2, 29).unwrap(),
+      @core.NaiveDate::from_ymd(1, 1, 1).unwrap(),
+      @core.NaiveDate::from_ymd(-44, 3, 15).unwrap(),
+    ] {
+    let (y, m, d) = date.ymd()
+    assert_eq(@core.NaiveDate::from_ymd(y, m.number(), d), Some(date))
+    assert_eq(m.number(), date.month0() + 1)
+  }
+}
