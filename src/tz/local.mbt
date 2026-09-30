@@ -2,6 +2,7 @@
 priv enum LocalKind {
   Iana(Location)
   Fixed(FixedOffset)
+  Posix(PosixTz)
 }
 
 ///|
@@ -16,13 +17,18 @@ pub struct Local {
 /// Resolves `tz_env` (the `TZ` environment variable) and `localtime_bytes`
 /// (raw TZif bytes, e.g. from `/etc/localtime`) into a `Local`, following
 /// the same precedence as the POSIX `TZ` convention: an empty `TZ` means
-/// UTC, a non-empty `TZ` is looked up as an IANA zone name (`None` if it
-/// names no known zone, regardless of `localtime_bytes`), and `localtime_bytes`
-/// is only consulted when `TZ` is unset entirely.
+/// UTC, a non-empty `TZ` is looked up as an IANA zone name and, failing
+/// that, parsed as a bare POSIX rule (e.g. `JST-9`); `None` if it is
+/// neither, regardless of `localtime_bytes`. `localtime_bytes` is only
+/// consulted when `TZ` is unset entirely.
 pub fn Local::resolve(tz_env : String?, localtime_bytes : Bytes?) -> Local? {
   match tz_env {
     Some("") => Some(Local::{ kind: Fixed(FixedOffset::east(0).unwrap()), })
-    Some(name) => Location::load(name).map(loc => Local::{ kind: Iana(loc), })
+    Some(name) =>
+      match Location::load(name) {
+        Some(loc) => Some(Local::{ kind: Iana(loc), })
+        None => parse_posix_tz(name).map(p => Local::{ kind: Posix(p), })
+      }
     None =>
       localtime_bytes
       .bind(bytes => Location::from_tzif_bytes(bytes))
@@ -35,6 +41,7 @@ pub impl TimeZone for Local with fn offset_from_utc(self, utc) {
   match self.kind {
     Iana(loc) => loc.offset_from_utc(utc)
     Fixed(off) => off.offset_from_utc(utc)
+    Posix(p) => p.offset_from_utc(utc)
   }
 }
 
@@ -43,6 +50,7 @@ pub impl TimeZone for Local with fn offset_from_local(self, naive_local) {
   match self.kind {
     Iana(loc) => loc.offset_from_local(naive_local)
     Fixed(off) => off.offset_from_local(naive_local)
+    Posix(p) => p.offset_from_local(naive_local)
   }
 }
 
@@ -51,6 +59,7 @@ pub impl TimeZone for Local with fn tz_name(self, utc) {
   match self.kind {
     Iana(loc) => loc.tz_name(utc)
     Fixed(off) => off.tz_name(utc)
+    Posix(p) => p.tz_name(utc)
   }
 }
 
