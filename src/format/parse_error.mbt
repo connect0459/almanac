@@ -36,3 +36,26 @@ pub extend ParseError with Eq::{not_equal}
 
 ///|
 pub extend ParseError with @debug.Debug::{to_repr}
+
+///|
+/// Renders a one-line, human-readable message for the failure, e.g.
+/// `input does not match the format`.
+pub impl Show for ParseError with fn output(self, logger) {
+  let message = match self {
+    UnknownSpecifier(c) => "unknown format specifier '%\{c}'"
+    TrailingPercent => "format string ends with a dangling '%'"
+    MissingField(item) =>
+      "format item requires a field the value does not have: " +
+      @debug.to_string(item)
+    InvalidRfc3339 => "invalid RFC 3339 date-time"
+    InvalidRfc2822 => "invalid RFC 2822 date-time"
+    InvalidDuration => "invalid duration"
+    IncompleteFields => "not enough fields to build the requested value"
+    InconsistentFields => "parsed fields are inconsistent or out of range"
+    InputMismatch => "input does not match the format"
+  }
+  logger.write_string(message)
+}
+
+///|
+pub extend ParseError with Show::{to_string, output}

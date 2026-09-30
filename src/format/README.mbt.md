@@ -262,4 +262,4 @@ pub(all) enum Fixed {
 | `InconsistentFields` | Two populated fields disagree, or don't jointly form a valid value (e.g. `%j` contradicting `%m`/`%d`, or an out-of-range calendar date) |
 | `InputMismatch` | Literal or specifier text fails to match the input, input remains unconsumed, or a format-only specifier (`%s`, `%G`, `%g`, `%V`) is parsed |
 
-`ParseError` also implements `Eq`.
+`ParseError` also implements `Eq` and `Show`, which renders a one-line message per variant (e.g. `input does not match the format`; `MissingField` appends the item's `Debug` form).
