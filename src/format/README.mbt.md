@@ -41,9 +41,9 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%P` | am/pm marker, lowercase | `"am"`/`"pm"`; parses `%p`/`%P` case-insensitively either way |
 | `%p` | am/pm marker, uppercase | `"AM"`/`"PM"`; see `%P` |
 | `%s` | Unix timestamp | Format-only: the underlying UTC instant's seconds since the epoch (unaffected by `format_date_time_tz`'s local zone shift); raises `InputMismatch` on parse |
-| `%G` | ISO week-based year | Zero-padded to 4 digits; format-only, raises `InputMismatch` on parse (round-tripping via ISO week-date construction is not yet implemented, unlike `%U`/`%W`'s Gregorian-year week-date construction below) |
-| `%g` | ISO week-based year, no century | Zero-padded to 2 digits; format-only, see `%G` |
-| `%V` | ISO week number | Zero-padded, `01`..`53`; format-only, see `%G` |
+| `%G` | ISO week-based year | Zero-padded to 4 digits on format; on parse, an optionally-signed greedy field. With `%V` and a weekday, constructs the date via ISO week-date construction; otherwise cross-checked against the resolved date |
+| `%g` | ISO week-based year, no century | Zero-padded to 2 digits; on parse, a lone `%g` uses the same pivot as `%y` (below 70 is 20xx, otherwise 19xx), and is cross-checked against `%G` when both are present |
+| `%V` | ISO week number | Zero-padded, `01`..`53`; on parse, combined with `%G`/`%g` and a weekday, or else cross-checked against the resolved date |
 | `%C` | Century | Zero-padded to 2 digits (`year / 100`); combines with `%y` on parse (`%y` alone is interpreted via the conventional two-digit-year pivot: `< 70` -> 20xx, `>= 70` -> 19xx); cross-checked against `%Y`, if also present |
 | `%y` | Year without century | Zero-padded to 2 digits (`year % 100`); see `%C` |
 | `%q` | Quarter | `1`..`4`, no padding; on parse, cross-checked against an already-determined date (a quarter alone can't determine a day, like `%A`/`%a`) |
@@ -260,6 +260,6 @@ pub(all) enum Fixed {
 | `InvalidDuration` | `parse_duration`'s input is malformed (no digits, missing or unknown unit, misplaced sign, stray characters) or its value is outside `TimeDelta`'s representable range |
 | `IncompleteFields` | A `parse_*` call resolves fields that never populate a required value (e.g. no year) |
 | `InconsistentFields` | Two populated fields disagree, or don't jointly form a valid value (e.g. `%j` contradicting `%m`/`%d`, or an out-of-range calendar date) |
-| `InputMismatch` | Literal or specifier text fails to match the input, input remains unconsumed, or a format-only specifier (`%s`, `%G`, `%g`, `%V`) is parsed |
+| `InputMismatch` | Literal or specifier text fails to match the input, input remains unconsumed, or a format-only specifier (`%s`) is parsed |
 
 `ParseError` also implements `Eq` and `Show`, which renders a one-line message per variant (e.g. `input does not match the format`; `MissingField` appends the item's `Debug` form).

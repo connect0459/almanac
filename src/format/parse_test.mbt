@@ -1079,13 +1079,119 @@ test "parse_date parses %0e and %_d identically to plain %e/%d, ignoring the pad
 }
 
 ///|
-test "parsing %s, %G, %g, and %V always raise InputMismatch, since parsing them is not yet supported" {
-  for spec in ["%s", "%G", "%g", "%V"] {
-    try @format.parse_date_time("anything", spec) |> ignore catch {
+test "parsing %s always raises InputMismatch, since parsing it is not yet supported" {
+  try @format.parse_date_time("anything", "%s") |> ignore catch {
+    @format.InputMismatch => ()
+    _ => fail("expected InputMismatch for %s")
+  } noraise {
+    _ => fail("expected parse_date_time to reject %s")
+  }
+}
+
+///|
+test "parse_date round-trips ISO week dates through %G, %V and %u, including across a calendar-year boundary" {
+  let fmt = "%G-W%V-%u"
+  for ymd in [(2024, 3, 5), (2021, 1, 1), (2018, 12, 31), (2020, 12, 31)] {
+    let (y, m, d) = ymd
+    let date = @core.NaiveDate::from_ymd(y, m, d).unwrap()
+    assert_eq(@format.parse_date(@format.format_date(date, fmt), fmt), date)
+  }
+}
+
+///|
+test "parse_date reads an ISO week date whose weekday is given by name" {
+  assert_eq(
+    @format.parse_date("2024 10 Tuesday", "%G %V %A"),
+    @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+  )
+}
+
+///|
+test "parse_date interprets %g via the conventional pivot: below 70 is 20xx, at or above 70 is 19xx" {
+  for iso_year in [2069, 1970, 2024, 1999] {
+    let date = @core.NaiveDate::from_isoywd(iso_year, 1, @core.Weekday::Mon).unwrap()
+    assert_eq(
+      @format.parse_date(@format.format_date(date, "%g-%V-%u"), "%g-%V-%u"),
+      date,
+    )
+  }
+}
+
+///|
+test "parse_date accepts %G and %g together when they agree" {
+  assert_eq(
+    @format.parse_date("2024 24 10 2", "%G %g %V %u"),
+    @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+  )
+}
+
+///|
+test "parse_date accepts ISO week fields alongside a matching calendar date" {
+  assert_eq(
+    @format.parse_date("2024-03-05 2024 10", "%Y-%m-%d %G %V"),
+    @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+  )
+}
+
+///|
+test "parse_date accepts %V cross-checked against %Y and %W when no ISO year is given" {
+  assert_eq(
+    @format.parse_date("2024 10 10 2", "%Y %V %W %u"),
+    @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+  )
+}
+
+///|
+test "parse_date rejects non-numeric text where %G, %g or %V is expected" {
+  for spec in ["%G", "%g", "%V"] {
+    try @format.parse_date("XX", spec) |> ignore catch {
       @format.InputMismatch => ()
       _ => fail("expected InputMismatch for \{spec}")
     } noraise {
-      _ => fail("expected parse_date_time to reject \{spec}")
+      _ => fail("expected parse_date to reject \{spec}")
+    }
+  }
+}
+
+///|
+test "parse_date rejects ISO week fields that disagree with each other or with the calendar date" {
+  let cases = [
+    ("2024 25 10 2", "%G %g %V %u"),
+    ("-100 00 01 1", "%G %g %V %u"),
+    ("2024 53 2", "%G %V %u"),
+    ("2024 00 2", "%G %V %u"),
+    ("2024 54 2", "%G %V %u"),
+    ("2025 2024 10 2", "%Y %G %V %u"),
+    ("2024-03-05 2024 11", "%Y-%m-%d %G %V"),
+    ("2024-03-05 2023 10", "%Y-%m-%d %G %V"),
+    ("2024 11 10 2", "%Y %V %W %u"),
+  ]
+  for c in cases {
+    let (input, fmt) = c
+    try @format.parse_date(input, fmt) |> ignore catch {
+      @format.InconsistentFields => ()
+      _ => fail("expected InconsistentFields for \{input}")
+    } noraise {
+      _ => fail("expected parse_date to reject \{input}")
+    }
+  }
+}
+
+///|
+test "parse_date reports IncompleteFields when ISO week fields lack a year, a week or a weekday" {
+  let cases = [
+    ("10 2", "%V %u"),
+    ("2024 10", "%G %V"),
+    ("2024 2", "%G %u"),
+    ("2024 10 2", "%Y %V %u"),
+  ]
+  for c in cases {
+    let (input, fmt) = c
+    try @format.parse_date(input, fmt) |> ignore catch {
+      @format.IncompleteFields => ()
+      _ => fail("expected IncompleteFields for \{input}")
+    } noraise {
+      _ => fail("expected parse_date to reject \{input}")
     }
   }
 }

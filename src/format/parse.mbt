@@ -40,6 +40,14 @@ priv struct Parsed {
   /// `parse_date_time_in` consults it, to resolve an abbreviation through
   /// the target zone; every other entry point discards it.
   zone_name : String?
+  /// `%G`: the ISO week-based year, combined with `iso_week` and `weekday`
+  /// by `resolve_date_from_iso_week`, or else cross-checked against the
+  /// constructed date.
+  iso_year : Int?
+  /// `%g`: the ISO week-based year modulo 100. See `resolve_iso_year`.
+  iso_year_mod_100 : Int?
+  /// `%V`: the ISO week number. See `iso_year`.
+  iso_week : Int?
 }
 
 ///|
@@ -63,6 +71,9 @@ fn Parsed::empty() -> Parsed {
     week_sunday: None,
     week_monday: None,
     zone_name: None,
+    iso_year: None,
+    iso_year_mod_100: None,
+    iso_week: None,
   }
 }
 
@@ -641,9 +652,30 @@ fn apply_item(
           ({ ..parsed, hour12: merge_field(parsed.hour12, value), }, p)
       }
     Numeric(Timestamp) => raise InputMismatch
-    Numeric(IsoYear) => raise InputMismatch
-    Numeric(IsoYear2) => raise InputMismatch
-    Numeric(IsoWeekNumber) => raise InputMismatch
+    Numeric(IsoYear) =>
+      match parse_signed_greedy_digits(chars, pos) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          ({ ..parsed, iso_year: merge_field(parsed.iso_year, value), }, p)
+      }
+    Numeric(IsoYear2) =>
+      match parse_fixed_digits(chars, pos, 2) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          (
+            {
+              ..parsed,
+              iso_year_mod_100: merge_field(parsed.iso_year_mod_100, value),
+            },
+            p,
+          )
+      }
+    Numeric(IsoWeekNumber) =>
+      match parse_fixed_digits(chars, pos, 2) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          ({ ..parsed, iso_week: merge_field(parsed.iso_week, value), }, p)
+      }
     Numeric(Century) =>
       match parse_fixed_digits(chars, pos, 2) {
         None => raise InputMismatch
@@ -826,27 +858,87 @@ fn resolve_date_from_week(
 }
 
 ///|
-fn resolve_date(parsed : Parsed) -> @core.NaiveDate raise ParseError {
-  let year = match resolve_year(parsed) {
+/// Resolves the ISO week-based year from `%G` (`iso_year`) and/or `%g`
+/// (`iso_year_mod_100`), cross-checking both when both are present. A lone
+/// `%g` uses the same two-digit-year pivot as `resolve_year`. `None` when
+/// neither field is present.
+fn resolve_iso_year(parsed : Parsed) -> Int? raise ParseError {
+  match (parsed.iso_year, parsed.iso_year_mod_100) {
+    (None, None) => None
+    (Some(y), None) => Some(y)
+    (Some(y), Some(r)) => {
+      if y < 0 || y % 100 != r {
+        raise InconsistentFields
+      }
+      Some(y)
+    }
+    (None, Some(r)) => Some(r + (if r < 70 { 2000 } else { 1900 }))
+  }
+}
+
+///|
+/// Constructs a date from `%G`/`%g` (an ISO year) plus `%V` (an ISO week)
+/// and a weekday (`%A`/`%a`/`%w`/`%u`). Used by `resolve_date` only when no
+/// month/day/ordinal was given at all.
+fn resolve_date_from_iso_week(
+  iso_year : Int,
+  iso_week : Int,
+  parsed : Parsed,
+) -> @core.NaiveDate raise ParseError {
+  let weekday = match parsed.weekday {
+    None => raise IncompleteFields
+    Some(wd) => wd
+  }
+  match @core.NaiveDate::from_isoywd(iso_year, iso_week, weekday) {
+    None => raise InconsistentFields
+    Some(d) => d
+  }
+}
+
+///|
+fn require_year(year : Int?) -> Int raise ParseError {
+  match year {
     None => raise IncompleteFields
     Some(y) => y
   }
+}
+
+///|
+fn resolve_date(parsed : Parsed) -> @core.NaiveDate raise ParseError {
+  let year = resolve_year(parsed)
+  let iso_year = resolve_iso_year(parsed)
   let date = match (parsed.month, parsed.day) {
     (Some(month), Some(day)) =>
-      match @core.NaiveDate::from_ymd(year, month, day) {
+      match @core.NaiveDate::from_ymd(require_year(year), month, day) {
         None => raise InconsistentFields
         Some(d) => d
       }
     (None, None) =>
       match parsed.ordinal {
         Some(ordinal) =>
-          match @core.NaiveDate::from_yo(year, ordinal) {
+          match @core.NaiveDate::from_yo(require_year(year), ordinal) {
             None => raise InconsistentFields
             Some(d) => d
           }
-        None => resolve_date_from_week(year, parsed)
+        None =>
+          match (iso_year, parsed.iso_week) {
+            (Some(iy), Some(iw)) => resolve_date_from_iso_week(iy, iw, parsed)
+            _ => resolve_date_from_week(require_year(year), parsed)
+          }
       }
     _ => raise IncompleteFields
+  }
+  match year {
+    None => ()
+    Some(y) => if date.year() != y { raise InconsistentFields }
+  }
+  match iso_year {
+    None => ()
+    Some(iy) => if date.iso_week().year() != iy { raise InconsistentFields }
+  }
+  match parsed.iso_week {
+    None => ()
+    Some(iw) => if date.iso_week().week() != iw { raise InconsistentFields }
   }
   match parsed.ordinal {
     None => ()
