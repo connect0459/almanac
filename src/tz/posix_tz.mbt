@@ -517,11 +517,27 @@ pub impl TimeZone for PosixTz with fn transition_bounds(self, utc) {
 }
 
 ///|
+pub impl TimeZone for PosixTz with fn offset_from_abbreviation(
+  self,
+  abbreviation,
+  _near,
+) {
+  if self.std_name == abbreviation {
+    FixedOffset::east(self.std_offset)
+  } else if self.dst_name == Some(abbreviation) {
+    self.dst_offset.bind(offset => FixedOffset::east(offset))
+  } else {
+    None
+  }
+}
+
+///|
 pub extend PosixTz with TimeZone::{
   offset_from_utc,
   tz_name,
   is_dst,
   transition_bounds,
+  offset_from_abbreviation,
   from_utc_datetime,
   from_local_datetime,
 }

@@ -131,6 +131,11 @@ pub trait TimeZone {
   /// datetime. Unbounded on both sides by default: a zone with a single
   /// fixed offset (`Utc`, `FixedOffset`) never changes it.
   fn transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds = _
+  /// The offset a zone abbreviation (e.g. `"EST"`) denotes in this zone,
+  /// resolved against the given UTC naive datetime, or `None` if the zone
+  /// does not know it. `None` by default: `Utc` and `FixedOffset` carry no
+  /// abbreviation of their own to look up.
+  fn offset_from_abbreviation(Self, String, @core.NaiveDateTime) -> FixedOffset? = _
   /// A `DateTime` for the given UTC naive datetime, expressed in this zone.
   /// See `DateTime::from_utc`.
   fn from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self] = _
@@ -144,6 +149,11 @@ pub trait TimeZone {
 ///|
 impl TimeZone with fn is_dst(_self, _utc) {
   false
+}
+
+///|
+impl TimeZone with fn offset_from_abbreviation(_self, _abbreviation, _near) {
+  None
 }
 
 ///|

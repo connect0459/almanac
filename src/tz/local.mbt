@@ -82,12 +82,26 @@ pub impl TimeZone for Local with fn transition_bounds(self, utc) {
 }
 
 ///|
+pub impl TimeZone for Local with fn offset_from_abbreviation(
+  self,
+  abbreviation,
+  near,
+) {
+  match self.kind {
+    Iana(loc) => loc.offset_from_abbreviation(abbreviation, near)
+    Fixed(off) => off.offset_from_abbreviation(abbreviation, near)
+    Posix(p) => p.offset_from_abbreviation(abbreviation, near)
+  }
+}
+
+///|
 pub extend Local with TimeZone::{
   offset_from_utc,
   offset_from_local,
   tz_name,
   is_dst,
   transition_bounds,
+  offset_from_abbreviation,
   from_utc_datetime,
   from_local_datetime,
 }

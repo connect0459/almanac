@@ -120,3 +120,20 @@ test "a Local resolved from each source reports the same zone bounds as the unde
   assert_eq(fixed.transition_bounds(summer).start(), None)
   assert_eq(fixed.transition_bounds(summer).end(), None)
 }
+
+///|
+test "a Local resolves abbreviations through its underlying zone" {
+  let any = @core.NaiveDateTime::from_timestamp(1_704_110_400L, 0).unwrap()
+  let iana = @tz.Local::resolve(Some("America/New_York"), None).unwrap()
+  let posix = @tz.Local::resolve(Some("FOO5BAR4,M3.2.0,M11.1.0"), None).unwrap()
+  let fixed = @tz.Local::resolve(Some(""), None).unwrap()
+  assert_eq(
+    iana.offset_from_abbreviation("EDT", any),
+    @tz.FixedOffset::east(-4 * 3600),
+  )
+  assert_eq(
+    posix.offset_from_abbreviation("BAR", any),
+    @tz.FixedOffset::east(-4 * 3600),
+  )
+  assert_eq(fixed.offset_from_abbreviation("UTC", any), None)
+}

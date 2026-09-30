@@ -102,6 +102,7 @@ pub extend FixedOffset with TimeZone::{
   tz_name,
   is_dst,
   transition_bounds,
+  offset_from_abbreviation,
   from_utc_datetime,
   from_local_datetime,
 }

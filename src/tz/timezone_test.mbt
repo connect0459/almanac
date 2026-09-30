@@ -109,3 +109,51 @@ test "from_local_datetime reports Absent in a spring-forward gap and Ambiguous i
     naive_at(2024, 7, 1, 12, 0),
   )
 }
+
+///|
+fn[Tz : @tz.TimeZone] resolve_abbreviation(
+  tz : Tz,
+  abbreviation : String,
+  near : @core.NaiveDateTime,
+) -> @tz.FixedOffset? {
+  tz.offset_from_abbreviation(abbreviation, near)
+}
+
+///|
+test "offset_from_abbreviation resolves a Location's abbreviation through the TimeZone trait" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let winter = @core.NaiveDateTime::from_timestamp(1_704_110_400L, 0).unwrap()
+  assert_eq(
+    resolve_abbreviation(ny, "EDT", winter),
+    @tz.FixedOffset::east(-4 * 3600),
+  )
+  assert_eq(resolve_abbreviation(ny, "XYZ", winter), None)
+}
+
+///|
+test "offset_from_abbreviation resolves a PosixTz's standard and DST names" {
+  let rule = @tz.parse_posix_tz("FOO5BAR4,M3.2.0,M11.1.0").unwrap()
+  let any = @core.NaiveDateTime::from_timestamp(1_704_110_400L, 0).unwrap()
+  assert_eq(
+    rule.offset_from_abbreviation("FOO", any),
+    @tz.FixedOffset::east(-5 * 3600),
+  )
+  assert_eq(
+    rule.offset_from_abbreviation("BAR", any),
+    @tz.FixedOffset::east(-4 * 3600),
+  )
+  assert_eq(rule.offset_from_abbreviation("EST", any), None)
+  let jst = @tz.parse_posix_tz("JST-9").unwrap()
+  assert_eq(
+    jst.offset_from_abbreviation("JST", any),
+    @tz.FixedOffset::east(9 * 3600),
+  )
+}
+
+///|
+test "offset_from_abbreviation is None for zones that carry no abbreviation of their own" {
+  let any = @core.NaiveDateTime::from_timestamp(1_704_110_400L, 0).unwrap()
+  assert_eq(@tz.Utc::new().offset_from_abbreviation("UTC", any), None)
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  assert_eq(tokyo.offset_from_abbreviation("+09:00", any), None)
+}

@@ -395,6 +395,15 @@ pub impl TimeZone for Location with fn transition_bounds(self, utc) {
 }
 
 ///|
+pub impl TimeZone for Location with fn offset_from_abbreviation(
+  self,
+  abbreviation,
+  near,
+) {
+  Location::offset_from_abbreviation(self, abbreviation, near)
+}
+
+///|
 pub extend Location with TimeZone::{
   offset_from_utc,
   offset_from_local,

@@ -99,6 +99,7 @@ Implemented by `Utc`, `FixedOffset`, `Location`, and `PosixTz`. `DateTime[Tz]::o
 | `tz_name(NaiveDateTime)` | `-> String` | The zone abbreviation/name in effect at a given instant |
 | `is_dst(NaiveDateTime)` | `-> Bool` | Whether daylight saving time is in effect at a given UTC instant; `false` by default, overridden by `Location`, `PosixTz` and `Local` |
 | `transition_bounds(NaiveDateTime)` | `-> TransitionBounds` | The validity window of the offset in effect at a given UTC instant; unbounded on both sides by default, overridden by `Location` (its own `transition_bounds`), `PosixTz` and `Local` |
+| `offset_from_abbreviation(String, NaiveDateTime)` | `-> FixedOffset?` | The offset a zone abbreviation (e.g. `"EST"`) denotes in this zone, resolved at a given UTC instant; `None` by default (`Utc`, `FixedOffset`), overridden by `Location` (see its own method), `PosixTz` (its standard and DST names) and `Local` |
 | `from_utc_datetime(NaiveDateTime)` | `-> DateTime[Self]` | Interpret a naive datetime as UTC and express it in this zone; same as `DateTime::from_utc` (default implementation) |
 | `from_local_datetime(NaiveDateTime)` | `-> MappedLocalTime[DateTime[Self]]` | Interpret a naive datetime as wall-clock time in this zone; same as `DateTime::from_local` (default implementation) |
 
