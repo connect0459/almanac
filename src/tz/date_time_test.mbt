@@ -493,3 +493,34 @@ test "DateTime 12-hour and seconds-since-midnight accessors report the local tim
   let afternoon = dt.with_hour(15).single().unwrap()
   assert_eq(afternoon.hour12(), (true, 3))
 }
+
+///|
+test "with_month0, with_day0 and with_ordinal0 replace a 0-based local component and keep the rest of the reading" {
+  let dt = tokyo_new_year_morning()
+  let n = 123_456_789
+  assert_tokyo_reading(dt.with_month0(2), (2024, 3, 1), (7, 30, 15), n)
+  assert_tokyo_reading(dt.with_day0(19), (2024, 1, 20), (7, 30, 15), n)
+  assert_tokyo_reading(dt.with_ordinal0(59), (2024, 2, 29), (7, 30, 15), n)
+}
+
+///|
+test "with_month0, with_day0 and with_ordinal0 report Absent for a value that does not form a valid local reading" {
+  let dt = tokyo_new_year_morning()
+  assert_true(dt.with_month0(12) is @tz.Absent)
+  assert_true(dt.with_day0(31) is @tz.Absent)
+  assert_true(dt.with_ordinal0(366) is @tz.Absent)
+}
+
+///|
+test "with_day0 reports Absent in a spring-forward gap and Ambiguous in a fall-back fold (America/New_York)" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let before_gap = @tz.DateTime::from_ymd_hms(2024, 3, 9, 2, 30, 0, ny)
+    .single()
+    .unwrap()
+  assert_true(before_gap.with_day0(9) is @tz.Absent)
+  let before_fold = @tz.DateTime::from_ymd_hms(2024, 11, 2, 1, 30, 0, ny)
+    .single()
+    .unwrap()
+  assert_true(before_fold.with_day0(2).earliest() is Some(_))
+  assert_true(before_fold.with_day0(2).single() is None)
+}

@@ -391,6 +391,42 @@ pub fn[Tz : TimeZone] DateTime::num_seconds_from_midnight(
 }
 
 ///|
+/// Like `with_month`, but taking the local month counting from `0`.
+pub fn[Tz : TimeZone] DateTime::with_month0(
+  self : DateTime[Tz],
+  month0 : Int,
+) -> MappedLocalTime[DateTime[Tz]] {
+  match self.naive_local().with_month0(month0) {
+    None => Absent
+    Some(naive) => DateTime::from_local(naive, self.tz)
+  }
+}
+
+///|
+/// Like `with_day`, but taking the local day of the month counting from `0`.
+pub fn[Tz : TimeZone] DateTime::with_day0(
+  self : DateTime[Tz],
+  day0 : Int,
+) -> MappedLocalTime[DateTime[Tz]] {
+  match self.naive_local().with_day0(day0) {
+    None => Absent
+    Some(naive) => DateTime::from_local(naive, self.tz)
+  }
+}
+
+///|
+/// Like `with_ordinal`, but taking the local day of the year counting from `0`.
+pub fn[Tz : TimeZone] DateTime::with_ordinal0(
+  self : DateTime[Tz],
+  ordinal0 : Int,
+) -> MappedLocalTime[DateTime[Tz]] {
+  match self.naive_local().with_ordinal0(ordinal0) {
+    None => Absent
+    Some(naive) => DateTime::from_local(naive, self.tz)
+  }
+}
+
+///|
 /// This datetime re-expressed in `tz`, keeping the same underlying UTC
 /// instant.
 pub fn[Tz, Tz2] DateTime::with_timezone(
