@@ -51,7 +51,7 @@ fn bit_for(day : Weekday) -> Int {
 }
 
 ///|
-/// The empty set, containing no weekdays.
+/// The empty set, containing no weekdays; `Default::default()` returns it.
 pub fn WeekdaySet::empty() -> WeekdaySet {
   { bits: 0, }
 }

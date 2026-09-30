@@ -24,7 +24,7 @@ pub extend NaiveTime with Hash::{hash, hash_combine}
 
 ///|
 /// The start of the day, `00:00:00` with no fractional part: the earliest
-/// time of day.
+/// time of day. `Default::default()` returns it.
 pub fn NaiveTime::midnight() -> NaiveTime {
   NaiveTime::{ secs: 0, frac: 0, }
 }

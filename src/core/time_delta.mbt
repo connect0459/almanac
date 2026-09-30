@@ -225,7 +225,7 @@ pub fn TimeDelta::nanoseconds(n : Int64) -> TimeDelta? {
 }
 
 ///|
-/// The duration of zero length.
+/// The duration of zero length; `Default::default()` returns it.
 pub fn TimeDelta::zero() -> TimeDelta {
   TimeDelta::{ seconds: 0L, nanoseconds: 0, }
 }

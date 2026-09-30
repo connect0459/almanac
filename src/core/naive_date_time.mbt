@@ -20,7 +20,7 @@ pub extend NaiveDateTime with Hash::{hash, hash_combine}
 ///|
 /// The Unix epoch instant, `1970-01-01T00:00:00`: timestamp zero, and the
 /// reference point `round`, `round_up` and `truncate` measure a granularity
-/// against.
+/// against. `Default::default()` returns it.
 pub fn NaiveDateTime::unix_epoch() -> NaiveDateTime {
   NaiveDateTime::{ date: NaiveDate::default(), time: NaiveTime::midnight(), }
 }

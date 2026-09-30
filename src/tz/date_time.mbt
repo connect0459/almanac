@@ -271,6 +271,7 @@ pub fn[Tz : TimeZone] DateTime::zone(
 
 ///|
 /// The Unix epoch instant, `1970-01-01T00:00:00Z`: timestamp zero, in UTC.
+/// `Default::default()` returns it.
 pub fn DateTime::unix_epoch() -> DateTime[Utc] {
   DateTime::{ datetime: @core.NaiveDateTime::unix_epoch(), tz: Utc::new(), }
 }
