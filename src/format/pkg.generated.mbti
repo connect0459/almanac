@@ -204,6 +204,8 @@ pub fn Parsed::to_date_time_fixed_offset(Self) -> @tz.DateTime[@tz.FixedOffset] 
 pub fn[Tz : @tz.TimeZone] Parsed::to_date_time_in(Self, Tz) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise FormatError
 pub fn Parsed::to_repr(Self) -> @debug.Repr
 pub fn Parsed::to_time(Self) -> @core.NaiveTime raise FormatError
+pub fn Parsed::utc_offset(Self) -> Int?
+pub fn Parsed::zone_name(Self) -> String?
 
 pub(all) enum SecondsFormat {
   Secs

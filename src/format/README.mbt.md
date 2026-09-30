@@ -12,7 +12,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `parse_date_time_fixed_offset` | Parse a string with a `%z` offset into a `DateTime[FixedOffset]`, interpreting the fields as local wall-clock time |
 | `parse_date_time_in` | Parse a zone-less string and resolve it as wall-clock time in a given `TimeZone`, surfacing DST ambiguity as `MappedLocalTime` |
 | `parse_date_and_remainder`/`parse_time_and_remainder`/`parse_date_time_and_remainder`/`parse_date_time_fixed_offset_and_remainder`/`parse_date_time_in_and_remainder` | Like each `parse_*` above, but return the unparsed tail instead of rejecting trailing input |
-| `Parsed`/`parse_items`/`parse_items_and_remainder` | Walk a pre-tokenized `Item` sequence against input into an opaque `Parsed`, then resolve it with `to_date`/`to_time`/`to_date_time`/`to_date_time_fixed_offset`/`to_date_time_in`, for building custom parsers on the engine's resolution rules |
+| `Parsed`/`parse_items`/`parse_items_and_remainder` | Walk a pre-tokenized `Item` sequence against input into a `Parsed` whose fields are not exposed one by one, then resolve it with `to_date`/`to_time`/`to_date_time`/`to_date_time_fixed_offset`/`to_date_time_in`, for building custom parsers on the engine's resolution rules |
 | `format_date_items`/`format_time_items`/`format_date_time_items`/`format_date_time_tz_items` | `format_*` taking a pre-tokenized `Item` sequence, so a format reused for many values is tokenized once |
 | `to_rfc3339`/`to_rfc3339_opts`/`parse_rfc3339` | Dedicated RFC 3339 fast path, bypassing the specifier engine; `to_rfc3339_opts` picks the fractional digits (`SecondsFormat`) and `Z` versus `+00:00` |
 | `to_rfc2822`/`parse_rfc2822` | Dedicated RFC 2822 fast path (e.g. `"Tue, 1 Jul 2003 10:52:37 +0200"`), bypassing the specifier engine |
@@ -212,6 +212,8 @@ The `STAMP*` family (no year) doesn't carry enough fields to round-trip through 
 | `parse_items(String, Array[Item])` | `-> Parsed raise FormatError` | Walks an `Item` sequence against the whole input (`InputMismatch` on a mismatch, `InputTooShort` if the input ends first, `TrailingInput` on leftover input), accumulating fields without resolving them |
 | `parse_items_and_remainder(String, Array[Item])` | `-> (Parsed, String) raise FormatError` | Like `parse_items`, but returns leftover input instead of rejecting it |
 | `Parsed::to_date()` / `to_time()` / `to_date_time()` | `-> NaiveDate` / `NaiveTime` / `NaiveDateTime raise FormatError` | Resolve the accumulated fields; `IncompleteFields` if too few were parsed, `FieldOutOfRange` if a value is outside its range (an hour of 24, February 30), `InconsistentFields` if fields contradict each other. One `Parsed` resolves any number of ways |
+| `Parsed::utc_offset()` | `-> Int?` | The offset, in seconds, that a `%z`-family specifier read, or `None`; the raw reading, rejected only on resolution if beyond `±23:59:59`. Tells a caller whether to resolve with `to_date_time_fixed_offset` or `to_date_time_in` |
+| `Parsed::zone_name()` | `-> String?` | The text `%Z` read, as written and unvalidated, or `None`; otherwise visible only through `parse_date_time_in` |
 | `Parsed::to_date_time_fixed_offset()` | `-> DateTime[FixedOffset] raise FormatError` | Resolve the date, time and `%z` offset, reading the fields as that offset's local time |
 | `Parsed::to_date_time_in(Tz)` *(Tz : TimeZone)* | `-> MappedLocalTime[DateTime[Tz]] raise FormatError` | Resolve a zone-less reading in `tz`; see `parse_date_time_in` for `%Z` handling and the offset rejection |
 

@@ -196,3 +196,29 @@ test "Parsed compares equal for the same input and differs for different input" 
   assert_eq(a, b)
   assert_true(a != c)
 }
+
+///|
+test "Parsed reports the offset and the zone name text that resolution alone cannot show" {
+  let with_both = @format.parse_items(
+    "2024-03-05 09:30:00 +0900 JST",
+    @format.tokenize("%F %T %z %Z"),
+  )
+  assert_eq(with_both.utc_offset(), Some(32400))
+  assert_eq(with_both.zone_name(), Some("JST"))
+  let colon = @format.parse_items(
+    "2024-03-05 09:30:00 -05:30",
+    @format.tokenize("%F %T %:z"),
+  )
+  assert_eq(colon.utc_offset(), Some(-(5 * 3600 + 30 * 60)))
+  assert_eq(colon.zone_name(), None)
+}
+
+///|
+test "Parsed reports neither when the format read no offset and no zone name" {
+  let plain = @format.parse_items(
+    "2024-03-05 09:30:00",
+    @format.tokenize("%F %T"),
+  )
+  assert_eq(plain.utc_offset(), None)
+  assert_eq(plain.zone_name(), None)
+}

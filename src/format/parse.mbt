@@ -56,6 +56,25 @@ pub struct Parsed {
 } derive(Eq, @debug.Debug)
 
 ///|
+/// The UTC offset, in seconds, that a `%z`-family specifier read, or `None`
+/// if the format read none. It is the raw reading: a value beyond
+/// `FixedOffset`'s range is reported here and rejected when resolved. Lets a
+/// caller choose between `to_date_time_fixed_offset` (an offset was read)
+/// and `to_date_time_in` (none was).
+pub fn Parsed::utc_offset(self : Parsed) -> Int? {
+  self.offset_secs
+}
+
+///|
+/// The zone name text that `%Z` read, exactly as written and never
+/// validated, or `None` if the format read none. Only `parse_date_time_in`
+/// consults it, to resolve an abbreviation; `Parsed::zone_name` is the one
+/// way to see it.
+pub fn Parsed::zone_name(self : Parsed) -> String? {
+  self.zone_name
+}
+
+///|
 pub extend Parsed with Eq::{equal, not_equal}
 
 ///|
