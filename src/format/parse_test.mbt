@@ -1435,3 +1435,108 @@ test "parse_time matches %n and %t only against a single newline and tab" {
     }
   }
 }
+
+///|
+test "parse_date_and_remainder returns the parsed date and the unparsed tail" {
+  let (date, rest) = @format.parse_date_and_remainder(
+    "2024-03-05 and more", "%Y-%m-%d",
+  )
+  assert_eq(date, @core.NaiveDate::from_ymd(2024, 3, 5).unwrap())
+  assert_eq(rest, " and more")
+}
+
+///|
+test "each _and_remainder parser returns an empty tail when the whole input matches" {
+  let (date, date_rest) = @format.parse_date_and_remainder("2024-03-05", "%F")
+  assert_eq(date, @core.NaiveDate::from_ymd(2024, 3, 5).unwrap())
+  assert_eq(date_rest, "")
+  let (time, time_rest) = @format.parse_time_and_remainder("09:05:07", "%T")
+  assert_eq(time, @core.NaiveTime::from_hms(9, 5, 7).unwrap())
+  assert_eq(time_rest, "")
+}
+
+///|
+test "parse_time_and_remainder stops after the format and keeps the rest verbatim" {
+  let (time, rest) = @format.parse_time_and_remainder("09:05:07Z tail", "%T")
+  assert_eq(time, @core.NaiveTime::from_hms(9, 5, 7).unwrap())
+  assert_eq(rest, "Z tail")
+}
+
+///|
+test "parse_date_time_and_remainder resolves both halves and returns the tail" {
+  let (dt, rest) = @format.parse_date_time_and_remainder(
+    "2024-03-05 09:05:07;next", "%F %T",
+  )
+  assert_eq(
+    dt,
+    @core.NaiveDateTime::new(
+      @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+      @core.NaiveTime::from_hms(9, 5, 7).unwrap(),
+    ),
+  )
+  assert_eq(rest, ";next")
+}
+
+///|
+test "parse_date_time_tz_and_remainder applies the parsed offset and returns the tail" {
+  let (dt, rest) = @format.parse_date_time_tz_and_remainder(
+    "2024-03-05 18:30:00 +0900 rest", "%F %T %z",
+  )
+  assert_eq(dt.naive_utc().time(), @core.NaiveTime::from_hms(9, 30, 0).unwrap())
+  assert_eq(dt.offset(), @tz.FixedOffset::east(9 * 3600).unwrap())
+  assert_eq(rest, " rest")
+}
+
+///|
+test "parse_date_time_in_and_remainder resolves in the zone and returns the tail" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let (mapped, rest) = @format.parse_date_time_in_and_remainder(
+    "2024-03-05 18:30:00 rest", "%F %T", tokyo,
+  )
+  assert_eq(
+    mapped.unwrap().naive_utc().time(),
+    @core.NaiveTime::from_hms(9, 30, 0).unwrap(),
+  )
+  assert_eq(rest, " rest")
+}
+
+///|
+test "the tail counts characters, not bytes, so a multibyte remainder stays intact" {
+  let (date, rest) = @format.parse_date_and_remainder(
+    "2024-03-05日本語", "%F",
+  )
+  assert_eq(date, @core.NaiveDate::from_ymd(2024, 3, 5).unwrap())
+  assert_eq(rest, "日本語")
+}
+
+///|
+test "_and_remainder parsers still reject input that fails inside the format" {
+  try
+    @format.parse_date_and_remainder("2024-XX-05 rest", "%F") |> ignore
+  catch {
+    @format.InputMismatch => ()
+    _ => fail("expected InputMismatch")
+  } noraise {
+    _ => fail("expected a mismatch inside the format to be rejected")
+  }
+}
+
+///|
+test "_and_remainder parsers still reject incomplete or inconsistent fields in the consumed part" {
+  try @format.parse_date_and_remainder("09 rest", "%H") |> ignore catch {
+    @format.IncompleteFields => ()
+    _ => fail("expected IncompleteFields")
+  } noraise {
+    _ => fail("expected a missing date to be rejected")
+  }
+}
+
+///|
+test "the strict parsers still reject any trailing input" {
+  try @format.parse_date("2024-03-05 rest", "%F") |> ignore catch {
+    @format.InputMismatch => ()
+    _ => fail("expected InputMismatch")
+  } noraise {
+    _ => fail("expected trailing input to be rejected")
+  }
+}

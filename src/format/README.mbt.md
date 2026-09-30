@@ -11,6 +11,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `parse_date`/`parse_time`/`parse_date_time` | Parse a string against a format string into a `NaiveDate`/`NaiveTime`/`NaiveDateTime` |
 | `parse_date_time_tz` | Parse a string with a `%z` offset into a `DateTime[FixedOffset]`, interpreting the fields as local wall-clock time |
 | `parse_date_time_in` | Parse a zone-less string and resolve it as wall-clock time in a given `TimeZone`, surfacing DST ambiguity as `MappedLocalTime` |
+| `parse_date_and_remainder`/`parse_time_and_remainder`/`parse_date_time_and_remainder`/`parse_date_time_tz_and_remainder`/`parse_date_time_in_and_remainder` | Like each `parse_*` above, but return the unparsed tail instead of rejecting trailing input |
 | `to_rfc3339`/`to_rfc3339_opts`/`parse_rfc3339` | Dedicated RFC 3339 fast path, bypassing the specifier engine; `to_rfc3339_opts` picks the fractional digits (`SecondsFormat`) and `Z` versus `+00:00` |
 | `to_rfc2822`/`parse_from_rfc2822` | Dedicated RFC 2822 fast path (e.g. `"Tue, 1 Jul 2003 10:52:37 +0200"`), bypassing the specifier engine |
 | `parse_duration` | Reads a `TimeDelta` from Go-style text (`"1h30m"`, `"-1.5s"`, `"300ms"`); the inverse of `TimeDelta`'s `Show` |
@@ -144,6 +145,7 @@ test {
 | `parse_date_time(String, String)` | `-> NaiveDateTime raise ParseError` | Parse against a format string's date and time-of-day fields together |
 | `parse_date_time_tz(String, String)` | `-> DateTime[FixedOffset] raise ParseError` | Parse against a format string's date, time-of-day, and `%z` fields, interpreting them as the zone's local wall-clock reading |
 | `parse_date_time_in[Tz : TimeZone](String, String, Tz)` | `-> MappedLocalTime[DateTime[Tz]] raise ParseError` | Parse a zone-less format's date and time-of-day fields and resolve the reading in `tz` (`Ambiguous` in a DST fold, `Absent` in a gap); raises `InconsistentFields` if the format yields an offset (`%z`, `%+`, ...); a `%Z` name the zone recognizes fixes the offset (Go's `ParseInLocation`), so an abbreviation like `EDT` resolves a DST fold to `Single`, and an unrecognized name is ignored |
+| `parse_date_and_remainder(String, String)` / `parse_time_and_remainder` / `parse_date_time_and_remainder` / `parse_date_time_tz_and_remainder` / `parse_date_time_in_and_remainder` | `-> (T, String) raise ParseError` | The value the matching `parse_*` returns, paired with the leftover input (from the first character the format did not consume to the end, counted in characters, `""` when the whole input matched). A mismatch or unresolvable field inside the format still raises, exactly as in the strict form; only trailing input is tolerated |
 
 ### RFC 3339 fast path
 

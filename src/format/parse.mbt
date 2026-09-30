@@ -758,6 +758,21 @@ fn apply_item(
 /// or specifier fails to match, or if input remains once every item has
 /// been consumed.
 fn parse_items(items : Array[Item], input : String) -> Parsed raise ParseError {
+  let (parsed, rest) = parse_items_prefix(items, input)
+  if rest != "" {
+    raise InputMismatch
+  }
+  parsed
+}
+
+///|
+/// Like `parse_items`, but stops once every item is consumed instead of
+/// rejecting leftover input, returning it (from the first unconsumed
+/// character to the end) alongside the accumulator.
+fn parse_items_prefix(
+  items : Array[Item],
+  input : String,
+) -> (Parsed, String) raise ParseError {
   let chars = input.to_array()
   let (parsed, pos) = for i = 0, parsed = Parsed::empty(), pos = 0 {
     if i >= items.length() {
@@ -766,10 +781,7 @@ fn parse_items(items : Array[Item], input : String) -> Parsed raise ParseError {
     let (next_parsed, next_pos) = apply_item(items[i], parsed, chars, pos)
     continue i + 1, next_parsed, next_pos
   }
-  if pos != chars.length() {
-    raise InputMismatch
-  }
-  parsed
+  (parsed, String::from_array(chars[pos:]))
 }
 
 ///|
@@ -1049,6 +1061,48 @@ fn resolve_offset(parsed : Parsed) -> @tz.FixedOffset raise ParseError {
 }
 
 ///|
+fn finish_date_time(parsed : Parsed) -> @core.NaiveDateTime raise ParseError {
+  @core.NaiveDateTime::new(resolve_date(parsed), resolve_time(parsed))
+}
+
+///|
+fn finish_date_time_tz(
+  parsed : Parsed,
+) -> @tz.DateTime[@tz.FixedOffset] raise ParseError {
+  let local_naive = finish_date_time(parsed)
+  let offset = resolve_offset(parsed)
+  @tz.DateTime::from_utc(
+    local_naive.sub_seconds(offset.local_minus_utc()),
+    offset,
+  )
+}
+
+///|
+fn[Tz : @tz.TimeZone] finish_date_time_in(
+  parsed : Parsed,
+  tz : Tz,
+) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise ParseError {
+  if parsed.offset_secs is Some(_) {
+    raise InconsistentFields
+  }
+  let local_naive = finish_date_time(parsed)
+  match parsed.zone_name {
+    Some(name) =>
+      match tz.offset_from_abbreviation(name, local_naive) {
+        Some(offset) =>
+          Single(
+            @tz.DateTime::from_utc(
+              local_naive.sub_seconds(offset.local_minus_utc()),
+              tz,
+            ),
+          )
+        None => tz.from_local_datetime(local_naive)
+      }
+    None => tz.from_local_datetime(local_naive)
+  }
+}
+
+///|
 /// Parses `input` against `fmt`'s date fields (`%Y` plus `%m`/`%d` or
 /// `%j`), via the general token engine (contrast `parse_rfc3339`'s
 /// dedicated fast path).
@@ -1057,6 +1111,18 @@ pub fn parse_date(
   fmt : String,
 ) -> @core.NaiveDate raise ParseError {
   resolve_date(parse_items(tokenize(fmt), input))
+}
+
+///|
+/// Like `parse_date`, but leftover input after `fmt` is returned (from the
+/// first unconsumed character to the end, `""` if none) instead of
+/// rejected. A mismatch or unresolvable field within `fmt` still raises.
+pub fn parse_date_and_remainder(
+  input : String,
+  fmt : String,
+) -> (@core.NaiveDate, String) raise ParseError {
+  let (parsed, rest) = parse_items_prefix(tokenize(fmt), input)
+  (resolve_date(parsed), rest)
 }
 
 ///|
@@ -1070,13 +1136,34 @@ pub fn parse_time(
 }
 
 ///|
+/// Like `parse_time`, but returns leftover input instead of rejecting it;
+/// see `parse_date_and_remainder`.
+pub fn parse_time_and_remainder(
+  input : String,
+  fmt : String,
+) -> (@core.NaiveTime, String) raise ParseError {
+  let (parsed, rest) = parse_items_prefix(tokenize(fmt), input)
+  (resolve_time(parsed), rest)
+}
+
+///|
 /// Parses `input` against `fmt`'s date and time-of-day fields together.
 pub fn parse_date_time(
   input : String,
   fmt : String,
 ) -> @core.NaiveDateTime raise ParseError {
-  let parsed = parse_items(tokenize(fmt), input)
-  @core.NaiveDateTime::new(resolve_date(parsed), resolve_time(parsed))
+  finish_date_time(parse_items(tokenize(fmt), input))
+}
+
+///|
+/// Like `parse_date_time`, but returns leftover input instead of
+/// rejecting it; see `parse_date_and_remainder`.
+pub fn parse_date_time_and_remainder(
+  input : String,
+  fmt : String,
+) -> (@core.NaiveDateTime, String) raise ParseError {
+  let (parsed, rest) = parse_items_prefix(tokenize(fmt), input)
+  (finish_date_time(parsed), rest)
 }
 
 ///|
@@ -1087,16 +1174,18 @@ pub fn parse_date_time_tz(
   input : String,
   fmt : String,
 ) -> @tz.DateTime[@tz.FixedOffset] raise ParseError {
-  let parsed = parse_items(tokenize(fmt), input)
-  let local_naive = @core.NaiveDateTime::new(
-    resolve_date(parsed),
-    resolve_time(parsed),
-  )
-  let offset = resolve_offset(parsed)
-  @tz.DateTime::from_utc(
-    local_naive.sub_seconds(offset.local_minus_utc()),
-    offset,
-  )
+  finish_date_time_tz(parse_items(tokenize(fmt), input))
+}
+
+///|
+/// Like `parse_date_time_tz`, but returns leftover input instead of
+/// rejecting it; see `parse_date_and_remainder`.
+pub fn parse_date_time_tz_and_remainder(
+  input : String,
+  fmt : String,
+) -> (@tz.DateTime[@tz.FixedOffset], String) raise ParseError {
+  let (parsed, rest) = parse_items_prefix(tokenize(fmt), input)
+  (finish_date_time_tz(parsed), rest)
 }
 
 ///|
@@ -1118,26 +1207,17 @@ pub fn[Tz : @tz.TimeZone] parse_date_time_in(
   fmt : String,
   tz : Tz,
 ) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise ParseError {
-  let parsed = parse_items(tokenize(fmt), input)
-  if parsed.offset_secs is Some(_) {
-    raise InconsistentFields
-  }
-  let local_naive = @core.NaiveDateTime::new(
-    resolve_date(parsed),
-    resolve_time(parsed),
-  )
-  match parsed.zone_name {
-    Some(name) =>
-      match tz.offset_from_abbreviation(name, local_naive) {
-        Some(offset) =>
-          Single(
-            @tz.DateTime::from_utc(
-              local_naive.sub_seconds(offset.local_minus_utc()),
-              tz,
-            ),
-          )
-        None => tz.from_local_datetime(local_naive)
-      }
-    None => tz.from_local_datetime(local_naive)
-  }
+  finish_date_time_in(parse_items(tokenize(fmt), input), tz)
+}
+
+///|
+/// Like `parse_date_time_in`, but returns leftover input instead of
+/// rejecting it; see `parse_date_and_remainder`.
+pub fn[Tz : @tz.TimeZone] parse_date_time_in_and_remainder(
+  input : String,
+  fmt : String,
+  tz : Tz,
+) -> (@tz.MappedLocalTime[@tz.DateTime[Tz]], String) raise ParseError {
+  let (parsed, rest) = parse_items_prefix(tokenize(fmt), input)
+  (finish_date_time_in(parsed, tz), rest)
 }
