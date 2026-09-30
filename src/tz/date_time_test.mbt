@@ -678,3 +678,45 @@ test "with_time reports Absent in a spring-forward gap and Ambiguous in a fall-b
     -1,
   )
 }
+
+///|
+test "years_since counts full local calendar years and ignores the time of day" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let born = @tz.DateTime::from_ymd_hms(2000, 6, 15, 23, 0, 0, tokyo)
+    .single()
+    .unwrap()
+  let day_before = @tz.DateTime::from_ymd_hms(2024, 6, 14, 12, 0, 0, tokyo)
+    .single()
+    .unwrap()
+  let birthday_early = @tz.DateTime::from_ymd_hms(2024, 6, 15, 1, 0, 0, tokyo)
+    .single()
+    .unwrap()
+  assert_eq(day_before.years_since(born), Some(23))
+  assert_eq(birthday_early.years_since(born), Some(24))
+  assert_eq(born.years_since(born), Some(0))
+}
+
+///|
+test "years_since is None when the base is later than the datetime" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let earlier = @tz.DateTime::from_ymd_hms(2000, 6, 15, 0, 0, 0, tokyo)
+    .single()
+    .unwrap()
+  let later = @tz.DateTime::from_ymd_hms(2024, 6, 15, 0, 0, 0, tokyo)
+    .single()
+    .unwrap()
+  assert_eq(earlier.years_since(later), None)
+}
+
+///|
+test "years_since compares local dates, not UTC dates" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let born = @tz.DateTime::from_ymd_hms(2000, 1, 1, 0, 30, 0, tokyo)
+    .single()
+    .unwrap()
+  let now = @tz.DateTime::from_ymd_hms(2024, 1, 1, 0, 30, 0, tokyo)
+    .single()
+    .unwrap()
+  assert_eq(born.naive_utc().year(), 1999)
+  assert_eq(now.years_since(born), Some(24))
+}

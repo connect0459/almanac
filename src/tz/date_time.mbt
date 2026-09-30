@@ -522,6 +522,17 @@ pub fn[Tz : TimeZone] DateTime::with_time(
 }
 
 ///|
+/// The number of full calendar years elapsed from `base` to this datetime,
+/// comparing the local dates and ignoring the time of day, or `None` if
+/// `base` is later. See `@core.NaiveDate::years_since`.
+pub fn[Tz : TimeZone] DateTime::years_since(
+  self : DateTime[Tz],
+  base : DateTime[Tz],
+) -> Int? {
+  self.date_naive().years_since(base.date_naive())
+}
+
+///|
 /// This datetime re-expressed in `tz`, keeping the same underlying UTC
 /// instant.
 pub fn[Tz, Tz2] DateTime::with_timezone(
