@@ -136,11 +136,15 @@ fn read_i64_be(data : Bytes, offset : Int) -> Int64 {
 }
 
 ///|
-/// The length of the NUL-terminated string starting at `offset`.
-fn cstring_length(data : Bytes, offset : Int) -> Int {
+/// The length of the NUL-terminated string starting at `offset`, or `None`
+/// if no NUL occurs before `limit`.
+fn cstring_length_within(data : Bytes, offset : Int, limit : Int) -> Int? {
   for i = offset {
+    if i >= limit {
+      break None
+    }
     if data.at(i) == b'\x00' {
-      break i - offset
+      break Some(i - offset)
     }
     continue i + 1
   }
@@ -176,30 +180,44 @@ fn parse_block(data : Bytes, header_offset : Int, time_size : Int) -> RawBlock? 
   let timecnt = read_i32_be(data, header_offset + 32)
   let typecnt = read_i32_be(data, header_offset + 36)
   let charcnt = read_i32_be(data, header_offset + 40)
-  let data_size = timecnt * (time_size + 1) +
-    typecnt * 6 +
-    charcnt +
-    leapcnt * (time_size + 4) +
-    isstdcnt +
-    isutcnt
-  if data.length() < header_offset + 44 + data_size {
+  if isutcnt < 0 ||
+    isstdcnt < 0 ||
+    leapcnt < 0 ||
+    timecnt < 0 ||
+    typecnt < 1 ||
+    charcnt < 0 {
+    return None
+  }
+  let data_size = timecnt.to_int64() * (time_size + 1).to_int64() +
+    typecnt.to_int64() * 6L +
+    charcnt.to_int64() +
+    leapcnt.to_int64() * (time_size + 4).to_int64() +
+    isstdcnt.to_int64() +
+    isutcnt.to_int64()
+  if data.length().to_int64() < header_offset.to_int64() + 44L + data_size {
     return None
   }
   let mut p = header_offset + 44
   let transitions = []
   for i = 0; i < timecnt; i = i + 1 {
-    transitions.push(
-      if time_size == 8 {
-        read_i64_be(data, p)
-      } else {
-        read_i32_be(data, p).to_int64()
-      },
-    )
+    let transition = if time_size == 8 {
+      read_i64_be(data, p)
+    } else {
+      read_i32_be(data, p).to_int64()
+    }
+    if i > 0 && transition <= transitions[i - 1] {
+      return None
+    }
+    transitions.push(transition)
     p = p + time_size
   }
   let transition_types = []
   for i = 0; i < timecnt; i = i + 1 {
-    transition_types.push(data.at(p).to_int())
+    let index = data.at(p).to_int()
+    if index >= typecnt {
+      return None
+    }
+    transition_types.push(index)
     p = p + 1
   }
   let local_time_types = []
@@ -209,7 +227,11 @@ fn parse_block(data : Bytes, header_offset : Int, time_size : Int) -> RawBlock? 
     let is_dst = data.at(p + 4).to_int() != 0
     let desigidx = data.at(p + 5).to_int()
     let name_offset = designations_offset + desigidx
-    let name_len = cstring_length(data, name_offset)
+    let name_len = match
+      cstring_length_within(data, name_offset, designations_offset + charcnt) {
+      None => return None
+      Some(len) => len
+    }
     let abbreviation = @utf8.decode_lossy(
       data.exact_view(start=name_offset, end=name_offset + name_len),
     )
@@ -243,7 +265,10 @@ fn parse_block(data : Bytes, header_offset : Int, time_size : Int) -> RawBlock? 
 
 ///|
 /// Parses a TZif (RFC 8536) timezone-data byte buffer, or `None` if it is
-/// malformed or truncated, or holds a UTC offset beyond `±23:59:59`.
+/// malformed or truncated, or holds a UTC offset beyond `±23:59:59`. Also
+/// rejected are structures that would make lookups misbehave: no local time
+/// type, a transition naming a missing type, transitions that are not
+/// strictly increasing, and an abbreviation outside the designation block.
 ///
 /// For a version 2/3/4 file, only the 64-bit second data block (and the
 /// POSIX TZ footer that follows it) is returned: the initial 32-bit block
