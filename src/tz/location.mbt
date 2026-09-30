@@ -129,6 +129,33 @@ fn Location::segment_at(self : Location, target : Int64) -> Int? {
 }
 
 ///|
+/// The UTC offset a zone abbreviation (e.g. `"EST"`) denotes in this zone:
+/// the offset of the local time type in effect at `near` if its
+/// abbreviation matches, otherwise that of the first local time type in the
+/// zone's table with that abbreviation, or `None` if no type has it. The
+/// fallback is what resolves an abbreviation the zone is not observing at
+/// `near`, such as `"EST"` in summer.
+pub fn Location::offset_from_abbreviation(
+  self : Location,
+  abbreviation : String,
+  near : @core.NaiveDateTime,
+) -> FixedOffset? {
+  let in_effect = self.type_at(near)
+  if in_effect.abbreviation() == abbreviation {
+    FixedOffset::east(in_effect.utc_offset())
+  } else {
+    match
+      self.tzif
+      .local_time_types()
+      .iter()
+      .find_first(t => t.abbreviation() == abbreviation) {
+      Some(t) => FixedOffset::east(t.utc_offset())
+      None => None
+    }
+  }
+}
+
+///|
 /// Whether `target` is strictly past this zone's last recorded
 /// transition (and so should be resolved via `posix_tz` rather than the
 /// transition table).

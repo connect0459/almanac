@@ -136,6 +136,7 @@ pub fn Location::from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self]
 pub fn Location::load(String) -> Self?
 pub fn Location::name(Self) -> String?
 pub fn Location::not_equal(Self, Self) -> Bool
+pub fn Location::offset_from_abbreviation(Self, String, @core.NaiveDateTime) -> FixedOffset?
 pub fn Location::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[FixedOffset]
 pub fn Location::offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
 pub fn Location::transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds

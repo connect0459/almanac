@@ -427,3 +427,64 @@ test "from_tzif_bytes_named equals a loaded zone built from identical bytes and 
     a != @tz.Location::from_tzif_bytes_named("Y", tzif_tokyo).unwrap(),
   )
 }
+
+///|
+fn utc_at(secs : Int64) -> @core.NaiveDateTime {
+  @core.NaiveDateTime::from_timestamp(secs, 0).unwrap()
+}
+
+///|
+test "offset_from_abbreviation prefers the abbreviation in effect at the given instant (Europe/Moscow MSK)" {
+  let moscow = @tz.Location::load("Europe/Moscow").unwrap()
+  let in_2012 = utc_at(1_338_508_800L)
+  let in_2020 = utc_at(1_590_969_600L)
+  assert_eq(
+    moscow.offset_from_abbreviation("MSK", in_2012),
+    @tz.FixedOffset::east(4 * 3600),
+  )
+  assert_eq(
+    moscow.offset_from_abbreviation("MSK", in_2020),
+    @tz.FixedOffset::east(3 * 3600),
+  )
+}
+
+///|
+test "offset_from_abbreviation falls back to the first matching type when the abbreviation is not in effect (America/New_York)" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let summer = utc_at(1_719_835_200L)
+  let winter = utc_at(1_704_110_400L)
+  assert_eq(
+    ny.offset_from_abbreviation("EDT", summer),
+    @tz.FixedOffset::east(-4 * 3600),
+  )
+  assert_eq(
+    ny.offset_from_abbreviation("EST", summer),
+    @tz.FixedOffset::east(-5 * 3600),
+  )
+  assert_eq(
+    ny.offset_from_abbreviation("EDT", winter),
+    @tz.FixedOffset::east(-4 * 3600),
+  )
+  assert_eq(
+    ny.offset_from_abbreviation("EST", winter),
+    @tz.FixedOffset::east(-5 * 3600),
+  )
+}
+
+///|
+test "offset_from_abbreviation finds a historical-only abbreviation and rejects an unknown one" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let now = utc_at(1_719_835_200L)
+  assert_true(ny.offset_from_abbreviation("LMT", now) is Some(_))
+  assert_eq(ny.offset_from_abbreviation("XYZ", now), None)
+  assert_eq(ny.offset_from_abbreviation("", now), None)
+}
+
+///|
+test "offset_from_abbreviation resolves a fixed zone's only abbreviation (Asia/Tokyo JST)" {
+  let tokyo = @tz.Location::from_tzif_bytes(tzif_tokyo).unwrap()
+  assert_eq(
+    tokyo.offset_from_abbreviation("JST", utc_at(0L)),
+    @tz.FixedOffset::east(9 * 3600),
+  )
+}
