@@ -63,7 +63,7 @@ pub fn WeekdaySet::all() -> WeekdaySet {
 }
 
 ///|
-/// A set containing exactly the given weekday.
+/// A set containing exactly the given weekday; `single_day` reads it back.
 pub fn WeekdaySet::single(day : Weekday) -> WeekdaySet {
   { bits: bit_for(day), }
 }
@@ -79,7 +79,8 @@ pub fn WeekdaySet::from_array(days : Array[Weekday]) -> WeekdaySet {
 }
 
 ///|
-/// `Some(day)` if the set contains exactly one weekday, `None` otherwise.
+/// `Some(day)` if the set contains exactly one weekday, `None` otherwise; the
+/// inverse of `WeekdaySet::single`.
 pub fn WeekdaySet::single_day(self : WeekdaySet) -> Weekday? {
   match self.bits {
     0b000_0001 => Some(Mon)
