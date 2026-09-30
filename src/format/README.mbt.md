@@ -14,6 +14,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `to_rfc3339`/`parse_rfc3339` | Dedicated RFC 3339 fast path, bypassing the specifier engine |
 | `to_rfc2822`/`parse_from_rfc2822` | Dedicated RFC 2822 fast path (e.g. `"Tue, 1 Jul 2003 10:52:37 +0200"`), bypassing the specifier engine |
 | `parse_duration` | Reads a `TimeDelta` from Go-style text (`"1h30m"`, `"-1.5s"`, `"300ms"`); the inverse of `TimeDelta`'s `Show` |
+| `parse_fixed_offset` | Reads a `FixedOffset` from offset text (`"+09:00"`, `"+0900"`, `"+09"`, `"+09:00:30"`, `"Z"`); the inverse of `FixedOffset`'s `Show` |
 | `rfc1123`/`kitchen`/`stamp`/`stamp_milli`/`stamp_micro`/`stamp_nano`/`date_only`/`time_only` | Named convenience format strings (Go `time` package layout equivalents) — pass one to `format_*`/`parse_*` like any other format string |
 
 ## Supported specifiers
@@ -155,6 +156,7 @@ test {
 | `to_rfc2822(DateTime[Tz])` *(Tz : TimeZone)* | `-> String raise ParseError` | Renders `"<short weekday>, <day> <short month> <year> <HH>:<MM>:<SS> ±HHMM"` (e.g. `"Tue, 1 Jul 2003 10:52:37 +0200"`); the day is unpadded (one or two digits, never a leading zero), unlike this package's other numeric fields. Raises `InvalidRfc2822` if the year is outside RFC 2822's own `0..=9999` range — unlike `to_rfc3339`, not total |
 | `parse_from_rfc2822(String)` | `-> DateTime[FixedOffset] raise ParseError` | Strict RFC 2822 parsing: only the exact shape `to_rfc2822` renders (day-of-week and seconds mandatory, single-space separators, a 4-digit year, a numeric `±HHMM` offset). Unlike chrono's own parser, does *not* support RFC 2822's "obsolete format" — optional day-of-week, arbitrary/folding whitespace, 2-/3-digit year windowing, named legacy zones (`GMT`, `EST`, ...), or parenthesized comments. Raises `InvalidRfc2822` on any mismatch |
 | `parse_duration(String)` | `-> TimeDelta raise ParseError` | Parses one or more `<number><unit>` components with an optional leading sign (`"1h30m"`, `"-1.5s"`, `"300ms"`, `".5s"`, `"1.5h"`). Units are `ns`, `us` (also `µs` U+00B5 and `μs` U+03BC), `ms`, `s`, `m`, `h`, case-sensitive, with hours the largest (no days/weeks); components are summed. A bare `"0"` (optionally signed) needs no unit. Fractional digits beyond the ninth, and precision finer than a nanosecond, are truncated toward zero. The inverse of `TimeDelta`'s `Show`. Raises `InvalidDuration` for malformed input or a value outside `TimeDelta`'s range |
+| `parse_fixed_offset(String)` | `-> FixedOffset raise ParseError` | Parses a whole offset string: `±HH:MM:SS`, `±HH:MM`, `±HHMM`, `±HH`, or `Z`/`z` for zero. Raises `InputMismatch` for any other text (including minutes or seconds above 59) and `InconsistentFields` for a well-shaped offset beyond `±23:59:59` |
 
 ### Named layouts
 
