@@ -19,6 +19,19 @@ pub extend DateTime with Eq::{not_equal}
 pub extend DateTime with @debug.Debug::{to_repr}
 
 ///|
+/// Renders as the local date-time and the zone's name at this instant,
+/// joined by a space, e.g. `2024-01-02 13:45:06.500 +09:00`, `... UTC` or
+/// `... EDT`; see `NaiveDateTime`'s `Show` and `TimeZone::tz_name`.
+pub impl[Tz : TimeZone] Show for DateTime[Tz] with fn output(self, logger) {
+  logger.write_string(
+    self.naive_local().to_string() + " " + self.tz.tz_name(self.datetime),
+  )
+}
+
+///|
+pub extend DateTime with Show::{to_string, output}
+
+///|
 /// Wraps a UTC naive datetime with the given time zone.
 pub fn[Tz] DateTime::from_utc(
   datetime : @core.NaiveDateTime,

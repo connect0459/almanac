@@ -12,6 +12,15 @@ pub extend Utc with Eq::{not_equal}
 pub extend Utc with @debug.Debug::{to_repr}
 
 ///|
+/// Renders as `UTC`, the same text as `tz_name`.
+pub impl Show for Utc with fn output(_self, logger) {
+  logger.write_string("UTC")
+}
+
+///|
+pub extend Utc with Show::{to_string, output}
+
+///|
 /// The singleton `Utc` value.
 pub fn Utc::new() -> Utc {
   Utc::{ }

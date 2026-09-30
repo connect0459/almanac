@@ -17,6 +17,17 @@ pub extend FixedOffset with Eq::{not_equal}
 pub extend FixedOffset with @debug.Debug::{to_repr}
 
 ///|
+/// Renders as a colon-separated sign, hour and minute, e.g. `+09:00`,
+/// extended with a seconds component for a non-whole-minute offset, e.g.
+/// `-04:56:02`; the same text as `tz_name`.
+pub impl Show for FixedOffset with fn output(self, logger) {
+  logger.write_string(format_offset_colon(self.local_minus_utc))
+}
+
+///|
+pub extend FixedOffset with Show::{to_string, output}
+
+///|
 /// The fixed offset `secs` seconds east of UTC (local time is ahead of
 /// UTC), or `None` if `secs` is outside `±86399` (`±23:59:59`).
 pub fn FixedOffset::east(secs : Int) -> FixedOffset? {

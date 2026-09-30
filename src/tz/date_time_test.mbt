@@ -720,3 +720,44 @@ test "years_since compares local dates, not UTC dates" {
   assert_eq(born.naive_utc().year(), 1999)
   assert_eq(now.years_since(born), Some(24))
 }
+
+///|
+test "Utc renders as UTC and FixedOffset as a colon-separated offset" {
+  assert_eq(@tz.Utc::new().to_string(), "UTC")
+  assert_eq(@tz.FixedOffset::east(9 * 3600).unwrap().to_string(), "+09:00")
+  assert_eq(
+    @tz.FixedOffset::east(-(5 * 3600 + 30 * 60)).unwrap().to_string(),
+    "-05:30",
+  )
+  assert_eq(@tz.FixedOffset::east(0).unwrap().to_string(), "+00:00")
+  assert_eq(@tz.FixedOffset::east(-17762).unwrap().to_string(), "-04:56:02")
+}
+
+///|
+test "Location renders as its name, or as an empty string when unnamed" {
+  assert_eq(@tz.Location::load("Asia/Tokyo").unwrap().to_string(), "Asia/Tokyo")
+  assert_eq(@tz.Location::load("Japan").unwrap().to_string(), "Japan")
+  assert_eq(@tz.Location::from_tzif_bytes(tzif_tokyo).unwrap().to_string(), "")
+}
+
+///|
+test "DateTime renders its local date-time followed by the zone's name at that instant" {
+  let base = tokyo_new_year_morning()
+  assert_eq(base.to_string(), "2024-01-01 07:30:15.123456789 +09:00")
+  assert_eq(base.to_utc().to_string(), "2023-12-31 22:30:15.123456789 UTC")
+  let ny = @tz.Location::load("America/New_York").unwrap()
+  assert_eq(
+    @tz.DateTime::from_ymd_hms(2024, 7, 1, 12, 0, 0, ny)
+    .single()
+    .unwrap()
+    .to_string(),
+    "2024-07-01 12:00:00 EDT",
+  )
+  assert_eq(
+    @tz.DateTime::from_ymd_hms(2024, 1, 1, 12, 0, 0, ny)
+    .single()
+    .unwrap()
+    .to_string(),
+    "2024-01-01 12:00:00 EST",
+  )
+}

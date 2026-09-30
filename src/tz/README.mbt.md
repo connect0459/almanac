@@ -137,6 +137,7 @@ The UTC zone, always offset zero.
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | Always `FixedOffset::east(0)` |
 | `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | Always `Single(FixedOffset::east(0))` |
 | `tz_name(NaiveDateTime)` | `-> String` | Always `"UTC"` |
+| `to_string()` (`Show`) | `-> String` | `"UTC"`, the same text as `tz_name` |
 
 `Utc` also implements `Eq` and `TimeZone`.
 
@@ -154,6 +155,7 @@ A constant UTC offset, in seconds, within `±23:59:59`.
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | Returns `self`, unchanged, regardless of the given instant |
 | `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | Always `Single(self)` |
 | `tz_name(NaiveDateTime)` | `-> String` | Colon-separated sign, hour, and minute, e.g. `"+09:00"`; extended with a seconds component for a non-whole-minute offset, e.g. `"-04:56:02"` |
+| `to_string()` (`Show`) | `-> String` | The same colon-separated text as `tz_name`, e.g. `"+09:00"` |
 
 `FixedOffset` also implements `Eq` and `TimeZone`.
 
@@ -198,6 +200,7 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 | `timestamp_micros()` / `timestamp_nanos()` | `-> Int64?` | Microseconds / nanoseconds since the Unix epoch; `None` if the instant overflows `Int64` |
 | `timestamp_subsec_nanos()` / `timestamp_subsec_millis()` / `timestamp_subsec_micros()` | `-> Int` | The sub-second component of the instant in that unit |
 | `signed_duration_since(Self[Tz2])` | `-> TimeDelta` | The signed duration from `other` to `self`, independent of either's time zone |
+| `to_string()` (`Show`) | `-> String` | The local date-time and the zone's name at that instant joined by a space, e.g. `"2024-01-02 13:45:06.500 +09:00"`, `"... UTC"`, `"... EDT"` (requires `Tz : TimeZone`) |
 | `years_since(Self[Tz])` | `-> Int?` | Full calendar years elapsed from `base`, comparing local dates and ignoring the time of day; `None` if `base` is later |
 | `compare(Self[Tz])` / `<` / `>` / `<=` / `>=` | `-> Int` / `-> Bool` | Order by UTC instant, ignoring the zone value (requires `Tz : Eq`); equal instants in different zones compare as `0` yet are unequal under `==` |
 | `compare_instant(Self[Tz2])` | `-> Int` | Order by UTC instant against a datetime in a different time zone type |
@@ -219,6 +222,7 @@ A time zone backed by parsed IANA tzdata (TZif binary format, plus a POSIX TZ st
 | `Location::from_tzif_bytes(Bytes)` | `-> Self?` | Parse a zone directly from raw TZif bytes; `None` if malformed |
 | `Location::from_tzif_bytes_named(String, Bytes)` | `-> Self?` | Like `from_tzif_bytes`, but `name()` reports the given name; any text is accepted as given, without validation |
 | `name()` | `-> String?` | The IANA identifier this `Location` was loaded with (the name as given to `Location::load`, not canonicalized through an alias); `None` for one built via `from_tzif_bytes` |
+| `to_string()` (`Show`) | `-> String` | `name()`, or an empty string for a `Location` without one |
 | `offset_from_abbreviation(String, NaiveDateTime)` | `-> FixedOffset?` | The offset an abbreviation (e.g. `"EST"`) denotes: that of the type in effect at the given UTC instant if it matches, else of the first type in the zone's table with that abbreviation; `None` if none has it |
 | `type_at(NaiveDateTime)` | `-> LocalTimeType` | The offset, DST flag, and abbreviation in effect at a given UTC instant |
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | The offset in effect at a given UTC instant |

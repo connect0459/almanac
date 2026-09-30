@@ -57,6 +57,7 @@ pub fn[Tz : Eq] DateTime::op_le(Self[Tz], Self[Tz]) -> Bool
 pub fn[Tz : Eq] DateTime::op_lt(Self[Tz], Self[Tz]) -> Bool
 pub fn[Tz : TimeZone] DateTime::ordinal(Self[Tz]) -> Int
 pub fn[Tz : TimeZone] DateTime::ordinal0(Self[Tz]) -> Int
+pub fn[Tz : TimeZone] DateTime::output(Self[Tz], &Logger) -> Unit
 pub fn[Tz : TimeZone] DateTime::quarter(Self[Tz]) -> Int
 pub fn[Tz] DateTime::round(Self[Tz], @core.TimeDelta) -> Self[Tz]?
 pub fn[Tz] DateTime::round_subsecs(Self[Tz], Int) -> Self[Tz]?
@@ -76,6 +77,7 @@ pub fn[Tz] DateTime::timestamp_subsec_millis(Self[Tz]) -> Int
 pub fn[Tz] DateTime::timestamp_subsec_nanos(Self[Tz]) -> Int
 pub fn[Tz] DateTime::timezone(Self[Tz]) -> Tz
 pub fn[Tz : @debug.Debug] DateTime::to_repr(Self[Tz]) -> @debug.Repr
+pub fn[Tz : TimeZone] DateTime::to_string(Self[Tz]) -> String
 pub fn[Tz] DateTime::to_utc(Self[Tz]) -> Self[Utc]
 pub fn[Tz] DateTime::truncate(Self[Tz], @core.TimeDelta) -> Self[Tz]?
 pub fn[Tz] DateTime::truncate_subsecs(Self[Tz], Int) -> Self[Tz]
@@ -97,6 +99,7 @@ pub fn[Tz : TimeZone] DateTime::year(Self[Tz]) -> Int
 pub fn[Tz : TimeZone] DateTime::year_ce(Self[Tz]) -> (Bool, Int)
 pub fn[Tz : TimeZone] DateTime::years_since(Self[Tz], Self[Tz]) -> Int?
 pub impl[Tz : Eq] Compare for DateTime[Tz]
+pub impl[Tz : TimeZone] Show for DateTime[Tz]
 
 pub struct FixedOffset {
   // private fields
@@ -109,10 +112,13 @@ pub fn FixedOffset::local_minus_utc(Self) -> Int
 pub fn FixedOffset::not_equal(Self, Self) -> Bool
 pub fn FixedOffset::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[Self]
 pub fn FixedOffset::offset_from_utc(Self, @core.NaiveDateTime) -> Self
+pub fn FixedOffset::output(Self, &Logger) -> Unit
 pub fn FixedOffset::to_repr(Self) -> @debug.Repr
+pub fn FixedOffset::to_string(Self) -> String
 pub fn FixedOffset::tz_name(Self, @core.NaiveDateTime) -> String
 pub fn FixedOffset::west(Int) -> Self?
 pub impl TimeZone for FixedOffset
+pub impl Show for FixedOffset
 
 pub struct LocalTimeType {
   // private fields
@@ -139,10 +145,13 @@ pub fn Location::not_equal(Self, Self) -> Bool
 pub fn Location::offset_from_abbreviation(Self, String, @core.NaiveDateTime) -> FixedOffset?
 pub fn Location::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[FixedOffset]
 pub fn Location::offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
+pub fn Location::output(Self, &Logger) -> Unit
+pub fn Location::to_string(Self) -> String
 pub fn Location::transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds
 pub fn Location::type_at(Self, @core.NaiveDateTime) -> LocalTimeType
 pub fn Location::tz_name(Self, @core.NaiveDateTime) -> String
 pub impl TimeZone for Location
+pub impl Show for Location
 
 pub(all) enum MappedLocalTime[T] {
   Single(T)
@@ -203,9 +212,12 @@ pub fn Utc::not_equal(Self, Self) -> Bool
 pub fn Utc::now() -> DateTime[Self]
 pub fn Utc::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[FixedOffset]
 pub fn Utc::offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
+pub fn Utc::output(Self, &Logger) -> Unit
 pub fn Utc::to_repr(Self) -> @debug.Repr
+pub fn Utc::to_string(Self) -> String
 pub fn Utc::tz_name(Self, @core.NaiveDateTime) -> String
 pub impl TimeZone for Utc
+pub impl Show for Utc
 
 // Type aliases
 

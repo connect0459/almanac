@@ -15,6 +15,15 @@ pub extend Location with Eq::{equal}
 pub extend Location with Eq::{not_equal}
 
 ///|
+/// Renders as `name()`, or as an empty string for a `Location` without one.
+pub impl Show for Location with fn output(self, logger) {
+  logger.write_string(self.name.unwrap_or(""))
+}
+
+///|
+pub extend Location with Show::{to_string, output}
+
+///|
 /// Constructs a `Location` from raw TZif bytes, or `None` if the bytes
 /// are malformed, or its POSIX TZ footer (when present) is malformed.
 /// `name()` reports `None`, since raw bytes carry no IANA identifier; use
