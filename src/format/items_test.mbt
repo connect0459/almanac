@@ -11,14 +11,14 @@ fn nine_oh_five() -> @core.NaiveTime {
 ///|
 test "parse_items walks a pre-tokenized item sequence and the result resolves to a date" {
   let items = @format.tokenize("%F")
-  assert_eq(@format.parse_items(items, "2024-03-05").to_date(), march_fifth())
+  assert_eq(@format.parse_items("2024-03-05", items).to_date(), march_fifth())
 }
 
 ///|
 test "one Parsed resolves to a date, a time and a date-time without re-parsing" {
   let parsed = @format.parse_items(
-    @format.tokenize("%F %T"),
     "2024-03-05 09:05:07",
+    @format.tokenize("%F %T"),
   )
   assert_eq(parsed.to_date(), march_fifth())
   assert_eq(parsed.to_time(), nine_oh_five())
@@ -37,20 +37,20 @@ test "parse_items accepts a hand-built item sequence" {
     @format.Literal("."),
     @format.Numeric(@format.Year),
   ]
-  assert_eq(@format.parse_items(items, "05.03.2024").to_date(), march_fifth())
+  assert_eq(@format.parse_items("05.03.2024", items).to_date(), march_fifth())
 }
 
 ///|
 test "parse_items rejects trailing input while parse_items_and_remainder returns it" {
   let items = @format.tokenize("%F")
-  try @format.parse_items(items, "2024-03-05 rest") |> ignore catch {
+  try @format.parse_items("2024-03-05 rest", items) |> ignore catch {
     @format.TrailingInput => ()
     _ => fail("expected TrailingInput")
   } noraise {
     _ => fail("expected trailing input to be rejected")
   }
   let (parsed, rest) = @format.parse_items_and_remainder(
-    items, "2024-03-05 rest",
+    "2024-03-05 rest", items,
   )
   assert_eq(parsed.to_date(), march_fifth())
   assert_eq(rest, " rest")
@@ -59,8 +59,8 @@ test "parse_items rejects trailing input while parse_items_and_remainder returns
 ///|
 test "Parsed::to_date_time_tz applies the parsed offset" {
   let parsed = @format.parse_items(
-    @format.tokenize("%F %T %z"),
     "2024-03-05 18:30:00 +0900",
+    @format.tokenize("%F %T %z"),
   )
   let dt = parsed.to_date_time_tz()
   assert_eq(dt.offset(), @tz.FixedOffset::east(9 * 3600).unwrap())
@@ -71,8 +71,8 @@ test "Parsed::to_date_time_tz applies the parsed offset" {
 test "Parsed::to_date_time_in resolves a zone-less reading in the given zone" {
   let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
   let parsed = @format.parse_items(
-    @format.tokenize("%F %T"),
     "2024-03-05 18:30:00",
+    @format.tokenize("%F %T"),
   )
   assert_eq(
     parsed.to_date_time_in(tokyo).unwrap().naive_utc().time(),
@@ -82,7 +82,7 @@ test "Parsed::to_date_time_in resolves a zone-less reading in the given zone" {
 
 ///|
 test "a Parsed reports the same failures as the parse function it replaces" {
-  let no_date = @format.parse_items(@format.tokenize("%H"), "09")
+  let no_date = @format.parse_items("09", @format.tokenize("%H"))
   try no_date.to_date() |> ignore catch {
     @format.IncompleteFields => ()
     _ => fail("expected IncompleteFields")
@@ -90,8 +90,8 @@ test "a Parsed reports the same failures as the parse function it replaces" {
     _ => fail("expected a missing date to be rejected")
   }
   let with_offset = @format.parse_items(
-    @format.tokenize("%F %T %z"),
     "2024-03-05 09:05:07 +0900",
+    @format.tokenize("%F %T %z"),
   )
   try with_offset.to_date_time_in(@tz.Utc::new()) |> ignore catch {
     @format.InconsistentFields => ()
@@ -104,7 +104,7 @@ test "a Parsed reports the same failures as the parse function it replaces" {
 ///|
 test "parse_items surfaces a mismatch inside the item sequence" {
   try
-    @format.parse_items(@format.tokenize("%F"), "2024-XX-05") |> ignore
+    @format.parse_items("2024-XX-05", @format.tokenize("%F")) |> ignore
   catch {
     @format.InputMismatch => ()
     _ => fail("expected InputMismatch")

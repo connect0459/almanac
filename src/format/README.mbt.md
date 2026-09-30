@@ -133,6 +133,8 @@ test {
 
 ## API reference
 
+Every `format_*` and `parse_*` function takes the subject first (the value to render or the input text) and the pattern (a format string or an `Item` array) second.
+
 ### Formatting
 
 | Function | Signature | Description |
@@ -204,8 +206,8 @@ The `stamp*` family (no year) doesn't carry enough fields to round-trip through 
 | :--- | :--- | :--- |
 | `tokenize(String)` | `-> Array[Item] raise ParseError` | Parses a `%`-specifier format string into a sequence of `Item`s; raises `UnknownSpecifier`/`TrailingPercent` on a malformed format string. Not usually needed directly — `format_*`/`parse_*` call it internally |
 | `format_date_items(NaiveDate, Array[Item])` / `format_time_items(NaiveTime, Array[Item])` / `format_date_time_items(NaiveDateTime, Array[Item])` / `format_date_time_tz_items(DateTime[Tz], Array[Item])` *(Tz : TimeZone)* | `-> String raise ParseError` | The `format_*` functions against an already-tokenized (or hand-built) `Item` sequence; `format_*` is `tokenize` followed by these |
-| `parse_items(Array[Item], String)` | `-> Parsed raise ParseError` | Walks an `Item` sequence against the whole input (`InputMismatch` on a mismatch, `InputTooShort` if the input ends first, `TrailingInput` on leftover input), accumulating fields without resolving them |
-| `parse_items_and_remainder(Array[Item], String)` | `-> (Parsed, String) raise ParseError` | Like `parse_items`, but returns leftover input instead of rejecting it |
+| `parse_items(String, Array[Item])` | `-> Parsed raise ParseError` | Walks an `Item` sequence against the whole input (`InputMismatch` on a mismatch, `InputTooShort` if the input ends first, `TrailingInput` on leftover input), accumulating fields without resolving them |
+| `parse_items_and_remainder(String, Array[Item])` | `-> (Parsed, String) raise ParseError` | Like `parse_items`, but returns leftover input instead of rejecting it |
 | `Parsed::to_date()` / `to_time()` / `to_date_time()` | `-> NaiveDate` / `NaiveTime` / `NaiveDateTime raise ParseError` | Resolve the accumulated fields; `IncompleteFields` if too few were parsed, `FieldOutOfRange` if a value is outside its range (an hour of 24, February 30), `InconsistentFields` if fields contradict each other. One `Parsed` resolves any number of ways |
 | `Parsed::to_date_time_tz()` | `-> DateTime[FixedOffset] raise ParseError` | Resolve the date, time and `%z` offset, reading the fields as that offset's local time |
 | `Parsed::to_date_time_in(Tz)` *(Tz : TimeZone)* | `-> MappedLocalTime[DateTime[Tz]] raise ParseError` | Resolve a zone-less reading in `tz`; see `parse_date_time_in` for `%Z` handling and the offset rejection |

@@ -62,9 +62,9 @@ pub fn parse_fixed_offset(String) -> @tz.FixedOffset raise ParseError
 
 pub fn parse_from_rfc2822(String) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
 
-pub fn parse_items(Array[Item], String) -> Parsed raise ParseError
+pub fn parse_items(String, Array[Item]) -> Parsed raise ParseError
 
-pub fn parse_items_and_remainder(Array[Item], String) -> (Parsed, String) raise ParseError
+pub fn parse_items_and_remainder(String, Array[Item]) -> (Parsed, String) raise ParseError
 
 pub fn parse_rfc3339(String) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
 

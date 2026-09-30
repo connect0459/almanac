@@ -905,10 +905,10 @@ fn apply_item(
 /// or specifier fails to match, or if input remains once every item has
 /// been consumed.
 pub fn parse_items(
-  items : Array[Item],
   input : String,
+  items : Array[Item],
 ) -> Parsed raise ParseError {
-  let (parsed, rest) = parse_items_and_remainder(items, input)
+  let (parsed, rest) = parse_items_and_remainder(input, items)
   if rest != "" {
     raise TrailingInput
   }
@@ -920,8 +920,8 @@ pub fn parse_items(
 /// rejecting leftover input, returning it (from the first unconsumed
 /// character to the end) alongside the accumulator.
 pub fn parse_items_and_remainder(
-  items : Array[Item],
   input : String,
+  items : Array[Item],
 ) -> (Parsed, String) raise ParseError {
   let chars = input.to_array()
   let (parsed, pos) = for i = 0, parsed = Parsed::empty(), pos = 0 {
@@ -1365,7 +1365,7 @@ pub fn parse_date(
   input : String,
   fmt : String,
 ) -> @core.NaiveDate raise ParseError {
-  parse_items(tokenize(fmt), input).to_date()
+  parse_items(input, tokenize(fmt)).to_date()
 }
 
 ///|
@@ -1376,7 +1376,7 @@ pub fn parse_date_and_remainder(
   input : String,
   fmt : String,
 ) -> (@core.NaiveDate, String) raise ParseError {
-  let (parsed, rest) = parse_items_and_remainder(tokenize(fmt), input)
+  let (parsed, rest) = parse_items_and_remainder(input, tokenize(fmt))
   (parsed.to_date(), rest)
 }
 
@@ -1387,7 +1387,7 @@ pub fn parse_time(
   input : String,
   fmt : String,
 ) -> @core.NaiveTime raise ParseError {
-  parse_items(tokenize(fmt), input).to_time()
+  parse_items(input, tokenize(fmt)).to_time()
 }
 
 ///|
@@ -1397,7 +1397,7 @@ pub fn parse_time_and_remainder(
   input : String,
   fmt : String,
 ) -> (@core.NaiveTime, String) raise ParseError {
-  let (parsed, rest) = parse_items_and_remainder(tokenize(fmt), input)
+  let (parsed, rest) = parse_items_and_remainder(input, tokenize(fmt))
   (parsed.to_time(), rest)
 }
 
@@ -1407,7 +1407,7 @@ pub fn parse_date_time(
   input : String,
   fmt : String,
 ) -> @core.NaiveDateTime raise ParseError {
-  parse_items(tokenize(fmt), input).to_date_time()
+  parse_items(input, tokenize(fmt)).to_date_time()
 }
 
 ///|
@@ -1417,7 +1417,7 @@ pub fn parse_date_time_and_remainder(
   input : String,
   fmt : String,
 ) -> (@core.NaiveDateTime, String) raise ParseError {
-  let (parsed, rest) = parse_items_and_remainder(tokenize(fmt), input)
+  let (parsed, rest) = parse_items_and_remainder(input, tokenize(fmt))
   (parsed.to_date_time(), rest)
 }
 
@@ -1429,7 +1429,7 @@ pub fn parse_date_time_tz(
   input : String,
   fmt : String,
 ) -> @tz.DateTime[@tz.FixedOffset] raise ParseError {
-  parse_items(tokenize(fmt), input).to_date_time_tz()
+  parse_items(input, tokenize(fmt)).to_date_time_tz()
 }
 
 ///|
@@ -1439,7 +1439,7 @@ pub fn parse_date_time_tz_and_remainder(
   input : String,
   fmt : String,
 ) -> (@tz.DateTime[@tz.FixedOffset], String) raise ParseError {
-  let (parsed, rest) = parse_items_and_remainder(tokenize(fmt), input)
+  let (parsed, rest) = parse_items_and_remainder(input, tokenize(fmt))
   (parsed.to_date_time_tz(), rest)
 }
 
@@ -1462,7 +1462,7 @@ pub fn[Tz : @tz.TimeZone] parse_date_time_in(
   fmt : String,
   tz : Tz,
 ) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise ParseError {
-  parse_items(tokenize(fmt), input).to_date_time_in(tz)
+  parse_items(input, tokenize(fmt)).to_date_time_in(tz)
 }
 
 ///|
@@ -1473,6 +1473,6 @@ pub fn[Tz : @tz.TimeZone] parse_date_time_in_and_remainder(
   fmt : String,
   tz : Tz,
 ) -> (@tz.MappedLocalTime[@tz.DateTime[Tz]], String) raise ParseError {
-  let (parsed, rest) = parse_items_and_remainder(tokenize(fmt), input)
+  let (parsed, rest) = parse_items_and_remainder(input, tokenize(fmt))
   (parsed.to_date_time_in(tz), rest)
 }
