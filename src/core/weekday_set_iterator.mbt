@@ -3,6 +3,12 @@
 /// from a chosen start weekday, double-ended: `next` walks forward from the
 /// start (wrapping from `Sun` to `Mon`) and `next_back` walks backward from
 /// the end of that cycle. See `WeekdaySet::iter_from`.
+///
+/// An iterator is a position that is consumed, the one stateful kind of
+/// value in this package: `next` and `next_back` advance it in place, `iter`
+/// does not advance it by itself but returns an `Iter` that shares its
+/// state, and the method that creates it (`WeekdaySet::iter_from`) returns a fresh iterator on
+/// every call, leaving the set unchanged.
 pub struct WeekdaySetIterator {
   priv mut remaining : WeekdaySet
   priv start : Weekday

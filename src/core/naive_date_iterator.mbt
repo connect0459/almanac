@@ -12,6 +12,12 @@ const ITER_BOUND_DAYS : Int = 100_000_000
 ///|
 /// A lazy, bounded, double-ended iterator over successive dates, stepping
 /// by one day. See `NaiveDate::iter_days`.
+///
+/// An iterator is a position that is consumed, the one stateful kind of
+/// value in this package: `next` and `next_back` advance it in place, `iter`
+/// does not advance it by itself but returns an `Iter` that shares its
+/// state, and the method that creates it (`NaiveDate::iter_days`) returns a fresh iterator on
+/// every call, leaving the date unchanged.
 pub struct NaiveDateDaysIterator {
   priv mut value : NaiveDate
   priv mut end : NaiveDate
@@ -73,6 +79,12 @@ pub fn NaiveDateDaysIterator::iter(
 ///|
 /// A lazy, bounded, double-ended iterator over successive dates, stepping
 /// by one week. See `NaiveDate::iter_weeks`.
+///
+/// An iterator is a position that is consumed, the one stateful kind of
+/// value in this package: `next` and `next_back` advance it in place, `iter`
+/// does not advance it by itself but returns an `Iter` that shares its
+/// state, and the method that creates it (`NaiveDate::iter_weeks`) returns a fresh iterator on
+/// every call, leaving the date unchanged.
 pub struct NaiveDateWeeksIterator {
   priv mut value : NaiveDate
   priv mut end : NaiveDate

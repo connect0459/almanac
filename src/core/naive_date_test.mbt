@@ -1084,3 +1084,25 @@ test "ymd reports year, month, and day together" {
   let date = @core.NaiveDate::from_ymd(2024, 2, 29).unwrap()
   assert_eq(date.ymd(), (2024, @core.Feb, 29))
 }
+
+///|
+test "iter_days returns an independent iterator each call and leaves the date unchanged" {
+  let start = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
+  let first = start.iter_days()
+  assert_eq(first.next(), Some(start))
+  assert_eq(first.next(), Some(start.succ()))
+  let second = start.iter_days()
+  assert_eq(second.next(), Some(start))
+  assert_eq(start, @core.NaiveDate::from_ymd(2024, 3, 5).unwrap())
+}
+
+///|
+test "calling iter on an iterator does not advance it, and the Iter it returns shares its state" {
+  let iterator = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap().iter_days()
+  let before = iterator.length()
+  ignore(iterator.iter())
+  assert_eq(iterator.length(), before)
+  let taken = iterator.iter().take(3).collect()
+  assert_eq(taken.length(), 3)
+  assert_eq(iterator.length(), before - 3)
+}
