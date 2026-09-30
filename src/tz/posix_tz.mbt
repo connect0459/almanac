@@ -223,7 +223,7 @@ fn parse_rule(chars : Array[Char], pos : Int) -> (DstRule, Int)? {
 
 ///|
 /// Parses a POSIX TZ string (e.g. `"EST5EDT,M3.2.0,M11.1.0"`, `"UTC0"`),
-/// or `None` if it is malformed.
+/// or `None` if it is malformed or names an offset beyond `±23:59:59`.
 pub fn parse_posix_tz(s : String) -> PosixTz? {
   let chars = s.to_array()
   match parse_name(chars, 0) {
@@ -233,7 +233,9 @@ pub fn parse_posix_tz(s : String) -> PosixTz? {
         None => None
         Some((std_posix_offset, p2)) => {
           let std_offset = -std_posix_offset
-          if p2 >= chars.length() {
+          if !offset_in_range(std_offset) {
+            None
+          } else if p2 >= chars.length() {
             Some(PosixTz::{
               std_offset,
               std_name,
@@ -251,7 +253,9 @@ pub fn parse_posix_tz(s : String) -> PosixTz? {
                   Some(pair) => pair
                 }
                 let dst_offset = -dst_posix_offset
-                if p4 >= chars.length() || chars[p4] != ',' {
+                if !offset_in_range(dst_offset) ||
+                  p4 >= chars.length() ||
+                  chars[p4] != ',' {
                   None
                 } else {
                   match parse_rule(chars, p4 + 1) {
@@ -440,9 +444,17 @@ pub fn PosixTz::type_at(
 /// present too.
 fn PosixTz::type_at_secs(self : PosixTz, utc_instant : Int64) -> LocalTimeType {
   if self.is_dst_at(utc_instant) {
-    LocalTimeType::new(self.dst_offset.unwrap(), true, self.dst_name.unwrap())
+    LocalTimeType::{
+      utc_offset: self.dst_offset.unwrap(),
+      is_dst: true,
+      abbreviation: self.dst_name.unwrap(),
+    }
   } else {
-    LocalTimeType::new(self.std_offset, false, self.std_name)
+    LocalTimeType::{
+      utc_offset: self.std_offset,
+      is_dst: false,
+      abbreviation: self.std_name,
+    }
   }
 }
 

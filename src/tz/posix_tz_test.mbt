@@ -295,3 +295,14 @@ test "PosixTz has a Debug representation" {
     ),
   )
 }
+
+///|
+test "parse_posix_tz rejects an offset FixedOffset cannot represent instead of aborting later" {
+  assert_true(@tz.parse_posix_tz("XXX-99") is None)
+  assert_true(@tz.parse_posix_tz("XXX24:00:00") is None)
+  assert_true(@tz.parse_posix_tz("XXX-24:00:00") is None)
+  assert_true(@tz.parse_posix_tz("XXX-23:59:59") is Some(_))
+  assert_true(@tz.parse_posix_tz("XXX23:59:59") is Some(_))
+  assert_true(@tz.parse_posix_tz("AAA0BBB-99,M3.2.0,M11.1.0") is None)
+  assert_true(@tz.parse_posix_tz("AAA-23:59:59BBB,M3.2.0,M11.1.0") is None)
+}

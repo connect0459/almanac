@@ -34,11 +34,17 @@ pub extend FixedOffset with Show::{to_string, output}
 /// The fixed offset `secs` seconds east of UTC (local time is ahead of
 /// UTC), or `None` if `secs` is outside `±86399` (`±23:59:59`).
 pub fn FixedOffset::east(secs : Int) -> FixedOffset? {
-  if secs > 86399 || secs < -86399 {
-    None
-  } else {
+  if offset_in_range(secs) {
     Some(FixedOffset::{ local_minus_utc: secs, })
+  } else {
+    None
   }
+}
+
+///|
+/// Whether `secs` is an offset a `FixedOffset` can hold (`±23:59:59`).
+fn offset_in_range(secs : Int) -> Bool {
+  secs <= 86399 && secs >= -86399
 }
 
 ///|

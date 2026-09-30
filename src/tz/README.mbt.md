@@ -288,7 +288,7 @@ The offset, DST flag, and abbreviation for one segment of a `Location`'s timelin
 
 | Method | Signature | Description |
 | :--- | :--- | :--- |
-| `LocalTimeType::new(Int, Bool, String)` | `-> Self` | Construct from UTC offset (seconds), DST flag, and abbreviation |
+| `LocalTimeType::new(Int, Bool, String)` | `-> Self?` | Construct from UTC offset (seconds), DST flag, and abbreviation; `None` if the offset is outside `±86399` (`±23:59:59`), so every `LocalTimeType` has an offset a `FixedOffset` can hold |
 | `utc_offset()` | `-> Int` | UTC offset in seconds |
 | `is_dst()` | `-> Bool` | Whether daylight saving is in effect |
 | `abbreviation()` | `-> String` | The zone abbreviation, e.g. `"EST"`/`"EDT"` |

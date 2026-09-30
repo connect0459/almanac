@@ -179,7 +179,7 @@ pub fn LocalTimeType::equal(Self, Self) -> Bool
 pub fn LocalTimeType::hash(Self) -> Int
 pub fn LocalTimeType::hash_combine(Self, Hasher) -> Unit
 pub fn LocalTimeType::is_dst(Self) -> Bool
-pub fn LocalTimeType::new(Int, Bool, String) -> Self
+pub fn LocalTimeType::new(Int, Bool, String) -> Self?
 pub fn LocalTimeType::not_equal(Self, Self) -> Bool
 pub fn LocalTimeType::to_repr(Self) -> @debug.Repr
 pub fn LocalTimeType::utc_offset(Self) -> Int

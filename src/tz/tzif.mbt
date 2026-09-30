@@ -20,13 +20,20 @@ pub extend LocalTimeType with Hash::{hash, hash_combine}
 pub extend LocalTimeType with @debug.Debug::{to_repr}
 
 ///|
-/// Constructs a local time type directly from its components.
+/// Constructs a local time type from its components, or `None` if
+/// `utc_offset` is outside `±86399` seconds (`±23:59:59`), the range a
+/// `FixedOffset` can hold; so every `LocalTimeType` has an offset the
+/// time-zone lookups can report.
 pub fn LocalTimeType::new(
   utc_offset : Int,
   is_dst : Bool,
   abbreviation : String,
-) -> LocalTimeType {
-  LocalTimeType::{ utc_offset, is_dst, abbreviation, }
+) -> LocalTimeType? {
+  if offset_in_range(utc_offset) {
+    Some(LocalTimeType::{ utc_offset, is_dst, abbreviation, })
+  } else {
+    None
+  }
 }
 
 ///|
@@ -206,7 +213,10 @@ fn parse_block(data : Bytes, header_offset : Int, time_size : Int) -> RawBlock? 
     let abbreviation = @utf8.decode_lossy(
       data.exact_view(start=name_offset, end=name_offset + name_len),
     )
-    local_time_types.push(LocalTimeType::{ utc_offset, is_dst, abbreviation, })
+    match LocalTimeType::new(utc_offset, is_dst, abbreviation) {
+      None => return None
+      Some(local_time_type) => local_time_types.push(local_time_type)
+    }
     p = p + 6
   }
   p = designations_offset + charcnt
@@ -233,7 +243,7 @@ fn parse_block(data : Bytes, header_offset : Int, time_size : Int) -> RawBlock? 
 
 ///|
 /// Parses a TZif (RFC 8536) timezone-data byte buffer, or `None` if it is
-/// malformed or truncated.
+/// malformed or truncated, or holds a UTC offset beyond `±23:59:59`.
 ///
 /// For a version 2/3/4 file, only the 64-bit second data block (and the
 /// POSIX TZ footer that follows it) is returned: the initial 32-bit block

@@ -25,9 +25,9 @@ test "parse_tzif parses Asia/Tokyo's local time types, including negative-adjace
   let parsed = @tz.parse_tzif(tzif_tokyo).unwrap()
   assert_eq(parsed.local_time_types().length(), 4)
   let types = parsed.local_time_types()
-  assert_eq(types[0], @tz.LocalTimeType::new(33539, false, "LMT"))
-  assert_eq(types[1], @tz.LocalTimeType::new(36000, true, "JDT"))
-  assert_eq(types[2], @tz.LocalTimeType::new(32400, false, "JST"))
+  assert_eq(types[0], @tz.LocalTimeType::new(33539, false, "LMT").unwrap())
+  assert_eq(types[1], @tz.LocalTimeType::new(36000, true, "JDT").unwrap())
+  assert_eq(types[2], @tz.LocalTimeType::new(32400, false, "JST").unwrap())
   assert_eq(parsed.posix_tz(), Some("JST-9"))
 }
 
@@ -46,9 +46,9 @@ test "parse_tzif parses America/New_York, a zone with a negative (west-of-UTC) h
   let parsed = @tz.parse_tzif(tzif_new_york).unwrap()
   let types = parsed.local_time_types()
   assert_eq(types.length(), 6)
-  assert_eq(types[0], @tz.LocalTimeType::new(-17762, false, "LMT"))
-  assert_eq(types[1], @tz.LocalTimeType::new(-14400, true, "EDT"))
-  assert_eq(types[2], @tz.LocalTimeType::new(-18000, false, "EST"))
+  assert_eq(types[0], @tz.LocalTimeType::new(-17762, false, "LMT").unwrap())
+  assert_eq(types[1], @tz.LocalTimeType::new(-14400, true, "EDT").unwrap())
+  assert_eq(types[2], @tz.LocalTimeType::new(-18000, false, "EST").unwrap())
   assert_eq(parsed.transitions().length(), 236)
   assert_eq(parsed.transitions()[0], -2717650800L)
   assert_eq(parsed.transitions()[235], 2140668000L)
@@ -68,7 +68,9 @@ test "parse_tzif parses Australia/Sydney's wraparound POSIX footer (DST spans a 
 test "parse_tzif parses a version-1-only file (no 64-bit block or POSIX footer), including its 32-bit leap-second record" {
   let parsed = @tz.parse_tzif(tzif_v1_only).unwrap()
   assert_eq(parsed.transitions(), [])
-  assert_eq(parsed.local_time_types(), [@tz.LocalTimeType::new(0, false, "X")])
+  assert_eq(parsed.local_time_types(), [
+    @tz.LocalTimeType::new(0, false, "X").unwrap(),
+  ])
   assert_eq(parsed.posix_tz(), None)
   assert_eq(parsed.leap_seconds(), [(78796800L, 1)])
 }
@@ -111,4 +113,30 @@ test "mutating an array returned by a TzifData accessor leaves the data unchange
   assert_eq(parsed.transitions(), before.transitions())
   assert_true(parsed.transitions().length() > 0)
   assert_true(parsed.local_time_types().length() > 0)
+}
+
+///|
+test "LocalTimeType::new accepts offsets up to a day short of 24 hours either way and rejects the rest" {
+  assert_eq(
+    @tz.LocalTimeType::new(86399, false, "X").map(t => t.utc_offset()),
+    Some(86399),
+  )
+  assert_eq(
+    @tz.LocalTimeType::new(-86399, true, "X").map(t => t.utc_offset()),
+    Some(-86399),
+  )
+  assert_true(@tz.LocalTimeType::new(86400, false, "X") is None)
+  assert_true(@tz.LocalTimeType::new(-86400, false, "X") is None)
+}
+
+///|
+test "parse_tzif rejects a local time type whose offset FixedOffset cannot represent" {
+  let in_range = tzif_v1_only.to_array()
+  assert_true(@tz.parse_tzif(Bytes::from_array(in_range)) is Some(_))
+  let too_far_east = tzif_v1_only.to_array()
+  too_far_east[44] = b'\x00'
+  too_far_east[45] = b'\x01'
+  too_far_east[46] = b'\x51'
+  too_far_east[47] = b'\x80'
+  assert_true(@tz.parse_tzif(Bytes::from_array(too_far_east)) is None)
 }
