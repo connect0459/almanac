@@ -211,9 +211,9 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 | `years_since(Self[Tz])` | `-> Int?` | Full calendar years elapsed from `base`, comparing local dates and ignoring the time of day; `None` if `base` is later |
 | `compare(Self[Tz])` / `<` / `>` / `<=` / `>=` | `-> Int` / `-> Bool` | Order by UTC instant, ignoring the zone value (requires `Tz : Eq`); equal instants in different zones compare as `0` yet are unequal under `==` (intentional: `==`/`Hash` also cover the zone; to test for the same instant, use `compare_instant(other) == 0`) |
 | `compare_instant(Self[Tz2])` | `-> Int` | Order by UTC instant against a datetime in a different time zone type |
-| `round(TimeDelta)` | `-> Self[Tz]?` | Round the underlying UTC instant to the nearest multiple of a granularity since the Unix epoch, keeping the same time zone; see `TimeDelta::round` (in `core`) for which granularities are supported |
-| `truncate(TimeDelta)` | `-> Self[Tz]?` | Truncate the underlying UTC instant toward the Unix epoch; see Quick start above for how this differs from truncating the local presentation |
-| `round_subsecs(Int)` / `truncate_subsecs(Int)` | `-> Self[Tz]?` / `-> Self[Tz]` | Round or truncate the underlying UTC instant to a number of fractional-second digits (`0..=9`; other values abort) |
+| `round(TimeDelta)` | `-> Result[Self[Tz], @core.RoundingError]` | Round the underlying UTC instant to the nearest multiple of a granularity since the Unix epoch, keeping the same time zone; see `TimeDelta::round` (in `core`) for which granularities are supported |
+| `truncate(TimeDelta)` | `-> Result[Self[Tz], @core.RoundingError]` | Truncate the underlying UTC instant toward the Unix epoch; see Quick start above for how this differs from truncating the local presentation |
+| `round_subsecs(Int)` / `truncate_subsecs(Int)` | `-> Result[Self[Tz], @core.RoundingError]` / `-> Self[Tz]` | Round or truncate the underlying UTC instant to a number of fractional-second digits (`0..=9`; other values abort) |
 
 `DateTime[Tz]` also implements `Eq` (when `Tz : Eq`).
 

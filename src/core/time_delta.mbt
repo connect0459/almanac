@@ -539,21 +539,32 @@ priv enum Granularity {
 
 ///|
 /// Classifies `granularity` for `TimeDelta::round`/`truncate`, or reports
-/// `None` if it is zero, negative, or mixes a whole-second part with a
-/// sub-second remainder (see `Granularity`).
-fn classify_granularity(granularity : TimeDelta) -> Granularity? {
+/// why it is rejected: `InvalidGranularity` if it is zero or negative,
+/// `MixedGranularity` if it mixes a whole-second part with a sub-second
+/// remainder (see `Granularity`).
+fn classify_granularity(
+  granularity : TimeDelta,
+) -> Result[Granularity, RoundingError] {
   if granularity.seconds < 0L {
-    None
+    Err(InvalidGranularity)
   } else if granularity.seconds == 0L {
     if granularity.nanoseconds > 0 {
-      Some(SubSecond(granularity.nanoseconds))
+      Ok(SubSecond(granularity.nanoseconds))
     } else {
-      None
+      Err(InvalidGranularity)
     }
   } else if granularity.nanoseconds == 0 {
-    Some(WholeSeconds(granularity.seconds))
+    Ok(WholeSeconds(granularity.seconds))
   } else {
-    None
+    Err(MixedGranularity)
+  }
+}
+
+///|
+fn[T] in_range(value : T?) -> Result[T, RoundingError] {
+  match value {
+    Some(v) => Ok(v)
+    None => Err(OutOfRange)
   }
 }
 
@@ -653,17 +664,18 @@ fn compare_magnitude(a : TimeDelta, b : TimeDelta) -> Int {
 
 ///|
 /// This duration truncated toward zero to the nearest multiple of
-/// `granularity`. Returns `None` if `granularity` is zero, negative, or
-/// mixes a whole-second part with a sub-second remainder (e.g. 1.5
-/// seconds) — see `Granularity`.
+/// `granularity`. Fails with `InvalidGranularity` if `granularity` is zero
+/// or negative, or `MixedGranularity` if it mixes a whole-second part with
+/// a sub-second remainder (e.g. 1.5 seconds) — see `Granularity`.
 pub fn TimeDelta::truncate(
   self : TimeDelta,
   granularity : TimeDelta,
-) -> TimeDelta? {
-  match classify_granularity(granularity) {
-    None => None
-    Some(kind) => self.sub(signed_remainder(self, kind))
+) -> Result[TimeDelta, RoundingError] {
+  let kind = match classify_granularity(granularity) {
+    Ok(v) => v
+    Err(e) => return Err(e)
   }
+  in_range(self.sub(signed_remainder(self, kind)))
 }
 
 ///|
@@ -673,49 +685,51 @@ pub fn TimeDelta::truncate(
 pub fn TimeDelta::round(
   self : TimeDelta,
   granularity : TimeDelta,
-) -> TimeDelta? {
-  match classify_granularity(granularity) {
-    None => None
-    Some(kind) => {
-      let remainder = signed_remainder(self, kind)
-      let truncated = self.sub(remainder)
-      if compare_magnitude(
-          double_magnitude(remainder.abs()),
-          granularity_magnitude(kind),
-        ) <
-        0 {
-        truncated
-      } else if self.seconds < 0L {
-        truncated.bind(t => t.sub(granularity_magnitude(kind)))
-      } else {
-        truncated.bind(t => t.add(granularity_magnitude(kind)))
-      }
-    }
+) -> Result[TimeDelta, RoundingError] {
+  let kind = match classify_granularity(granularity) {
+    Ok(v) => v
+    Err(e) => return Err(e)
   }
+  let remainder = signed_remainder(self, kind)
+  let truncated = self.sub(remainder)
+  in_range(
+    if compare_magnitude(
+        double_magnitude(remainder.abs()),
+        granularity_magnitude(kind),
+      ) <
+      0 {
+      truncated
+    } else if self.seconds < 0L {
+      truncated.bind(t => t.sub(granularity_magnitude(kind)))
+    } else {
+      truncated.bind(t => t.add(granularity_magnitude(kind)))
+    },
+  )
 }
 
 ///|
 /// This duration rounded up (toward positive infinity) to the nearest
 /// multiple of `granularity`: unchanged if already a multiple, otherwise
 /// the next multiple above it. For a negative duration that is toward zero,
-/// the same result as `truncate`. Returns `None` if `granularity` is
-/// rejected (see `truncate`) or if rounding up would leave `TimeDelta`'s
-/// representable range.
+/// the same result as `truncate`. Fails if `granularity` is rejected (see
+/// `truncate`), or with `OutOfRange` if rounding up would leave
+/// `TimeDelta`'s representable range.
 pub fn TimeDelta::round_up(
   self : TimeDelta,
   granularity : TimeDelta,
-) -> TimeDelta? {
-  match classify_granularity(granularity) {
-    None => None
-    Some(kind) => {
-      let remainder = signed_remainder(self, kind)
-      if remainder.is_zero() {
-        Some(self)
-      } else if self.seconds < 0L {
-        self.sub(remainder)
-      } else {
-        self.sub(remainder).bind(t => t.add(granularity_magnitude(kind)))
-      }
-    }
+) -> Result[TimeDelta, RoundingError] {
+  let kind = match classify_granularity(granularity) {
+    Ok(v) => v
+    Err(e) => return Err(e)
   }
+  let remainder = signed_remainder(self, kind)
+  in_range(
+    if remainder.is_zero() {
+      Some(self)
+    } else if self.seconds < 0L {
+      self.sub(remainder)
+    } else {
+      self.sub(remainder).bind(t => t.add(granularity_magnitude(kind)))
+    },
+  )
 }

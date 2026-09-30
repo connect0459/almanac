@@ -209,9 +209,9 @@ pub fn NaiveDateTime::ordinal(Self) -> Int
 pub fn NaiveDateTime::ordinal0(Self) -> Int
 pub fn NaiveDateTime::output(Self, &Logger) -> Unit
 pub fn NaiveDateTime::quarter(Self) -> Int
-pub fn NaiveDateTime::round(Self, TimeDelta) -> Self?
-pub fn NaiveDateTime::round_subsecs(Self, Int) -> Self?
-pub fn NaiveDateTime::round_up(Self, TimeDelta) -> Self?
+pub fn NaiveDateTime::round(Self, TimeDelta) -> Result[Self, RoundingError]
+pub fn NaiveDateTime::round_subsecs(Self, Int) -> Result[Self, RoundingError]
+pub fn NaiveDateTime::round_up(Self, TimeDelta) -> Result[Self, RoundingError]
 pub fn NaiveDateTime::second(Self) -> Int
 pub fn NaiveDateTime::signed_duration_since(Self, Self) -> TimeDelta
 pub fn NaiveDateTime::sub_days(Self, Int) -> Self
@@ -229,7 +229,7 @@ pub fn NaiveDateTime::timestamp_subsec_millis(Self) -> Int
 pub fn NaiveDateTime::timestamp_subsec_nanos(Self) -> Int
 pub fn NaiveDateTime::to_repr(Self) -> @debug.Repr
 pub fn NaiveDateTime::to_string(Self) -> String
-pub fn NaiveDateTime::truncate(Self, TimeDelta) -> Self?
+pub fn NaiveDateTime::truncate(Self, TimeDelta) -> Result[Self, RoundingError]
 pub fn NaiveDateTime::truncate_subsecs(Self, Int) -> Self
 pub fn NaiveDateTime::unix_epoch() -> Self
 pub fn NaiveDateTime::weekday(Self) -> Weekday
@@ -322,6 +322,18 @@ pub impl Compare for NaiveWeek
 pub impl Eq for NaiveWeek
 pub impl Hash for NaiveWeek
 
+pub(all) enum RoundingError {
+  InvalidGranularity
+  MixedGranularity
+  OutOfRange
+} derive(Eq, @debug.Debug)
+pub fn RoundingError::equal(Self, Self) -> Bool
+pub fn RoundingError::not_equal(Self, Self) -> Bool
+pub fn RoundingError::output(Self, &Logger) -> Unit
+pub fn RoundingError::to_repr(Self) -> @debug.Repr
+pub fn RoundingError::to_string(Self) -> String
+pub impl Show for RoundingError
+
 pub struct TimeDelta {
   // private fields
 } derive(Compare, Eq, Hash, @debug.Debug)
@@ -366,8 +378,8 @@ pub fn TimeDelta::op_gt(Self, Self) -> Bool
 pub fn TimeDelta::op_le(Self, Self) -> Bool
 pub fn TimeDelta::op_lt(Self, Self) -> Bool
 pub fn TimeDelta::output(Self, &Logger) -> Unit
-pub fn TimeDelta::round(Self, Self) -> Self?
-pub fn TimeDelta::round_up(Self, Self) -> Self?
+pub fn TimeDelta::round(Self, Self) -> Result[Self, RoundingError]
+pub fn TimeDelta::round_up(Self, Self) -> Result[Self, RoundingError]
 pub fn TimeDelta::seconds(Int64) -> Self?
 pub fn TimeDelta::sub(Self, Self) -> Self?
 pub fn TimeDelta::subsec_microseconds(Self) -> Int
@@ -376,7 +388,7 @@ pub fn TimeDelta::subsec_nanoseconds(Self) -> Int
 pub fn TimeDelta::sum(Array[Self]) -> Self?
 pub fn TimeDelta::to_repr(Self) -> @debug.Repr
 pub fn TimeDelta::to_string(Self) -> String
-pub fn TimeDelta::truncate(Self, Self) -> Self?
+pub fn TimeDelta::truncate(Self, Self) -> Result[Self, RoundingError]
 pub fn TimeDelta::weeks(Int64) -> Self?
 pub fn TimeDelta::zero() -> Self
 pub impl Default for TimeDelta

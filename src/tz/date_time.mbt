@@ -684,11 +684,11 @@ pub fn[Tz, Tz2] DateTime::signed_duration_since(
 /// presentation: truncating to an hour granularity may still report a
 /// non-zero local minute, depending on the time zone's offset. See
 /// `@core.NaiveDateTime::truncate` for the conditions under which
-/// `granularity` is rejected (returning `None`).
+/// `granularity` is rejected.
 pub fn[Tz] DateTime::truncate(
   self : DateTime[Tz],
   granularity : @core.TimeDelta,
-) -> DateTime[Tz]? {
+) -> Result[DateTime[Tz], @core.RoundingError] {
   self.datetime
   .truncate(granularity)
   .map(datetime => DateTime::{ datetime, tz: self.tz, })
@@ -702,7 +702,7 @@ pub fn[Tz] DateTime::truncate(
 pub fn[Tz] DateTime::round(
   self : DateTime[Tz],
   granularity : @core.TimeDelta,
-) -> DateTime[Tz]? {
+) -> Result[DateTime[Tz], @core.RoundingError] {
   self.datetime
   .round(granularity)
   .map(datetime => DateTime::{ datetime, tz: self.tz, })
@@ -728,7 +728,7 @@ pub fn[Tz] DateTime::truncate_subsecs(
 pub fn[Tz] DateTime::round_subsecs(
   self : DateTime[Tz],
   digits : Int,
-) -> DateTime[Tz]? {
+) -> Result[DateTime[Tz], @core.RoundingError] {
   self.datetime
   .round_subsecs(digits)
   .map(datetime => DateTime::{ datetime, tz: self.tz, })

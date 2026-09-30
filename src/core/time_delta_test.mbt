@@ -165,14 +165,14 @@ test "min_value and max_value sit exactly one second away from overflow in each 
 test "truncate discards a remainder shorter than a whole-second granularity, rounding toward zero" {
   let delta = @core.TimeDelta::seconds(3661L).unwrap()
   let hour = @core.TimeDelta::hours(1L).unwrap()
-  assert_eq(delta.truncate(hour), Some(@core.TimeDelta::hours(1L).unwrap()))
+  assert_eq(delta.truncate(hour), Ok(@core.TimeDelta::hours(1L).unwrap()))
 }
 
 ///|
 test "truncate on a negative duration rounds toward zero rather than toward negative infinity" {
   let delta = @core.TimeDelta::seconds(-3661L).unwrap()
   let hour = @core.TimeDelta::hours(1L).unwrap()
-  assert_eq(delta.truncate(hour), Some(@core.TimeDelta::hours(-1L).unwrap()))
+  assert_eq(delta.truncate(hour), Ok(@core.TimeDelta::hours(-1L).unwrap()))
 }
 
 ///|
@@ -181,7 +181,7 @@ test "truncate discards a sub-second remainder for a sub-second granularity" {
   let half_second = @core.TimeDelta::milliseconds(500L).unwrap()
   assert_eq(
     delta.truncate(half_second),
-    Some(@core.TimeDelta::milliseconds(1500L).unwrap()),
+    Ok(@core.TimeDelta::milliseconds(1500L).unwrap()),
   )
 }
 
@@ -189,8 +189,8 @@ test "truncate discards a sub-second remainder for a sub-second granularity" {
 test "round breaks an exact half-value tie by moving away from zero, for both positive and negative durations" {
   let hour = @core.TimeDelta::hours(1L).unwrap()
   let half_hour = @core.TimeDelta::minutes(30L).unwrap()
-  assert_eq(half_hour.round(hour), Some(hour))
-  assert_eq(half_hour.neg().round(hour), Some(hour.neg()))
+  assert_eq(half_hour.round(hour), Ok(hour))
+  assert_eq(half_hour.neg().round(hour), Ok(hour.neg()))
 }
 
 ///|
@@ -200,7 +200,7 @@ test "round rounds away from zero when a sub-second remainder alone pushes the d
     .unwrap()
     .add(@core.TimeDelta::milliseconds(700L).unwrap())
     .unwrap()
-  assert_eq(just_past_half_hour.round(hour), Some(hour))
+  assert_eq(just_past_half_hour.round(hour), Ok(hour))
 }
 
 ///|
@@ -209,7 +209,7 @@ test "round truncates toward zero when a sub-second remainder is less than half 
   let half_second = @core.TimeDelta::milliseconds(500L).unwrap()
   assert_eq(
     delta.round(half_second),
-    Some(@core.TimeDelta::milliseconds(1000L).unwrap()),
+    Ok(@core.TimeDelta::milliseconds(1000L).unwrap()),
   )
 }
 
@@ -219,7 +219,7 @@ test "round rounds away from zero when a sub-second remainder is more than half 
   let half_second = @core.TimeDelta::milliseconds(500L).unwrap()
   assert_eq(
     delta.round(half_second),
-    Some(@core.TimeDelta::milliseconds(1500L).unwrap()),
+    Ok(@core.TimeDelta::milliseconds(1500L).unwrap()),
   )
 }
 
@@ -229,7 +229,7 @@ test "round breaks an exact sub-second granularity tie by moving away from zero"
   let half_second = @core.TimeDelta::milliseconds(500L).unwrap()
   assert_eq(
     delta.round(half_second),
-    Some(@core.TimeDelta::milliseconds(2000L).unwrap()),
+    Ok(@core.TimeDelta::milliseconds(2000L).unwrap()),
   )
 }
 
@@ -237,25 +237,31 @@ test "round breaks an exact sub-second granularity tie by moving away from zero"
 test "round and truncate collapse to zero when the granularity exceeds the duration's own magnitude" {
   let delta = @core.TimeDelta::seconds(30L).unwrap()
   let hour = @core.TimeDelta::hours(1L).unwrap()
-  assert_eq(delta.truncate(hour), Some(@core.TimeDelta::zero()))
-  assert_eq(delta.round(hour), Some(@core.TimeDelta::zero()))
+  assert_eq(delta.truncate(hour), Ok(@core.TimeDelta::zero()))
+  assert_eq(delta.round(hour), Ok(@core.TimeDelta::zero()))
 }
 
 ///|
 test "round and truncate reject a granularity that mixes a whole-second part with a sub-second remainder" {
   let delta = @core.TimeDelta::seconds(10L).unwrap()
   let mixed = @core.TimeDelta::milliseconds(1500L).unwrap()
-  assert_eq(delta.round(mixed), None)
-  assert_eq(delta.truncate(mixed), None)
+  assert_eq(delta.round(mixed), Err(MixedGranularity))
+  assert_eq(delta.truncate(mixed), Err(MixedGranularity))
 }
 
 ///|
 test "round and truncate reject a zero or negative granularity" {
   let delta = @core.TimeDelta::seconds(10L).unwrap()
-  assert_eq(delta.round(@core.TimeDelta::zero()), None)
-  assert_eq(delta.truncate(@core.TimeDelta::zero()), None)
-  assert_eq(delta.round(@core.TimeDelta::seconds(-1L).unwrap()), None)
-  assert_eq(delta.truncate(@core.TimeDelta::seconds(-1L).unwrap()), None)
+  assert_eq(delta.round(@core.TimeDelta::zero()), Err(InvalidGranularity))
+  assert_eq(delta.truncate(@core.TimeDelta::zero()), Err(InvalidGranularity))
+  assert_eq(
+    delta.round(@core.TimeDelta::seconds(-1L).unwrap()),
+    Err(InvalidGranularity),
+  )
+  assert_eq(
+    delta.truncate(@core.TimeDelta::seconds(-1L).unwrap()),
+    Err(InvalidGranularity),
+  )
 }
 
 ///|
@@ -586,16 +592,13 @@ test "round_up leaves an exact multiple of the granularity unchanged" {
   let hour = @core.TimeDelta::hours(1L).unwrap()
   assert_eq(
     @core.TimeDelta::hours(2L).unwrap().round_up(hour),
-    Some(@core.TimeDelta::hours(2L).unwrap()),
+    Ok(@core.TimeDelta::hours(2L).unwrap()),
   )
-  assert_eq(
-    @core.TimeDelta::zero().round_up(hour),
-    Some(@core.TimeDelta::zero()),
-  )
+  assert_eq(@core.TimeDelta::zero().round_up(hour), Ok(@core.TimeDelta::zero()))
   let second = @core.TimeDelta::seconds(1L).unwrap()
   assert_eq(
     @core.TimeDelta::seconds(3L).unwrap().round_up(second),
-    Some(@core.TimeDelta::seconds(3L).unwrap()),
+    Ok(@core.TimeDelta::seconds(3L).unwrap()),
   )
 }
 
@@ -604,23 +607,23 @@ test "round_up moves a positive duration up to the next multiple" {
   let second = @core.TimeDelta::seconds(1L).unwrap()
   assert_eq(
     @core.TimeDelta::milliseconds(1_200L).unwrap().round_up(second),
-    @core.TimeDelta::seconds(2L),
+    Ok(@core.TimeDelta::seconds(2L).unwrap()),
   )
   assert_eq(
     @core.TimeDelta::nanoseconds(1_000_000_001L).unwrap().round_up(second),
-    @core.TimeDelta::seconds(2L),
+    Ok(@core.TimeDelta::seconds(2L).unwrap()),
   )
   assert_eq(
     @core.TimeDelta::nanoseconds(1L)
     .unwrap()
     .round_up(@core.TimeDelta::milliseconds(1L).unwrap()),
-    @core.TimeDelta::milliseconds(1L),
+    Ok(@core.TimeDelta::milliseconds(1L).unwrap()),
   )
   assert_eq(
     @core.TimeDelta::seconds(61L)
     .unwrap()
     .round_up(@core.TimeDelta::minutes(1L).unwrap()),
-    @core.TimeDelta::minutes(2L),
+    Ok(@core.TimeDelta::minutes(2L).unwrap()),
   )
 }
 
@@ -629,17 +632,17 @@ test "round_up moves a negative duration toward positive infinity, which is towa
   let second = @core.TimeDelta::seconds(1L).unwrap()
   assert_eq(
     @core.TimeDelta::milliseconds(-1_200L).unwrap().round_up(second),
-    @core.TimeDelta::seconds(-1L),
+    Ok(@core.TimeDelta::seconds(-1L).unwrap()),
   )
   assert_eq(
     @core.TimeDelta::milliseconds(-500L).unwrap().round_up(second),
-    Some(@core.TimeDelta::zero()),
+    Ok(@core.TimeDelta::zero()),
   )
   assert_eq(
     @core.TimeDelta::seconds(-61L)
     .unwrap()
     .round_up(@core.TimeDelta::minutes(1L).unwrap()),
-    @core.TimeDelta::minutes(-1L),
+    Ok(@core.TimeDelta::minutes(-1L).unwrap()),
   )
 }
 
@@ -651,48 +654,51 @@ test "round_up agrees with truncate for a negative duration and exceeds it by on
   let positive = @core.TimeDelta::milliseconds(2_700L).unwrap()
   assert_eq(
     positive.round_up(second),
-    positive.truncate(second).bind(t => t.add(second)),
+    Ok(positive.truncate(second).unwrap().add(second).unwrap()),
   )
 }
 
 ///|
 test "round_up by a granularity larger than the value" {
   let hour = @core.TimeDelta::hours(1L).unwrap()
-  assert_eq(@core.TimeDelta::seconds(1L).unwrap().round_up(hour), Some(hour))
+  assert_eq(@core.TimeDelta::seconds(1L).unwrap().round_up(hour), Ok(hour))
   assert_eq(
     @core.TimeDelta::seconds(-1L).unwrap().round_up(hour),
-    Some(@core.TimeDelta::zero()),
+    Ok(@core.TimeDelta::zero()),
   )
 }
 
 ///|
 test "round_up rejects a zero, negative or mixed granularity" {
   let value = @core.TimeDelta::seconds(5L).unwrap()
-  assert_eq(value.round_up(@core.TimeDelta::zero()), None)
-  assert_eq(value.round_up(@core.TimeDelta::seconds(-1L).unwrap()), None)
+  assert_eq(value.round_up(@core.TimeDelta::zero()), Err(InvalidGranularity))
+  assert_eq(
+    value.round_up(@core.TimeDelta::seconds(-1L).unwrap()),
+    Err(InvalidGranularity),
+  )
   assert_eq(
     value.round_up(@core.TimeDelta::milliseconds(1_500L).unwrap()),
-    None,
+    Err(MixedGranularity),
   )
 }
 
 ///|
-test "round_up returns None when rounding up would leave the representable range" {
+test "round_up fails with OutOfRange when rounding up would leave the representable range" {
   assert_eq(
     @core.TimeDelta::max_value().round_up(@core.TimeDelta::seconds(1L).unwrap()),
-    Some(@core.TimeDelta::max_value()),
+    Ok(@core.TimeDelta::max_value()),
   )
   assert_eq(
     @core.TimeDelta::max_value().round_up(@core.TimeDelta::hours(1L).unwrap()),
-    None,
+    Err(OutOfRange),
   )
   assert_eq(
     @core.TimeDelta::max_value().round_up(@core.TimeDelta::days(1L).unwrap()),
-    None,
+    Err(OutOfRange),
   )
   assert_eq(
     @core.TimeDelta::min_value().round_up(@core.TimeDelta::seconds(1L).unwrap()),
-    Some(@core.TimeDelta::min_value()),
+    Ok(@core.TimeDelta::min_value()),
   )
 }
 

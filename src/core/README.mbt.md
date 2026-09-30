@@ -17,6 +17,7 @@ Calendar and clock primitives with no time zone awareness. Import `connect0459/c
 | `NaiveTime` | A time of day, precise to the nanosecond, with leap-second support |
 | `TimeDelta` | A signed duration, precise to the nanosecond |
 | `NaiveDateTime` | A `NaiveDate` and `NaiveTime` combined into one zone-less instant |
+| `RoundingError` | Why a `round`/`round_up`/`truncate` call failed: `InvalidGranularity` (zero or negative), `MixedGranularity` (a whole-second part combined with a sub-second remainder, e.g. 1.5 seconds), or `OutOfRange` (the result would leave the type's representable range) |
 
 `NaiveDate` (`1970-01-01`), `NaiveTime` (midnight), `NaiveDateTime` (the Unix epoch), `TimeDelta` (zero) and `WeekdaySet` (empty) implement `Default`. Struct-valued constants are exposed as functions (`NaiveTime::midnight()`, `NaiveDateTime::unix_epoch()`, `TimeDelta::zero()`) because MoonBit's `const` is limited to primitive types.
 
@@ -43,8 +44,8 @@ test {
 test {
   let half_hour = @core.TimeDelta::minutes(30L).unwrap()
   let hour = @core.TimeDelta::hours(1L).unwrap()
-  assert_eq(half_hour.round(hour), Some(hour))
-  assert_eq(half_hour.truncate(hour), Some(@core.TimeDelta::zero()))
+  assert_eq(half_hour.round(hour), Ok(hour))
+  assert_eq(half_hour.truncate(hour), Ok(@core.TimeDelta::zero()))
 }
 ```
 
@@ -323,9 +324,9 @@ A signed duration, precise to the nanosecond. Constructors and checked arithmeti
 | `neg()` | `-> Self` | Negation |
 | `abs()` | `-> Self` | Absolute value |
 | `is_zero()` | `-> Bool` | Whether this duration is exactly zero |
-| `round(TimeDelta)` | `-> Self?` | Round to the nearest multiple of a granularity, ties breaking away from zero; `None` if the granularity is zero, negative, or mixes a whole-second part with a sub-second remainder (e.g. 1.5 seconds — every named duration unit is either purely sub-second or a whole-second-or-larger multiple) |
-| `truncate(TimeDelta)` | `-> Self?` | Truncate toward zero to the nearest multiple of a granularity; same granularity restriction as `round` |
-| `round_up(TimeDelta)` | `-> Self?` | Round up (toward positive infinity) to a multiple of a granularity: unchanged if already a multiple, otherwise the next one above (for a negative duration that is toward zero, equal to `truncate`); `None` for a rejected granularity or if the result would leave the representable range |
+| `round(TimeDelta)` | `-> Result[Self, RoundingError]` | Round to the nearest multiple of a granularity, ties breaking away from zero; `Err(InvalidGranularity)` if the granularity is zero or negative, `Err(MixedGranularity)` if it mixes a whole-second part with a sub-second remainder (e.g. 1.5 seconds — every named duration unit is either purely sub-second or a whole-second-or-larger multiple), `Err(OutOfRange)` if the result would leave the representable range |
+| `truncate(TimeDelta)` | `-> Result[Self, RoundingError]` | Truncate toward zero to the nearest multiple of a granularity; same granularity restriction as `round` |
+| `round_up(TimeDelta)` | `-> Result[Self, RoundingError]` | Round up (toward positive infinity) to a multiple of a granularity: unchanged if already a multiple, otherwise the next one above (for a negative duration that is toward zero, equal to `truncate`); `Err` with the same reasons as `round` |
 
 `TimeDelta` also implements `Eq`, `Compare` (`<`/`<=`/`>`/`>=` via `compare`) and `Show`. `Show` renders Go's `time.Duration` style: a leading `-` for a negative value, then hours/minutes/seconds (`1h2m3.5s`) with hours as the largest unit (never days) and trailing fractional zeros trimmed; units between the largest and the seconds are kept even when zero (`1h0m0s`); a duration under one second uses `ns`/`us`/`ms` (`1.5ms`); zero is `0s`. `format`'s `parse_duration` reads this form back.
 
@@ -378,9 +379,9 @@ A `NaiveDate` and `NaiveTime` combined into one zone-less instant.
 
 The non-`checked` arithmetic on `NaiveDate` and `NaiveDateTime` (`succ`, `pred`, `add_*`, `sub_*`) aborts if the result falls outside the representable date range (about ±5.87 million years around the epoch) rather than wrapping into an invalid date; use the `checked_*`/`*_opt` forms to get `None` instead.
 | `signed_duration_since(Self)` | `-> TimeDelta` | The signed duration from `other` to `self` |
-| `round(TimeDelta)` | `-> Self?` | Round to the nearest multiple of a granularity since the Unix epoch, ties breaking away from the epoch; see `TimeDelta::round` for which granularities are supported |
-| `truncate(TimeDelta)` | `-> Self?` | Truncate toward the Unix epoch to the nearest multiple of a granularity; a datetime before the epoch is truncated *forward* in time (see Quick start above), never further into the past |
-| `round_subsecs(Int)` / `truncate_subsecs(Int)` | `-> Self?` / `-> Self` | Round or truncate to a number of fractional-second digits (`0..=9`; other values abort), with the tie-breaking and epoch direction of `round`/`truncate`. A datetime with no digits beyond that count is returned unchanged, leap second included; otherwise a leap second folds into the following second |
-| `round_up(TimeDelta)` | `-> Self?` | Round up (toward positive infinity) to the next multiple of a granularity since the Unix epoch, unchanged if already a multiple; a datetime before the epoch moves toward the epoch; `None` for a rejected granularity or if the result would leave `NaiveDate`'s range |
+| `round(TimeDelta)` | `-> Result[Self, RoundingError]` | Round to the nearest multiple of a granularity since the Unix epoch, ties breaking away from the epoch; see `TimeDelta::round` for which granularities are supported |
+| `truncate(TimeDelta)` | `-> Result[Self, RoundingError]` | Truncate toward the Unix epoch to the nearest multiple of a granularity; a datetime before the epoch is truncated *forward* in time (see Quick start above), never further into the past |
+| `round_subsecs(Int)` / `truncate_subsecs(Int)` | `-> Result[Self, RoundingError]` / `-> Self` | Round or truncate to a number of fractional-second digits (`0..=9`; other values abort), with the tie-breaking and epoch direction of `round`/`truncate`; `round_subsecs` fails with `OutOfRange` if rounding up leaves the range. A datetime with no digits beyond that count is returned unchanged, leap second included; otherwise a leap second folds into the following second |
+| `round_up(TimeDelta)` | `-> Result[Self, RoundingError]` | Round up (toward positive infinity) to the next multiple of a granularity since the Unix epoch, unchanged if already a multiple; a datetime before the epoch moves toward the epoch; `Err` for a rejected granularity, or `Err(OutOfRange)` if the result would leave `NaiveDate`'s range |
 
 `NaiveDateTime` also implements `Eq`, `Compare` (`<`/`<=`/`>`/`>=` via `compare`) and `Show`, rendering the date and time joined by a space (`2024-01-02 13:45:06.500`).

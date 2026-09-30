@@ -728,11 +728,11 @@ pub fn NaiveDateTime::signed_duration_since(
 ///|
 /// This datetime truncated toward the Unix epoch to the nearest multiple of
 /// `granularity`. See `TimeDelta::truncate` for the conditions under which
-/// `granularity` is rejected (returning `None`).
+/// `granularity` is rejected.
 pub fn NaiveDateTime::truncate(
   self : NaiveDateTime,
   granularity : TimeDelta,
-) -> NaiveDateTime? {
+) -> Result[NaiveDateTime, RoundingError] {
   self
   .signed_duration_since(NaiveDateTime::unix_epoch())
   .truncate(granularity)
@@ -742,33 +742,37 @@ pub fn NaiveDateTime::truncate(
 ///|
 /// This datetime rounded to the nearest multiple of `granularity` since the
 /// Unix epoch, ties breaking away from the epoch. See `TimeDelta::round`
-/// for the conditions under which `granularity` is rejected (returning
-/// `None`); also `None` if rounding away from the epoch would leave
-/// `NaiveDate`'s representable range.
+/// for the conditions under which `granularity` is rejected; also fails with
+/// `OutOfRange` if rounding away from the epoch would leave `NaiveDate`'s
+/// representable range.
 pub fn NaiveDateTime::round(
   self : NaiveDateTime,
   granularity : TimeDelta,
-) -> NaiveDateTime? {
-  self
-  .signed_duration_since(NaiveDateTime::unix_epoch())
-  .round(granularity)
-  .bind(delta => NaiveDateTime::unix_epoch().checked_add_signed(delta))
+) -> Result[NaiveDateTime, RoundingError] {
+  let since_epoch = self.signed_duration_since(NaiveDateTime::unix_epoch())
+  let delta = match since_epoch.round(granularity) {
+    Ok(v) => v
+    Err(e) => return Err(e)
+  }
+  in_range(NaiveDateTime::unix_epoch().checked_add_signed(delta))
 }
 
 ///|
 /// This datetime rounded up (toward positive infinity) to the nearest
 /// multiple of `granularity` since the Unix epoch: unchanged if already a
 /// multiple, otherwise the next one after it. See `TimeDelta::round_up`.
-/// Returns `None` if `granularity` is rejected or the result falls outside
-/// `NaiveDate`'s representable range.
+/// Fails if `granularity` is rejected, or with `OutOfRange` if the result
+/// falls outside `NaiveDate`'s representable range.
 pub fn NaiveDateTime::round_up(
   self : NaiveDateTime,
   granularity : TimeDelta,
-) -> NaiveDateTime? {
-  self
-  .signed_duration_since(NaiveDateTime::unix_epoch())
-  .round_up(granularity)
-  .bind(delta => NaiveDateTime::unix_epoch().checked_add_signed(delta))
+) -> Result[NaiveDateTime, RoundingError] {
+  let since_epoch = self.signed_duration_since(NaiveDateTime::unix_epoch())
+  let delta = match since_epoch.round_up(granularity) {
+    Ok(v) => v
+    Err(e) => return Err(e)
+  }
+  in_range(NaiveDateTime::unix_epoch().checked_add_signed(delta))
 }
 
 ///|
@@ -795,8 +799,9 @@ pub fn NaiveDateTime::truncate_subsecs(
 
 ///|
 /// This datetime rounded to `digits` fractional-second digits (`0..=9`),
-/// with the tie-breaking and range behavior of `round`: `None` if rounding
-/// away from the epoch would leave `NaiveDate`'s representable range. A
+/// with the tie-breaking and range behavior of `round`: `OutOfRange` if
+/// rounding away from the epoch would leave `NaiveDate`'s representable
+/// range. A
 /// datetime with no digits beyond `digits` is returned unchanged, leap second
 /// included; otherwise a leap second folds into the following second.
 ///
@@ -804,10 +809,10 @@ pub fn NaiveDateTime::truncate_subsecs(
 pub fn NaiveDateTime::round_subsecs(
   self : NaiveDateTime,
   digits : Int,
-) -> NaiveDateTime? {
+) -> Result[NaiveDateTime, RoundingError] {
   let nanos = subsec_granularity_nanos(digits, "NaiveDateTime::round_subsecs")
   if self.time.nanosecond() % nanos == 0 {
-    return Some(self)
+    return Ok(self)
   }
   self.round(TimeDelta::nanoseconds(nanos.to_int64()).unwrap())
 }

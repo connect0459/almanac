@@ -222,8 +222,8 @@ test "round and truncate collapse to the Unix epoch when the granularity exceeds
   )
   let day = @core.TimeDelta::days(1L).unwrap()
   let epoch = @core.NaiveDateTime::from_timestamp(0L, 0).unwrap()
-  assert_eq(dt.truncate(day), Some(epoch))
-  assert_eq(dt.round(day), Some(epoch))
+  assert_eq(dt.truncate(day), Ok(epoch))
+  assert_eq(dt.round(day), Ok(epoch))
 }
 
 ///|
@@ -233,8 +233,8 @@ test "round and truncate reject an unsupported granularity that mixes whole seco
     @core.NaiveTime::from_hms(9, 30, 0).unwrap(),
   )
   let mixed = @core.TimeDelta::milliseconds(1500L).unwrap()
-  assert_eq(dt.round(mixed), None)
-  assert_eq(dt.truncate(mixed), None)
+  assert_eq(dt.round(mixed), Err(MixedGranularity))
+  assert_eq(dt.truncate(mixed), Err(MixedGranularity))
 }
 
 ///|
@@ -608,15 +608,19 @@ test "round_up moves a datetime up to the next multiple of the granularity since
     .unwrap()
   assert_eq(
     dt.round_up(@core.TimeDelta::seconds(1L).unwrap()),
-    @core.NaiveDate::from_ymd(2024, 1, 2).unwrap().and_hms(13, 45, 7),
+    Ok(
+      @core.NaiveDate::from_ymd(2024, 1, 2).unwrap().and_hms(13, 45, 7).unwrap(),
+    ),
   )
   assert_eq(
     dt.round_up(@core.TimeDelta::hours(1L).unwrap()),
-    @core.NaiveDate::from_ymd(2024, 1, 2).unwrap().and_hms(14, 0, 0),
+    Ok(
+      @core.NaiveDate::from_ymd(2024, 1, 2).unwrap().and_hms(14, 0, 0).unwrap(),
+    ),
   )
   assert_eq(
     dt.round_up(@core.TimeDelta::days(1L).unwrap()),
-    @core.NaiveDate::from_ymd(2024, 1, 3).unwrap().and_hms(0, 0, 0),
+    Ok(@core.NaiveDate::from_ymd(2024, 1, 3).unwrap().and_hms(0, 0, 0).unwrap()),
   )
 }
 
@@ -626,7 +630,7 @@ test "round_up leaves a datetime that already sits on a multiple unchanged" {
     .unwrap()
     .and_hms(13, 0, 0)
     .unwrap()
-  assert_eq(dt.round_up(@core.TimeDelta::hours(1L).unwrap()), Some(dt))
+  assert_eq(dt.round_up(@core.TimeDelta::hours(1L).unwrap()), Ok(dt))
 }
 
 ///|
@@ -637,7 +641,7 @@ test "round_up before the epoch still moves toward positive infinity" {
     .unwrap()
   assert_eq(
     before.round_up(@core.TimeDelta::seconds(1L).unwrap()),
-    @core.NaiveDate::from_ymd(1970, 1, 1).unwrap().and_hms(0, 0, 0),
+    Ok(@core.NaiveDate::from_ymd(1970, 1, 1).unwrap().and_hms(0, 0, 0).unwrap()),
   )
   let earlier = @core.NaiveDate::from_ymd(1969, 12, 31)
     .unwrap()
@@ -645,7 +649,7 @@ test "round_up before the epoch still moves toward positive infinity" {
     .unwrap()
   assert_eq(
     earlier.round_up(@core.TimeDelta::hours(1L).unwrap()),
-    @core.NaiveDate::from_ymd(1970, 1, 1).unwrap().and_hms(0, 0, 0),
+    Ok(@core.NaiveDate::from_ymd(1970, 1, 1).unwrap().and_hms(0, 0, 0).unwrap()),
   )
 }
 
@@ -655,26 +659,38 @@ test "round_up rejects a zero, negative or mixed granularity" {
     .unwrap()
     .and_hms(13, 45, 6)
     .unwrap()
-  assert_eq(dt.round_up(@core.TimeDelta::zero()), None)
-  assert_eq(dt.round_up(@core.TimeDelta::seconds(-1L).unwrap()), None)
-  assert_eq(dt.round_up(@core.TimeDelta::milliseconds(1_500L).unwrap()), None)
-}
-
-///|
-test "round_up returns None instead of aborting when the result leaves the representable date range" {
-  assert_eq(max_datetime().round_up(@core.TimeDelta::days(1L).unwrap()), None)
+  assert_eq(dt.round_up(@core.TimeDelta::zero()), Err(InvalidGranularity))
   assert_eq(
-    max_datetime().round_up(@core.TimeDelta::seconds(1L).unwrap()),
-    Some(max_datetime()),
+    dt.round_up(@core.TimeDelta::seconds(-1L).unwrap()),
+    Err(InvalidGranularity),
+  )
+  assert_eq(
+    dt.round_up(@core.TimeDelta::milliseconds(1_500L).unwrap()),
+    Err(MixedGranularity),
   )
 }
 
 ///|
-test "round returns None instead of aborting when rounding would leave the representable date range" {
-  assert_eq(max_datetime().round(@core.TimeDelta::days(1L).unwrap()), None)
+test "round_up fails with OutOfRange instead of aborting when the result leaves the representable date range" {
+  assert_eq(
+    max_datetime().round_up(@core.TimeDelta::days(1L).unwrap()),
+    Err(OutOfRange),
+  )
+  assert_eq(
+    max_datetime().round_up(@core.TimeDelta::seconds(1L).unwrap()),
+    Ok(max_datetime()),
+  )
+}
+
+///|
+test "round fails with OutOfRange instead of aborting when rounding would leave the representable date range" {
+  assert_eq(
+    max_datetime().round(@core.TimeDelta::days(1L).unwrap()),
+    Err(OutOfRange),
+  )
   assert_eq(
     min_datetime().round(@core.TimeDelta::days(1L).unwrap()),
-    Some(min_datetime()),
+    Ok(min_datetime()),
   )
 }
 
@@ -692,8 +708,8 @@ test "unix_epoch is 1970-01-01 at midnight, timestamp zero" {
 ///|
 test "unix_epoch is the origin of round and truncate" {
   let epoch = @core.NaiveDateTime::unix_epoch()
-  assert_eq(epoch.round_up(@core.TimeDelta::days(1L).unwrap()), Some(epoch))
-  assert_eq(epoch.truncate(@core.TimeDelta::days(1L).unwrap()), Some(epoch))
+  assert_eq(epoch.round_up(@core.TimeDelta::days(1L).unwrap()), Ok(epoch))
+  assert_eq(epoch.truncate(@core.TimeDelta::days(1L).unwrap()), Ok(epoch))
 }
 
 ///|
@@ -983,14 +999,14 @@ test "round_subsecs rounds to the nearest value at the requested digit count" {
     .unwrap()
   assert_eq(
     dt.round_subsecs(3),
-    Some(
+    Ok(
       @core.NaiveDate::from_ymd(2024, 6, 15)
       .unwrap()
       .and_hms_nano(12, 34, 56, 988_000_000)
       .unwrap(),
     ),
   )
-  assert_eq(dt.round_subsecs(9), Some(dt))
+  assert_eq(dt.round_subsecs(9), Ok(dt))
 }
 
 ///|
@@ -1001,20 +1017,18 @@ test "round_subsecs carries across midnight into the next date" {
     .unwrap()
   assert_eq(
     dt.round_subsecs(0),
-    Some(
-      @core.NaiveDate::from_ymd(2025, 1, 1).unwrap().and_hms(0, 0, 0).unwrap(),
-    ),
+    Ok(@core.NaiveDate::from_ymd(2025, 1, 1).unwrap().and_hms(0, 0, 0).unwrap()),
   )
 }
 
 ///|
-test "round_subsecs returns None when rounding up leaves the representable range" {
-  assert_eq(max_datetime().round_subsecs(0), Some(max_datetime()))
+test "round_subsecs fails with OutOfRange when rounding up leaves the representable range" {
+  assert_eq(max_datetime().round_subsecs(0), Ok(max_datetime()))
   let last = @core.NaiveDate::from_epoch_days(2_147_483_647 - 719_468)
     .unwrap()
     .and_hms_nano(23, 59, 59, 900_000_000)
     .unwrap()
-  assert_eq(last.round_subsecs(0), None)
+  assert_eq(last.round_subsecs(0), Err(OutOfRange))
 }
 
 ///|
@@ -1047,7 +1061,7 @@ test "round_subsecs and truncate_subsecs treat a leap second as the elapsed inst
     .and_hms(0, 0, 0)
     .unwrap()
   assert_eq(leap.truncate_subsecs(0), next_midnight)
-  assert_eq(leap.round_subsecs(0), Some(next_midnight.add_seconds(1)))
+  assert_eq(leap.round_subsecs(0), Ok(next_midnight.add_seconds(1)))
 }
 
 ///|
@@ -1057,7 +1071,7 @@ test "round_subsecs and truncate_subsecs leave a leap second that has no digits 
     .and_hms_nano(23, 59, 59, 1_500_000_000)
     .unwrap()
   assert_eq(leap.truncate_subsecs(1), leap)
-  assert_eq(leap.round_subsecs(1), Some(leap))
+  assert_eq(leap.round_subsecs(1), Ok(leap))
   assert_eq(leap.truncate_subsecs(9), leap)
-  assert_eq(leap.round_subsecs(9), Some(leap))
+  assert_eq(leap.round_subsecs(9), Ok(leap))
 }

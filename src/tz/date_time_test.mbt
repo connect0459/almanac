@@ -260,15 +260,15 @@ test "round and truncate operate on the underlying UTC instant, not the offset-s
 }
 
 ///|
-test "round and truncate report None for an unsupported granularity, matching NaiveDateTime" {
+test "round and truncate report MixedGranularity for an unsupported granularity, matching NaiveDateTime" {
   let naive = @core.NaiveDateTime::new(
     @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),
     @core.NaiveTime::from_hms(9, 45, 30).unwrap(),
   )
   let dt = @tz.DateTime::from_utc(naive, @tz.Utc::new())
   let mixed = @core.TimeDelta::milliseconds(1500L).unwrap()
-  assert_eq(dt.truncate(mixed), None)
-  assert_eq(dt.round(mixed), None)
+  assert_eq(dt.truncate(mixed), Err(MixedGranularity))
+  assert_eq(dt.round(mixed), Err(MixedGranularity))
 }
 
 ///|
