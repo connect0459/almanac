@@ -420,9 +420,7 @@ fn render(
             out.write_string(format_offset_hours_only(offset))
           None => raise MissingField(item)
         }
-      Fixed(TimezoneOffsetPermissive) =>
-        // Parse-only: %#z has no rendering.
-        raise MissingField(item)
+      Fixed(TimezoneOffsetPermissive) => raise ParseOnly(item)
       Fixed(LongMonthName) =>
         match date {
           Some(d) => out.write_string(d.month().name())

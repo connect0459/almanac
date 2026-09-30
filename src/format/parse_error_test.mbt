@@ -191,3 +191,15 @@ test "FieldOutOfRange, InputTooShort and TrailingInput render one-line messages"
     "parsed fields contradict each other",
   )
 }
+
+///|
+test "ParseError ParseOnly names the item that can only be parsed" {
+  let dt = @tz.DateTime::from_utc(
+    @core.NaiveDateTime::unix_epoch(),
+    @tz.FixedOffset::east(9 * 3600).unwrap(),
+  )
+  assert_eq(
+    message_of(() => @format.format_date_time_tz(dt, "%#z") |> ignore),
+    "format item can only be parsed, not rendered: Fixed(TimezoneOffsetPermissive)",
+  )
+}

@@ -364,7 +364,7 @@ test "format_date_time_tz renders %:z as ±HH:MM, %::z as ±HH:MM:SS, and %:::z 
 }
 
 ///|
-test "format_date_time_tz raises MissingField for %#z, which is parse-only" {
+test "format_date_time_tz raises ParseOnly for %#z, which can only be parsed" {
   let dt = @tz.DateTime::from_utc(
     @core.NaiveDateTime::new(
       @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
@@ -373,8 +373,8 @@ test "format_date_time_tz raises MissingField for %#z, which is parse-only" {
     @tz.FixedOffset::east(9 * 3600).unwrap(),
   )
   try @format.format_date_time_tz(dt, "%#z") |> ignore catch {
-    @format.MissingField(@format.Fixed(@format.TimezoneOffsetPermissive)) => ()
-    _ => fail("expected MissingField(Fixed(TimezoneOffsetPermissive))")
+    @format.ParseOnly(@format.Fixed(@format.TimezoneOffsetPermissive)) => ()
+    _ => fail("expected ParseOnly(Fixed(TimezoneOffsetPermissive))")
   } noraise {
     _ => fail("expected format_date_time_tz to reject %#z")
   }

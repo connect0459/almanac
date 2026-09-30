@@ -145,7 +145,7 @@ Suffixes name where the zone comes from: `_tz` renders any `DateTime[Tz]` (`form
 | :--- | :--- | :--- |
 | `format_date(NaiveDate, String)` | `-> String raise ParseError` | Render against a format string; raises `MissingField` for a time-of-day specifier (`%H`/`%M`/`%S`/`%f`/`%I`/`%l`/`%P`/`%p`) |
 | `format_time(NaiveTime, String)` | `-> String raise ParseError` | Render against a format string; raises `MissingField` for a date specifier (`%Y`/`%m`/`%d`/`%j`/`%A`/`%a`/`%B`/`%b`/`%h`/`%G`/`%g`/`%V`/`%C`/`%y`/`%q`/`%e`/`%w`/`%u`/`%U`/`%W`) or `%s` (no absolute instant to draw from) |
-| `format_date_time(NaiveDateTime, String)` | `-> String raise ParseError` | Render against a format string; raises `MissingField` for `%Z`/`%z`/`%:z`/`%::z`/`%:::z` (no zone to draw from) or `%#z` (parse-only, never renders) |
+| `format_date_time(NaiveDateTime, String)` | `-> String raise ParseError` | Render against a format string; raises `MissingField` for `%Z`/`%z`/`%:z`/`%::z`/`%:::z` (no zone to draw from), or `ParseOnly` for `%#z` (parse-only, never renders) |
 | `format_date_time_tz(DateTime[Tz], String)` *(Tz : TimeZone)* | `-> String raise ParseError` | Render in local (wall-clock) representation; `%Z` renders `tz.tz_name()`, `%z` the numeric offset, `%s` the underlying UTC instant's timestamp |
 
 ### Parsing
@@ -293,6 +293,7 @@ pub(all) enum Fixed {
 | `UnknownSpecifier(Char)` | `tokenize` encounters an unrecognized `%`-specifier |
 | `TrailingPercent` | A format string ends with a bare `%` |
 | `MissingField(Item)` | A `format_*` call is asked to render a specifier its input type can't supply (e.g. `%Z` via `format_date_time`) |
+| `ParseOnly(Item)` | A `format_*` call is given a specifier that can only be parsed (`%#z`); `tokenize` and the `parse_*` functions accept it, since the format string alone does not say which direction it serves |
 | `InvalidRfc3339` | `parse_rfc3339` fails to match the RFC 3339 grammar |
 | `InvalidRfc2822` | `to_rfc2822`'s year is outside `0..=9999`, or `parse_rfc2822` fails to match this package's (strict) RFC 2822 grammar |
 | `InvalidDuration` | `parse_duration`'s input is malformed (no digits, missing or unknown unit, misplaced sign, stray characters) or its value is outside `TimeDelta`'s representable range |
@@ -303,4 +304,4 @@ pub(all) enum Fixed {
 | `InputTooShort` | The input is exhausted when the format still has an item to match (e.g. `"2024-03"` against `%F`); a partial field such as one digit for `%m` is `InputMismatch` |
 | `TrailingInput` | The format is fully matched but input remains after it; the `_and_remainder` functions return that tail instead |
 
-`ParseError` also implements `Eq` and `Show`, which renders a one-line message per variant (e.g. `input does not match the format`; `MissingField` appends the item's `Debug` form).
+`ParseError` also implements `Eq` and `Show`, which renders a one-line message per variant (e.g. `input does not match the format`; `MissingField` and `ParseOnly` append the item's `Debug` form).

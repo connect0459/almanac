@@ -101,6 +101,7 @@ pub suberror ParseError {
   UnknownSpecifier(Char)
   TrailingPercent
   MissingField(Item)
+  ParseOnly(Item)
   InvalidRfc3339
   InvalidRfc2822
   InvalidDuration
