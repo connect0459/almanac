@@ -157,3 +157,35 @@ test "offset_from_abbreviation is None for zones that carry no abbreviation of t
   let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
   assert_eq(tokyo.offset_from_abbreviation("+09:00", any), None)
 }
+
+///|
+test "unwrap returns the value of an unambiguous local time" {
+  let mapped : @tz.MappedLocalTime[Int] = @tz.Single(7)
+  assert_eq(mapped.unwrap(), 7)
+}
+
+///|
+test "panic unwrap aborts on a local time that occurs twice" {
+  let mapped : @tz.MappedLocalTime[Int] = @tz.Ambiguous(1, 2)
+  ignore(mapped.unwrap())
+}
+
+///|
+test "panic unwrap aborts on a local time that never occurs" {
+  let mapped : @tz.MappedLocalTime[Int] = @tz.Absent
+  ignore(mapped.unwrap())
+}
+
+///|
+test "unwrap resolves a wall-clock reading in a zone with no daylight saving" {
+  let dt = @tz.DateTime::from_ymd_hms(
+    2024,
+    6,
+    15,
+    12,
+    0,
+    0,
+    @tz.FixedOffset::east(9 * 3600).unwrap(),
+  ).unwrap()
+  assert_eq(dt.naive_local().time().hour(), 12)
+}

@@ -214,6 +214,7 @@ pub fn[T, U] MappedLocalTime::map(Self[T], (T) -> U) -> Self[U]
 pub fn[T : Eq] MappedLocalTime::not_equal(Self[T], Self[T]) -> Bool
 pub fn[T] MappedLocalTime::single(Self[T]) -> T?
 pub fn[T : @debug.Debug] MappedLocalTime::to_repr(Self[T]) -> @debug.Repr
+pub fn[T] MappedLocalTime::unwrap(Self[T]) -> T
 
 pub struct PosixTz {
   // private fields

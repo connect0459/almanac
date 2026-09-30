@@ -122,6 +122,7 @@ pub enum MappedLocalTime[T] {
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `single()` | `-> T?` | The value, only when unambiguous; `None` for `Ambiguous`/`Absent` |
+| `unwrap()` | `-> T` | The value when unambiguous; aborts, naming the reason, on `Ambiguous` or `Absent` |
 | `earliest()` | `-> T?` | The earliest possible value (the sole value, or the first of an `Ambiguous` fold); `None` for `Absent` |
 | `latest()` | `-> T?` | The latest possible value (the sole value, or the second of an `Ambiguous` fold); `None` for `Absent` |
 | `map((T) -> U)` | `-> MappedLocalTime[U]` | Transform every value carried by `self`, preserving its shape |

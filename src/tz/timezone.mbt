@@ -32,6 +32,21 @@ pub fn[T] MappedLocalTime::single(self : MappedLocalTime[T]) -> T? {
 }
 
 ///|
+/// The value of an unambiguous (`Single`) local time.
+///
+/// Aborts, naming the reason, on `Ambiguous` (the reading occurs twice) or
+/// `Absent` (the reading never occurs); use `single`, `earliest` or `latest`
+/// to handle those cases instead.
+pub fn[T] MappedLocalTime::unwrap(self : MappedLocalTime[T]) -> T {
+  match self {
+    Single(value) => value
+    Ambiguous(_, _) =>
+      abort("MappedLocalTime::unwrap: the local time is ambiguous")
+    Absent => abort("MappedLocalTime::unwrap: the local time does not exist")
+  }
+}
+
+///|
 /// The earliest value `self` could resolve to: the sole value for
 /// `Single`, the first (earlier-UTC-instant) value of an `Ambiguous`
 /// fold, or `None` for `Absent`.
