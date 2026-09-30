@@ -529,6 +529,26 @@ pub fn[Tz : TimeZone] DateTime::quarter(self : DateTime[Tz]) -> Int {
 }
 
 ///|
+/// The local year, month, and day of month together.
+pub fn[Tz : TimeZone] DateTime::ymd(
+  self : DateTime[Tz],
+) -> (Int, @core.Month, Int) {
+  self.naive_local().ymd()
+}
+
+///|
+/// The local hour, minute, and second together.
+pub fn[Tz : TimeZone] DateTime::hms(self : DateTime[Tz]) -> (Int, Int, Int) {
+  self.naive_local().hms()
+}
+
+///|
+/// Whether the local calendar year is a leap year.
+pub fn[Tz : TimeZone] DateTime::leap_year(self : DateTime[Tz]) -> Bool {
+  self.naive_local().leap_year()
+}
+
+///|
 /// The local year as a Common Era flag and a positive year number. See `@core.NaiveDate::year_ce`.
 pub fn[Tz : TimeZone] DateTime::year_ce(self : DateTime[Tz]) -> (Bool, Int) {
   self.naive_local().year_ce()
@@ -908,6 +928,56 @@ pub fn[Tz, Tz2] DateTime::signed_duration_since(
   other : DateTime[Tz2],
 ) -> @core.TimeDelta {
   self.datetime.signed_duration_since(other.datetime)
+}
+
+///|
+/// This datetime's instant moved forward by `seconds` (backward if
+/// negative), keeping the same time zone.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_add_seconds` to get `None` instead.
+pub fn[Tz] DateTime::add_seconds(
+  self : DateTime[Tz],
+  seconds : Int64,
+) -> DateTime[Tz] {
+  DateTime::{ datetime: self.datetime.add_seconds(seconds), tz: self.tz, }
+}
+
+///|
+/// This datetime's instant moved backward by `seconds` (forward if
+/// negative). See `add_seconds`.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_sub_seconds` to get `None` instead.
+pub fn[Tz] DateTime::sub_seconds(
+  self : DateTime[Tz],
+  seconds : Int64,
+) -> DateTime[Tz] {
+  DateTime::{ datetime: self.datetime.sub_seconds(seconds), tz: self.tz, }
+}
+
+///|
+/// Like `add_seconds`, but `None` if the result falls outside `NaiveDate`'s
+/// representable range.
+pub fn[Tz] DateTime::checked_add_seconds(
+  self : DateTime[Tz],
+  seconds : Int64,
+) -> DateTime[Tz]? {
+  self.datetime
+  .checked_add_seconds(seconds)
+  .map(datetime => DateTime::{ datetime, tz: self.tz, })
+}
+
+///|
+/// Like `sub_seconds`, but `None` if the result falls outside `NaiveDate`'s
+/// representable range.
+pub fn[Tz] DateTime::checked_sub_seconds(
+  self : DateTime[Tz],
+  seconds : Int64,
+) -> DateTime[Tz]? {
+  self.datetime
+  .checked_sub_seconds(seconds)
+  .map(datetime => DateTime::{ datetime, tz: self.tz, })
 }
 
 ///|

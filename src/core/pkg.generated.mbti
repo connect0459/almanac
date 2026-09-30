@@ -183,6 +183,7 @@ pub fn NaiveDateTime::from_timestamp(Int64, Int) -> Self?
 pub fn NaiveDateTime::from_timestamp_micros(Int64) -> Self?
 pub fn NaiveDateTime::from_timestamp_millis(Int64) -> Self?
 pub fn NaiveDateTime::from_timestamp_nanos(Int64) -> Self?
+pub fn NaiveDateTime::from_ymd_hms(Int, Int, Int, Int, Int, Int) -> Self?
 pub fn NaiveDateTime::hash(Self) -> Int
 pub fn NaiveDateTime::hash_combine(Self, Hasher) -> Unit
 pub fn NaiveDateTime::hms(Self) -> (Int, Int, Int)
@@ -244,6 +245,7 @@ pub fn NaiveDateTime::with_second(Self, Int) -> Self?
 pub fn NaiveDateTime::with_year(Self, Int) -> Self?
 pub fn NaiveDateTime::year(Self) -> Int
 pub fn NaiveDateTime::year_ce(Self) -> (Bool, Int)
+pub fn NaiveDateTime::years_since(Self, Self) -> Int?
 pub fn NaiveDateTime::ymd(Self) -> (Int, Month, Int)
 pub impl Default for NaiveDateTime
 pub impl Show for NaiveDateTime

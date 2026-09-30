@@ -1335,3 +1335,40 @@ test "from_local_lenient resolves readings on either side of a gap by the same r
   assert_eq(before.naive_utc(), local_reading(2024, 3, 10, 6, 59))
   assert_eq(after.naive_utc(), local_reading(2024, 3, 10, 7, 0))
 }
+
+///|
+test "DateTime add_seconds and sub_seconds shift the instant and keep the zone" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let dt = @tz.DateTime::from_timestamp(1_000L, 0, tokyo).unwrap()
+  assert_eq(dt.add_seconds(90L).timestamp(), 1_090L)
+  assert_eq(dt.sub_seconds(90L).timestamp(), 910L)
+  assert_eq(dt.add_seconds(10_000_000_000L).timestamp(), 10_000_001_000L)
+  assert_eq(dt.offset(), dt.add_seconds(90L).offset())
+}
+
+///|
+test "DateTime checked_add_seconds and checked_sub_seconds return None outside the representable range" {
+  let dt = @tz.DateTime::from_timestamp(0L, 0, @tz.Utc::new()).unwrap()
+  assert_eq(dt.checked_add_seconds(9_223_372_036_854_775_807L), None)
+  assert_eq(dt.checked_sub_seconds(9_223_372_036_854_775_807L), None)
+  assert_eq(dt.checked_add_seconds(45L).map(d => d.timestamp()), Some(45L))
+}
+
+///|
+test "panic DateTime add_seconds aborts when the result leaves the representable range" {
+  let dt = @tz.DateTime::from_timestamp(0L, 0, @tz.Utc::new()).unwrap()
+  ignore(dt.add_seconds(9_223_372_036_854_775_807L))
+}
+
+///|
+test "DateTime ymd, hms and leap_year read the local reading" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let dt = @tz.DateTime::from_ymd_hms(2024, 2, 29, 23, 30, 15, tokyo)
+    .single()
+    .unwrap()
+  assert_eq(dt.ymd(), (2024, @core.Feb, 29))
+  assert_eq(dt.hms(), (23, 30, 15))
+  assert_true(dt.leap_year())
+  let utc_reading = dt.naive_utc()
+  assert_eq(utc_reading.hms(), (14, 30, 15))
+}

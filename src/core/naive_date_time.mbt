@@ -165,6 +165,34 @@ pub fn NaiveDateTime::iso_week(self : NaiveDateTime) -> IsoWeek {
 }
 
 ///|
+/// The datetime at the given year, month, day, hour, minute and second, or
+/// `None` if any component is out of range (see `NaiveDate::from_ymd` and
+/// `NaiveTime::from_hms`).
+pub fn NaiveDateTime::from_ymd_hms(
+  year : Int,
+  month : Int,
+  day : Int,
+  hour : Int,
+  min : Int,
+  sec : Int,
+) -> NaiveDateTime? {
+  NaiveDate::from_ymd(year, month, day).bind(date => {
+    date.and_hms(hour, min, sec)
+  })
+}
+
+///|
+/// The number of full calendar years elapsed from `base` to `self`, or
+/// `None` if `self` is before `base`, comparing the dates and ignoring the
+/// time of day. See `NaiveDate::years_since`.
+pub fn NaiveDateTime::years_since(
+  self : NaiveDateTime,
+  base : NaiveDateTime,
+) -> Int? {
+  self.date.years_since(base.date)
+}
+
+///|
 /// Whether the calendar year is a leap year.
 pub fn NaiveDateTime::leap_year(self : NaiveDateTime) -> Bool {
   self.date.leap_year()

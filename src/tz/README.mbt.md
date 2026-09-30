@@ -227,10 +227,14 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 | `sub_years(Int)` | `-> Self[Tz]` | Move the date back by years |
 | `add_days(Int)` | `-> Self[Tz]` | Advance the date by days, keeping the time of day and time zone |
 | `sub_days(Int)` | `-> Self[Tz]` | Move the date back by days |
+| `add_seconds(Int64)` / `sub_seconds(Int64)` | `-> Self[Tz]` | Move the instant by a whole number of seconds (backward if negative), keeping the same time zone; abort if the result leaves `NaiveDate`'s range |
+| `checked_add_seconds(Int64)` / `checked_sub_seconds(Int64)` | `-> Self[Tz]?` | The same, but `None` instead of aborting when out of range |
 | `checked_add_signed(TimeDelta)` / `checked_sub_signed(TimeDelta)` | `-> Self[Tz]?` | Like `add_signed`/`sub_signed`, but `None` instead of aborting when the result leaves `NaiveDate`'s range |
 | `checked_add_months(Int)` / `checked_sub_months(Int)` / `checked_add_years(Int)` / `checked_sub_years(Int)` / `checked_add_days(Int)` / `checked_sub_days(Int)` | `-> Self[Tz]?` | Like the aborting forms above, but `None` instead of aborting when the date leaves `NaiveDate`'s range |
 | `date()` / `time()` | `-> NaiveDate` / `-> NaiveTime` | The local calendar date / time of day |
 | `year()` / `month()` / `day()` / `ordinal()` / `weekday()` / `iso_week()` | `-> Int` / `-> Month` / `-> Int` / `-> Int` / `-> Weekday` / `-> IsoWeek` | Local calendar components, derived from `naive_local()` (requires `Tz : TimeZone`) |
+| `ymd()` / `hms()` | `-> (Int, Month, Int)` / `(Int, Int, Int)` | The local date and time components together |
+| `leap_year()` | `-> Bool` | Whether the local calendar year is a leap year |
 | `hour()` / `minute()` / `second()` / `nanosecond()` | `-> Int` | Local time-of-day components; a leap second reports `second() == 59` with `nanosecond() >= 1_000_000_000` |
 | `month0()` / `day0()` / `ordinal0()` / `quarter()` / `num_days_in_month()` / `num_days_from_ce()` | `-> Int` | Further local calendar components (0-based month/day/ordinal, quarter `1..=4`, month length, days since the start of the Common Era) |
 | `year_ce()` / `hour12()` | `-> (Bool, Int)` | Local year as a Common Era flag plus a positive year; local hour as a PM flag plus an hour in `1..=12` |

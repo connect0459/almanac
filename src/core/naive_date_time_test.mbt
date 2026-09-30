@@ -1098,3 +1098,24 @@ test "checked_add_seconds and checked_sub_seconds return None for a 64-bit count
   assert_eq(epoch.checked_add_seconds(-9_223_372_036_854_775_807L - 1L), None)
   assert_eq(epoch.checked_sub_seconds(-9_223_372_036_854_775_807L - 1L), None)
 }
+
+///|
+test "years_since counts full calendar years between the dates and ignores the time of day" {
+  let born = @core.NaiveDateTime::from_ymd_hms(2000, 6, 15, 23, 0, 0).unwrap()
+  let day_before = @core.NaiveDateTime::from_ymd_hms(2024, 6, 14, 12, 0, 0).unwrap()
+  let birthday_early = @core.NaiveDateTime::from_ymd_hms(2024, 6, 15, 1, 0, 0).unwrap()
+  assert_eq(day_before.years_since(born), Some(23))
+  assert_eq(birthday_early.years_since(born), Some(24))
+  assert_eq(born.years_since(birthday_early), None)
+}
+
+///|
+test "from_ymd_hms builds a datetime from components and rejects an invalid one" {
+  let dt = @core.NaiveDateTime::from_ymd_hms(2024, 3, 5, 9, 5, 7).unwrap()
+  assert_eq(dt.ymd(), (2024, @core.Mar, 5))
+  assert_eq(dt.hms(), (9, 5, 7))
+  assert_true(@core.NaiveDateTime::from_ymd_hms(2024, 13, 5, 9, 5, 7) is None)
+  assert_true(@core.NaiveDateTime::from_ymd_hms(2023, 2, 29, 9, 5, 7) is None)
+  assert_true(@core.NaiveDateTime::from_ymd_hms(2024, 3, 5, 24, 0, 0) is None)
+  assert_true(@core.NaiveDateTime::from_ymd_hms(2024, 3, 5, 9, 60, 0) is None)
+}

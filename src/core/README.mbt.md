@@ -204,7 +204,7 @@ A proleptic Gregorian calendar date. Constructors are `Option`-returning: an inv
 | `and_hms_nano(Int, Int, Int, Int)` | `-> NaiveDateTime?` | As `and_hms`, plus nanoseconds (`>= 1_000_000_000` encodes a leap second) |
 | `epoch_days()` | `-> Int` | Days since the Unix epoch (`1970-01-01` is `0`) |
 | `NaiveDate::from_epoch_days(Int)` | `-> NaiveDate?` | Inverse of `epoch_days()`; `None` if out of range |
-| `num_days_from_ce()` | `-> Int` | Days since the Common Era (`0001-01-01` is `1`) |
+| `num_days_from_ce()` | `-> Int` | Days since the Common Era (`0001-01-01` is `1`); also available on `NaiveDateTime` and `DateTime`, whereas `epoch_days()`/`from_epoch_days` exist only here, because a count of days since the epoch would be ambiguous between a date and an instant |
 | `NaiveDate::from_num_days_from_ce(Int)` | `-> NaiveDate?` | Inverse of `num_days_from_ce()`; `None` if out of range |
 | `add_months(Int)` | `-> Self` | Shift by whole months, clamping the day of month to the target month's length |
 | `sub_months(Int)` | `-> Self` | Shift backward by whole months, with the same clamping |
@@ -345,10 +345,12 @@ A `NaiveDate` and `NaiveTime` combined into one zone-less instant.
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `NaiveDateTime::new(NaiveDate, NaiveTime)` | `-> Self` | Compose a date and a time of day |
+| `NaiveDateTime::from_ymd_hms(Int, Int, Int, Int, Int, Int)` | `-> Self?` | From year, month, day, hour, minute and second; `None` if any component is out of range |
 | `NaiveDateTime::unix_epoch()` | `-> Self` | The Unix epoch, `1970-01-01 00:00:00` (timestamp zero); also `NaiveDateTime`'s `Default` |
 | `year()` / `month()` / `day()` / `ordinal()` / `weekday()` / `iso_week()` / `leap_year()` | `-> Int` / `Month` / `Int` / `Int` / `Weekday` / `IsoWeek` / `Bool` | The date's components, as on `NaiveDate` |
 | `hour()` / `minute()` / `second()` / `nanosecond()` | `-> Int` | The time's components, as on `NaiveTime` (`nanosecond() >= 1_000_000_000` encodes a leap second) |
 | `ymd()` / `hms()` | `-> (Int, Month, Int)` / `(Int, Int, Int)` | The date and time components together, as on `NaiveDate`/`NaiveTime` |
+| `years_since(Self)` | `-> Int?` | Full calendar years elapsed from `base`, comparing the dates and ignoring the time of day; `None` if `self` is before `base` |
 | `month0()` / `day0()` / `ordinal0()` / `quarter()` / `num_days_in_month()` / `num_days_from_ce()` | `-> Int` | The zero-based month/day/ordinal, the quarter (`1..=4`), the month's length and the Common Era day count, as on `NaiveDate` |
 | `year_ce()` | `-> (Bool, Int)` | The year as a Common Era flag and positive year number, as on `NaiveDate` |
 | `hour12()` | `-> (Bool, Int)` | The 12-hour clock as a PM flag and an hour in `1..=12`, as on `NaiveTime` |
