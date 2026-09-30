@@ -1154,3 +1154,111 @@ test "checked DateTime arithmetic returns None before the first representable in
   assert_eq(first.checked_sub_years(1), None)
   assert_eq(first.checked_sub_days(1), None)
 }
+
+///|
+fn local_reading(
+  y : Int,
+  mo : Int,
+  d : Int,
+  h : Int,
+  mi : Int,
+) -> @core.NaiveDateTime {
+  @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(y, mo, d).unwrap(),
+    @core.NaiveTime::from_hms(h, mi, 0).unwrap(),
+  )
+}
+
+///|
+test "from_local_lenient keeps an unambiguous local reading exactly" {
+  let new_york = @tz.Location::load("America/New_York").unwrap()
+  let strict = @tz.DateTime::from_local(
+      local_reading(2024, 7, 1, 12, 0),
+      new_york,
+    )
+    .single()
+    .unwrap()
+  assert_true(
+    @tz.DateTime::from_local_lenient(local_reading(2024, 7, 1, 12, 0), new_york) ==
+    strict,
+  )
+}
+
+///|
+test "from_local_lenient resolves a gap with the offset before the transition, landing after the gap" {
+  let new_york = @tz.Location::load("America/New_York").unwrap()
+  let dt = @tz.DateTime::from_local_lenient(
+    local_reading(2024, 3, 10, 2, 30),
+    new_york,
+  )
+  assert_eq(dt.naive_utc(), local_reading(2024, 3, 10, 7, 30))
+  assert_eq(dt.naive_local(), local_reading(2024, 3, 10, 3, 30))
+  assert_eq(dt.zone_name(), "EDT")
+}
+
+///|
+test "from_local_lenient resolves a gap in a positive-offset zone with the offset before the transition" {
+  let sydney = @tz.Location::load("Australia/Sydney").unwrap()
+  let dt = @tz.DateTime::from_local_lenient(
+    local_reading(2024, 10, 6, 2, 30),
+    sydney,
+  )
+  assert_eq(dt.naive_utc(), local_reading(2024, 10, 5, 16, 30))
+  assert_eq(dt.naive_local(), local_reading(2024, 10, 6, 3, 30))
+}
+
+///|
+test "from_local_lenient takes the first occurrence of a repeated local reading" {
+  let new_york = @tz.Location::load("America/New_York").unwrap()
+  let dt = @tz.DateTime::from_local_lenient(
+    local_reading(2024, 11, 3, 1, 30),
+    new_york,
+  )
+  assert_eq(dt.naive_utc(), local_reading(2024, 11, 3, 5, 30))
+  assert_eq(dt.zone_name(), "EDT")
+}
+
+///|
+test "from_local_lenient takes the first occurrence of a repeated reading in a positive-offset zone" {
+  let sydney = @tz.Location::load("Australia/Sydney").unwrap()
+  let dt = @tz.DateTime::from_local_lenient(
+    local_reading(2024, 4, 7, 2, 30),
+    sydney,
+  )
+  assert_eq(dt.naive_utc(), local_reading(2024, 4, 6, 15, 30))
+}
+
+///|
+test "from_local_lenient agrees with the strict earliest resolution wherever one exists" {
+  let new_york = @tz.Location::load("America/New_York").unwrap()
+  let reading = local_reading(2024, 11, 3, 1, 15)
+  assert_true(
+    @tz.DateTime::from_local_lenient(reading, new_york) ==
+    @tz.DateTime::from_local(reading, new_york).earliest().unwrap(),
+  )
+}
+
+///|
+test "from_local_lenient in a fixed-offset zone is the plain shift" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let dt = @tz.DateTime::from_local_lenient(
+    local_reading(2024, 6, 15, 21, 0),
+    tokyo,
+  )
+  assert_eq(dt.naive_utc(), local_reading(2024, 6, 15, 12, 0))
+}
+
+///|
+test "from_local_lenient resolves readings on either side of a gap by the same rule" {
+  let new_york = @tz.Location::load("America/New_York").unwrap()
+  let before = @tz.DateTime::from_local_lenient(
+    local_reading(2024, 3, 10, 1, 59),
+    new_york,
+  )
+  let after = @tz.DateTime::from_local_lenient(
+    local_reading(2024, 3, 10, 3, 0),
+    new_york,
+  )
+  assert_eq(before.naive_utc(), local_reading(2024, 3, 10, 6, 59))
+  assert_eq(after.naive_utc(), local_reading(2024, 3, 10, 7, 0))
+}

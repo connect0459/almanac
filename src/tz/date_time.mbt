@@ -80,6 +80,70 @@ pub fn[Tz : TimeZone] DateTime::from_local(
 }
 
 ///|
+/// The offset in effect just before the transition whose gap contains the
+/// local reading `reading`, or `None` if no transition's gap contains it.
+///
+/// Walks the zone's transitions backward from the latest one that could
+/// hold `reading` (a transition's instant is within a day and a bit of the
+/// reading taken as UTC, since offsets stay within `±23:59:59`), stopping
+/// once a transition's local times lie entirely at or before `reading`.
+fn[Tz : TimeZone] offset_before_gap(
+  tz : Tz,
+  reading : @core.NaiveDateTime,
+) -> FixedOffset? {
+  for probe = reading.add_seconds(27 * 3600) {
+    match tz.transition_bounds(probe).start() {
+      None => break None
+      Some(transition) => {
+        let before = tz.offset_from_utc(transition.sub_seconds(1))
+        let after = tz.offset_from_utc(transition)
+        let gap_start = transition.add_seconds(before.local_minus_utc())
+        let gap_end = transition.add_seconds(after.local_minus_utc())
+        if reading >= gap_start && reading < gap_end {
+          break Some(before)
+        }
+        if reading >= gap_start && reading >= gap_end {
+          break None
+        }
+        continue transition.sub_seconds(1)
+      }
+    }
+  }
+}
+
+///|
+/// Builds a `DateTime[Tz]` from a local (wall-clock) naive datetime and a
+/// time zone, always succeeding: unlike `from_local`, no reading is left
+/// unresolved.
+///
+/// - An unambiguous reading resolves exactly as `from_local` does.
+/// - A reading repeated by a fall-back fold takes its first occurrence (the
+///   earlier UTC instant), as `MappedLocalTime::earliest` does.
+/// - A reading skipped by a spring-forward gap is interpreted with the
+///   offset in effect just before the transition, so the result lands
+///   after the gap by the gap's length (e.g. `02:30` in a gap from `02:00`
+///   to `03:00` becomes `03:30`).
+///
+/// A zone that reports a gap but exposes no transition bounds to find the
+/// earlier offset from resolves the reading with its offset at that reading
+/// taken as a UTC instant.
+pub fn[Tz : TimeZone] DateTime::from_local_lenient(
+  naive_local : @core.NaiveDateTime,
+  tz : Tz,
+) -> DateTime[Tz] {
+  match DateTime::from_local(naive_local, tz).earliest() {
+    Some(dt) => dt
+    None => {
+      let offset = match offset_before_gap(tz, naive_local) {
+        Some(offset) => offset
+        None => tz.offset_from_utc(naive_local)
+      }
+      DateTime::from_utc(naive_local.sub_seconds(offset.local_minus_utc()), tz)
+    }
+  }
+}
+
+///|
 /// Builds a `DateTime[Tz]` from local calendar/time-of-day components and
 /// a time zone (the proleptic Gregorian calendar, year 0 being 1 BCE).
 /// `Absent` for an invalid date or time-of-day, in addition to the usual
