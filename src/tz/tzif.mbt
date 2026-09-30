@@ -74,25 +74,31 @@ pub extend TzifData with Eq::{not_equal}
 pub extend TzifData with Hash::{hash, hash_combine}
 
 ///|
+/// A copy of the transitions array; changing it does not affect
+/// this value.
 pub fn TzifData::transitions(self : TzifData) -> Array[Int64] {
-  self.transitions
+  self.transitions.copy()
 }
 
 ///|
+/// A copy of the transition types array; changing it does not affect
+/// this value.
 pub fn TzifData::transition_types(self : TzifData) -> Array[Int] {
-  self.transition_types
+  self.transition_types.copy()
 }
 
 ///|
+/// A copy of the local time types array; changing it does not affect
+/// this value.
 pub fn TzifData::local_time_types(self : TzifData) -> Array[LocalTimeType] {
-  self.local_time_types
+  self.local_time_types.copy()
 }
 
 ///|
 /// Leap-second records `(transition, correction)`, parsed for fidelity but
-/// not applied to civil-time arithmetic.
+/// not applied to civil-time arithmetic. Returns a copy.
 pub fn TzifData::leap_seconds(self : TzifData) -> Array[(Int64, Int)] {
-  self.leap_seconds
+  self.leap_seconds.copy()
 }
 
 ///|

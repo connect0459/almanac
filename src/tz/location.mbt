@@ -118,7 +118,7 @@ pub fn Location::utc() -> Location {
 /// non-DST type, or the first type if every type observes DST (RFC
 /// 8536's rule for pre-first-transition instants).
 fn Location::initial_type(self : Location) -> LocalTimeType {
-  let types = self.tzif.local_time_types()
+  let types = self.tzif.local_time_types
   for i = 0 {
     if i >= types.length() {
       break types[0]
@@ -135,7 +135,7 @@ fn Location::initial_type(self : Location) -> LocalTimeType {
 /// at `target`, or `None` if `target` is before this zone's first
 /// recorded transition, or it has none (use `initial_type` instead).
 fn Location::segment_at(self : Location, target : Int64) -> Int? {
-  let transitions = self.tzif.transitions()
+  let transitions = self.tzif.transitions
   if transitions.is_empty() {
     None
   } else {
@@ -168,8 +168,7 @@ pub fn Location::offset_from_abbreviation(
     FixedOffset::east(in_effect.utc_offset())
   } else {
     match
-      self.tzif
-      .local_time_types()
+      self.tzif.local_time_types
       .iter()
       .find_first(t => t.abbreviation() == abbreviation) {
       Some(t) => FixedOffset::east(t.utc_offset())
@@ -183,13 +182,13 @@ pub fn Location::offset_from_abbreviation(
 /// transition (and so should be resolved via `posix_tz` rather than the
 /// transition table).
 fn Location::past_last_transition(self : Location, target : Int64) -> Bool {
-  let transitions = self.tzif.transitions()
+  let transitions = self.tzif.transitions
   !transitions.is_empty() && target > transitions[transitions.length() - 1]
 }
 
 ///|
 fn Location::type_at_segment(self : Location, segment : Int) -> LocalTimeType {
-  self.tzif.local_time_types()[self.tzif.transition_types()[segment]]
+  self.tzif.local_time_types[self.tzif.transition_types[segment]]
 }
 
 ///|
@@ -203,7 +202,7 @@ pub fn Location::type_at(
   if self.past_last_transition(target) {
     match self.posix_tz {
       Some(p) => p.type_at(target)
-      None => self.type_at_segment(self.tzif.transitions().length() - 1)
+      None => self.type_at_segment(self.tzif.transitions.length() - 1)
     }
   } else {
     match self.segment_at(target) {
@@ -259,7 +258,7 @@ pub fn Location::transition_bounds(
   utc : @core.NaiveDateTime,
 ) -> TransitionBounds {
   let target = utc.timestamp()
-  let transitions = self.tzif.transitions()
+  let transitions = self.tzif.transitions
   fn at(secs : Int64) -> @core.NaiveDateTime {
     @core.NaiveDateTime::from_timestamp(secs, 0).unwrap()
   }
@@ -327,7 +326,7 @@ fn Location::candidate_offset(
   segment : Int,
   local_ts : Int64,
 ) -> Int? {
-  let transitions = self.tzif.transitions()
+  let transitions = self.tzif.transitions
   let n = transitions.length()
   if segment < 0 || segment >= n {
     None
@@ -359,7 +358,7 @@ pub impl TimeZone for Location with fn offset_from_local(self, naive_local) {
         Single(
           FixedOffset::east(
             self
-            .type_at_segment(self.tzif.transitions().length() - 1)
+            .type_at_segment(self.tzif.transitions.length() - 1)
             .utc_offset(),
           ).unwrap(),
         )

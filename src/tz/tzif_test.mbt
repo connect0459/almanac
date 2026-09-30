@@ -98,3 +98,17 @@ test "parse_tzif rejects a footer missing its leading newline" {
 test "parse_tzif rejects a footer missing its trailing newline" {
   assert_true(@tz.parse_tzif(tzif_footer_missing_trailing_newline) is None)
 }
+
+///|
+test "mutating an array returned by a TzifData accessor leaves the data unchanged" {
+  let parsed = @tz.parse_tzif(tzif_tokyo).unwrap()
+  let before = @tz.parse_tzif(tzif_tokyo).unwrap()
+  parsed.transitions().clear()
+  parsed.transition_types().clear()
+  parsed.local_time_types().clear()
+  parsed.leap_seconds().clear()
+  assert_true(parsed == before)
+  assert_eq(parsed.transitions(), before.transitions())
+  assert_true(parsed.transitions().length() > 0)
+  assert_true(parsed.local_time_types().length() > 0)
+}
