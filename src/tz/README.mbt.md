@@ -220,6 +220,8 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 | `timestamp_micros()` / `timestamp_nanos()` | `-> Int64?` | Microseconds / nanoseconds since the Unix epoch; `None` if the instant overflows `Int64` |
 | `timestamp_subsec_nanos()` / `timestamp_subsec_millis()` / `timestamp_subsec_micros()` | `-> Int` | The sub-second component of the instant in that unit |
 | `signed_duration_since(Self[Tz2])` | `-> TimeDelta` | The signed duration from `other` to `self`, independent of either's time zone |
+| `zone_name()` | `-> String` | The zone's name at this instant: an IANA abbreviation (`"EDT"`), a `FixedZone`'s name, `"UTC"`, or a bare `FixedOffset`'s offset text; the same text as `%Z` (requires `Tz : TimeZone`) |
+| `zone()` | `-> (String, FixedOffset)` | `zone_name()` paired with `offset()` (requires `Tz : TimeZone`) |
 | `is_dst()` | `-> Bool` | Whether daylight saving time is in effect at this instant (requires `Tz : TimeZone`) |
 | `zone_bounds()` | `-> TransitionBounds` | The validity window of the offset in effect at this instant, either side `None` when unbounded (requires `Tz : TimeZone`); see `TransitionBounds` |
 | `to_string()` (`Show`) | `-> String` | The local date-time and the zone's name at that instant joined by a space, e.g. `"2024-01-02 13:45:06.500 +09:00"`, `"... UTC"`, `"... EDT"` (requires `Tz : TimeZone`) |

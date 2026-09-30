@@ -178,6 +178,22 @@ pub fn[Tz : TimeZone] DateTime::offset(self : DateTime[Tz]) -> FixedOffset {
 }
 
 ///|
+/// The name of the zone in effect at this instant: an IANA zone's
+/// abbreviation (e.g. `"EDT"`), a `FixedZone`'s name, `"UTC"`, or a bare
+/// `FixedOffset`'s offset text. The same text as `%Z` and the end of `Show`.
+pub fn[Tz : TimeZone] DateTime::zone_name(self : DateTime[Tz]) -> String {
+  self.tz.tz_name(self.datetime)
+}
+
+///|
+/// The name (see `zone_name`) and UTC offset in effect at this instant.
+pub fn[Tz : TimeZone] DateTime::zone(
+  self : DateTime[Tz],
+) -> (String, FixedOffset) {
+  (self.zone_name(), self.offset())
+}
+
+///|
 /// The naive local (wall-clock) datetime, i.e. the UTC datetime shifted by
 /// `offset()`. Always succeeds: an offset is at most `±23:59:59`, far
 /// within `TimeDelta`'s representable range.

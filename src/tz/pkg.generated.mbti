@@ -101,7 +101,9 @@ pub fn[Tz : TimeZone] DateTime::with_year(Self[Tz], Int) -> MappedLocalTime[Self
 pub fn[Tz : TimeZone] DateTime::year(Self[Tz]) -> Int
 pub fn[Tz : TimeZone] DateTime::year_ce(Self[Tz]) -> (Bool, Int)
 pub fn[Tz : TimeZone] DateTime::years_since(Self[Tz], Self[Tz]) -> Int?
+pub fn[Tz : TimeZone] DateTime::zone(Self[Tz]) -> (String, FixedOffset)
 pub fn[Tz : TimeZone] DateTime::zone_bounds(Self[Tz]) -> TransitionBounds
+pub fn[Tz : TimeZone] DateTime::zone_name(Self[Tz]) -> String
 pub impl[Tz : Eq] Compare for DateTime[Tz]
 pub impl[Tz : TimeZone] Show for DateTime[Tz]
 

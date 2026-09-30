@@ -893,3 +893,42 @@ test "zone_bounds of a DateTime in a PosixTz is the window of its DST or standar
   assert_eq(fixed.zone_bounds().start(), None)
   assert_eq(fixed.zone_bounds().end(), None)
 }
+
+///|
+test "zone_name reports the zone's name at this instant: the offset text for a bare FixedOffset, UTC for Utc" {
+  assert_eq(tokyo_new_year_morning().zone_name(), "+09:00")
+  assert_eq(tokyo_new_year_morning().to_utc().zone_name(), "UTC")
+}
+
+///|
+test "zone_name reports a FixedZone's own name" {
+  let jst = @tz.FixedZone::new("JST", @tz.FixedOffset::east(9 * 3600).unwrap())
+  let dt = @tz.DateTime::from_utc(@core.NaiveDateTime::unix_epoch(), jst)
+  assert_eq(dt.zone_name(), "JST")
+}
+
+///|
+test "zone_name follows an IANA zone's abbreviation across a daylight-saving change" {
+  let new_york = @tz.Location::load("America/New_York").unwrap()
+  let summer = @tz.DateTime::from_ymd_hms(2024, 7, 1, 12, 0, 0, new_york)
+    .single()
+    .unwrap()
+  let winter = @tz.DateTime::from_ymd_hms(2024, 1, 1, 12, 0, 0, new_york)
+    .single()
+    .unwrap()
+  assert_eq(summer.zone_name(), "EDT")
+  assert_eq(winter.zone_name(), "EST")
+}
+
+///|
+test "zone pairs the zone's name with the offset in effect at this instant" {
+  let new_york = @tz.Location::load("America/New_York").unwrap()
+  let summer = @tz.DateTime::from_ymd_hms(2024, 7, 1, 12, 0, 0, new_york)
+    .single()
+    .unwrap()
+  assert_eq(summer.zone(), ("EDT", @tz.FixedOffset::west(4 * 3600).unwrap()))
+  assert_eq(
+    tokyo_new_year_morning().zone(),
+    ("+09:00", @tz.FixedOffset::east(9 * 3600).unwrap()),
+  )
+}
