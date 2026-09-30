@@ -71,12 +71,13 @@ pub fn WeekdaySetIterator::iter(self : WeekdaySetIterator) -> Iter[Weekday] {
 
 ///|
 /// A double-ended iterator over this set's members in cyclic weekday order
-/// starting at `start` (default `Mon`), wrapping from `Sun` to `Mon`: a
-/// start weekday that is not a member simply begins at the next member. See
+/// starting at `start`, wrapping from `Sun` to `Mon`: a start weekday that
+/// is not a member simply begins at the next member. Unlike `iter`, it also
+/// walks from the back (`next_back`) and reports its `length`. See
 /// `WeekdaySetIterator`.
 pub fn WeekdaySet::iter_from(
   self : WeekdaySet,
-  start? : Weekday = Mon,
+  start : Weekday,
 ) -> WeekdaySetIterator {
   WeekdaySetIterator::{ remaining: self, start, }
 }
@@ -90,5 +91,5 @@ pub fn WeekdaySet::iter(
   self : WeekdaySet,
   start? : Weekday = Mon,
 ) -> Iter[Weekday] {
-  self.iter_from(start~).iter()
+  self.iter_from(start).iter()
 }

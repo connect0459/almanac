@@ -462,7 +462,7 @@ pub fn WeekdaySet::intersection(Self, Self) -> Self
 pub fn WeekdaySet::is_empty(Self) -> Bool
 pub fn WeekdaySet::is_subset(Self, Self) -> Bool
 pub fn WeekdaySet::iter(Self, start? : Weekday) -> Iter[Weekday]
-pub fn WeekdaySet::iter_from(Self, start? : Weekday) -> WeekdaySetIterator
+pub fn WeekdaySet::iter_from(Self, Weekday) -> WeekdaySetIterator
 pub fn WeekdaySet::last(Self) -> Weekday?
 pub fn WeekdaySet::length(Self) -> Int
 pub fn WeekdaySet::not_equal(Self, Self) -> Bool

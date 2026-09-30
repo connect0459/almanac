@@ -126,7 +126,7 @@ An immutable set of `Weekday` values. Every mutating-looking operation (`insert`
 | `length()` | `-> Int` | The number of members |
 | `to_array()` | `-> Array[Weekday]` | Members in `Mon..Sun` order |
 | `iter(start? : Weekday)` | `-> Iter[Weekday]` | Members in cyclic order from `start` (default `Mon`, matching `to_array()`), wrapping from `Sun` to `Mon`; a `start` that is not a member begins at the next member. A standard `Iter`, so `for day in set.iter(start=Sun)` and adapters work (`for day in set` does not: `for` needs a zero-argument `iter()`) |
-| `iter_from(start? : Weekday)` | `-> WeekdaySetIterator` | The same order as a double-ended iterator with `next()`, `next_back()`, `length()` and `iter()`; the ends converge without skipping or repeating a weekday |
+| `iter_from(start : Weekday)` | `-> WeekdaySetIterator` | The same order as a double-ended iterator with `next()`, `next_back()`, `length()` and `iter()`; the ends converge without skipping or repeating a weekday |
 
 `WeekdaySet` also implements `Eq`, `Hash` and `Show`; it deliberately has no `Compare`, since an order over sets would only reflect the bit layout (use `is_subset` for the meaningful relation), rendering the members' short names in `Mon..Sun` order (`[Mon, Fri]`, empty is `[]`).
 

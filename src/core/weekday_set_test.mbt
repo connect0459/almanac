@@ -327,7 +327,7 @@ test "iter does not change the set" {
 ///|
 test "iter_from yields members in cyclic order from the start with next" {
   let it = @core.WeekdaySet::from_array([@core.Mon, @core.Wed, @core.Sun]).iter_from(
-    start=@core.Wed,
+    @core.Wed,
   )
   assert_eq(it.length(), 3)
   assert_eq(it.next(), Some(@core.Wed))
@@ -340,7 +340,7 @@ test "iter_from yields members in cyclic order from the start with next" {
 ///|
 test "iter_from next_back yields members from the end of the cycle" {
   let it = @core.WeekdaySet::from_array([@core.Mon, @core.Wed, @core.Sun]).iter_from(
-    start=@core.Sun,
+    @core.Sun,
   )
   assert_eq(it.next_back(), Some(@core.Wed))
   assert_eq(it.next_back(), Some(@core.Mon))
@@ -355,7 +355,7 @@ test "iter_from converges from both ends without skipping or repeating a weekday
     @core.Tue,
     @core.Wed,
     @core.Thu,
-  ]).iter_from()
+  ]).iter_from(@core.Mon)
   assert_eq(it.next(), Some(@core.Mon))
   assert_eq(it.next_back(), Some(@core.Thu))
   assert_eq(it.length(), 2)
@@ -367,7 +367,9 @@ test "iter_from converges from both ends without skipping or repeating a weekday
 
 ///|
 test "the Iter from an iter_from iterator continues from its current position" {
-  let it = @core.WeekdaySet::from_array([@core.Mon, @core.Wed, @core.Sun]).iter_from()
+  let it = @core.WeekdaySet::from_array([@core.Mon, @core.Wed, @core.Sun]).iter_from(
+    @core.Mon,
+  )
   ignore(it.next())
   ignore(it.next_back())
   assert_eq(it.iter().collect(), [@core.Wed])
