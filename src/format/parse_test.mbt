@@ -1735,8 +1735,8 @@ test "the kitchen layout reads back what it renders, for times on the minute" {
     let time = @core.NaiveTime::from_hms(hour, minute, 0).unwrap()
     assert_eq(
       @format.parse_time(
-        @format.format_time(time, @format.kitchen),
-        @format.kitchen,
+        @format.format_time(time, @format.KITCHEN),
+        @format.KITCHEN,
       ),
       time,
     )

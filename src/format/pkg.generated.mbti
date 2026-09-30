@@ -8,11 +8,27 @@ import {
 }
 
 // Values
-pub let ansic : String
+pub const ANSIC : String = "%a %b %e %H:%M:%S %Y"
 
-pub let date_only : String
+pub const DATE_ONLY : String = "%F"
 
-pub let date_time : String
+pub const DATE_TIME : String = "%F %T"
+
+pub const KITCHEN : String = "%-I:%M%p"
+
+pub const RUBY_DATE : String = "%a %b %d %H:%M:%S %z %Y"
+
+pub const STAMP : String = "%b %e %H:%M:%S"
+
+pub const STAMP_MICRO : String = "%b %e %H:%M:%S.%6f"
+
+pub const STAMP_MILLI : String = "%b %e %H:%M:%S.%3f"
+
+pub const STAMP_NANO : String = "%b %e %H:%M:%S.%9f"
+
+pub const TIME_ONLY : String = "%T"
+
+pub const UNIX_DATE : String = "%a %b %e %H:%M:%S %Z %Y"
 
 pub fn format_date(@core.NaiveDate, String) -> String raise ParseError
 
@@ -29,8 +45,6 @@ pub fn[Tz : @tz.TimeZone] format_date_time_tz_items(@tz.DateTime[Tz], Array[Item
 pub fn format_time(@core.NaiveTime, String) -> String raise ParseError
 
 pub fn format_time_items(@core.NaiveTime, Array[Item]) -> String raise ParseError
-
-pub let kitchen : String
 
 pub fn parse_date(String, String) -> @core.NaiveDate raise ParseError
 
@@ -74,28 +88,6 @@ pub fn parse_time_and_remainder(String, String) -> (@core.NaiveTime, String) rai
 
 pub fn parse_time_default(String) -> @core.NaiveTime raise ParseError
 
-pub let rfc1123 : String
-
-pub let rfc1123z : String
-
-pub let rfc822 : String
-
-pub let rfc822z : String
-
-pub let rfc850 : String
-
-pub let ruby_date : String
-
-pub let stamp : String
-
-pub let stamp_micro : String
-
-pub let stamp_milli : String
-
-pub let stamp_nano : String
-
-pub let time_only : String
-
 pub fn[Tz : @tz.TimeZone] to_rfc2822(@tz.DateTime[Tz]) -> String raise ParseError
 
 pub fn[Tz : @tz.TimeZone] to_rfc3339(@tz.DateTime[Tz]) -> String
@@ -103,8 +95,6 @@ pub fn[Tz : @tz.TimeZone] to_rfc3339(@tz.DateTime[Tz]) -> String
 pub fn[Tz : @tz.TimeZone] to_rfc3339_opts(@tz.DateTime[Tz], SecondsFormat, Bool) -> String
 
 pub fn tokenize(String) -> Array[Item] raise ParseError
-
-pub let unix_date : String
 
 // Errors
 pub suberror ParseError {

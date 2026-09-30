@@ -19,7 +19,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `parse_duration` | Reads a `TimeDelta` from duration text (`"1h30m"`, `"-1.5s"`, `"300ms"`); the inverse of `TimeDelta`'s `Show` |
 | `parse_fixed_offset` | Reads a `FixedOffset` from offset text (`"+09:00"`, `"+0900"`, `"+09"`, `"+09:00:30"`, `"Z"`); the inverse of `FixedOffset`'s `Show` |
 | `parse_date_default`/`parse_time_default`/`parse_date_time_default`/`parse_date_time_utc_default`/`parse_date_time_fixed_offset_default` | One-argument parsers that read the layout each type's `Show` renders (`2024-03-05`, `09:05:07.500`, `2024-03-05 09:05:07.500`, `... UTC`, `... +09:00`); the inverse of `Show`, so every rendered value reads back |
-| `rfc1123`/`rfc1123z`/`rfc822`/`rfc822z`/`rfc850`/`ansic`/`unix_date`/`ruby_date`/`kitchen`/`stamp`/`stamp_milli`/`stamp_micro`/`stamp_nano`/`date_only`/`time_only`/`date_time` | Named convenience format strings — pass one to `format_*`/`parse_*` like any other format string |
+| `ANSIC`/`UNIX_DATE`/`RUBY_DATE`/`KITCHEN`/`STAMP`/`STAMP_MILLI`/`STAMP_MICRO`/`STAMP_NANO`/`DATE_ONLY`/`TIME_ONLY`/`DATE_TIME` | Named convenience format strings — pass one to `format_*`/`parse_*` like any other format string |
 
 ## Supported specifiers
 
@@ -181,28 +181,25 @@ Suffixes name where the zone comes from: `_tz` renders any `DateTime[Tz]` (`form
 
 ### Named layouts
 
-Convenience format-string constants. Each is just a `String` — pass one to `format_date`/`format_time`/`format_date_time`/`format_date_time_tz`, or their `parse_*` counterparts, like any other format string.
+Convenience format-string constants, declared `const` (hence the upper-case names). Each is just a `String` — pass one to `format_date`/`format_time`/`format_date_time`/`format_date_time_tz`, or their `parse_*` counterparts, like any other format string.
 
 | Constant | Format string | Example |
 | :--- | :--- | :--- |
-| `rfc1123` | `"%a, %d %b %Y %H:%M:%S %Z"` | `"Tue, 05 Mar 2024 09:05:03 UTC"` |
-| `rfc1123z` | `"%a, %d %b %Y %H:%M:%S %z"` | `"Tue, 05 Mar 2024 18:05:03 +0900"` |
-| `rfc822` | `"%d %b %y %H:%M %Z"` | `"05 Mar 24 09:05 UTC"` |
-| `rfc822z` | `"%d %b %y %H:%M %z"` | `"05 Mar 24 18:05 +0900"` |
-| `rfc850` | `"%A, %d-%b-%y %H:%M:%S %Z"` | `"Tuesday, 05-Mar-24 09:05:03 UTC"` |
-| `ansic` | `"%a %b %e %H:%M:%S %Y"` | `"Tue Mar  5 09:05:03 2024"` |
-| `unix_date` | `"%a %b %e %H:%M:%S %Z %Y"` | `"Tue Mar  5 09:05:03 UTC 2024"` |
-| `ruby_date` | `"%a %b %d %H:%M:%S %z %Y"` | `"Tue Mar 05 18:05:03 +0900 2024"` |
-| `kitchen` | `"%-I:%M%p"` | `"9:05AM"` |
-| `stamp` | `"%b %e %H:%M:%S"` | `"Mar  5 09:05:03"` |
-| `stamp_milli` | `"%b %e %H:%M:%S.%3f"` | `"Mar  5 09:05:03.123"` |
-| `stamp_micro` | `"%b %e %H:%M:%S.%6f"` | `"Mar  5 09:05:03.123456"` |
-| `stamp_nano` | `"%b %e %H:%M:%S.%9f"` | `"Mar  5 09:05:03.123456789"` |
-| `date_only` | `"%F"` | `"2024-03-05"` |
-| `time_only` | `"%T"` | `"09:05:03"` |
-| `date_time` | `"%F %T"` | `"2024-03-05 09:05:03"` |
+| `ANSIC` | `"%a %b %e %H:%M:%S %Y"` | `"Tue Mar  5 09:05:03 2024"` |
+| `UNIX_DATE` | `"%a %b %e %H:%M:%S %Z %Y"` | `"Tue Mar  5 09:05:03 UTC 2024"` |
+| `RUBY_DATE` | `"%a %b %d %H:%M:%S %z %Y"` | `"Tue Mar 05 18:05:03 +0900 2024"` |
+| `KITCHEN` | `"%-I:%M%p"` | `"9:05AM"` |
+| `STAMP` | `"%b %e %H:%M:%S"` | `"Mar  5 09:05:03"` |
+| `STAMP_MILLI` | `"%b %e %H:%M:%S.%3f"` | `"Mar  5 09:05:03.123"` |
+| `STAMP_MICRO` | `"%b %e %H:%M:%S.%6f"` | `"Mar  5 09:05:03.123456"` |
+| `STAMP_NANO` | `"%b %e %H:%M:%S.%9f"` | `"Mar  5 09:05:03.123456789"` |
+| `DATE_ONLY` | `"%F"` | `"2024-03-05"` |
+| `TIME_ONLY` | `"%T"` | `"09:05:03"` |
+| `DATE_TIME` | `"%F %T"` | `"2024-03-05 09:05:03"` |
 
-The `stamp*` family (no year) doesn't carry enough fields to round-trip through the matching `parse_*` function on its own — meant for display alongside separately-known context. `date_only`/`time_only` are self-sufficient for parsing, and so is `kitchen` for a time on the minute, since `parse_time` reads a time without seconds as having zero seconds (a value with seconds loses them when rendered with `kitchen`).
+The RFC shapes have no constants: `to_rfc2822`/`parse_rfc2822` and `to_rfc3339`/`parse_rfc3339` are the exact implementations, and a caller who wants another shape writes its format string (for example `"%a, %d %b %Y %H:%M:%S %z"`, the RFC 2822 layout with a numeric offset).
+
+The `STAMP*` family (no year) doesn't carry enough fields to round-trip through the matching `parse_*` function on its own — meant for display alongside separately-known context. `DATE_ONLY`/`TIME_ONLY` are self-sufficient for parsing, and so is `KITCHEN` for a time on the minute, since `parse_time` reads a time without seconds as having zero seconds (a value with seconds loses them when rendered with `KITCHEN`).
 
 ### `tokenize`
 
