@@ -360,3 +360,38 @@ test "compare_instant orders datetimes expressed in different time zone types" {
   assert_eq(earlier.compare_instant(later), -1)
   assert_eq(later.compare_instant(earlier), 1)
 }
+
+///|
+fn tokyo_new_year_morning() -> @tz.DateTime[@tz.FixedOffset] {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  @tz.DateTime::from_ymd_hms(2024, 1, 1, 7, 30, 15, tokyo)
+  .single()
+  .unwrap()
+  .add_signed(@core.TimeDelta::nanoseconds(123_456_789L).unwrap())
+}
+
+///|
+test "DateTime calendar accessors report the local date, not the UTC date" {
+  let dt = tokyo_new_year_morning()
+  assert_eq(dt.naive_utc().year(), 2023)
+  assert_eq(dt.year(), 2024)
+  assert_eq(dt.month(), @core.Month::Jan)
+  assert_eq(dt.day(), 1)
+  assert_eq(dt.ordinal(), 1)
+  assert_eq(dt.weekday(), @core.Weekday::Mon)
+  assert_eq(dt.iso_week(), dt.date_naive().iso_week())
+  assert_eq(dt.date_naive(), @core.NaiveDate::from_ymd(2024, 1, 1).unwrap())
+}
+
+///|
+test "DateTime time-of-day accessors report the local time, not the UTC time" {
+  let dt = tokyo_new_year_morning()
+  assert_eq(dt.hour(), 7)
+  assert_eq(dt.minute(), 30)
+  assert_eq(dt.second(), 15)
+  assert_eq(dt.nanosecond(), 123_456_789)
+  assert_eq(
+    dt.time(),
+    @core.NaiveTime::from_hms_nano(7, 30, 15, 123_456_789).unwrap(),
+  )
+}

@@ -133,6 +133,80 @@ pub fn[Tz : TimeZone] DateTime::naive_local(
 }
 
 ///|
+/// The local calendar date.
+pub fn[Tz : TimeZone] DateTime::date_naive(
+  self : DateTime[Tz],
+) -> @core.NaiveDate {
+  self.naive_local().date()
+}
+
+///|
+/// The local time of day.
+pub fn[Tz : TimeZone] DateTime::time(self : DateTime[Tz]) -> @core.NaiveTime {
+  self.naive_local().time()
+}
+
+///|
+/// The local calendar year (proleptic Gregorian, year 0 being 1 BCE).
+pub fn[Tz : TimeZone] DateTime::year(self : DateTime[Tz]) -> Int {
+  self.naive_local().year()
+}
+
+///|
+/// The local month.
+pub fn[Tz : TimeZone] DateTime::month(self : DateTime[Tz]) -> @core.Month {
+  self.naive_local().month()
+}
+
+///|
+/// The local day of the month, `1..=31`.
+pub fn[Tz : TimeZone] DateTime::day(self : DateTime[Tz]) -> Int {
+  self.naive_local().day()
+}
+
+///|
+/// The local day of the year, `1..=366`.
+pub fn[Tz : TimeZone] DateTime::ordinal(self : DateTime[Tz]) -> Int {
+  self.naive_local().ordinal()
+}
+
+///|
+/// The local day of the week.
+pub fn[Tz : TimeZone] DateTime::weekday(self : DateTime[Tz]) -> @core.Weekday {
+  self.naive_local().weekday()
+}
+
+///|
+/// The local ISO 8601 week.
+pub fn[Tz : TimeZone] DateTime::iso_week(self : DateTime[Tz]) -> @core.IsoWeek {
+  self.naive_local().iso_week()
+}
+
+///|
+/// The local hour, `0..=23`.
+pub fn[Tz : TimeZone] DateTime::hour(self : DateTime[Tz]) -> Int {
+  self.naive_local().hour()
+}
+
+///|
+/// The local minute, `0..=59`.
+pub fn[Tz : TimeZone] DateTime::minute(self : DateTime[Tz]) -> Int {
+  self.naive_local().minute()
+}
+
+///|
+/// The local second, `0..=59`; a leap second reports `59` with `nanosecond()` at or above `1_000_000_000`.
+pub fn[Tz : TimeZone] DateTime::second(self : DateTime[Tz]) -> Int {
+  self.naive_local().second()
+}
+
+///|
+/// The local nanosecond within the second, `0..=1_999_999_999`.
+pub fn[Tz : TimeZone] DateTime::nanosecond(self : DateTime[Tz]) -> Int {
+  self.naive_local().nanosecond()
+}
+
+///|
 /// This datetime re-expressed in `tz`, keeping the same underlying UTC
 /// instant.
 pub fn[Tz, Tz2] DateTime::with_timezone(

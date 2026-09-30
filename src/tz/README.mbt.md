@@ -180,6 +180,9 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 | `sub_years(Int)` | `-> Self[Tz]` | Move the date back by years |
 | `add_days(Int)` | `-> Self[Tz]` | Advance the date by days, keeping the time of day and time zone |
 | `sub_days(Int)` | `-> Self[Tz]` | Move the date back by days |
+| `date_naive()` / `time()` | `-> NaiveDate` / `-> NaiveTime` | The local calendar date / time of day |
+| `year()` / `month()` / `day()` / `ordinal()` / `weekday()` / `iso_week()` | `-> Int` / `-> Month` / `-> Int` / `-> Int` / `-> Weekday` / `-> IsoWeek` | Local calendar components, derived from `naive_local()` (requires `Tz : TimeZone`) |
+| `hour()` / `minute()` / `second()` / `nanosecond()` | `-> Int` | Local time-of-day components; a leap second reports `second() == 59` with `nanosecond() >= 1_000_000_000` |
 | `signed_duration_since(Self[Tz2])` | `-> TimeDelta` | The signed duration from `other` to `self`, independent of either's time zone |
 | `compare(Self[Tz])` / `<` / `>` / `<=` / `>=` | `-> Int` / `-> Bool` | Order by UTC instant, ignoring the zone value (requires `Tz : Eq`); equal instants in different zones compare as `0` yet are unequal under `==` |
 | `compare_instant(Self[Tz2])` | `-> Int` | Order by UTC instant against a datetime in a different time zone type |

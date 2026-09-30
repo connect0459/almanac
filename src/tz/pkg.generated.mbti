@@ -25,31 +25,43 @@ pub fn[Tz] DateTime::add_signed(Self[Tz], @core.TimeDelta) -> Self[Tz]
 pub fn[Tz] DateTime::add_years(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz : Eq] DateTime::compare(Self[Tz], Self[Tz]) -> Int
 pub fn[Tz, Tz2] DateTime::compare_instant(Self[Tz], Self[Tz2]) -> Int
+pub fn[Tz : TimeZone] DateTime::date_naive(Self[Tz]) -> @core.NaiveDate
+pub fn[Tz : TimeZone] DateTime::day(Self[Tz]) -> Int
 pub fn[Tz : Eq] DateTime::equal(Self[Tz], Self[Tz]) -> Bool
 pub fn[Tz : TimeZone] DateTime::from_local(@core.NaiveDateTime, Tz) -> MappedLocalTime[Self[Tz]]
 pub fn[Tz] DateTime::from_timestamp(Int64, Int, Tz) -> Self[Tz]?
 pub fn[Tz] DateTime::from_utc(@core.NaiveDateTime, Tz) -> Self[Tz]
 pub fn[Tz : TimeZone] DateTime::from_ymd_hms(Int, Int, Int, Int, Int, Int, Tz) -> MappedLocalTime[Self[Tz]]
+pub fn[Tz : TimeZone] DateTime::hour(Self[Tz]) -> Int
+pub fn[Tz : TimeZone] DateTime::iso_week(Self[Tz]) -> @core.IsoWeek
+pub fn[Tz : TimeZone] DateTime::minute(Self[Tz]) -> Int
+pub fn[Tz : TimeZone] DateTime::month(Self[Tz]) -> @core.Month
 pub fn[Tz : TimeZone] DateTime::naive_local(Self[Tz]) -> @core.NaiveDateTime
 pub fn[Tz] DateTime::naive_utc(Self[Tz]) -> @core.NaiveDateTime
+pub fn[Tz : TimeZone] DateTime::nanosecond(Self[Tz]) -> Int
 pub fn[Tz : Eq] DateTime::not_equal(Self[Tz], Self[Tz]) -> Bool
 pub fn[Tz : TimeZone] DateTime::offset(Self[Tz]) -> FixedOffset
 pub fn[Tz : Eq] DateTime::op_ge(Self[Tz], Self[Tz]) -> Bool
 pub fn[Tz : Eq] DateTime::op_gt(Self[Tz], Self[Tz]) -> Bool
 pub fn[Tz : Eq] DateTime::op_le(Self[Tz], Self[Tz]) -> Bool
 pub fn[Tz : Eq] DateTime::op_lt(Self[Tz], Self[Tz]) -> Bool
+pub fn[Tz : TimeZone] DateTime::ordinal(Self[Tz]) -> Int
 pub fn[Tz] DateTime::round(Self[Tz], @core.TimeDelta) -> Self[Tz]?
 pub fn[Tz] DateTime::round_subsecs(Self[Tz], Int) -> Self[Tz]?
+pub fn[Tz : TimeZone] DateTime::second(Self[Tz]) -> Int
 pub fn[Tz, Tz2] DateTime::signed_duration_since(Self[Tz], Self[Tz2]) -> @core.TimeDelta
 pub fn[Tz] DateTime::sub_days(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz] DateTime::sub_months(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz] DateTime::sub_signed(Self[Tz], @core.TimeDelta) -> Self[Tz]
 pub fn[Tz] DateTime::sub_years(Self[Tz], Int) -> Self[Tz]
+pub fn[Tz : TimeZone] DateTime::time(Self[Tz]) -> @core.NaiveTime
 pub fn[Tz] DateTime::timezone(Self[Tz]) -> Tz
 pub fn[Tz : @debug.Debug] DateTime::to_repr(Self[Tz]) -> @debug.Repr
 pub fn[Tz] DateTime::truncate(Self[Tz], @core.TimeDelta) -> Self[Tz]?
 pub fn[Tz] DateTime::truncate_subsecs(Self[Tz], Int) -> Self[Tz]
+pub fn[Tz : TimeZone] DateTime::weekday(Self[Tz]) -> @core.Weekday
 pub fn[Tz, Tz2] DateTime::with_timezone(Self[Tz], Tz2) -> Self[Tz2]
+pub fn[Tz : TimeZone] DateTime::year(Self[Tz]) -> Int
 pub impl[Tz : Eq] Compare for DateTime[Tz]
 
 pub struct FixedOffset {
