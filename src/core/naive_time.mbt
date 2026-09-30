@@ -227,11 +227,12 @@ pub fn NaiveTime::truncate_subsecs(self : NaiveTime, digits : Int) -> NaiveTime 
 ///|
 /// This time rounded to the nearest of `digits` fractional-second digits
 /// (`0..=9`), a tie rounding up. A carry moves into the next second, minute,
-/// or hour and wraps from the end of the day to midnight. A time with no
-/// digits beyond `digits` is returned unchanged, leap second included (so
-/// `9` is always the identity). Otherwise a leap second is treated as its
-/// elapsed instant and folded into the following second, so the result is
-/// not a leap second.
+/// or hour and wraps from the end of the day to midnight; the day carry is
+/// discarded (use `NaiveDateTime::round_subsecs` to move the date forward).
+/// A time with no digits beyond `digits` is returned unchanged, leap second
+/// included (so `9` is always the identity). Otherwise a leap second is
+/// treated as its elapsed instant and folded into the following second, so
+/// the result is not a leap second.
 ///
 /// Aborts if `digits` is outside `0..=9`.
 pub fn NaiveTime::round_subsecs(self : NaiveTime, digits : Int) -> NaiveTime {

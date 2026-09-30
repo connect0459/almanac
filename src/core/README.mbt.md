@@ -268,7 +268,7 @@ A time of day, precise to the nanosecond. Constructors are `Option`-returning. S
 | `hms()` | `-> (Int, Int, Int)` | Hour, minute and second together (a leap second reports second `59`, as `second()` does) |
 | `nanosecond()` | `-> Int` | Nanosecond component, `0..=1_999_999_999` |
 | `hour12()` | `-> (Bool, Int)` | 12-hour clock hour and PM flag, wrapping midnight/noon to `12` |
-| `round_subsecs(Int)` / `truncate_subsecs(Int)` | `-> Self` | Round (ties up) or truncate to a number of fractional-second digits (`0..=9`; other values abort). A carry wraps past the end of the day to midnight. A time with no digits beyond that count is returned unchanged, leap second included (`9` is the identity); otherwise a leap second is folded into the following second |
+| `round_subsecs(Int)` / `truncate_subsecs(Int)` | `-> Self` | Round (ties up) or truncate to a number of fractional-second digits (`0..=9`; other values abort). A carry wraps past the end of the day to midnight and the day carry is discarded (`NaiveDateTime::round_subsecs` moves the date forward instead). A time with no digits beyond that count is returned unchanged, leap second included (`9` is the identity); otherwise a leap second is folded into the following second |
 | `num_seconds_from_midnight()` | `-> Int` | Seconds elapsed since midnight |
 | `overflowing_add_signed(TimeDelta)` | `-> (Self, Int64)` | Add a duration, wrapping at midnight; also reports the number of days crossed |
 | `overflowing_sub_signed(TimeDelta)` | `-> (Self, Int64)` | Subtract a duration, with the same wrapping and day-count report |
