@@ -329,6 +329,7 @@ A signed duration, precise to the nanosecond. Constructors and checked arithmeti
 | `checked_div(Int)` | `-> Self?` | As `div`, but `None` if the scalar is zero |
 | `TimeDelta::checked_sum(Array[TimeDelta])` | `-> Self?` | As `sum`, but `None` if the true total is out of range; unlike folding with `checked_add`, independent of order, so a partial sum that would leave the range does not spoil a representable total |
 | `neg()` | `-> Self` | Negation |
+| `+` / `-` / unary `-` | `Add`/`Sub`/`Neg` | Operator forms of `add`, `sub` and `neg`; `+` and `-` abort on overflow like `add`/`sub` |
 | `abs()` | `-> Self` | Absolute value |
 | `is_zero()` | `-> Bool` | Whether this duration is exactly zero |
 | `round(TimeDelta)` | `-> Result[Self, RoundingError]` | Round to the nearest multiple of a granularity, ties breaking away from zero; `Err(InvalidGranularity)` if the granularity is zero or negative, `Err(MixedGranularity)` if it mixes a whole-second part with a sub-second remainder (e.g. 1.5 seconds — every named duration unit is either purely sub-second or a whole-second-or-larger multiple), `Err(OutOfRange)` if the result would leave the representable range |

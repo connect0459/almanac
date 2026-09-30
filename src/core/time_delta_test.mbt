@@ -1090,3 +1090,23 @@ test "panic sum aborts when the total leaves the representable range" {
   let max = @core.TimeDelta::max_value()
   ignore(@core.TimeDelta::sum([max, max]))
 }
+
+///|
+test "TimeDelta supports the +, - and unary - operators" {
+  let a = @core.TimeDelta::seconds(90L).unwrap()
+  let b = @core.TimeDelta::seconds(30L).unwrap()
+  assert_eq(a + b, @core.TimeDelta::seconds(120L).unwrap())
+  assert_eq(a - b, @core.TimeDelta::seconds(60L).unwrap())
+  assert_eq(-a, @core.TimeDelta::seconds(-90L).unwrap())
+  assert_eq(-(-a), a)
+}
+
+///|
+test "panic the + operator aborts when the sum leaves the representable range" {
+  ignore(@core.TimeDelta::max_value() + @core.TimeDelta::seconds(1L).unwrap())
+}
+
+///|
+test "panic the - operator aborts when the difference leaves the representable range" {
+  ignore(@core.TimeDelta::min_value() - @core.TimeDelta::seconds(1L).unwrap())
+}

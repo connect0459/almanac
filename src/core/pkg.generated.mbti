@@ -398,8 +398,11 @@ pub fn TimeDelta::to_string(Self) -> String
 pub fn TimeDelta::truncate(Self, Self) -> Result[Self, RoundingError]
 pub fn TimeDelta::weeks(Int64) -> Self?
 pub fn TimeDelta::zero() -> Self
+pub impl Add for TimeDelta
 pub impl Default for TimeDelta
+pub impl Neg for TimeDelta
 pub impl Show for TimeDelta
+pub impl Sub for TimeDelta
 
 pub(all) enum Weekday {
   Mon

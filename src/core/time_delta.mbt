@@ -561,6 +561,24 @@ pub fn TimeDelta::neg(self : TimeDelta) -> TimeDelta {
 }
 
 ///|
+/// `a + b`: the sum of two durations. Aborts on overflow; see `add`.
+pub impl Add for TimeDelta with fn add(self, other) {
+  TimeDelta::add(self, other)
+}
+
+///|
+/// `a - b`: the difference of two durations. Aborts on overflow; see `sub`.
+pub impl Sub for TimeDelta with fn sub(self, other) {
+  TimeDelta::sub(self, other)
+}
+
+///|
+/// `-a`: the negation of a duration; see `neg`.
+pub impl Neg for TimeDelta with fn neg(self) {
+  TimeDelta::neg(self)
+}
+
+///|
 /// The absolute value of this duration.
 pub fn TimeDelta::abs(self : TimeDelta) -> TimeDelta {
   if self.seconds >= 0L {
