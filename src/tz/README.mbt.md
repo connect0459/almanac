@@ -334,6 +334,8 @@ The OS-configured local time zone, resolved from `$TZ` or, when unset, `/etc/loc
 
 ### Advanced: low-level TZif and POSIX TZ parsing
 
+Failure is reported as `None` throughout this package (`parse_tzif`, `parse_posix_tz`, `Location::from_tzif_bytes`, `Location::from_tzif_bytes_named`, `Location::load`), unlike `format`, whose parsers raise a `ParseError` naming the reason. These read machine data (TZif bytes, POSIX TZ strings, zone names), where a caller's response to any failure is the same, so no reason is carried; each function's documentation lists the conditions under which it returns `None` (a malformed structure, an offset beyond `±23:59:59`, or an unknown zone name).
+
 These back `Location` and are not usually needed directly; use `Location::load`/`from_tzif_bytes` unless building a custom zone-data pipeline.
 
 | Symbol | Signature | Description |
