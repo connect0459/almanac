@@ -1119,3 +1119,15 @@ test "from_ymd_hms builds a datetime from components and rejects an invalid one"
   assert_true(@core.NaiveDateTime::from_ymd_hms(2024, 3, 5, 24, 0, 0) is None)
   assert_true(@core.NaiveDateTime::from_ymd_hms(2024, 3, 5, 9, 60, 0) is None)
 }
+
+///|
+test "with_time replaces the time of day and with_date replaces the date" {
+  let dt = @core.NaiveDateTime::from_ymd_hms(2024, 3, 5, 9, 5, 7).unwrap()
+  let time = @core.NaiveTime::from_hms(23, 59, 58).unwrap()
+  let date = @core.NaiveDate::from_ymd(1999, 12, 31).unwrap()
+  assert_eq(dt.with_time(time).ymd(), (2024, @core.Mar, 5))
+  assert_eq(dt.with_time(time).hms(), (23, 59, 58))
+  assert_eq(dt.with_date(date).ymd(), (1999, @core.Dec, 31))
+  assert_eq(dt.with_date(date).hms(), (9, 5, 7))
+  assert_eq(dt.with_date(dt.date()).with_time(dt.time()), dt)
+}

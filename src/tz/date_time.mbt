@@ -677,6 +677,17 @@ pub fn[Tz : TimeZone] DateTime::with_time(
 }
 
 ///|
+/// This datetime with its local date replaced by `date`, keeping the local
+/// time of day and re-resolving the wall-clock reading through the time
+/// zone: `Absent` inside a DST gap, `Ambiguous` inside a DST fold.
+pub fn[Tz : TimeZone] DateTime::with_date(
+  self : DateTime[Tz],
+  date : @core.NaiveDate,
+) -> MappedLocalTime[DateTime[Tz]] {
+  DateTime::from_local(@core.NaiveDateTime::new(date, self.time()), self.tz)
+}
+
+///|
 /// The number of full calendar years elapsed from `base` to this datetime,
 /// or `None` if `base` is later. `base` may be in a different time zone;
 /// both are read as local dates in this datetime's time zone, ignoring the

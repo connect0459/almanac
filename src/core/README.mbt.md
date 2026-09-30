@@ -353,6 +353,7 @@ A `NaiveDate` and `NaiveTime` combined into one zone-less instant.
 | `year_ce()` | `-> (Bool, Int)` | The year as a Common Era flag and positive year number, as on `NaiveDate` |
 | `hour12()` | `-> (Bool, Int)` | The 12-hour clock as a PM flag and an hour in `1..=12`, as on `NaiveTime` |
 | `num_seconds_from_midnight()` | `-> Int` | Seconds since midnight, as on `NaiveTime` |
+| `with_date(NaiveDate)` / `with_time(NaiveTime)` | `-> Self` | Replace the date or the time of day, keeping the other; total |
 | `with_year(Int)` / `with_month(Int)` / `with_day(Int)` / `with_ordinal(Int)` | `-> Self?` | Replace one date component, keeping the time of day; `None` if the result is not a valid date |
 | `with_month0(Int)` / `with_day0(Int)` / `with_ordinal0(Int)` | `-> Self?` | As `with_month`/`with_day`/`with_ordinal`, taking a zero-based value, keeping the time of day |
 | `with_hour(Int)` / `with_minute(Int)` / `with_second(Int)` / `with_nanosecond(Int)` | `-> Self?` | Replace one time component, keeping the date and every other time field (including a leap second); `None` if out of range |

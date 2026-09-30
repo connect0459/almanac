@@ -105,6 +105,7 @@ pub fn[Tz] DateTime::truncate(Self[Tz], @core.TimeDelta) -> Result[Self[Tz], @co
 pub fn[Tz] DateTime::truncate_subsecs(Self[Tz], Int) -> Self[Tz]
 pub fn DateTime::unix_epoch() -> Self[Utc]
 pub fn[Tz : TimeZone] DateTime::weekday(Self[Tz]) -> @core.Weekday
+pub fn[Tz : TimeZone] DateTime::with_date(Self[Tz], @core.NaiveDate) -> MappedLocalTime[Self[Tz]]
 pub fn[Tz : TimeZone] DateTime::with_day(Self[Tz], Int) -> MappedLocalTime[Self[Tz]]
 pub fn[Tz : TimeZone] DateTime::with_day0(Self[Tz], Int) -> MappedLocalTime[Self[Tz]]
 pub fn[Tz : TimeZone] DateTime::with_hour(Self[Tz], Int) -> MappedLocalTime[Self[Tz]]

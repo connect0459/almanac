@@ -165,6 +165,24 @@ pub fn NaiveDateTime::iso_week(self : NaiveDateTime) -> IsoWeek {
 }
 
 ///|
+/// This datetime with its time of day replaced by `time`, keeping the date.
+pub fn NaiveDateTime::with_time(
+  self : NaiveDateTime,
+  time : NaiveTime,
+) -> NaiveDateTime {
+  NaiveDateTime::new(self.date, time)
+}
+
+///|
+/// This datetime with its date replaced by `date`, keeping the time of day.
+pub fn NaiveDateTime::with_date(
+  self : NaiveDateTime,
+  date : NaiveDate,
+) -> NaiveDateTime {
+  NaiveDateTime::new(date, self.time)
+}
+
+///|
 /// The datetime at the given year, month, day, hour, minute and second, or
 /// `None` if any component is out of range (see `NaiveDate::from_ymd` and
 /// `NaiveTime::from_hms`).

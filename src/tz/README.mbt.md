@@ -243,6 +243,7 @@ The lenient rule is the library's only policy for a local reading that is repeat
 | `num_seconds_from_midnight()` | `-> Int` | Seconds since local midnight |
 | `with_year(Int)` / `with_month(Int)` / `with_day(Int)` / `with_ordinal(Int)` / `with_hour(Int)` / `with_minute(Int)` / `with_second(Int)` / `with_nanosecond(Int)` | `-> MappedLocalTime[Self[Tz]]` | Replace one local component and re-resolve the wall-clock reading through the zone: `Absent` for an invalid value or a DST gap, `Ambiguous` inside a DST fold |
 | `with_month0(Int)` / `with_day0(Int)` / `with_ordinal0(Int)` | `-> MappedLocalTime[Self[Tz]]` | 0-based counterparts of `with_month`/`with_day`/`with_ordinal`, resolved the same way |
+| `with_date(NaiveDate)` | `-> MappedLocalTime[Self[Tz]]` | Replace the local date, keeping the local time of day; `Absent` inside a DST gap, `Ambiguous` inside a fold |
 | `with_time(NaiveTime)` | `-> MappedLocalTime[Self[Tz]]` | Replace the local time of day, keeping the local date, resolved the same way as the `with_*` setters |
 | `timestamp()` / `timestamp_millis()` | `-> Int64` | Non-leap seconds / milliseconds since the Unix epoch, flooring toward negative infinity; independent of the zone |
 | `timestamp_micros()` / `timestamp_nanos()` | `-> Int64?` | Microseconds / nanoseconds since the Unix epoch; `None` if the instant overflows `Int64` |

@@ -232,6 +232,7 @@ pub fn NaiveDateTime::truncate(Self, TimeDelta) -> Result[Self, RoundingError]
 pub fn NaiveDateTime::truncate_subsecs(Self, Int) -> Self
 pub fn NaiveDateTime::unix_epoch() -> Self
 pub fn NaiveDateTime::weekday(Self) -> Weekday
+pub fn NaiveDateTime::with_date(Self, NaiveDate) -> Self
 pub fn NaiveDateTime::with_day(Self, Int) -> Self?
 pub fn NaiveDateTime::with_day0(Self, Int) -> Self?
 pub fn NaiveDateTime::with_hour(Self, Int) -> Self?
@@ -242,6 +243,7 @@ pub fn NaiveDateTime::with_nanosecond(Self, Int) -> Self?
 pub fn NaiveDateTime::with_ordinal(Self, Int) -> Self?
 pub fn NaiveDateTime::with_ordinal0(Self, Int) -> Self?
 pub fn NaiveDateTime::with_second(Self, Int) -> Self?
+pub fn NaiveDateTime::with_time(Self, NaiveTime) -> Self
 pub fn NaiveDateTime::with_year(Self, Int) -> Self?
 pub fn NaiveDateTime::year(Self) -> Int
 pub fn NaiveDateTime::year_ce(Self) -> (Bool, Int)

@@ -1455,3 +1455,36 @@ test "from_local_lenient resolves a fold to the earlier occurrence while from_lo
   assert_true(resolved.latest().unwrap() != lenient)
   assert_true(resolved.single() is None)
 }
+
+///|
+test "DateTime with_date replaces the local date and keeps the local time of day" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let dt = @tz.DateTime::from_ymd_hms(2024, 1, 1, 23, 59, 58, tokyo)
+    .single()
+    .unwrap()
+  let moved = dt
+    .with_date(@core.NaiveDate::from_ymd(2025, 6, 30).unwrap())
+    .single()
+    .unwrap()
+  assert_eq(moved.ymd(), (2025, @core.Jun, 30))
+  assert_eq(moved.hms(), (23, 59, 58))
+  assert_eq(moved.timezone(), tokyo)
+}
+
+///|
+test "DateTime with_date reports Absent in a spring-forward gap and Ambiguous in a fall-back fold" {
+  let ny = @tz.Location::load("America/New_York").unwrap()
+  let dt = @tz.DateTime::from_ymd_hms(2024, 1, 15, 2, 30, 0, ny)
+    .single()
+    .unwrap()
+  assert_true(
+    dt.with_date(@core.NaiveDate::from_ymd(2024, 3, 10).unwrap()) is @tz.Absent,
+  )
+  let evening = @tz.DateTime::from_ymd_hms(2024, 1, 15, 1, 30, 0, ny)
+    .single()
+    .unwrap()
+  assert_true(
+    evening.with_date(@core.NaiveDate::from_ymd(2024, 11, 3).unwrap())
+    is @tz.Ambiguous(_, _),
+  )
+}
