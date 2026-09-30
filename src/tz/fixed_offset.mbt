@@ -86,4 +86,6 @@ pub extend FixedOffset with TimeZone::{
   offset_from_utc,
   offset_from_local,
   tz_name,
+  from_utc_datetime,
+  from_local_datetime,
 }

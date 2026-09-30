@@ -327,4 +327,10 @@ pub impl TimeZone for Location with fn offset_from_local(self, naive_local) {
 }
 
 ///|
-pub extend Location with TimeZone::{offset_from_utc, offset_from_local, tz_name}
+pub extend Location with TimeZone::{
+  offset_from_utc,
+  offset_from_local,
+  tz_name,
+  from_utc_datetime,
+  from_local_datetime,
+}

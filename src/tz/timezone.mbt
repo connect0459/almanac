@@ -123,4 +123,22 @@ pub trait TimeZone {
   /// `FixedOffset`'s own offset string (e.g. `"+09:00"`), since a fixed
   /// offset carries no name distinct from its offset.
   fn tz_name(Self, @core.NaiveDateTime) -> String
+  /// A `DateTime` for the given UTC naive datetime, expressed in this zone.
+  /// See `DateTime::from_utc`.
+  fn from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self] = _
+  /// A `DateTime` for the given local (wall-clock) naive datetime in this
+  /// zone. See `DateTime::from_local`.
+  fn from_local_datetime(Self, @core.NaiveDateTime) -> MappedLocalTime[
+    DateTime[Self],
+  ] = _
+}
+
+///|
+impl TimeZone with fn from_utc_datetime(self, naive) {
+  DateTime::from_utc(naive, self)
+}
+
+///|
+impl TimeZone with fn from_local_datetime(self, naive) {
+  DateTime::from_local(naive, self)
 }

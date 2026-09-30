@@ -97,6 +97,8 @@ Implemented by `Utc`, `FixedOffset`, and `Location`. `DateTime[Tz]::offset`/`nai
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | The offset in effect at a given UTC instant; never ambiguous |
 | `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | The offset(s) for a given local (wall-clock) instant, handling DST ambiguity/gaps |
 | `tz_name(NaiveDateTime)` | `-> String` | The zone abbreviation/name in effect at a given instant |
+| `from_utc_datetime(NaiveDateTime)` | `-> DateTime[Self]` | Interpret a naive datetime as UTC and express it in this zone; same as `DateTime::from_utc` (default implementation) |
+| `from_local_datetime(NaiveDateTime)` | `-> MappedLocalTime[DateTime[Self]]` | Interpret a naive datetime as wall-clock time in this zone; same as `DateTime::from_local` (default implementation) |
 
 ---
 

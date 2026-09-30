@@ -103,6 +103,8 @@ pub struct FixedOffset {
 } derive(Eq, @debug.Debug)
 pub fn FixedOffset::east(Int) -> Self?
 pub fn FixedOffset::equal(Self, Self) -> Bool
+pub fn FixedOffset::from_local_datetime(Self, @core.NaiveDateTime) -> MappedLocalTime[DateTime[Self]]
+pub fn FixedOffset::from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self]
 pub fn FixedOffset::local_minus_utc(Self) -> Int
 pub fn FixedOffset::not_equal(Self, Self) -> Bool
 pub fn FixedOffset::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[Self]
@@ -126,7 +128,9 @@ pub fn LocalTimeType::utc_offset(Self) -> Int
 pub struct Location {
   // private fields
 }
+pub fn Location::from_local_datetime(Self, @core.NaiveDateTime) -> MappedLocalTime[DateTime[Self]]
 pub fn Location::from_tzif_bytes(Bytes) -> Self?
+pub fn Location::from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self]
 pub fn Location::load(String) -> Self?
 pub fn Location::name(Self) -> String?
 pub fn Location::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[FixedOffset]
@@ -178,6 +182,8 @@ pub fn TzifData::transitions(Self) -> Array[Int64]
 pub struct Utc {
 } derive(Eq, @debug.Debug)
 pub fn Utc::equal(Self, Self) -> Bool
+pub fn Utc::from_local_datetime(Self, @core.NaiveDateTime) -> MappedLocalTime[DateTime[Self]]
+pub fn Utc::from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self]
 pub fn Utc::new() -> Self
 pub fn Utc::not_equal(Self, Self) -> Bool
 pub fn Utc::now() -> DateTime[Self]
@@ -194,4 +200,6 @@ pub trait TimeZone {
   fn offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
   fn offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[FixedOffset]
   fn tz_name(Self, @core.NaiveDateTime) -> String
+  fn from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self]
+  fn from_local_datetime(Self, @core.NaiveDateTime) -> MappedLocalTime[DateTime[Self]]
 }

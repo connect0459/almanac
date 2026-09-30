@@ -55,4 +55,10 @@ pub impl TimeZone for Local with fn tz_name(self, utc) {
 }
 
 ///|
-pub extend Local with TimeZone::{offset_from_utc, offset_from_local, tz_name}
+pub extend Local with TimeZone::{
+  offset_from_utc,
+  offset_from_local,
+  tz_name,
+  from_utc_datetime,
+  from_local_datetime,
+}
