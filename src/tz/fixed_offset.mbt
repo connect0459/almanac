@@ -55,6 +55,13 @@ pub fn FixedOffset::local_minus_utc(self : FixedOffset) -> Int {
 }
 
 ///|
+/// The signed number of seconds added to local time to obtain UTC: the
+/// sign-reversed `local_minus_utc`, positive for a western offset.
+pub fn FixedOffset::utc_minus_local(self : FixedOffset) -> Int {
+  -self.local_minus_utc
+}
+
+///|
 fn pad2(n : Int) -> String {
   if n < 10 {
     "0" + n.to_string()

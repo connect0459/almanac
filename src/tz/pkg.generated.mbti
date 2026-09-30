@@ -125,6 +125,7 @@ pub fn FixedOffset::to_repr(Self) -> @debug.Repr
 pub fn FixedOffset::to_string(Self) -> String
 pub fn FixedOffset::transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds
 pub fn FixedOffset::tz_name(Self, @core.NaiveDateTime) -> String
+pub fn FixedOffset::utc_minus_local(Self) -> Int
 pub fn FixedOffset::west(Int) -> Self?
 pub impl TimeZone for FixedOffset
 pub impl Show for FixedOffset

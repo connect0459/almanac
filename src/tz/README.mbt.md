@@ -155,6 +155,7 @@ A constant UTC offset, in seconds, within `±23:59:59`.
 | `FixedOffset::east(Int)` | `-> Self?` | An offset east of UTC by the given seconds; `None` outside `±23:59:59` |
 | `FixedOffset::west(Int)` | `-> Self?` | An offset west of UTC by the given seconds (negated internally); same range |
 | `local_minus_utc()` | `-> Int` | The offset in seconds (negative for a western offset) |
+| `utc_minus_local()` | `-> Int` | The sign-reversed offset in seconds (positive for a western offset) |
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | Returns `self`, unchanged, regardless of the given instant |
 | `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | Always `Single(self)` |
 | `tz_name(NaiveDateTime)` | `-> String` | Colon-separated sign, hour, and minute, e.g. `"+09:00"`; extended with a seconds component for a non-whole-minute offset, e.g. `"-04:56:02"` |

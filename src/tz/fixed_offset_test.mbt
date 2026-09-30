@@ -78,3 +78,20 @@ test "tz_name includes a seconds component when the offset is not a whole minute
   )
   assert_eq(offset.tz_name(dt), "-04:56:02")
 }
+
+///|
+test "utc_minus_local is the sign-reversed local_minus_utc, so west offsets read as positive" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let new_york = @tz.FixedOffset::west(5 * 3600).unwrap()
+  assert_eq(tokyo.utc_minus_local(), -9 * 3600)
+  assert_eq(new_york.utc_minus_local(), 5 * 3600)
+  assert_eq(@tz.FixedOffset::east(0).unwrap().utc_minus_local(), 0)
+}
+
+///|
+test "utc_minus_local negates local_minus_utc at both extremes of the offset range" {
+  let east_max = @tz.FixedOffset::east(86399).unwrap()
+  let west_max = @tz.FixedOffset::west(86399).unwrap()
+  assert_eq(east_max.utc_minus_local(), -east_max.local_minus_utc())
+  assert_eq(west_max.utc_minus_local(), -west_max.local_minus_utc())
+}
