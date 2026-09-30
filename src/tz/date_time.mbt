@@ -699,6 +699,102 @@ pub fn[Tz] DateTime::sub_days(self : DateTime[Tz], days : Int) -> DateTime[Tz] {
 }
 
 ///|
+/// Like `add_signed`, but `None` if the result falls outside `NaiveDate`'s
+/// representable range.
+pub fn[Tz] DateTime::checked_add_signed(
+  self : DateTime[Tz],
+  delta : @core.TimeDelta,
+) -> DateTime[Tz]? {
+  self.datetime
+  .checked_add_signed(delta)
+  .map(datetime => DateTime::{ datetime, tz: self.tz, })
+}
+
+///|
+/// Like `sub_signed`, but `None` if the result falls outside `NaiveDate`'s
+/// representable range.
+pub fn[Tz] DateTime::checked_sub_signed(
+  self : DateTime[Tz],
+  delta : @core.TimeDelta,
+) -> DateTime[Tz]? {
+  self.datetime
+  .checked_sub_signed(delta)
+  .map(datetime => DateTime::{ datetime, tz: self.tz, })
+}
+
+///|
+/// Like `add_months`, but `None` if the resulting date falls outside
+/// `NaiveDate`'s representable range.
+pub fn[Tz] DateTime::checked_add_months(
+  self : DateTime[Tz],
+  months : Int,
+) -> DateTime[Tz]? {
+  self.datetime
+  .checked_add_months(months)
+  .map(datetime => DateTime::{ datetime, tz: self.tz, })
+}
+
+///|
+/// Like `sub_months`, but `None` if the resulting date falls outside
+/// `NaiveDate`'s representable range.
+pub fn[Tz] DateTime::checked_sub_months(
+  self : DateTime[Tz],
+  months : Int,
+) -> DateTime[Tz]? {
+  self.datetime
+  .checked_sub_months(months)
+  .map(datetime => DateTime::{ datetime, tz: self.tz, })
+}
+
+///|
+/// Like `add_years`, but `None` if the resulting date falls outside
+/// `NaiveDate`'s representable range.
+pub fn[Tz] DateTime::checked_add_years(
+  self : DateTime[Tz],
+  years : Int,
+) -> DateTime[Tz]? {
+  self.datetime
+  .checked_add_years(years)
+  .map(datetime => DateTime::{ datetime, tz: self.tz, })
+}
+
+///|
+/// Like `sub_years`, but `None` if the resulting date falls outside
+/// `NaiveDate`'s representable range.
+pub fn[Tz] DateTime::checked_sub_years(
+  self : DateTime[Tz],
+  years : Int,
+) -> DateTime[Tz]? {
+  self.datetime
+  .checked_sub_years(years)
+  .map(datetime => DateTime::{ datetime, tz: self.tz, })
+}
+
+///|
+/// Like `add_days`, but `None` if the resulting date falls outside
+/// `NaiveDate`'s representable range.
+pub fn[Tz] DateTime::checked_add_days(
+  self : DateTime[Tz],
+  days : Int,
+) -> DateTime[Tz]? {
+  self.datetime
+  .checked_add_days(days)
+  .map(datetime => DateTime::{ datetime, tz: self.tz, })
+}
+
+///|
+/// Like `sub_days`, but `None` if the resulting date falls outside
+/// `NaiveDate`'s representable range.
+pub fn[Tz] DateTime::checked_sub_days(
+  self : DateTime[Tz],
+  days : Int,
+) -> DateTime[Tz]? {
+  self.datetime
+  .checked_sub_days(days)
+  .map(datetime => DateTime::{ datetime, tz: self.tz, })
+}
+
+///|
 /// The signed duration from `other` to `self` (positive if `self` is
 /// later), independent of either datetime's time zone (both are compared
 /// via their underlying UTC instant).

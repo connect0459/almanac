@@ -1091,3 +1091,66 @@ test "panic add_offset aborts when the shifted instant leaves the representable 
   )
   ignore(last.add_offset(plus_nine))
 }
+
+///|
+fn boundary_datetime(last : Bool) -> @tz.DateTime[@tz.FixedOffset] {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let naive = if last {
+    @core.NaiveDate::from_epoch_days(2_147_483_647 - 719_468)
+    .unwrap()
+    .and_hms(23, 59, 59)
+    .unwrap()
+  } else {
+    @core.NaiveDate::from_epoch_days(-(2_147_483_647 - 719_468))
+    .unwrap()
+    .and_hms(0, 0, 0)
+    .unwrap()
+  }
+  @tz.DateTime::from_utc(naive, tokyo)
+}
+
+///|
+test "checked DateTime arithmetic agrees with the aborting forms inside the representable range" {
+  let dt = tokyo_new_year_morning()
+  let delta = @core.TimeDelta::hours(30L).unwrap()
+  assert_eq(dt.checked_add_signed(delta), Some(dt.add_signed(delta)))
+  assert_eq(dt.checked_sub_signed(delta), Some(dt.sub_signed(delta)))
+  assert_eq(dt.checked_add_months(13), Some(dt.add_months(13)))
+  assert_eq(dt.checked_sub_months(13), Some(dt.sub_months(13)))
+  assert_eq(dt.checked_add_years(3), Some(dt.add_years(3)))
+  assert_eq(dt.checked_sub_years(3), Some(dt.sub_years(3)))
+  assert_eq(dt.checked_add_days(40), Some(dt.add_days(40)))
+  assert_eq(dt.checked_sub_days(40), Some(dt.sub_days(40)))
+}
+
+///|
+test "checked DateTime arithmetic keeps the time zone" {
+  let dt = tokyo_new_year_morning()
+  assert_eq(
+    dt.checked_add_days(1).unwrap().timezone(),
+    @tz.FixedOffset::east(9 * 3600).unwrap(),
+  )
+}
+
+///|
+test "checked DateTime arithmetic returns None past the last representable instant" {
+  let last = boundary_datetime(true)
+  let one_day = @core.TimeDelta::days(1L).unwrap()
+  assert_eq(last.checked_add_signed(one_day), None)
+  assert_eq(last.checked_add_months(1), None)
+  assert_eq(last.checked_add_years(1), None)
+  assert_eq(last.checked_add_days(1), None)
+  assert_eq(last.checked_sub_months(-1), None)
+  assert_eq(last.checked_sub_years(-1), None)
+  assert_eq(last.checked_sub_days(-1), None)
+}
+
+///|
+test "checked DateTime arithmetic returns None before the first representable instant" {
+  let first = boundary_datetime(false)
+  let one_day = @core.TimeDelta::days(1L).unwrap()
+  assert_eq(first.checked_sub_signed(one_day), None)
+  assert_eq(first.checked_sub_months(1), None)
+  assert_eq(first.checked_sub_years(1), None)
+  assert_eq(first.checked_sub_days(1), None)
+}
