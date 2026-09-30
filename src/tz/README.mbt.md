@@ -91,7 +91,7 @@ test {
 
 ### `TimeZone` trait
 
-Implemented by `Utc`, `FixedOffset`, `FixedZone`, `Location`, and `PosixTz`. `DateTime[Tz]::offset`/`naive_local` require `Tz : TimeZone`.
+Implemented by `Utc`, `FixedOffset`, `FixedZone`, `Location`, and `PosixTz`. The trait is readonly: other packages can use `Tz : TimeZone` as a bound but cannot implement it, so these are the only zones. `DateTime[Tz]::offset`/`naive_local` require `Tz : TimeZone`.
 
 | Method | Signature | Description |
 | :--- | :--- | :--- |

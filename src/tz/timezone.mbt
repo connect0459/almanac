@@ -129,6 +129,11 @@ fn resolve_transition(
 ///|
 /// A time zone: given a naive datetime, resolves it to a concrete UTC
 /// offset.
+///
+/// The trait is readonly: code outside this package can use it as a bound
+/// but cannot implement it, so the zones are the ones this package provides
+/// (`Utc`, `FixedOffset`, `FixedZone`, `Location`, `PosixTz` and, on
+/// native, `Local`).
 pub trait TimeZone {
   /// The offset in effect for the given UTC naive datetime. Always a
   /// single answer: UTC has no daylight saving, so this mapping is never
