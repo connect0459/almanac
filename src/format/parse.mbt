@@ -483,6 +483,61 @@ fn apply_ampm_specifier(
 }
 
 ///|
+/// Parses between one and `width` digits, greedily: the reading `%-X` gives
+/// a numeric field, the inverse of rendering it without padding.
+fn parse_up_to_digits(
+  chars : Array[Char],
+  pos : Int,
+  width : Int,
+) -> (Int, Int)? {
+  let end = for i = pos {
+    if i < chars.length() && i - pos < width && is_ascii_digit(chars[i]) {
+      continue i + 1
+    } else {
+      break i
+    }
+  }
+  if end == pos {
+    None
+  } else {
+    let value = for i = pos, acc = 0 {
+      if i >= end {
+        break acc
+      }
+      continue i + 1, acc * 10 + digit_value(chars[i])
+    }
+    Some((value, end))
+  }
+}
+
+///|
+/// Reads a `width`-digit numeric field under the padding flag it was written
+/// with: `%-X` (`NoPad`) one to `width` digits, `%_X` (`SpacePad`) digits
+/// padded with a leading blank or zero, and no flag or `%0X` the field's
+/// own default, which is fixed-width (`blank_default` false) or blank-or-zero
+/// padded (`blank_default` true, for `%e`, `%k` and `%l`). The flag only
+/// ever widens what a field accepts.
+fn read_digits(
+  chars : Array[Char],
+  pos : Int,
+  width : Int,
+  pad : PadMode?,
+  blank_default : Bool,
+) -> (Int, Int)? {
+  match pad {
+    Some(NoPad) => parse_up_to_digits(chars, pos, width)
+    Some(SpacePad) if width > 1 =>
+      parse_blank_or_zero_padded_digits(chars, pos, width)
+    _ =>
+      if blank_default {
+        parse_blank_or_zero_padded_digits(chars, pos, width)
+      } else {
+        parse_fixed_digits(chars, pos, width)
+      }
+  }
+}
+
+///|
 /// Parses `%l`'s blank-padded 2-character field: either two digits (like
 /// `%I`) or a leading space followed by one digit.
 fn parse_blank_or_zero_padded_digits(
@@ -546,6 +601,7 @@ fn apply_item(
   parsed : Parsed,
   chars : Array[Char],
   pos : Int,
+  pad : PadMode?,
 ) -> (Parsed, Int) raise ParseError {
   if pos >= chars.length() && item_needs_input(item) {
     raise InputTooShort
@@ -559,7 +615,8 @@ fn apply_item(
     // A padding flag only affects rendering — chrono's parser reads the
     // same width/logic regardless of Pad, so this delegates verbatim to
     // the unwrapped specifier's own parsing.
-    PaddedNumeric(kind, _) => apply_item(Numeric(kind), parsed, chars, pos)
+    PaddedNumeric(kind, mode) =>
+      apply_item(Numeric(kind), parsed, chars, pos, Some(mode))
     Rfc3339 =>
       match parse_rfc3339_datetime(chars, pos) {
         None => raise InputMismatch
@@ -589,43 +646,43 @@ fn apply_item(
           ({ ..parsed, year: merge_field(parsed.year, value), }, p)
       }
     Numeric(Month) =>
-      match parse_fixed_digits(chars, pos, 2) {
+      match read_digits(chars, pos, 2, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>
           ({ ..parsed, month: merge_field(parsed.month, value), }, p)
       }
     Numeric(Day) =>
-      match parse_fixed_digits(chars, pos, 2) {
+      match read_digits(chars, pos, 2, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>
           ({ ..parsed, day: merge_field(parsed.day, value), }, p)
       }
     Numeric(Ordinal) =>
-      match parse_fixed_digits(chars, pos, 3) {
+      match read_digits(chars, pos, 3, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>
           ({ ..parsed, ordinal: merge_field(parsed.ordinal, value), }, p)
       }
     Numeric(Hour) =>
-      match parse_fixed_digits(chars, pos, 2) {
+      match read_digits(chars, pos, 2, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>
           ({ ..parsed, hour: merge_field(parsed.hour, value), }, p)
       }
     Numeric(Minute) =>
-      match parse_fixed_digits(chars, pos, 2) {
+      match read_digits(chars, pos, 2, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>
           ({ ..parsed, minute: merge_field(parsed.minute, value), }, p)
       }
     Numeric(Second) =>
-      match parse_fixed_digits(chars, pos, 2) {
+      match read_digits(chars, pos, 2, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>
           ({ ..parsed, second: merge_field(parsed.second, value), }, p)
       }
     Numeric(Nanosecond) =>
-      match parse_fixed_digits(chars, pos, 9) {
+      match read_digits(chars, pos, 9, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>
           ({ ..parsed, nanosecond: merge_field(parsed.nanosecond, value), }, p)
@@ -637,7 +694,7 @@ fn apply_item(
           ({ ..parsed, nanosecond: merge_field(parsed.nanosecond, value), }, p)
       }
     Numeric(Nanosecond3) =>
-      match parse_fixed_digits(chars, pos, 3) {
+      match read_digits(chars, pos, 3, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>
           (
@@ -649,7 +706,7 @@ fn apply_item(
           )
       }
     Numeric(Nanosecond6) =>
-      match parse_fixed_digits(chars, pos, 6) {
+      match read_digits(chars, pos, 6, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>
           (
@@ -729,19 +786,19 @@ fn apply_item(
     Fixed(AmPmLower) => apply_ampm_specifier(chars, pos, parsed)
     Fixed(AmPmUpper) => apply_ampm_specifier(chars, pos, parsed)
     Numeric(Hour12) =>
-      match parse_fixed_digits(chars, pos, 2) {
+      match read_digits(chars, pos, 2, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>
           ({ ..parsed, hour12: merge_field(parsed.hour12, value), }, p)
       }
     Numeric(Hour12Blank) =>
-      match parse_blank_or_zero_padded_digits(chars, pos, 2) {
+      match read_digits(chars, pos, 2, pad, true) {
         None => raise InputMismatch
         Some((value, p)) =>
           ({ ..parsed, hour12: merge_field(parsed.hour12, value), }, p)
       }
     Numeric(HourBlank) =>
-      match parse_blank_or_zero_padded_digits(chars, pos, 2) {
+      match read_digits(chars, pos, 2, pad, true) {
         None => raise InputMismatch
         Some((value, p)) =>
           ({ ..parsed, hour: merge_field(parsed.hour, value), }, p)
@@ -759,7 +816,7 @@ fn apply_item(
           ({ ..parsed, iso_year: merge_field(parsed.iso_year, value), }, p)
       }
     Numeric(IsoYear2) =>
-      match parse_fixed_digits(chars, pos, 2) {
+      match read_digits(chars, pos, 2, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>
           (
@@ -771,13 +828,13 @@ fn apply_item(
           )
       }
     Numeric(IsoWeekNumber) =>
-      match parse_fixed_digits(chars, pos, 2) {
+      match read_digits(chars, pos, 2, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>
           ({ ..parsed, iso_week: merge_field(parsed.iso_week, value), }, p)
       }
     Numeric(Century) =>
-      match parse_fixed_digits(chars, pos, 2) {
+      match read_digits(chars, pos, 2, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>
           (
@@ -786,7 +843,7 @@ fn apply_item(
           )
       }
     Numeric(YearMod100) =>
-      match parse_fixed_digits(chars, pos, 2) {
+      match read_digits(chars, pos, 2, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>
           (
@@ -795,19 +852,19 @@ fn apply_item(
           )
       }
     Numeric(Quarter) =>
-      match parse_fixed_digits(chars, pos, 1) {
+      match read_digits(chars, pos, 1, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>
           ({ ..parsed, quarter: merge_field(parsed.quarter, value), }, p)
       }
     Numeric(DayBlank) =>
-      match parse_blank_or_zero_padded_digits(chars, pos, 2) {
+      match read_digits(chars, pos, 2, pad, true) {
         None => raise InputMismatch
         Some((value, p)) =>
           ({ ..parsed, day: merge_field(parsed.day, value), }, p)
       }
     Numeric(WeekdayNumberSunday0) =>
-      match parse_fixed_digits(chars, pos, 1) {
+      match read_digits(chars, pos, 1, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>
           match @core.Weekday::from_num_days_from_sunday(value) {
@@ -817,7 +874,7 @@ fn apply_item(
           }
       }
     Numeric(WeekdayNumberMonday1) =>
-      match parse_fixed_digits(chars, pos, 1) {
+      match read_digits(chars, pos, 1, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>
           match @core.Weekday::from_number_from_monday(value) {
@@ -827,7 +884,7 @@ fn apply_item(
           }
       }
     Numeric(WeekSunday) =>
-      match parse_fixed_digits(chars, pos, 2) {
+      match read_digits(chars, pos, 2, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>
           (
@@ -836,7 +893,7 @@ fn apply_item(
           )
       }
     Numeric(WeekMonday) =>
-      match parse_fixed_digits(chars, pos, 2) {
+      match read_digits(chars, pos, 2, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>
           (
@@ -875,7 +932,7 @@ pub fn parse_items_and_remainder(
     if i >= items.length() {
       break (parsed, pos)
     }
-    let (next_parsed, next_pos) = apply_item(items[i], parsed, chars, pos)
+    let (next_parsed, next_pos) = apply_item(items[i], parsed, chars, pos, None)
     continue i + 1, next_parsed, next_pos
   }
   (parsed, String::from_array(chars[pos:]))

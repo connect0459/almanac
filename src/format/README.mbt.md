@@ -79,9 +79,9 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%%` | Literal `%` | |
 | `%n` | Newline | Renders a single `\n`; on parse matches exactly one `\n` (expands to a literal item) |
 | `%t` | Tab | Renders a single `\t`; on parse matches exactly one `\t` (expands to a literal item) |
-| `%-X` | No padding | Overrides `X`'s own default padding; `X` must resolve to a single bare `Numeric` specifier (not a `Fixed` one or a compound expansion like `%F`) other than `%f`/`%.f`/`%3f`/`%6f`/`%s` — chrono itself treats the fractional-second family as `Fixed`, and `%s` has no natural fixed width |
-| `%0X` | Zero padding | See `%-X`; meaningful for a specifier that doesn't already zero-pad, e.g. `%0e` |
-| `%_X` | Space padding | See `%-X`; meaningful for a specifier that doesn't already space-pad, e.g. `%_d` |
+| `%-X` | No padding | Overrides `X`'s own default padding; on parse reads one to `X`'s width in digits, greedily (`%-d` reads `5` and `05`, and in `%-H%-M` the input `905` splits as `90` then `5`), the opt-in way to accept unpadded numbers, since an unflagged field stays fixed-width; `X` must resolve to a single bare `Numeric` specifier (not a `Fixed` one or a compound expansion like `%F`) other than `%f`/`%.f`/`%3f`/`%6f`/`%s` — chrono itself treats the fractional-second family as `Fixed`, and `%s` has no natural fixed width |
+| `%0X` | Zero padding | See `%-X`; meaningful for a specifier that doesn't already zero-pad, e.g. `%0e`. On parse it keeps `X`'s own default reading |
+| `%_X` | Space padding | See `%-X`; meaningful for a specifier that doesn't already space-pad, e.g. `%_d`. On parse it reads a leading blank or zero (`" 5"` or `"05"`), so a value rendered with `%_X` reads back |
 
 Padding flags only affect formatting. On parse, `%-X`/`%0X`/`%_X` behave exactly like bare `%X` (matching chrono, whose parser never reads a specifier's `Pad`).
 

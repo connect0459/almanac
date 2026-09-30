@@ -1074,7 +1074,7 @@ test "parse_date round-trips %-Y through format_date, parsing identically to pla
 }
 
 ///|
-test "parse_date parses %0e and %_d identically to plain %e/%d, ignoring the padding flag entirely" {
+test "parse_date reads %0e and %_d as it does plain %e/%d for the inputs those accept" {
   let date = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
   assert_eq(@format.parse_date("2024-03-05", "%Y-%m-%0e"), date)
   assert_eq(@format.parse_date("2024-03-05", "%Y-%m-%_d"), date)

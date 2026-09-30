@@ -125,10 +125,12 @@ pub extend Fixed with @debug.Debug::{to_repr}
 /// specifier: `NoPad` (`%-`) renders with no padding at all, `ZeroPad`
 /// (`%0`) forces zero-padding (redundant for a specifier that already
 /// zero-pads by default, but meaningful for one like `%e` that normally
-/// space-pads), `SpacePad` (`%_`) forces space-padding. Only affects
-/// rendering — parsing ignores it entirely and behaves exactly like the
-/// unwrapped specifier, matching chrono (its `Item::Numeric`'s `Pad`
-/// field is likewise unread by its parser).
+/// space-pads), `SpacePad` (`%_`) forces space-padding. On parse it is the
+/// inverse of rendering and only ever widens what the field accepts: `NoPad`
+/// reads one to the field's width in digits, greedily, and `SpacePad` a
+/// leading blank or zero; `ZeroPad` keeps the field's own default reading.
+/// Unlike chrono, whose parser never reads the flag, so that a value rendered
+/// with a flag reads back under the same flag.
 pub(all) enum PadMode {
   NoPad
   ZeroPad
