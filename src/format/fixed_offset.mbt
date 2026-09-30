@@ -5,7 +5,7 @@
 ///
 /// Raises `InputMismatch` if `input` is not exactly one of those forms
 /// (including a minutes or seconds field above 59), and
-/// `InconsistentFields` if it is well-shaped but beyond `FixedOffset`'s
+/// `FieldOutOfRange` if it is well-shaped but beyond `FixedOffset`'s
 /// `±23:59:59` range.
 pub fn parse_fixed_offset(input : String) -> @tz.FixedOffset raise ParseError {
   let chars = input.to_array()
@@ -31,6 +31,6 @@ pub fn parse_fixed_offset(input : String) -> @tz.FixedOffset raise ParseError {
   }
   match @tz.FixedOffset::east(secs) {
     Some(offset) => offset
-    None => raise InconsistentFields
+    None => raise FieldOutOfRange
   }
 }

@@ -44,8 +44,8 @@ test "parse_items accepts a hand-built item sequence" {
 test "parse_items rejects trailing input while parse_items_and_remainder returns it" {
   let items = @format.tokenize("%F")
   try @format.parse_items(items, "2024-03-05 rest") |> ignore catch {
-    @format.InputMismatch => ()
-    _ => fail("expected InputMismatch")
+    @format.TrailingInput => ()
+    _ => fail("expected TrailingInput")
   } noraise {
     _ => fail("expected trailing input to be rejected")
   }

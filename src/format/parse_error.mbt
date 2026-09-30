@@ -17,15 +17,26 @@ pub suberror ParseError {
   /// when `%z` isn't in the format) was never populated while walking
   /// the token sequence.
   IncompleteFields
-  /// Two populated fields disagree (a parsed `%A`/`%a` weekday, or a
-  /// redundant `%j`, doesn't match the date built from `%Y`/`%m`/`%d`),
-  /// or a field's value doesn't form a valid date/time/offset (e.g. an
-  /// out-of-range hour).
+  /// Two populated fields contradict each other (a parsed `%A`/`%a`
+  /// weekday, or a redundant `%j`, doesn't match the date built from
+  /// `%Y`/`%m`/`%d`; two `%H` readings differ), or a combination is not
+  /// allowed (an offset given to `to_date_time_in`).
   InconsistentFields
+  /// A parsed field's value lies outside what it can hold, so no date,
+  /// time or offset can be built from it (an hour of 24, February 30, a
+  /// week that does not exist in its year, an offset beyond `±23:59:59`).
+  FieldOutOfRange
   /// The input text didn't match a literal or specifier at some
   /// position, including a `%Z` with no name to consume (see
   /// `parse_date`/`parse_time`/`parse_date_time`/`parse_date_time_tz`).
   InputMismatch
+  /// The input was exhausted when the format still had an item to match
+  /// (e.g. `"2024-03"` against `%F`).
+  InputTooShort
+  /// The format was fully matched but input remains after it (e.g.
+  /// `"2024-03-05 rest"` against `%F`); the `_and_remainder` and
+  /// `parse_items_and_remainder` functions return that tail instead.
+  TrailingInput
 } derive(Eq, @debug.Debug)
 
 ///|
@@ -51,8 +62,11 @@ pub impl Show for ParseError with fn output(self, logger) {
     InvalidRfc2822 => "invalid RFC 2822 date-time"
     InvalidDuration => "invalid duration"
     IncompleteFields => "not enough fields to build the requested value"
-    InconsistentFields => "parsed fields are inconsistent or out of range"
+    InconsistentFields => "parsed fields contradict each other"
+    FieldOutOfRange => "a parsed field is out of range"
     InputMismatch => "input does not match the format"
+    InputTooShort => "input ended before the format did"
+    TrailingInput => "input has unparsed text after the format"
   }
   logger.write_string(message)
 }

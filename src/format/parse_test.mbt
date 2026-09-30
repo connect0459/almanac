@@ -47,8 +47,8 @@ test "parse_date rejects input whose literal text doesn't match the format" {
 ///|
 test "parse_date rejects trailing input beyond what the format consumes" {
   try @format.parse_date("2024extra", "%Y") |> ignore catch {
-    @format.InputMismatch => ()
-    _ => fail("expected InputMismatch")
+    @format.TrailingInput => ()
+    _ => fail("expected TrailingInput")
   } noraise {
     _ => fail("expected parse_date to reject trailing garbage")
   }
@@ -64,8 +64,8 @@ test "parse_date round-trips using the short weekday name and an ordinal-only da
 ///|
 test "parse_date rejects a calendar-invalid month/day combination" {
   try @format.parse_date("2024-02-30", "%Y-%m-%d") |> ignore catch {
-    @format.InconsistentFields => ()
-    _ => fail("expected InconsistentFields")
+    @format.FieldOutOfRange => ()
+    _ => fail("expected FieldOutOfRange")
   } noraise {
     _ => fail("expected parse_date to reject Feb 30")
   }
@@ -74,8 +74,8 @@ test "parse_date rejects a calendar-invalid month/day combination" {
 ///|
 test "parse_date rejects an out-of-range ordinal for the given year" {
   try @format.parse_date("2023-366", "%Y-%j") |> ignore catch {
-    @format.InconsistentFields => ()
-    _ => fail("expected InconsistentFields")
+    @format.FieldOutOfRange => ()
+    _ => fail("expected FieldOutOfRange")
   } noraise {
     _ => fail("expected parse_date to reject ordinal 366 in a non-leap year")
   }
@@ -114,8 +114,8 @@ test "parse_date rejects unrecognized weekday text" {
 ///|
 test "parse_date rejects input that runs out before a literal separator" {
   try @format.parse_date("2024-03", "%Y-%m-%d") |> ignore catch {
-    @format.InputMismatch => ()
-    _ => fail("expected InputMismatch")
+    @format.InputTooShort => ()
+    _ => fail("expected InputTooShort")
   } noraise {
     _ => fail("expected parse_date to reject truncated input")
   }
@@ -203,8 +203,8 @@ test "parse_time round-trips a leap second through format_time" {
 ///|
 test "parse_time rejects an out-of-range hour" {
   try @format.parse_time("25:00:00", "%H:%M:%S") |> ignore catch {
-    @format.InconsistentFields => ()
-    _ => fail("expected InconsistentFields")
+    @format.FieldOutOfRange => ()
+    _ => fail("expected FieldOutOfRange")
   } noraise {
     _ => fail("expected parse_time to reject an out-of-range hour")
   }
@@ -269,8 +269,8 @@ test "parse_date_time_tz rejects a malformed %z field" {
        "2024-03-05 09:30:00+0999", // offset minute out of range
     ] {
     try @format.parse_date_time_tz(bad, "%F %T%z") |> ignore catch {
-      @format.InputMismatch => ()
-      _ => fail("expected InputMismatch for \{bad}")
+      @format.InputMismatch | @format.InputTooShort => ()
+      _ => fail("expected InputMismatch or InputTooShort for \{bad}")
     } noraise {
       _ => fail("expected rejection for \{bad}")
     }
@@ -282,8 +282,8 @@ test "parse_date_time_tz rejects an offset magnitude outside FixedOffset's range
   try
     @format.parse_date_time_tz("2024-03-05 09:30:00+9900", "%F %T%z") |> ignore
   catch {
-    @format.InconsistentFields => ()
-    _ => fail("expected InconsistentFields")
+    @format.FieldOutOfRange => ()
+    _ => fail("expected FieldOutOfRange")
   } noraise {
     _ => fail("expected rejection for an out-of-range offset magnitude")
   }
@@ -341,8 +341,8 @@ test "parsing %:z, %::z, and %:::z rejects input that doesn't exactly match thei
     ] {
     let (fmt, bad) = case
     try @format.parse_date_time_tz(bad, "%F %T" + fmt) |> ignore catch {
-      @format.InputMismatch => ()
-      _ => fail("expected InputMismatch for \{fmt}")
+      @format.InputMismatch | @format.TrailingInput => ()
+      _ => fail("expected InputMismatch or TrailingInput for \{fmt}")
     } noraise {
       _ => fail("expected rejection for \{fmt}")
     }
@@ -415,8 +415,8 @@ test "parsing %#z rejects malformed input" {
        "2024-03-05 09:30:00+09:99", // out-of-range minute
     ] {
     try @format.parse_date_time_tz(bad, "%F %T%#z") |> ignore catch {
-      @format.InputMismatch => ()
-      _ => fail("expected InputMismatch for \{bad}")
+      @format.InputMismatch | @format.InputTooShort => ()
+      _ => fail("expected InputMismatch or InputTooShort for \{bad}")
     } noraise {
       _ => fail("expected rejection for \{bad}")
     }
@@ -457,8 +457,11 @@ test "parsing %:z, %::z, %:::z, and %#z rejects malformed input at every failure
       )
       |> ignore
     catch {
-      @format.InputMismatch => ()
-      _ => fail("expected InputMismatch for \{fmt} / \{bad_offset}")
+      @format.InputMismatch | @format.InputTooShort => ()
+      _ =>
+        fail(
+          "expected InputMismatch or InputTooShort for \{fmt} / \{bad_offset}",
+        )
     } noraise {
       _ => fail("expected rejection for \{fmt} / \{bad_offset}")
     }
@@ -519,8 +522,8 @@ test "parsing %Z stops at whitespace so a following specifier still applies" {
 test "parsing %Z rejects an empty zone name" {
   for input in ["2024-03-05 09:30:00 ", "2024-03-05 09:30:00"] {
     try @format.parse_date_time(input, "%F %T %Z") |> ignore catch {
-      @format.InputMismatch => ()
-      _ => fail("expected InputMismatch for \{input}")
+      @format.InputTooShort => ()
+      _ => fail("expected InputTooShort for \{input}")
     } noraise {
       _ => fail("expected rejection for \{input}")
     }
@@ -658,8 +661,8 @@ test "parse_time rejects a malformed %l field (neither two digits nor a space pl
 ///|
 test "parse_time rejects a 12-hour value outside 1..=12" {
   try @format.parse_time("00:00:00 AM", "%I:%M:%S %p") |> ignore catch {
-    @format.InconsistentFields => ()
-    _ => fail("expected InconsistentFields")
+    @format.FieldOutOfRange => ()
+    _ => fail("expected FieldOutOfRange")
   } noraise {
     _ => fail("expected rejection for an out-of-range %I value")
   }
@@ -724,14 +727,14 @@ test "parse_date round-trips the numeric weekday via %w and %u across every day 
 ///|
 test "parsing %w/%u rejects a digit outside the valid weekday range" {
   try @format.parse_date("2024-03-05 7", "%Y-%m-%d %w") |> ignore catch {
-    @format.InconsistentFields => ()
-    _ => fail("expected InconsistentFields")
+    @format.FieldOutOfRange => ()
+    _ => fail("expected FieldOutOfRange")
   } noraise {
     _ => fail("expected rejection for an out-of-range %w value")
   }
   try @format.parse_date("2024-03-05 0", "%Y-%m-%d %u") |> ignore catch {
-    @format.InconsistentFields => ()
-    _ => fail("expected InconsistentFields")
+    @format.FieldOutOfRange => ()
+    _ => fail("expected FieldOutOfRange")
   } noraise {
     _ => fail("expected rejection for an out-of-range %u value")
   }
@@ -834,8 +837,8 @@ test "parse_date rejects %U/%W without a weekday, since the week number alone do
 ///|
 test "parse_date rejects a %U/%W and weekday combination that names an impossible date" {
   try @format.parse_date("2024 53 Sunday", "%Y %U %A") |> ignore catch {
-    @format.InconsistentFields => ()
-    _ => fail("expected InconsistentFields")
+    @format.FieldOutOfRange => ()
+    _ => fail("expected FieldOutOfRange")
   } noraise {
     _ =>
       fail("expected parse_date to reject an impossible %U/weekday combination")
@@ -1158,9 +1161,6 @@ test "parse_date rejects ISO week fields that disagree with each other or with t
   let cases = [
     ("2024 25 10 2", "%G %g %V %u"),
     ("-100 00 01 1", "%G %g %V %u"),
-    ("2024 53 2", "%G %V %u"),
-    ("2024 00 2", "%G %V %u"),
-    ("2024 54 2", "%G %V %u"),
     ("2025 2024 10 2", "%Y %G %V %u"),
     ("2024-03-05 2024 11", "%Y-%m-%d %G %V"),
     ("2024-03-05 2023 10", "%Y-%m-%d %G %V"),
@@ -1171,6 +1171,18 @@ test "parse_date rejects ISO week fields that disagree with each other or with t
     try @format.parse_date(input, fmt) |> ignore catch {
       @format.InconsistentFields => ()
       _ => fail("expected InconsistentFields for \{input}")
+    } noraise {
+      _ => fail("expected parse_date to reject \{input}")
+    }
+  }
+}
+
+///|
+test "parse_date rejects an ISO week number that does not exist in its ISO year" {
+  for input in ["2024 53 2", "2024 00 2", "2024 54 2"] {
+    try @format.parse_date(input, "%G %V %u") |> ignore catch {
+      @format.FieldOutOfRange => ()
+      _ => fail("expected FieldOutOfRange for \{input}")
     } noraise {
       _ => fail("expected parse_date to reject \{input}")
     }
@@ -1400,7 +1412,7 @@ test "parse_time round-trips %k through format_time for every hour" {
 test "parse_time rejects an out-of-range or non-numeric %k field" {
   for input in ["24:00:00", "XX:00:00", " :00:00", "9:00:00"] {
     try @format.parse_time(input, "%k:%M:%S") |> ignore catch {
-      @format.InputMismatch | @format.InconsistentFields => ()
+      @format.InputMismatch | @format.FieldOutOfRange => ()
       _ => fail("expected a rejection for \{input}")
     } noraise {
       _ => fail("expected parse_time to reject \{input}")
@@ -1534,9 +1546,21 @@ test "_and_remainder parsers still reject incomplete or inconsistent fields in t
 ///|
 test "the strict parsers still reject any trailing input" {
   try @format.parse_date("2024-03-05 rest", "%F") |> ignore catch {
+    @format.TrailingInput => ()
+    _ => fail("expected TrailingInput")
+  } noraise {
+    _ => fail("expected trailing input to be rejected")
+  }
+}
+
+///|
+test "parsing %Z rejects a zone name that begins with whitespace" {
+  try
+    @format.parse_date_time("2024-03-05 09:30:00  UTC", "%F %T %Z") |> ignore
+  catch {
     @format.InputMismatch => ()
     _ => fail("expected InputMismatch")
   } noraise {
-    _ => fail("expected trailing input to be rejected")
+    _ => fail("expected a whitespace-led zone name to be rejected")
   }
 }

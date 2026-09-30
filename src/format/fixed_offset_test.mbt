@@ -63,7 +63,7 @@ test "parse_fixed_offset rejects text that is not a whole offset" {
 test "parse_fixed_offset rejects an offset beyond 23:59:59 or with minutes or seconds above 59" {
   for input in ["+24:00", "-24:00", "+99", "+09:60", "+09:00:60", "+0960"] {
     try @format.parse_fixed_offset(input) |> ignore catch {
-      @format.InputMismatch | @format.InconsistentFields => ()
+      @format.InputMismatch | @format.FieldOutOfRange => ()
       _ => fail("expected a rejection for \{input}")
     } noraise {
       _ => fail("expected parse_fixed_offset to reject \{input}")
@@ -72,11 +72,11 @@ test "parse_fixed_offset rejects an offset beyond 23:59:59 or with minutes or se
 }
 
 ///|
-test "parse_fixed_offset reports a well-shaped but out-of-range offset as InconsistentFields" {
+test "parse_fixed_offset reports a well-shaped but out-of-range offset as FieldOutOfRange" {
   for input in ["+24:00", "-24:00", "+99"] {
     try @format.parse_fixed_offset(input) |> ignore catch {
-      @format.InconsistentFields => ()
-      _ => fail("expected InconsistentFields for \{input}")
+      @format.FieldOutOfRange => ()
+      _ => fail("expected FieldOutOfRange for \{input}")
     } noraise {
       _ => fail("expected parse_fixed_offset to reject \{input}")
     }

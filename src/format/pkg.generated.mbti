@@ -90,7 +90,10 @@ pub suberror ParseError {
   InvalidDuration
   IncompleteFields
   InconsistentFields
+  FieldOutOfRange
   InputMismatch
+  InputTooShort
+  TrailingInput
 } derive(Eq, @debug.Debug)
 pub fn ParseError::equal(Self, Self) -> Bool
 pub fn ParseError::not_equal(Self, Self) -> Bool

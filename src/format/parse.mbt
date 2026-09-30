@@ -273,9 +273,8 @@ fn skip_offset_separator(chars : Array[Char], pos : Int) -> Int {
 fn parse_offset_permissive(chars : Array[Char], pos : Int) -> (Int, Int)? {
   if pos < chars.length() && (chars[pos] == 'Z' || chars[pos] == 'z') {
     Some((0, pos + 1))
-  } else if pos >= chars.length() {
-    None
-  } else if chars[pos] != '+' && chars[pos] != '-' && chars[pos] != '\u{2212}' {
+  } else if pos >= chars.length() ||
+    (chars[pos] != '+' && chars[pos] != '-' && chars[pos] != '\u{2212}') {
     None
   } else {
     let sign = if chars[pos] == '+' { 1 } else { -1 }
@@ -455,6 +454,17 @@ fn parse_blank_or_zero_padded_digits(
 }
 
 ///|
+/// Whether `item` cannot match the empty string: everything but an empty
+/// literal and `%.f`, whose absence is valid.
+fn item_needs_input(item : Item) -> Bool {
+  match item {
+    Literal(s) => s != ""
+    Numeric(DotFraction) => false
+    _ => true
+  }
+}
+
+///|
 /// Applies a single token against `input` at `pos`, returning the
 /// updated accumulator and the new position. `%Z` consumes and discards a
 /// run of one or more non-whitespace characters: a zone name (an IANA
@@ -466,6 +476,9 @@ fn apply_item(
   chars : Array[Char],
   pos : Int,
 ) -> (Parsed, Int) raise ParseError {
+  if pos >= chars.length() && item_needs_input(item) {
+    raise InputTooShort
+  }
   match item {
     Literal(s) =>
       match match_literal(chars, pos, s) {
@@ -718,7 +731,7 @@ fn apply_item(
         None => raise InputMismatch
         Some((value, p)) =>
           match @core.Weekday::from_num_days_from_sunday(value) {
-            None => raise InconsistentFields
+            None => raise FieldOutOfRange
             Some(wd) =>
               ({ ..parsed, weekday: merge_field(parsed.weekday, wd), }, p)
           }
@@ -728,7 +741,7 @@ fn apply_item(
         None => raise InputMismatch
         Some((value, p)) =>
           match @core.Weekday::from_number_from_monday(value) {
-            None => raise InconsistentFields
+            None => raise FieldOutOfRange
             Some(wd) =>
               ({ ..parsed, weekday: merge_field(parsed.weekday, wd), }, p)
           }
@@ -764,7 +777,7 @@ pub fn parse_items(
 ) -> Parsed raise ParseError {
   let (parsed, rest) = parse_items_and_remainder(items, input)
   if rest != "" {
-    raise InputMismatch
+    raise TrailingInput
   }
   parsed
 }
@@ -874,7 +887,7 @@ fn resolve_date_from_week(
     (Some(a), Some(b)) => if a == b { a } else { raise InconsistentFields }
   }
   match @core.NaiveDate::from_yo(year, yday) {
-    None => raise InconsistentFields
+    None => raise FieldOutOfRange
     Some(d) => d
   }
 }
@@ -912,7 +925,7 @@ fn resolve_date_from_iso_week(
     Some(wd) => wd
   }
   match @core.NaiveDate::from_isoywd(iso_year, iso_week, weekday) {
-    None => raise InconsistentFields
+    None => raise FieldOutOfRange
     Some(d) => d
   }
 }
@@ -932,14 +945,14 @@ fn resolve_date(parsed : Parsed) -> @core.NaiveDate raise ParseError {
   let date = match (parsed.month, parsed.day) {
     (Some(month), Some(day)) =>
       match @core.NaiveDate::from_ymd(require_year(year), month, day) {
-        None => raise InconsistentFields
+        None => raise FieldOutOfRange
         Some(d) => d
       }
     (None, None) =>
       match parsed.ordinal {
         Some(ordinal) =>
           match @core.NaiveDate::from_yo(require_year(year), ordinal) {
-            None => raise InconsistentFields
+            None => raise FieldOutOfRange
             Some(d) => d
           }
         None =>
@@ -1005,7 +1018,7 @@ fn resolve_hour(parsed : Parsed) -> Int raise ParseError {
     (None, None) => None
     (Some(hour12), Some(is_pm)) => {
       if hour12 < 1 || hour12 > 12 {
-        raise InconsistentFields
+        raise FieldOutOfRange
       }
       let base = if hour12 == 12 { 0 } else { hour12 }
       Some(if is_pm { base + 12 } else { base })
@@ -1046,7 +1059,7 @@ fn resolve_time(parsed : Parsed) -> @core.NaiveTime raise ParseError {
     (second, nanosecond)
   }
   match @core.NaiveTime::from_hms_nano(hour, minute, clock_second, nano) {
-    None => raise InconsistentFields
+    None => raise FieldOutOfRange
     Some(t) => t
   }
 }
@@ -1058,7 +1071,7 @@ fn resolve_offset(parsed : Parsed) -> @tz.FixedOffset raise ParseError {
     None => raise IncompleteFields
     Some(secs) =>
       match @tz.FixedOffset::east(secs) {
-        None => raise InconsistentFields
+        None => raise FieldOutOfRange
         Some(offset) => offset
       }
   }
