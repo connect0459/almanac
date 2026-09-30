@@ -11,6 +11,17 @@ pub fn is_leap_year(Int) -> Bool
 // Errors
 
 // Types and methods
+pub struct ClockHour12 {
+  // private fields
+} derive(Eq, Hash, @debug.Debug)
+pub fn ClockHour12::equal(Self, Self) -> Bool
+pub fn ClockHour12::hash(Self) -> Int
+pub fn ClockHour12::hash_combine(Self, Hasher) -> Unit
+pub fn ClockHour12::hour(Self) -> Int
+pub fn ClockHour12::is_pm(Self) -> Bool
+pub fn ClockHour12::not_equal(Self, Self) -> Bool
+pub fn ClockHour12::to_repr(Self) -> @debug.Repr
+
 pub struct IsoWeek {
   // private fields
 } derive(Compare, Eq, Hash, @debug.Debug)
@@ -140,7 +151,7 @@ pub fn NaiveDate::with_ordinal(Self, Int) -> Self?
 pub fn NaiveDate::with_ordinal0(Self, Int) -> Self?
 pub fn NaiveDate::with_year(Self, Int) -> Self?
 pub fn NaiveDate::year(Self) -> Int
-pub fn NaiveDate::year_ce(Self) -> (Bool, Int)
+pub fn NaiveDate::year_ce(Self) -> YearCe
 pub fn NaiveDate::years_since(Self, Self) -> Int?
 pub fn NaiveDate::ymd(Self) -> (Int, Month, Int)
 pub impl Default for NaiveDate
@@ -188,7 +199,7 @@ pub fn NaiveDateTime::hash(Self) -> Int
 pub fn NaiveDateTime::hash_combine(Self, Hasher) -> Unit
 pub fn NaiveDateTime::hms(Self) -> (Int, Int, Int)
 pub fn NaiveDateTime::hour(Self) -> Int
-pub fn NaiveDateTime::hour12(Self) -> (Bool, Int)
+pub fn NaiveDateTime::hour12(Self) -> ClockHour12
 pub fn NaiveDateTime::iso_week(Self) -> IsoWeek
 pub fn NaiveDateTime::leap_year(Self) -> Bool
 pub fn NaiveDateTime::minute(Self) -> Int
@@ -246,7 +257,7 @@ pub fn NaiveDateTime::with_second(Self, Int) -> Self?
 pub fn NaiveDateTime::with_time(Self, NaiveTime) -> Self
 pub fn NaiveDateTime::with_year(Self, Int) -> Self?
 pub fn NaiveDateTime::year(Self) -> Int
-pub fn NaiveDateTime::year_ce(Self) -> (Bool, Int)
+pub fn NaiveDateTime::year_ce(Self) -> YearCe
 pub fn NaiveDateTime::years_since(Self, Self) -> Int?
 pub fn NaiveDateTime::ymd(Self) -> (Int, Month, Int)
 pub impl Default for NaiveDateTime
@@ -276,7 +287,7 @@ pub fn NaiveTime::hash(Self) -> Int
 pub fn NaiveTime::hash_combine(Self, Hasher) -> Unit
 pub fn NaiveTime::hms(Self) -> (Int, Int, Int)
 pub fn NaiveTime::hour(Self) -> Int
-pub fn NaiveTime::hour12(Self) -> (Bool, Int)
+pub fn NaiveTime::hour12(Self) -> ClockHour12
 pub fn NaiveTime::midnight() -> Self
 pub fn NaiveTime::minute(Self) -> Int
 pub fn NaiveTime::nanosecond(Self) -> Int
@@ -475,6 +486,17 @@ pub fn WeekdaySetIterator::length(Self) -> Int
 pub fn WeekdaySetIterator::next(Self) -> Weekday?
 pub fn WeekdaySetIterator::next_back(Self) -> Weekday?
 pub fn WeekdaySetIterator::to_repr(Self) -> @debug.Repr
+
+pub struct YearCe {
+  // private fields
+} derive(Eq, Hash, @debug.Debug)
+pub fn YearCe::equal(Self, Self) -> Bool
+pub fn YearCe::hash(Self) -> Int
+pub fn YearCe::hash_combine(Self, Hasher) -> Unit
+pub fn YearCe::is_ce(Self) -> Bool
+pub fn YearCe::not_equal(Self, Self) -> Bool
+pub fn YearCe::to_repr(Self) -> @debug.Repr
+pub fn YearCe::year(Self) -> Int
 
 // Type aliases
 

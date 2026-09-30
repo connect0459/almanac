@@ -390,14 +390,14 @@ pub fn[Tz : @tz.TimeZone] to_rfc3339(dt : @tz.DateTime[Tz]) -> String {
 
 ///|
 /// Renders `dt` as RFC 3339 with the fractional seconds given by `secform`
-/// and, when `use_z` is `true`, a zero offset as `Z` (otherwise `+00:00`;
-/// a non-zero offset is unaffected). A fixed-digit `secform` truncates
+/// and, when `use_z` is `true` (the default), a zero offset as `Z`
+/// (otherwise `+00:00`; a non-zero offset is unaffected). A fixed-digit `secform` truncates
 /// rather than rounds, so the seconds field never changes. With `Auto` and
-/// `use_z = true` this is `to_rfc3339`.
+/// the default `use_z` this is `to_rfc3339`.
 pub fn[Tz : @tz.TimeZone] to_rfc3339_opts(
   dt : @tz.DateTime[Tz],
   secform : SecondsFormat,
-  use_z : Bool,
+  use_z? : Bool = true,
 ) -> String {
   let wall_clock = dt.naive_local()
   render_rfc3339_opts(

@@ -557,7 +557,7 @@ pub fn[Tz : TimeZone] DateTime::leap_year(self : DateTime[Tz]) -> Bool {
 
 ///|
 /// The local year as a Common Era flag and a positive year number. See `@core.NaiveDate::year_ce`.
-pub fn[Tz : TimeZone] DateTime::year_ce(self : DateTime[Tz]) -> (Bool, Int) {
+pub fn[Tz : TimeZone] DateTime::year_ce(self : DateTime[Tz]) -> @core.YearCe {
   self.naive_local().year_ce()
 }
 
@@ -575,7 +575,9 @@ pub fn[Tz : TimeZone] DateTime::num_days_in_month(self : DateTime[Tz]) -> Int {
 
 ///|
 /// The local hour on a 12-hour clock as a PM flag and an hour in `1..=12`.
-pub fn[Tz : TimeZone] DateTime::hour12(self : DateTime[Tz]) -> (Bool, Int) {
+pub fn[Tz : TimeZone] DateTime::hour12(
+  self : DateTime[Tz],
+) -> @core.ClockHour12 {
   self.naive_local().hour12()
 }
 

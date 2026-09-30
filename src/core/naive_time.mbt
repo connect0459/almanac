@@ -275,11 +275,17 @@ pub fn NaiveTime::num_seconds_from_midnight(self : NaiveTime) -> Int {
 /// The hour of the day on a 12-hour clock, paired with whether it is PM.
 /// Midnight and noon both report hour `12` (`(false, 12)` and `(true, 12)`
 /// respectively).
-pub fn NaiveTime::hour12(self : NaiveTime) -> (Bool, Int) {
+pub fn NaiveTime::hour12(self : NaiveTime) -> ClockHour12 {
   let hour = self.hour()
-  let is_pm = hour >= 12
   let hour12 = hour % 12
-  (is_pm, if hour12 == 0 { 12 } else { hour12 })
+  ClockHour12::{
+    is_pm: hour >= 12,
+    hour: if hour12 == 0 {
+      12
+    } else {
+      hour12
+    },
+  }
 }
 
 ///|

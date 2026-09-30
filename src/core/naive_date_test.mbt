@@ -981,14 +981,23 @@ test "month0, day0 and ordinal0 are the zero-based forms of the calendar fields"
 ///|
 test "year_ce splits the year into a Common Era flag and a positive year number" {
   assert_eq(
-    @core.NaiveDate::from_ymd(2024, 6, 1).unwrap().year_ce(),
+    ce_pair(@core.NaiveDate::from_ymd(2024, 6, 1).unwrap().year_ce()),
     (true, 2024),
   )
-  assert_eq(@core.NaiveDate::from_ymd(1, 1, 1).unwrap().year_ce(), (true, 1))
-  assert_eq(@core.NaiveDate::from_ymd(0, 1, 1).unwrap().year_ce(), (false, 1))
-  assert_eq(@core.NaiveDate::from_ymd(-1, 1, 1).unwrap().year_ce(), (false, 2))
   assert_eq(
-    @core.NaiveDate::from_ymd(-100, 1, 1).unwrap().year_ce(),
+    ce_pair(@core.NaiveDate::from_ymd(1, 1, 1).unwrap().year_ce()),
+    (true, 1),
+  )
+  assert_eq(
+    ce_pair(@core.NaiveDate::from_ymd(0, 1, 1).unwrap().year_ce()),
+    (false, 1),
+  )
+  assert_eq(
+    ce_pair(@core.NaiveDate::from_ymd(-1, 1, 1).unwrap().year_ce()),
+    (false, 2),
+  )
+  assert_eq(
+    ce_pair(@core.NaiveDate::from_ymd(-100, 1, 1).unwrap().year_ce()),
     (false, 101),
   )
 }

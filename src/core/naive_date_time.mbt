@@ -314,7 +314,7 @@ pub fn NaiveDateTime::quarter(self : NaiveDateTime) -> Int {
 ///|
 /// The year as a Common Era flag and a positive year number. See
 /// `NaiveDate::year_ce`.
-pub fn NaiveDateTime::year_ce(self : NaiveDateTime) -> (Bool, Int) {
+pub fn NaiveDateTime::year_ce(self : NaiveDateTime) -> YearCe {
   self.date.year_ce()
 }
 
@@ -335,7 +335,7 @@ pub fn NaiveDateTime::num_days_in_month(self : NaiveDateTime) -> Int {
 ///|
 /// The hour on a 12-hour clock as a PM flag and an hour in `1..=12`. See
 /// `NaiveTime::hour12`.
-pub fn NaiveDateTime::hour12(self : NaiveDateTime) -> (Bool, Int) {
+pub fn NaiveDateTime::hour12(self : NaiveDateTime) -> ClockHour12 {
   self.time.hour12()
 }
 

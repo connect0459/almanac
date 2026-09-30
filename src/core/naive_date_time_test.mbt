@@ -739,7 +739,7 @@ test "quarter, year_ce, num_days_from_ce and num_days_in_month follow the date" 
     .and_hms(13, 45, 6)
     .unwrap()
   assert_eq(dt.quarter(), 1)
-  assert_eq(dt.year_ce(), (true, 2024))
+  assert_eq(ce_pair(dt.year_ce()), (true, 2024))
   assert_eq(dt.num_days_from_ce(), dt.date().num_days_from_ce())
   assert_eq(dt.num_days_in_month(), 29)
   let bce = @core.NaiveDate::from_ymd(0, 10, 1)
@@ -747,7 +747,7 @@ test "quarter, year_ce, num_days_from_ce and num_days_in_month follow the date" 
     .and_hms(0, 0, 0)
     .unwrap()
   assert_eq(bce.quarter(), 4)
-  assert_eq(bce.year_ce(), (false, 1))
+  assert_eq(ce_pair(bce.year_ce()), (false, 1))
 }
 
 ///|
@@ -756,13 +756,13 @@ test "hour12 and num_seconds_from_midnight follow the time" {
     .unwrap()
     .and_hms(13, 45, 6)
     .unwrap()
-  assert_eq(dt.hour12(), (true, 1))
+  assert_eq(clock_pair(dt.hour12()), (true, 1))
   assert_eq(dt.num_seconds_from_midnight(), 13 * 3600 + 45 * 60 + 6)
   let midnight = @core.NaiveDate::from_ymd(2024, 2, 29)
     .unwrap()
     .and_hms(0, 0, 0)
     .unwrap()
-  assert_eq(midnight.hour12(), (false, 12))
+  assert_eq(clock_pair(midnight.hour12()), (false, 12))
   assert_eq(midnight.num_seconds_from_midnight(), 0)
 }
 

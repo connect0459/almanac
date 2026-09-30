@@ -239,7 +239,7 @@ The lenient rule is the library's only policy for a local reading that is repeat
 | `leap_year()` | `-> Bool` | Whether the local calendar year is a leap year |
 | `hour()` / `minute()` / `second()` / `nanosecond()` | `-> Int` | Local time-of-day components; a leap second reports `second() == 59` with `nanosecond() >= 1_000_000_000` |
 | `month0()` / `day0()` / `ordinal0()` / `quarter()` / `num_days_in_month()` / `num_days_from_ce()` | `-> Int` | Further local calendar components (0-based month/day/ordinal, quarter `1..=4`, month length, days since the start of the Common Era) |
-| `year_ce()` / `hour12()` | `-> (Bool, Int)` | Local year as a Common Era flag plus a positive year; local hour as a PM flag plus an hour in `1..=12` |
+| `year_ce()` / `hour12()` | `-> YearCe` / `-> ClockHour12` | Local year as a Common Era flag plus a positive year; local hour as a PM flag plus an hour in `1..=12` (`@core.YearCe`, `@core.ClockHour12`) |
 | `num_seconds_from_midnight()` | `-> Int` | Seconds since local midnight |
 | `with_year(Int)` / `with_month(Int)` / `with_day(Int)` / `with_ordinal(Int)` / `with_hour(Int)` / `with_minute(Int)` / `with_second(Int)` / `with_nanosecond(Int)` | `-> MappedLocalTime[Self[Tz]]` | Replace one local component and re-resolve the wall-clock reading through the zone: `Absent` for an invalid value or a DST gap, `Ambiguous` inside a DST fold |
 | `with_month0(Int)` / `with_day0(Int)` / `with_ordinal0(Int)` | `-> MappedLocalTime[Self[Tz]]` | 0-based counterparts of `with_month`/`with_day`/`with_ordinal`, resolved the same way |

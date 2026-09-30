@@ -55,7 +55,7 @@ pub fn[Tz] DateTime::hash(Self[Tz]) -> Int
 pub fn[Tz] DateTime::hash_combine(Self[Tz], Hasher) -> Unit
 pub fn[Tz : TimeZone] DateTime::hms(Self[Tz]) -> (Int, Int, Int)
 pub fn[Tz : TimeZone] DateTime::hour(Self[Tz]) -> Int
-pub fn[Tz : TimeZone] DateTime::hour12(Self[Tz]) -> (Bool, Int)
+pub fn[Tz : TimeZone] DateTime::hour12(Self[Tz]) -> @core.ClockHour12
 pub fn[Tz : TimeZone] DateTime::is_dst(Self[Tz]) -> Bool
 pub fn[Tz : TimeZone] DateTime::iso_week(Self[Tz]) -> @core.IsoWeek
 pub fn[Tz : TimeZone] DateTime::leap_year(Self[Tz]) -> Bool
@@ -120,7 +120,7 @@ pub fn[Tz : TimeZone] DateTime::with_time(Self[Tz], @core.NaiveTime) -> MappedLo
 pub fn[Tz, Tz2] DateTime::with_timezone(Self[Tz], Tz2) -> Self[Tz2]
 pub fn[Tz : TimeZone] DateTime::with_year(Self[Tz], Int) -> MappedLocalTime[Self[Tz]]
 pub fn[Tz : TimeZone] DateTime::year(Self[Tz]) -> Int
-pub fn[Tz : TimeZone] DateTime::year_ce(Self[Tz]) -> (Bool, Int)
+pub fn[Tz : TimeZone] DateTime::year_ce(Self[Tz]) -> @core.YearCe
 pub fn[Tz : TimeZone, Tz2] DateTime::years_since(Self[Tz], Self[Tz2]) -> Int?
 pub fn[Tz : TimeZone] DateTime::ymd(Self[Tz]) -> (Int, @core.Month, Int)
 pub fn[Tz : TimeZone] DateTime::zone(Self[Tz]) -> (String, FixedOffset)

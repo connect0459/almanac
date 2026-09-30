@@ -17,6 +17,7 @@ Calendar and clock primitives with no time zone awareness. Import `connect0459/c
 | `NaiveTime` | A time of day, precise to the nanosecond, with leap-second support |
 | `TimeDelta` | A signed duration, precise to the nanosecond |
 | `NaiveDateTime` | A `NaiveDate` and `NaiveTime` combined into one zone-less instant |
+| `YearCe` / `ClockHour12` | Named results of `year_ce()` and `hour12()`: `is_ce()`/`year()` and `is_pm()`/`hour()`, so the meaning of each part is in its name rather than its position in a tuple |
 | `RoundingError` | Why a `round`/`round_up`/`truncate` call failed: `InvalidGranularity` (zero or negative), `MixedGranularity` (a whole-second part combined with a sub-second remainder, e.g. 1.5 seconds), or `OutOfRange` (the result would leave the type's representable range) |
 
 `NaiveDate` (`1970-01-01`), `NaiveTime` (midnight), `NaiveDateTime` (the Unix epoch), `TimeDelta` (zero) and `WeekdaySet` (empty) implement `Default`. Struct-valued constants are exposed as functions (`NaiveTime::midnight()`, `NaiveDateTime::unix_epoch()`, `TimeDelta::zero()`) because MoonBit's `const` is limited to primitive types.
@@ -178,7 +179,7 @@ A proleptic Gregorian calendar date. Constructors are `Option`-returning: an inv
 | `ymd()` | `-> (Int, Month, Int)` | Year, month and day of month together |
 | `ordinal()` | `-> Int` | Day of year, 1-based |
 | `month0()` / `day0()` / `ordinal0()` | `-> Int` | The zero-based forms of the month (`0..=11`), day of month (`0..=30`) and day of year (`0..=365`) |
-| `year_ce()` | `-> (Bool, Int)` | The year as a Common Era flag and a positive year number: `(true, 2024)`, and `(false, 1)` for year `0`, `(false, 2)` for year `-1` |
+| `year_ce()` | `-> YearCe` | The year as a Common Era flag (`is_ce()`) and a positive year number (`year()`): `2024` CE, and `1` BCE for year `0`, `2` BCE for year `-1` |
 | `num_days_in_month()` | `-> Int` | Length of this date's month, honoring leap years |
 | `abs_diff(Self)` | `-> Int64` | Non-negative number of days between two dates, in either order |
 | `weekday()` | `-> Weekday` | Day of week |
@@ -267,7 +268,7 @@ A time of day, precise to the nanosecond. Constructors are `Option`-returning. S
 | `second()` | `-> Int` | Second, `0..=59` (never `60`; see leap seconds above) |
 | `hms()` | `-> (Int, Int, Int)` | Hour, minute and second together (a leap second reports second `59`, as `second()` does) |
 | `nanosecond()` | `-> Int` | Nanosecond component, `0..=1_999_999_999` |
-| `hour12()` | `-> (Bool, Int)` | 12-hour clock hour and PM flag, wrapping midnight/noon to `12` |
+| `hour12()` | `-> ClockHour12` | 12-hour clock hour (`hour()`) and PM flag (`is_pm()`), wrapping midnight/noon to `12` |
 | `round_subsecs(Int)` / `truncate_subsecs(Int)` | `-> Self` | Round (ties up) or truncate to a number of fractional-second digits (`0..=9`; other values abort). A carry wraps past the end of the day to midnight and the day carry is discarded (`NaiveDateTime::round_subsecs` moves the date forward instead). A time with no digits beyond that count is returned unchanged, leap second included (`9` is the identity); otherwise a leap second is folded into the following second |
 | `num_seconds_from_midnight()` | `-> Int` | Seconds elapsed since midnight |
 | `overflowing_add_signed(TimeDelta)` | `-> (Self, Int64)` | Add a duration, wrapping at midnight; also reports the number of days crossed |
@@ -350,8 +351,8 @@ A `NaiveDate` and `NaiveTime` combined into one zone-less instant.
 | `ymd()` / `hms()` | `-> (Int, Month, Int)` / `(Int, Int, Int)` | The date and time components together, as on `NaiveDate`/`NaiveTime` |
 | `years_since(Self)` | `-> Int?` | Full calendar years elapsed from `base`, comparing the dates and ignoring the time of day; `None` if `self` is before `base` |
 | `month0()` / `day0()` / `ordinal0()` / `quarter()` / `num_days_in_month()` / `num_days_from_ce()` | `-> Int` | The zero-based month/day/ordinal, the quarter (`1..=4`), the month's length and the Common Era day count, as on `NaiveDate` |
-| `year_ce()` | `-> (Bool, Int)` | The year as a Common Era flag and positive year number, as on `NaiveDate` |
-| `hour12()` | `-> (Bool, Int)` | The 12-hour clock as a PM flag and an hour in `1..=12`, as on `NaiveTime` |
+| `year_ce()` | `-> YearCe` | The year as a Common Era flag and positive year number, as on `NaiveDate` |
+| `hour12()` | `-> ClockHour12` | The 12-hour clock as a PM flag and an hour in `1..=12`, as on `NaiveTime` |
 | `num_seconds_from_midnight()` | `-> Int` | Seconds since midnight, as on `NaiveTime` |
 | `with_date(NaiveDate)` / `with_time(NaiveTime)` | `-> Self` | Replace the date or the time of day, keeping the other; total |
 | `with_year(Int)` / `with_month(Int)` / `with_day(Int)` / `with_ordinal(Int)` | `-> Self?` | Replace one date component, keeping the time of day; `None` if the result is not a valid date |

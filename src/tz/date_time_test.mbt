@@ -1,4 +1,14 @@
 ///|
+fn ce_pair(year : @core.YearCe) -> (Bool, Int) {
+  (year.is_ce(), year.year())
+}
+
+///|
+fn clock_pair(hour : @core.ClockHour12) -> (Bool, Int) {
+  (hour.is_pm(), hour.hour())
+}
+
+///|
 test "from_local resolves a single unambiguous local reading via the time zone's offset" {
   let naive = @core.NaiveDateTime::new(
     @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),
@@ -518,7 +528,7 @@ test "DateTime 0-based and derived calendar accessors report the local date, not
   assert_eq(dt.day0(), 0)
   assert_eq(dt.ordinal0(), 0)
   assert_eq(dt.quarter(), 1)
-  assert_eq(dt.year_ce(), (true, 2024))
+  assert_eq(ce_pair(dt.year_ce()), (true, 2024))
   assert_eq(dt.num_days_in_month(), 31)
   assert_eq(dt.num_days_from_ce(), dt.date().num_days_from_ce())
 }
@@ -526,10 +536,10 @@ test "DateTime 0-based and derived calendar accessors report the local date, not
 ///|
 test "DateTime 12-hour and seconds-since-midnight accessors report the local time, not the UTC time" {
   let dt = tokyo_new_year_morning()
-  assert_eq(dt.hour12(), (false, 7))
+  assert_eq(clock_pair(dt.hour12()), (false, 7))
   assert_eq(dt.num_seconds_from_midnight(), 7 * 3600 + 30 * 60 + 15)
   let afternoon = dt.with_hour(15).single().unwrap()
-  assert_eq(afternoon.hour12(), (true, 3))
+  assert_eq(clock_pair(afternoon.hour12()), (true, 3))
 }
 
 ///|

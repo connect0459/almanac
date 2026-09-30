@@ -200,24 +200,24 @@ fn opts_instant(
 test "to_rfc3339_opts renders a fixed number of fractional digits for Millis, Micros and Nanos, padding with zeros" {
   let dt = opts_instant(123_456_789L, 0)
   assert_eq(
-    @format.to_rfc3339_opts(dt, @format.Millis, true),
+    @format.to_rfc3339_opts(dt, @format.Millis),
     "2024-03-05T09:30:15.123Z",
   )
   assert_eq(
-    @format.to_rfc3339_opts(dt, @format.Micros, true),
+    @format.to_rfc3339_opts(dt, @format.Micros),
     "2024-03-05T09:30:15.123456Z",
   )
   assert_eq(
-    @format.to_rfc3339_opts(dt, @format.Nanos, true),
+    @format.to_rfc3339_opts(dt, @format.Nanos),
     "2024-03-05T09:30:15.123456789Z",
   )
   let whole = opts_instant(0L, 0)
   assert_eq(
-    @format.to_rfc3339_opts(whole, @format.Millis, true),
+    @format.to_rfc3339_opts(whole, @format.Millis),
     "2024-03-05T09:30:15.000Z",
   )
   assert_eq(
-    @format.to_rfc3339_opts(whole, @format.Nanos, true),
+    @format.to_rfc3339_opts(whole, @format.Nanos),
     "2024-03-05T09:30:15.000000000Z",
   )
 }
@@ -225,7 +225,7 @@ test "to_rfc3339_opts renders a fixed number of fractional digits for Millis, Mi
 ///|
 test "to_rfc3339_opts with Secs drops the fraction entirely" {
   assert_eq(
-    @format.to_rfc3339_opts(opts_instant(999_999_999L, 0), @format.Secs, true),
+    @format.to_rfc3339_opts(opts_instant(999_999_999L, 0), @format.Secs),
     "2024-03-05T09:30:15Z",
   )
 }
@@ -234,11 +234,11 @@ test "to_rfc3339_opts with Secs drops the fraction entirely" {
 test "to_rfc3339_opts truncates rather than rounds when fewer digits are asked for than the value has" {
   let dt = opts_instant(999_999_999L, 0)
   assert_eq(
-    @format.to_rfc3339_opts(dt, @format.Millis, true),
+    @format.to_rfc3339_opts(dt, @format.Millis),
     "2024-03-05T09:30:15.999Z",
   )
   assert_eq(
-    @format.to_rfc3339_opts(dt, @format.Micros, true),
+    @format.to_rfc3339_opts(dt, @format.Micros),
     "2024-03-05T09:30:15.999999Z",
   )
 }
@@ -247,10 +247,7 @@ test "to_rfc3339_opts truncates rather than rounds when fewer digits are asked f
 test "to_rfc3339_opts with Auto matches to_rfc3339 when use_z is true" {
   for nanos in [0L, 500_000_000L, 123_456_000L, 123_456_789L] {
     let dt = opts_instant(nanos, 9 * 3600)
-    assert_eq(
-      @format.to_rfc3339_opts(dt, @format.Auto, true),
-      @format.to_rfc3339(dt),
-    )
+    assert_eq(@format.to_rfc3339_opts(dt, @format.Auto), @format.to_rfc3339(dt))
   }
 }
 
@@ -258,24 +255,21 @@ test "to_rfc3339_opts with Auto matches to_rfc3339 when use_z is true" {
 test "to_rfc3339_opts renders a zero offset as +00:00 when use_z is false and Z when it is true" {
   let dt = opts_instant(0L, 0)
   assert_eq(
-    @format.to_rfc3339_opts(dt, @format.Secs, false),
+    @format.to_rfc3339_opts(dt, @format.Secs, use_z=false),
     "2024-03-05T09:30:15+00:00",
   )
-  assert_eq(
-    @format.to_rfc3339_opts(dt, @format.Secs, true),
-    "2024-03-05T09:30:15Z",
-  )
+  assert_eq(@format.to_rfc3339_opts(dt, @format.Secs), "2024-03-05T09:30:15Z")
 }
 
 ///|
 test "to_rfc3339_opts ignores use_z for a non-zero offset" {
   let dt = opts_instant(0L, 9 * 3600)
   assert_eq(
-    @format.to_rfc3339_opts(dt, @format.Secs, true),
+    @format.to_rfc3339_opts(dt, @format.Secs),
     "2024-03-05T18:30:15+09:00",
   )
   assert_eq(
-    @format.to_rfc3339_opts(dt, @format.Secs, false),
+    @format.to_rfc3339_opts(dt, @format.Secs, use_z=false),
     "2024-03-05T18:30:15+09:00",
   )
 }
@@ -290,11 +284,8 @@ test "to_rfc3339_opts renders a leap second as :60 with the requested fraction" 
     @tz.Utc::new(),
   )
   assert_eq(
-    @format.to_rfc3339_opts(leap, @format.Millis, true),
+    @format.to_rfc3339_opts(leap, @format.Millis),
     "2016-12-31T23:59:60.500Z",
   )
-  assert_eq(
-    @format.to_rfc3339_opts(leap, @format.Secs, true),
-    "2016-12-31T23:59:60Z",
-  )
+  assert_eq(@format.to_rfc3339_opts(leap, @format.Secs), "2016-12-31T23:59:60Z")
 }

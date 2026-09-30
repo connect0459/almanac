@@ -69,10 +69,22 @@ test "from_num_seconds_from_midnight rejects a nanosecond value at or beyond twi
 
 ///|
 test "hour12 reports the 12-hour clock hour and AM/PM flag, wrapping midnight and noon to 12" {
-  assert_eq(@core.NaiveTime::from_hms(0, 0, 0).unwrap().hour12(), (false, 12))
-  assert_eq(@core.NaiveTime::from_hms(12, 0, 0).unwrap().hour12(), (true, 12))
-  assert_eq(@core.NaiveTime::from_hms(13, 0, 0).unwrap().hour12(), (true, 1))
-  assert_eq(@core.NaiveTime::from_hms(23, 0, 0).unwrap().hour12(), (true, 11))
+  assert_eq(
+    clock_pair(@core.NaiveTime::from_hms(0, 0, 0).unwrap().hour12()),
+    (false, 12),
+  )
+  assert_eq(
+    clock_pair(@core.NaiveTime::from_hms(12, 0, 0).unwrap().hour12()),
+    (true, 12),
+  )
+  assert_eq(
+    clock_pair(@core.NaiveTime::from_hms(13, 0, 0).unwrap().hour12()),
+    (true, 1),
+  )
+  assert_eq(
+    clock_pair(@core.NaiveTime::from_hms(23, 0, 0).unwrap().hour12()),
+    (true, 11),
+  )
 }
 
 ///|

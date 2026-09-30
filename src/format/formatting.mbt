@@ -135,7 +135,7 @@ fn numeric_value(
     Hour12 =>
       match time {
         Some(t) => {
-          let (_, hour) = t.hour12()
+          let hour = t.hour12().hour()
           (hour, 2)
         }
         None => raise MissingField(item)
@@ -143,7 +143,7 @@ fn numeric_value(
     Hour12Blank =>
       match time {
         Some(t) => {
-          let (_, hour) = t.hour12()
+          let hour = t.hour12().hour()
           (hour, 2)
         }
         None => raise MissingField(item)
@@ -434,7 +434,7 @@ fn render(
       Fixed(AmPmLower) =>
         match time {
           Some(t) => {
-            let (is_pm, _) = t.hour12()
+            let is_pm = t.hour12().is_pm()
             out.write_string(if is_pm { "pm" } else { "am" })
           }
           None => raise MissingField(item)
@@ -442,7 +442,7 @@ fn render(
       Fixed(AmPmUpper) =>
         match time {
           Some(t) => {
-            let (is_pm, _) = t.hour12()
+            let is_pm = t.hour12().is_pm()
             out.write_string(if is_pm { "PM" } else { "AM" })
           }
           None => raise MissingField(item)
@@ -450,7 +450,7 @@ fn render(
       Numeric(Hour12) =>
         match time {
           Some(t) => {
-            let (_, hour) = t.hour12()
+            let hour = t.hour12().hour()
             out.write_string(pad_int(hour, 2))
           }
           None => raise MissingField(item)
@@ -458,7 +458,7 @@ fn render(
       Numeric(Hour12Blank) =>
         match time {
           Some(t) => {
-            let (_, hour) = t.hour12()
+            let hour = t.hour12().hour()
             out.write_string(pad_int_blank(hour, 2))
           }
           None => raise MissingField(item)

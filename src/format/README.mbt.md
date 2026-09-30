@@ -164,7 +164,7 @@ Suffixes name where the zone comes from: `_tz` renders any `DateTime[Tz]` (`form
 | Function | Signature | Description |
 | :--- | :--- | :--- |
 | `to_rfc3339(DateTime[Tz])` *(Tz : TimeZone)* | `-> String` | Renders `YYYY-MM-DDTHH:MM:SS[.fraction](Z\|±HH:MM)`; a zero offset renders as `Z`, fractional seconds only when nonzero, with the fewest of 3, 6 or 9 digits that represent them, a leap second as `:60`. Total — never raises |
-| `to_rfc3339_opts(DateTime[Tz], SecondsFormat, Bool)` *(Tz : TimeZone)* | `-> String` | Like `to_rfc3339`, with the fractional seconds chosen by `SecondsFormat` (`Secs` none, `Millis`/`Micros`/`Nanos` exactly 3/6/9 digits, truncated rather than rounded so the seconds never change, `Auto` the fewest of 3/6/9 that are exact) and, when the `Bool` (`use_z`) is `true`, a zero offset written `Z`, else `+00:00`; a non-zero offset is unaffected. `Auto` with `true` is `to_rfc3339` |
+| `to_rfc3339_opts(DateTime[Tz], SecondsFormat, use_z? : Bool)` *(Tz : TimeZone)* | `-> String` | Like `to_rfc3339`, with the fractional seconds chosen by `SecondsFormat` (`Secs` none, `Millis`/`Micros`/`Nanos` exactly 3/6/9 digits, truncated rather than rounded so the seconds never change, `Auto` the fewest of 3/6/9 that are exact) and, when the labelled `use_z` (default `true`) is `true`, a zero offset written `Z`, else `+00:00` (`use_z=false`); a non-zero offset is unaffected. `Auto` with the default is `to_rfc3339` |
 | `parse_rfc3339(String)` | `-> DateTime[FixedOffset] raise ParseError` | Strict RFC 3339 parsing (`T`/`t` and `Z`/`z` case-insensitive; a fractional-second field beyond 9 digits is truncated, not rejected); raises `InvalidRfc3339` on any mismatch |
 
 ### RFC 2822 fast path

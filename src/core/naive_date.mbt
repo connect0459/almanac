@@ -223,12 +223,12 @@ pub fn NaiveDate::ordinal0(self : NaiveDate) -> Int {
 /// `1` and later are `(true, year)`, and year `0` and earlier are
 /// `(false, 1 - year)`, so year `0` is `(false, 1)` and year `-1` is
 /// `(false, 2)`.
-pub fn NaiveDate::year_ce(self : NaiveDate) -> (Bool, Int) {
+pub fn NaiveDate::year_ce(self : NaiveDate) -> YearCe {
   let year = self.year()
   if year >= 1 {
-    (true, year)
+    YearCe::{ is_ce: true, year, }
   } else {
-    (false, 1 - year)
+    YearCe::{ is_ce: false, year: 1 - year, }
   }
 }
 
