@@ -1,6 +1,6 @@
 # `format` package
 
-strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459/chrono/format` for `format_date`/`format_time`/`format_date_time`/`format_date_time_tz`, their `parse_*` counterparts, and dedicated RFC 3339 and RFC 2822 fast paths (`to_rfc3339`/`parse_rfc3339`, `to_rfc2822`/`parse_from_rfc2822`), and `parse_duration` for `TimeDelta`.
+strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459/chrono/format` for `format_date`/`format_time`/`format_date_time`/`format_date_time_tz`, their `parse_*` counterparts, and dedicated RFC 3339 and RFC 2822 fast paths (`to_rfc3339`/`parse_rfc3339`, `to_rfc2822`/`parse_rfc2822`), and `parse_duration` for `TimeDelta`.
 
 ## Key functions
 
@@ -9,16 +9,16 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `format_date`/`format_time`/`format_date_time` | Render a `NaiveDate`/`NaiveTime`/`NaiveDateTime` against a `%`-specifier format string |
 | `format_date_time_tz` | Render a `DateTime[Tz]` in its local (wall-clock) representation, supporting `%Z`/`%z` |
 | `parse_date`/`parse_time`/`parse_date_time` | Parse a string against a format string into a `NaiveDate`/`NaiveTime`/`NaiveDateTime` |
-| `parse_date_time_tz` | Parse a string with a `%z` offset into a `DateTime[FixedOffset]`, interpreting the fields as local wall-clock time |
+| `parse_date_time_fixed_offset` | Parse a string with a `%z` offset into a `DateTime[FixedOffset]`, interpreting the fields as local wall-clock time |
 | `parse_date_time_in` | Parse a zone-less string and resolve it as wall-clock time in a given `TimeZone`, surfacing DST ambiguity as `MappedLocalTime` |
-| `parse_date_and_remainder`/`parse_time_and_remainder`/`parse_date_time_and_remainder`/`parse_date_time_tz_and_remainder`/`parse_date_time_in_and_remainder` | Like each `parse_*` above, but return the unparsed tail instead of rejecting trailing input |
-| `Parsed`/`parse_items`/`parse_items_and_remainder` | Walk a pre-tokenized `Item` sequence against input into an opaque `Parsed`, then resolve it with `to_date`/`to_time`/`to_date_time`/`to_date_time_tz`/`to_date_time_in`, for building custom parsers on the engine's resolution rules |
+| `parse_date_and_remainder`/`parse_time_and_remainder`/`parse_date_time_and_remainder`/`parse_date_time_fixed_offset_and_remainder`/`parse_date_time_in_and_remainder` | Like each `parse_*` above, but return the unparsed tail instead of rejecting trailing input |
+| `Parsed`/`parse_items`/`parse_items_and_remainder` | Walk a pre-tokenized `Item` sequence against input into an opaque `Parsed`, then resolve it with `to_date`/`to_time`/`to_date_time`/`to_date_time_fixed_offset`/`to_date_time_in`, for building custom parsers on the engine's resolution rules |
 | `format_date_items`/`format_time_items`/`format_date_time_items`/`format_date_time_tz_items` | `format_*` taking a pre-tokenized `Item` sequence, so a format reused for many values is tokenized once |
 | `to_rfc3339`/`to_rfc3339_opts`/`parse_rfc3339` | Dedicated RFC 3339 fast path, bypassing the specifier engine; `to_rfc3339_opts` picks the fractional digits (`SecondsFormat`) and `Z` versus `+00:00` |
-| `to_rfc2822`/`parse_from_rfc2822` | Dedicated RFC 2822 fast path (e.g. `"Tue, 1 Jul 2003 10:52:37 +0200"`), bypassing the specifier engine |
+| `to_rfc2822`/`parse_rfc2822` | Dedicated RFC 2822 fast path (e.g. `"Tue, 1 Jul 2003 10:52:37 +0200"`), bypassing the specifier engine |
 | `parse_duration` | Reads a `TimeDelta` from duration text (`"1h30m"`, `"-1.5s"`, `"300ms"`); the inverse of `TimeDelta`'s `Show` |
 | `parse_fixed_offset` | Reads a `FixedOffset` from offset text (`"+09:00"`, `"+0900"`, `"+09"`, `"+09:00:30"`, `"Z"`); the inverse of `FixedOffset`'s `Show` |
-| `parse_date_default`/`parse_time_default`/`parse_date_time_default`/`parse_date_time_utc_default`/`parse_date_time_tz_default` | One-argument parsers that read the layout each type's `Show` renders (`2024-03-05`, `09:05:07.500`, `2024-03-05 09:05:07.500`, `... UTC`, `... +09:00`); the inverse of `Show`, so every rendered value reads back |
+| `parse_date_default`/`parse_time_default`/`parse_date_time_default`/`parse_date_time_utc_default`/`parse_date_time_fixed_offset_default` | One-argument parsers that read the layout each type's `Show` renders (`2024-03-05`, `09:05:07.500`, `2024-03-05 09:05:07.500`, `... UTC`, `... +09:00`); the inverse of `Show`, so every rendered value reads back |
 | `rfc1123`/`rfc1123z`/`rfc822`/`rfc822z`/`rfc850`/`ansic`/`unix_date`/`ruby_date`/`kitchen`/`stamp`/`stamp_milli`/`stamp_micro`/`stamp_nano`/`date_only`/`time_only`/`date_time` | Named convenience format strings — pass one to `format_*`/`parse_*` like any other format string |
 
 ## Supported specifiers
@@ -49,7 +49,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%k` | Hour, 24-hour clock | Space-padded, `" 0"`..`"23"`; parses the same field as `%H`, tolerating a blank or zero leading digit |
 | `%P` | am/pm marker, lowercase | `"am"`/`"pm"`; parses `%p`/`%P` case-insensitively either way |
 | `%p` | am/pm marker, uppercase | `"AM"`/`"PM"`; see `%P` |
-| `%s` | Unix timestamp | The UTC instant's seconds since the epoch (unaffected by `format_date_time_tz`'s local zone shift). On parse, a signed run of digits naming that instant: date-time resolvers derive the value from it (a `%f`-family field gives the sub-second part) and cross-check every other date or time field against the reading it has in the target offset (`InconsistentFields` on a mismatch); `to_date_time_tz` still needs `%z` (`IncompleteFields` without it), `to_date_time_in` takes the offset from the zone, and `to_date`/`to_time` ignore it. More than 18 digits, or an instant no date can hold, is `FieldOutOfRange` |
+| `%s` | Unix timestamp | The UTC instant's seconds since the epoch (unaffected by `format_date_time_tz`'s local zone shift). On parse, a signed run of digits naming that instant: date-time resolvers derive the value from it (a `%f`-family field gives the sub-second part) and cross-check every other date or time field against the reading it has in the target offset (`InconsistentFields` on a mismatch); `to_date_time_fixed_offset` still needs `%z` (`IncompleteFields` without it), `to_date_time_in` takes the offset from the zone, and `to_date`/`to_time` ignore it. More than 18 digits, or an instant no date can hold, is `FieldOutOfRange` |
 | `%G` | ISO week-based year | Zero-padded to 4 digits on format, with `%Y`'s sign rules (`-` negative, `+` beyond 9999); on parse, an optionally-signed greedy field like `%Y`. With `%V` and a weekday, constructs the date via ISO week-date construction; otherwise cross-checked against the resolved date |
 | `%g` | ISO week-based year, no century | Zero-padded to 2 digits; on parse, a lone `%g` uses the same pivot as `%y` (below 70 is 20xx, otherwise 19xx), and is cross-checked against `%G` when both are present |
 | `%V` | ISO week number | Zero-padded, `01`..`53`; on parse, combined with `%G`/`%g` and a weekday, or else cross-checked against the resolved date |
@@ -135,6 +135,8 @@ test {
 
 Every `format_*` and `parse_*` function takes the subject first (the value to render or the input text) and the pattern (a format string or an `Item` array) second.
 
+Suffixes name where the zone comes from: `_tz` renders any `DateTime[Tz]` (`format_date_time_tz`), `_in` reads the local clock in a `Tz` the caller passes (`parse_date_time_in`), and `_fixed_offset` reads the offset written in the input (`parse_date_time_fixed_offset`). A `_default` function is the exact inverse of a type's `Show` (there is deliberately no fmt-taking `parse_date_time_utc`; use `parse_date_time_in(input, fmt, Utc::new())`).
+
 ### Formatting
 
 | Function | Signature | Description |
@@ -151,9 +153,9 @@ Every `format_*` and `parse_*` function takes the subject first (the value to re
 | `parse_date(String, String)` | `-> NaiveDate raise ParseError` | Parse against a format string's date fields (`%Y` plus `%m`/`%d` or `%j`) |
 | `parse_time(String, String)` | `-> NaiveTime raise ParseError` | Parse against a format string's time-of-day fields: an hour and a minute are required, while `%S` and `%f` are optional and default to zero (so `%R` and `kitchen` resolve) |
 | `parse_date_time(String, String)` | `-> NaiveDateTime raise ParseError` | Parse against a format string's date and time-of-day fields together |
-| `parse_date_time_tz(String, String)` | `-> DateTime[FixedOffset] raise ParseError` | Parse against a format string's date, time-of-day, and `%z` fields, interpreting them as the zone's local wall-clock reading |
+| `parse_date_time_fixed_offset(String, String)` | `-> DateTime[FixedOffset] raise ParseError` | Parse against a format string's date, time-of-day, and `%z` fields, interpreting them as the zone's local wall-clock reading |
 | `parse_date_time_in[Tz : TimeZone](String, String, Tz)` | `-> MappedLocalTime[DateTime[Tz]] raise ParseError` | Parse a zone-less format's date and time-of-day fields and resolve the reading in `tz` (`Ambiguous` in a DST fold, `Absent` in a gap); raises `InconsistentFields` if the format yields an offset (`%z`, `%+`, ...); a `%Z` name the zone recognizes fixes the offset, so an abbreviation like `EDT` resolves a DST fold to `Single`, and an unrecognized name is ignored |
-| `parse_date_and_remainder(String, String)` / `parse_time_and_remainder` / `parse_date_time_and_remainder` / `parse_date_time_tz_and_remainder` / `parse_date_time_in_and_remainder` | `-> (T, String) raise ParseError` | The value the matching `parse_*` returns, paired with the leftover input (from the first character the format did not consume to the end, counted in characters, `""` when the whole input matched). A mismatch or unresolvable field inside the format still raises, exactly as in the strict form; only trailing input is tolerated |
+| `parse_date_and_remainder(String, String)` / `parse_time_and_remainder` / `parse_date_time_and_remainder` / `parse_date_time_fixed_offset_and_remainder` / `parse_date_time_in_and_remainder` | `-> (T, String) raise ParseError` | The value the matching `parse_*` returns, paired with the leftover input (from the first character the format did not consume to the end, counted in characters, `""` when the whole input matched). A mismatch or unresolvable field inside the format still raises, exactly as in the strict form; only trailing input is tolerated |
 
 ### RFC 3339 fast path
 
@@ -168,12 +170,12 @@ Every `format_*` and `parse_*` function takes the subject first (the value to re
 | Function | Signature | Description |
 | :--- | :--- | :--- |
 | `to_rfc2822(DateTime[Tz])` *(Tz : TimeZone)* | `-> String raise ParseError` | Renders `"<short weekday>, <day> <short month> <year> <HH>:<MM>:<SS> ±HHMM"` (e.g. `"Tue, 1 Jul 2003 10:52:37 +0200"`); the day is unpadded (one or two digits, never a leading zero), unlike this package's other numeric fields. Raises `InvalidRfc2822` if the year is outside RFC 2822's own `0..=9999` range — unlike `to_rfc3339`, not total |
-| `parse_from_rfc2822(String)` | `-> DateTime[FixedOffset] raise ParseError` | Strict RFC 2822 parsing: only the exact shape `to_rfc2822` renders (day-of-week and seconds mandatory, single-space separators, a 4-digit year, a numeric `±HHMM` offset). Does *not* support RFC 2822's "obsolete format" — optional day-of-week, arbitrary/folding whitespace, 2-/3-digit year windowing, named legacy zones (`GMT`, `EST`, ...), or parenthesized comments. Raises `InvalidRfc2822` on any mismatch |
+| `parse_rfc2822(String)` | `-> DateTime[FixedOffset] raise ParseError` | Strict RFC 2822 parsing: only the exact shape `to_rfc2822` renders (day-of-week and seconds mandatory, single-space separators, a 4-digit year, a numeric `±HHMM` offset). Does *not* support RFC 2822's "obsolete format" — optional day-of-week, arbitrary/folding whitespace, 2-/3-digit year windowing, named legacy zones (`GMT`, `EST`, ...), or parenthesized comments. Raises `InvalidRfc2822` on any mismatch |
 | `parse_duration(String)` | `-> TimeDelta raise ParseError` | Parses one or more `<number><unit>` components with an optional leading sign (`"1h30m"`, `"-1.5s"`, `"300ms"`, `".5s"`, `"1.5h"`). Units are `ns`, `us` (also `µs` U+00B5 and `μs` U+03BC), `ms`, `s`, `m`, `h`, case-sensitive, with hours the largest (no days/weeks); components are summed. A bare `"0"` (optionally signed) needs no unit. Fractional digits beyond the ninth, and precision finer than a nanosecond, are truncated toward zero. The inverse of `TimeDelta`'s `Show`. Raises `InvalidDuration` for malformed input or a value outside `TimeDelta`'s range |
 | `parse_fixed_offset(String)` | `-> FixedOffset raise ParseError` | Parses a whole offset string: `±HH:MM:SS`, `±HH:MM`, `±HHMM`, `±HH`, or `Z`/`z` for zero. Raises `InputMismatch` for any other text (including minutes or seconds above 59) and `FieldOutOfRange` for a well-shaped offset beyond `±23:59:59` |
 | `parse_date_default(String)` / `parse_time_default(String)` / `parse_date_time_default(String)` | `-> NaiveDate` / `NaiveTime` / `NaiveDateTime raise ParseError` | Parse exactly the text `Show` renders: `YYYY-MM-DD` (`-` for a negative year, `+` beyond 9999); `HH:MM:SS` with an optional fraction of any number of digits and a leap second as `:60`; a date and time joined by one space. Same failures as `parse_date`/`parse_time`/`parse_date_time` |
 | `parse_date_time_utc_default(String)` | `-> DateTime[Utc] raise ParseError` | `parse_date_time_default`'s layout followed by a space and `UTC`: the inverse of `Show` for `DateTime[Utc]` |
-| `parse_date_time_tz_default(String)` | `-> DateTime[FixedOffset] raise ParseError` | `parse_date_time_default`'s layout followed by a space and an offset as `parse_fixed_offset` reads it; the written clock is local time in that offset. The inverse of `Show` for `DateTime[FixedOffset]`; an IANA zone's abbreviation or a `FixedZone`'s name is not read back |
+| `parse_date_time_fixed_offset_default(String)` | `-> DateTime[FixedOffset] raise ParseError` | `parse_date_time_default`'s layout followed by a space and an offset as `parse_fixed_offset` reads it; the written clock is local time in that offset. The inverse of `Show` for `DateTime[FixedOffset]`; an IANA zone's abbreviation or a `FixedZone`'s name is not read back |
 
 ### Named layouts
 
@@ -209,7 +211,7 @@ The `stamp*` family (no year) doesn't carry enough fields to round-trip through 
 | `parse_items(String, Array[Item])` | `-> Parsed raise ParseError` | Walks an `Item` sequence against the whole input (`InputMismatch` on a mismatch, `InputTooShort` if the input ends first, `TrailingInput` on leftover input), accumulating fields without resolving them |
 | `parse_items_and_remainder(String, Array[Item])` | `-> (Parsed, String) raise ParseError` | Like `parse_items`, but returns leftover input instead of rejecting it |
 | `Parsed::to_date()` / `to_time()` / `to_date_time()` | `-> NaiveDate` / `NaiveTime` / `NaiveDateTime raise ParseError` | Resolve the accumulated fields; `IncompleteFields` if too few were parsed, `FieldOutOfRange` if a value is outside its range (an hour of 24, February 30), `InconsistentFields` if fields contradict each other. One `Parsed` resolves any number of ways |
-| `Parsed::to_date_time_tz()` | `-> DateTime[FixedOffset] raise ParseError` | Resolve the date, time and `%z` offset, reading the fields as that offset's local time |
+| `Parsed::to_date_time_fixed_offset()` | `-> DateTime[FixedOffset] raise ParseError` | Resolve the date, time and `%z` offset, reading the fields as that offset's local time |
 | `Parsed::to_date_time_in(Tz)` *(Tz : TimeZone)* | `-> MappedLocalTime[DateTime[Tz]] raise ParseError` | Resolve a zone-less reading in `tz`; see `parse_date_time_in` for `%Z` handling and the offset rejection |
 
 ### `Item`, `Numeric`, `Fixed`, `PadMode`
@@ -293,7 +295,7 @@ pub(all) enum Fixed {
 | `TrailingPercent` | A format string ends with a bare `%` |
 | `MissingField(Item)` | A `format_*` call is asked to render a specifier its input type can't supply (e.g. `%Z` via `format_date_time`) |
 | `InvalidRfc3339` | `parse_rfc3339` fails to match the RFC 3339 grammar |
-| `InvalidRfc2822` | `to_rfc2822`'s year is outside `0..=9999`, or `parse_from_rfc2822` fails to match this package's (strict) RFC 2822 grammar |
+| `InvalidRfc2822` | `to_rfc2822`'s year is outside `0..=9999`, or `parse_rfc2822` fails to match this package's (strict) RFC 2822 grammar |
 | `InvalidDuration` | `parse_duration`'s input is malformed (no digits, missing or unknown unit, misplaced sign, stray characters) or its value is outside `TimeDelta`'s representable range |
 | `IncompleteFields` | A `parse_*` call resolves fields that never populate a required value (e.g. no year) |
 | `InconsistentFields` | Two populated fields contradict each other (e.g. `%j` or a weekday name disagreeing with the date, two `%H` readings), or an offset is given to `Parsed::to_date_time_in` |

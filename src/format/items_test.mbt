@@ -57,12 +57,12 @@ test "parse_items rejects trailing input while parse_items_and_remainder returns
 }
 
 ///|
-test "Parsed::to_date_time_tz applies the parsed offset" {
+test "Parsed::to_date_time_fixed_offset applies the parsed offset" {
   let parsed = @format.parse_items(
     "2024-03-05 18:30:00 +0900",
     @format.tokenize("%F %T %z"),
   )
-  let dt = parsed.to_date_time_tz()
+  let dt = parsed.to_date_time_fixed_offset()
   assert_eq(dt.offset(), @tz.FixedOffset::east(9 * 3600).unwrap())
   assert_eq(dt.naive_utc().time(), @core.NaiveTime::from_hms(9, 30, 0).unwrap())
 }

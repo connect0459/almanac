@@ -188,7 +188,10 @@ test "the layout constants render the documented text for a known instant" {
 test "the numeric-offset layouts read back the instant and offset they render" {
   for layout in [@format.ruby_date, @format.rfc1123z] {
     let text = @format.format_date_time_tz(layout_tokyo(), layout)
-    assert_eq(@format.parse_date_time_tz(text, layout), layout_tokyo())
+    assert_eq(
+      @format.parse_date_time_fixed_offset(text, layout),
+      layout_tokyo(),
+    )
   }
 }
 
@@ -221,7 +224,7 @@ test "the minute-precision RFC 822 layouts drop the seconds and read back zero" 
   assert_eq(@format.parse_date_time(text, @format.rfc822), on_the_minute)
   let zoned = @format.format_date_time_tz(layout_tokyo(), @format.rfc822z)
   assert_eq(
-    @format.parse_date_time_tz(zoned, @format.rfc822z).naive_local(),
+    @format.parse_date_time_fixed_offset(zoned, @format.rfc822z).naive_local(),
     @core.NaiveDateTime::new(
       layout_instant().date(),
       @core.NaiveTime::from_hms(18, 5, 0).unwrap(),

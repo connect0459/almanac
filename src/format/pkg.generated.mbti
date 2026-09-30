@@ -44,15 +44,15 @@ pub fn parse_date_time_and_remainder(String, String) -> (@core.NaiveDateTime, St
 
 pub fn parse_date_time_default(String) -> @core.NaiveDateTime raise ParseError
 
+pub fn parse_date_time_fixed_offset(String, String) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
+
+pub fn parse_date_time_fixed_offset_and_remainder(String, String) -> (@tz.DateTime[@tz.FixedOffset], String) raise ParseError
+
+pub fn parse_date_time_fixed_offset_default(String) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
+
 pub fn[Tz : @tz.TimeZone] parse_date_time_in(String, String, Tz) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise ParseError
 
 pub fn[Tz : @tz.TimeZone] parse_date_time_in_and_remainder(String, String, Tz) -> (@tz.MappedLocalTime[@tz.DateTime[Tz]], String) raise ParseError
-
-pub fn parse_date_time_tz(String, String) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
-
-pub fn parse_date_time_tz_and_remainder(String, String) -> (@tz.DateTime[@tz.FixedOffset], String) raise ParseError
-
-pub fn parse_date_time_tz_default(String) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
 
 pub fn parse_date_time_utc_default(String) -> @tz.DateTime[@tz.Utc] raise ParseError
 
@@ -60,11 +60,11 @@ pub fn parse_duration(String) -> @core.TimeDelta raise ParseError
 
 pub fn parse_fixed_offset(String) -> @tz.FixedOffset raise ParseError
 
-pub fn parse_from_rfc2822(String) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
-
 pub fn parse_items(String, Array[Item]) -> Parsed raise ParseError
 
 pub fn parse_items_and_remainder(String, Array[Item]) -> (Parsed, String) raise ParseError
+
+pub fn parse_rfc2822(String) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
 
 pub fn parse_rfc3339(String) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
 
@@ -207,8 +207,8 @@ pub struct Parsed {
 }
 pub fn Parsed::to_date(Self) -> @core.NaiveDate raise ParseError
 pub fn Parsed::to_date_time(Self) -> @core.NaiveDateTime raise ParseError
+pub fn Parsed::to_date_time_fixed_offset(Self) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
 pub fn[Tz : @tz.TimeZone] Parsed::to_date_time_in(Self, Tz) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise ParseError
-pub fn Parsed::to_date_time_tz(Self) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
 pub fn Parsed::to_time(Self) -> @core.NaiveTime raise ParseError
 
 pub(all) enum SecondsFormat {

@@ -6,7 +6,7 @@ pub suberror ParseError {
   MissingField(Item)
   InvalidRfc3339
   /// `to_rfc2822`'s year is outside RFC 2822's `0..=9999` range, or
-  /// `parse_from_rfc2822` fails to match the (strict, non-obsolete)
+  /// `parse_rfc2822` fails to match the (strict, non-obsolete)
   /// grammar this project supports.
   InvalidRfc2822
   /// `parse_duration`'s input is malformed (no digits, a missing or unknown
@@ -28,7 +28,7 @@ pub suberror ParseError {
   FieldOutOfRange
   /// The input text didn't match a literal or specifier at some
   /// position, including a `%Z` with no name to consume (see
-  /// `parse_date`/`parse_time`/`parse_date_time`/`parse_date_time_tz`).
+  /// `parse_date`/`parse_time`/`parse_date_time`/`parse_date_time_fixed_offset`).
   InputMismatch
   /// The input was exhausted when the format still had an item to match
   /// (e.g. `"2024-03"` against `%F`).

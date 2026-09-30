@@ -41,7 +41,7 @@ pub fn parse_date_time_utc_default(
 /// offset as `parse_fixed_offset` reads it (`+09:00`, or `+09:00:30` for a
 /// sub-minute offset). The written clock is the local wall-clock time in
 /// that offset. The inverse of `Show` for `DateTime[FixedOffset]`.
-pub fn parse_date_time_tz_default(
+pub fn parse_date_time_fixed_offset_default(
   input : String,
 ) -> @tz.DateTime[@tz.FixedOffset] raise ParseError {
   let (wall_clock, rest) = parse_date_time_and_remainder(input, "%F %T%.f ")

@@ -117,7 +117,7 @@ test "a leap second cannot agree with a timestamp" {
 ///|
 test "a timestamp with a %z offset gives a DateTime at that instant shown in that offset" {
   let ts = sample_utc().timestamp().to_string()
-  let dt = @format.parse_date_time_tz(ts + " +0900", "%s %z")
+  let dt = @format.parse_date_time_fixed_offset(ts + " +0900", "%s %z")
   assert_eq(dt.naive_utc(), sample_utc())
   assert_eq(dt.offset(), @tz.FixedOffset::east(9 * 3600).unwrap())
   assert_eq(dt.naive_local().time().hour(), 18)
@@ -127,12 +127,15 @@ test "a timestamp with a %z offset gives a DateTime at that instant shown in tha
 test "with a timestamp, date and time fields are checked against the local reading in the offset" {
   let ts = sample_utc().timestamp().to_string()
   assert_eq(
-    @format.parse_date_time_tz(ts + " +0900 2024-03-05 18:05:07", "%s %z %F %T").naive_utc(),
+    @format.parse_date_time_fixed_offset(
+      ts + " +0900 2024-03-05 18:05:07",
+      "%s %z %F %T",
+    ).naive_utc(),
     sample_utc(),
   )
   assert_eq(
     timestamp_kind(() => {
-      @format.parse_date_time_tz(
+      @format.parse_date_time_fixed_offset(
         ts + " +0900 2024-03-05 09:05:07",
         "%s %z %F %T",
       )
@@ -146,7 +149,9 @@ test "with a timestamp, date and time fields are checked against the local readi
 test "a timestamp without an offset does not make a fixed-offset DateTime" {
   let ts = sample_utc().timestamp().to_string()
   assert_eq(
-    timestamp_kind(() => @format.parse_date_time_tz(ts, "%s") |> ignore),
+    timestamp_kind(() => {
+      @format.parse_date_time_fixed_offset(ts, "%s") |> ignore
+    }),
     "IncompleteFields",
   )
 }
@@ -158,7 +163,7 @@ test "a zoned DateTime round-trips through %s and %z" {
     @tz.FixedOffset::west(5 * 3600 + 30 * 60).unwrap(),
   )
   let text = @format.format_date_time_tz(dt, "%s %z")
-  assert_eq(@format.parse_date_time_tz(text, "%s %z"), dt)
+  assert_eq(@format.parse_date_time_fixed_offset(text, "%s %z"), dt)
 }
 
 ///|
@@ -275,7 +280,7 @@ test "a timestamp at the last representable instant cannot be shown in a later-t
   assert_eq(@format.parse_date_time(ts, "%s"), last)
   assert_eq(
     timestamp_kind(() => {
-      @format.parse_date_time_tz(ts + " +0900", "%s %z") |> ignore
+      @format.parse_date_time_fixed_offset(ts + " +0900", "%s %z") |> ignore
     }),
     "FieldOutOfRange",
   )

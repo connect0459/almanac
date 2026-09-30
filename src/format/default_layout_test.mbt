@@ -48,7 +48,7 @@ test "parse_date_time_utc_default reads back a UTC DateTime's Show rendering" {
 }
 
 ///|
-test "parse_date_time_tz_default reads back a fixed-offset DateTime's Show rendering, for east, west, zero and sub-minute offsets" {
+test "parse_date_time_fixed_offset_default reads back a fixed-offset DateTime's Show rendering, for east, west, zero and sub-minute offsets" {
   let naive = @core.NaiveDateTime::new(
     @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),
     @core.NaiveTime::from_hms_nano(12, 30, 0, 123_000_000).unwrap(),
@@ -56,13 +56,15 @@ test "parse_date_time_tz_default reads back a fixed-offset DateTime's Show rende
   for secs in [9 * 3600, -(5 * 3600 + 30 * 60), 0, 9 * 3600 + 30, -86399] {
     let offset = @tz.FixedOffset::east(secs).unwrap()
     let dt = @tz.DateTime::from_utc(naive, offset)
-    assert_eq(@format.parse_date_time_tz_default(dt.to_string()), dt)
+    assert_eq(@format.parse_date_time_fixed_offset_default(dt.to_string()), dt)
   }
 }
 
 ///|
-test "parse_date_time_tz_default treats the written clock as local time in the written offset" {
-  let dt = @format.parse_date_time_tz_default("2024-06-15 21:00:00 +09:00")
+test "parse_date_time_fixed_offset_default treats the written clock as local time in the written offset" {
+  let dt = @format.parse_date_time_fixed_offset_default(
+    "2024-06-15 21:00:00 +09:00",
+  )
   assert_eq(dt.offset(), @tz.FixedOffset::east(9 * 3600).unwrap())
   assert_eq(dt.naive_utc().time(), @core.NaiveTime::from_hms(12, 0, 0).unwrap())
 }
@@ -137,22 +139,25 @@ test "the default-layout parsers reject trailing text and out-of-range fields" {
 }
 
 ///|
-test "parse_date_time_tz_default rejects a missing or malformed offset" {
+test "parse_date_time_fixed_offset_default rejects a missing or malformed offset" {
   assert_eq(
     default_layout_kind(() => {
-      @format.parse_date_time_tz_default("2024-03-05 09:05:07") |> ignore
+      @format.parse_date_time_fixed_offset_default("2024-03-05 09:05:07")
+      |> ignore
     }),
     "InputTooShort",
   )
   assert_eq(
     default_layout_kind(() => {
-      @format.parse_date_time_tz_default("2024-03-05 09:05:07 UTC") |> ignore
+      @format.parse_date_time_fixed_offset_default("2024-03-05 09:05:07 UTC")
+      |> ignore
     }),
     "InputMismatch",
   )
   assert_eq(
     default_layout_kind(() => {
-      @format.parse_date_time_tz_default("2024-03-05 09:05:07 +24:00") |> ignore
+      @format.parse_date_time_fixed_offset_default("2024-03-05 09:05:07 +24:00")
+      |> ignore
     }),
     "FieldOutOfRange",
   )

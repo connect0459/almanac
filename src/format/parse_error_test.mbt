@@ -22,7 +22,7 @@ test "ParseError renders a one-line human-readable message for each variant a re
     "invalid RFC 3339 date-time",
   )
   assert_eq(
-    message_of(() => @format.parse_from_rfc2822("nope") |> ignore),
+    message_of(() => @format.parse_rfc2822("nope") |> ignore),
     "invalid RFC 2822 date-time",
   )
   assert_eq(
@@ -149,7 +149,9 @@ test "parsing reports an offset beyond the representable range as FieldOutOfRang
   )
   assert_eq(
     kind_of(() => {
-      @format.parse_date_time_tz("2024-03-05 09:05:07 +2500", "%F %T %z")
+      @format.parse_date_time_fixed_offset(
+        "2024-03-05 09:05:07 +2500", "%F %T %z",
+      )
       |> ignore
     }),
     "FieldOutOfRange",

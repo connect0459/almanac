@@ -1304,7 +1304,7 @@ fn resolve_at_timestamp(
 /// Resolves the date, time-of-day and `%z` offset fields into a
 /// `DateTime[FixedOffset]`, reading the date and time as that offset's
 /// local wall-clock time.
-pub fn Parsed::to_date_time_tz(
+pub fn Parsed::to_date_time_fixed_offset(
   self : Parsed,
 ) -> @tz.DateTime[@tz.FixedOffset] raise ParseError {
   let offset = resolve_offset(self)
@@ -1425,22 +1425,22 @@ pub fn parse_date_time_and_remainder(
 /// Parses `input` against `fmt`'s date, time-of-day, and `%z` offset
 /// fields, interpreting the date/time as the zone's local wall-clock
 /// reading (mirroring `format_date_time_tz`'s own convention).
-pub fn parse_date_time_tz(
+pub fn parse_date_time_fixed_offset(
   input : String,
   fmt : String,
 ) -> @tz.DateTime[@tz.FixedOffset] raise ParseError {
-  parse_items(input, tokenize(fmt)).to_date_time_tz()
+  parse_items(input, tokenize(fmt)).to_date_time_fixed_offset()
 }
 
 ///|
-/// Like `parse_date_time_tz`, but returns leftover input instead of
+/// Like `parse_date_time_fixed_offset`, but returns leftover input instead of
 /// rejecting it; see `parse_date_and_remainder`.
-pub fn parse_date_time_tz_and_remainder(
+pub fn parse_date_time_fixed_offset_and_remainder(
   input : String,
   fmt : String,
 ) -> (@tz.DateTime[@tz.FixedOffset], String) raise ParseError {
   let (parsed, rest) = parse_items_and_remainder(input, tokenize(fmt))
-  (parsed.to_date_time_tz(), rest)
+  (parsed.to_date_time_fixed_offset(), rest)
 }
 
 ///|

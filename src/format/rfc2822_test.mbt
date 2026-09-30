@@ -77,7 +77,7 @@ test "to_rfc2822 raises InvalidRfc2822 for a year outside RFC 2822's 0..=9999 ra
 }
 
 ///|
-test "parse_from_rfc2822 round-trips through to_rfc2822" {
+test "parse_rfc2822 round-trips through to_rfc2822" {
   for
     case in [
       (2003, 7, 1, 8, 52, 37, 2 * 3600),
@@ -93,14 +93,14 @@ test "parse_from_rfc2822 round-trips through to_rfc2822" {
       ),
       @tz.FixedOffset::east(offset_secs).unwrap(),
     )
-    assert_eq(@format.parse_from_rfc2822(@format.to_rfc2822(dt)), dt)
+    assert_eq(@format.parse_rfc2822(@format.to_rfc2822(dt)), dt)
   }
 }
 
 ///|
-test "parse_from_rfc2822 accepts a documented RFC 2822 example verbatim" {
+test "parse_rfc2822 accepts a documented RFC 2822 example verbatim" {
   assert_eq(
-    @format.parse_from_rfc2822("Wed, 18 Feb 2015 23:16:09 +0000"),
+    @format.parse_rfc2822("Wed, 18 Feb 2015 23:16:09 +0000"),
     @tz.DateTime::from_utc(
       @core.NaiveDateTime::new(
         @core.NaiveDate::from_ymd(2015, 2, 18).unwrap(),
@@ -112,7 +112,7 @@ test "parse_from_rfc2822 accepts a documented RFC 2822 example verbatim" {
 }
 
 ///|
-test "parse_from_rfc2822 accepts either a one- or two-digit day" {
+test "parse_rfc2822 accepts either a one- or two-digit day" {
   // The input's "10:52:37 +0200" is the local reading; the UTC instant
   // is that reading minus the offset.
   let expected = @tz.DateTime::from_utc(
@@ -122,18 +122,12 @@ test "parse_from_rfc2822 accepts either a one- or two-digit day" {
     ),
     @tz.FixedOffset::east(2 * 3600).unwrap(),
   )
-  assert_eq(
-    @format.parse_from_rfc2822("Tue, 1 Jul 2003 10:52:37 +0200"),
-    expected,
-  )
-  assert_eq(
-    @format.parse_from_rfc2822("Tue, 01 Jul 2003 10:52:37 +0200"),
-    expected,
-  )
+  assert_eq(@format.parse_rfc2822("Tue, 1 Jul 2003 10:52:37 +0200"), expected)
+  assert_eq(@format.parse_rfc2822("Tue, 01 Jul 2003 10:52:37 +0200"), expected)
 }
 
 ///|
-test "parse_from_rfc2822 rejects malformed input at every field, since this project's parser is strict (with no tolerance for RFC 2822's obsolete format)" {
+test "parse_rfc2822 rejects malformed input at every field, since this project's parser is strict (with no tolerance for RFC 2822's obsolete format)" {
   for
     bad in [
       "1 Jul 2003 10:52:37 +0200", // missing weekday
@@ -153,7 +147,7 @@ test "parse_from_rfc2822 rejects malformed input at every field, since this proj
        "Tue, 1 Jul 2003 10:52:37 +9900", // offset magnitude out of range
        "", // empty
     ] {
-    try @format.parse_from_rfc2822(bad) |> ignore catch {
+    try @format.parse_rfc2822(bad) |> ignore catch {
       @format.InvalidRfc2822 => ()
       _ => fail("expected InvalidRfc2822 for \{bad}")
     } noraise {

@@ -51,7 +51,7 @@ fn parse_one_or_two_digits(chars : Array[Char], pos : Int) -> (Int, Int)? {
 
 ///|
 /// Unwraps a positional parser's result, raising `InvalidRfc2822` on
-/// `None` — keeps `parse_from_rfc2822` a flat sequence of steps instead
+/// `None` — keeps `parse_rfc2822` a flat sequence of steps instead
 /// of a deeply nested `match` chain.
 fn[T] rfc2822_require(opt : T?) -> T raise ParseError {
   match opt {
@@ -71,7 +71,7 @@ fn[T] rfc2822_require(opt : T?) -> T raise ParseError {
 /// legacy zones such as `GMT`/`EST`, or parenthesized comments) — mirrors
 /// this project's existing RFC 3339 fast path, which is likewise strict
 /// rather than maximally lenient.
-pub fn parse_from_rfc2822(
+pub fn parse_rfc2822(
   s : String,
 ) -> @tz.DateTime[@tz.FixedOffset] raise ParseError {
   let chars = s.to_array()
