@@ -167,6 +167,7 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 | `DateTime::from_local(NaiveDateTime, Tz)` *(Tz : TimeZone)* | `-> MappedLocalTime[Self[Tz]]` | Build from a local (wall-clock) naive datetime, resolving DST ambiguity via `tz.offset_from_local` |
 | `DateTime::from_ymd_hms(Int, Int, Int, Int, Int, Int, Tz)` *(Tz : TimeZone)* | `-> MappedLocalTime[Self[Tz]]` | Build from local calendar/time-of-day components; `Absent` for an invalid date/time-of-day, in addition to the usual DST-gap case |
 | `DateTime::from_timestamp(Int64, Int, Tz)` | `-> Self[Tz]?` | Build from a Unix timestamp (seconds + nanoseconds) through the given time zone; always unambiguous, `None` only on an out-of-range input |
+| `DateTime::from_timestamp_millis(Int64, Tz)` / `from_timestamp_micros` / `from_timestamp_nanos` | `-> Self[Tz]?` | Build from a Unix timestamp in that unit through the given time zone; `None` if the instant is outside `NaiveDate`'s range (reachable only for milliseconds at `Int64` extremes) |
 | `naive_utc()` | `-> NaiveDateTime` | The underlying naive datetime, in UTC |
 | `timezone()` | `-> Tz` | The time zone value this datetime is expressed in |
 | `offset()` *(Tz : TimeZone)* | `-> FixedOffset` | The UTC offset in effect at this instant |

@@ -31,6 +31,9 @@ pub fn[Tz : TimeZone] DateTime::day0(Self[Tz]) -> Int
 pub fn[Tz : Eq] DateTime::equal(Self[Tz], Self[Tz]) -> Bool
 pub fn[Tz : TimeZone] DateTime::from_local(@core.NaiveDateTime, Tz) -> MappedLocalTime[Self[Tz]]
 pub fn[Tz] DateTime::from_timestamp(Int64, Int, Tz) -> Self[Tz]?
+pub fn[Tz] DateTime::from_timestamp_micros(Int64, Tz) -> Self[Tz]?
+pub fn[Tz] DateTime::from_timestamp_millis(Int64, Tz) -> Self[Tz]?
+pub fn[Tz] DateTime::from_timestamp_nanos(Int64, Tz) -> Self[Tz]?
 pub fn[Tz] DateTime::from_utc(@core.NaiveDateTime, Tz) -> Self[Tz]
 pub fn[Tz : TimeZone] DateTime::from_ymd_hms(Int, Int, Int, Int, Int, Int, Tz) -> MappedLocalTime[Self[Tz]]
 pub fn[Tz : TimeZone] DateTime::hour(Self[Tz]) -> Int

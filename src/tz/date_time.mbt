@@ -105,6 +105,45 @@ pub fn[Tz] DateTime::from_timestamp(
 }
 
 ///|
+/// Builds a `DateTime[Tz]` from the number of non-leap milliseconds since the Unix
+/// epoch and a time zone; see `from_timestamp`. `None` if the instant is
+/// outside `NaiveDate`'s representable range.
+pub fn[Tz] DateTime::from_timestamp_millis(
+  millis : Int64,
+  tz : Tz,
+) -> DateTime[Tz]? {
+  @core.NaiveDateTime::from_timestamp_millis(millis).map(utc => {
+    DateTime::from_utc(utc, tz)
+  })
+}
+
+///|
+/// Builds a `DateTime[Tz]` from the number of non-leap microseconds since the Unix
+/// epoch and a time zone; see `from_timestamp`. `None` if the instant is
+/// outside `NaiveDate`'s representable range.
+pub fn[Tz] DateTime::from_timestamp_micros(
+  micros : Int64,
+  tz : Tz,
+) -> DateTime[Tz]? {
+  @core.NaiveDateTime::from_timestamp_micros(micros).map(utc => {
+    DateTime::from_utc(utc, tz)
+  })
+}
+
+///|
+/// Builds a `DateTime[Tz]` from the number of non-leap nanoseconds since the Unix
+/// epoch and a time zone; see `from_timestamp`. `None` if the instant is
+/// outside `NaiveDate`'s representable range.
+pub fn[Tz] DateTime::from_timestamp_nanos(
+  nanos : Int64,
+  tz : Tz,
+) -> DateTime[Tz]? {
+  @core.NaiveDateTime::from_timestamp_nanos(nanos).map(utc => {
+    DateTime::from_utc(utc, tz)
+  })
+}
+
+///|
 /// The underlying naive datetime, in UTC.
 pub fn[Tz] DateTime::naive_utc(self : DateTime[Tz]) -> @core.NaiveDateTime {
   self.datetime

@@ -567,3 +567,57 @@ test "DateTime timestamp_millis stays total for a far date while timestamp_micro
   assert_eq(far.timestamp_micros(), None)
   assert_eq(far.timestamp_nanos(), None)
 }
+
+///|
+test "from_timestamp_millis, from_timestamp_micros and from_timestamp_nanos agree on the same instant and keep the given zone" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let from_millis = @tz.DateTime::from_timestamp_millis(
+    1_700_000_000_123L, tokyo,
+  ).unwrap()
+  let from_micros = @tz.DateTime::from_timestamp_micros(
+    1_700_000_000_123_000L, tokyo,
+  ).unwrap()
+  let from_nanos = @tz.DateTime::from_timestamp_nanos(
+    1_700_000_000_123_000_000L, tokyo,
+  ).unwrap()
+  assert_eq(from_millis, from_micros)
+  assert_eq(from_micros, from_nanos)
+  assert_eq(from_millis.timezone(), tokyo)
+  assert_eq(from_millis.timestamp_millis(), 1_700_000_000_123L)
+}
+
+///|
+test "from_timestamp_millis, from_timestamp_micros and from_timestamp_nanos floor a pre-epoch value toward negative infinity" {
+  let utc = @tz.FixedOffset::east(0).unwrap()
+  assert_eq(
+    @tz.DateTime::from_timestamp_millis(-1L, utc).unwrap().timestamp(),
+    -1L,
+  )
+  assert_eq(
+    @tz.DateTime::from_timestamp_micros(-1L, utc)
+    .unwrap()
+    .timestamp_subsec_micros(),
+    999_999,
+  )
+  assert_eq(
+    @tz.DateTime::from_timestamp_nanos(-1L, utc)
+    .unwrap()
+    .timestamp_subsec_nanos(),
+    999_999_999,
+  )
+}
+
+///|
+test "from_timestamp_millis is None when the instant is beyond NaiveDate's range while micros and nanos accept the Int64 maximum" {
+  let utc = @tz.FixedOffset::east(0).unwrap()
+  let max = 9_223_372_036_854_775_807L
+  assert_eq(@tz.DateTime::from_timestamp_millis(max, utc), None)
+  assert_eq(
+    @tz.DateTime::from_timestamp_micros(max, utc).unwrap().timestamp(),
+    9_223_372_036_854L,
+  )
+  assert_eq(
+    @tz.DateTime::from_timestamp_nanos(max, utc).unwrap().timestamp(),
+    9_223_372_036L,
+  )
+}
