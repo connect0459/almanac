@@ -173,6 +173,8 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 | `offset()` *(Tz : TimeZone)* | `-> FixedOffset` | The UTC offset in effect at this instant |
 | `naive_local()` *(Tz : TimeZone)* | `-> NaiveDateTime` | The UTC datetime shifted by `offset()` |
 | `with_timezone(Tz2)` | `-> Self[Tz2]` | Re-express this datetime in `Tz2`, keeping the same UTC instant |
+| `to_utc()` | `-> Self[Utc]` | Re-express the same instant in UTC |
+| `fixed_offset()` | `-> Self[FixedOffset]` | Re-express the same instant with the offset in effect at that instant frozen (requires `Tz : TimeZone`); it no longer follows later DST changes |
 | `add_signed(TimeDelta)` | `-> Self[Tz]` | Advance by a signed duration, keeping the same time zone |
 | `sub_signed(TimeDelta)` | `-> Self[Tz]` | Move back by a signed duration |
 | `add_months(Int)` | `-> Self[Tz]` | Advance the date by months, keeping the time of day and time zone; see `NaiveDate::add_months` (in `core`) for the day-of-month clamping rule |

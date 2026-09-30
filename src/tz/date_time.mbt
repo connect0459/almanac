@@ -518,6 +518,22 @@ pub fn[Tz, Tz2] DateTime::with_timezone(
 }
 
 ///|
+/// This datetime re-expressed in UTC, keeping the same underlying instant.
+pub fn[Tz] DateTime::to_utc(self : DateTime[Tz]) -> DateTime[Utc] {
+  self.with_timezone(Utc::new())
+}
+
+///|
+/// This datetime re-expressed with a fixed offset equal to the one in effect
+/// at its instant, keeping the same underlying instant. The result no longer
+/// follows the original zone's later offset changes (e.g. DST transitions).
+pub fn[Tz : TimeZone] DateTime::fixed_offset(
+  self : DateTime[Tz],
+) -> DateTime[FixedOffset] {
+  self.with_timezone(self.offset())
+}
+
+///|
 /// This datetime advanced by the signed duration `delta`, keeping the same
 /// time zone. Delegates to `NaiveDateTime::add_signed` on the underlying
 /// UTC instant.

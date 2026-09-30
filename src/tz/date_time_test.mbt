@@ -621,3 +621,31 @@ test "from_timestamp_millis is None when the instant is beyond NaiveDate's range
     9_223_372_036L,
   )
 }
+
+///|
+test "to_utc re-expresses the same instant in UTC" {
+  let dt = tokyo_new_year_morning()
+  let utc = dt.to_utc()
+  assert_eq(utc.timezone(), @tz.Utc::new())
+  assert_eq(utc.naive_utc(), dt.naive_utc())
+  assert_eq(utc.naive_local(), dt.naive_utc())
+  assert_eq(utc.compare_instant(dt), 0)
+}
+
+///|
+test "fixed_offset freezes the offset in effect at the instant (America/New_York summer and winter)" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let summer = @tz.DateTime::from_ymd_hms(2024, 7, 1, 12, 0, 0, ny)
+    .single()
+    .unwrap()
+  let winter = @tz.DateTime::from_ymd_hms(2024, 1, 1, 12, 0, 0, ny)
+    .single()
+    .unwrap()
+  let summer_fixed = summer.fixed_offset()
+  let winter_fixed = winter.fixed_offset()
+  assert_eq(summer_fixed.timezone(), @tz.FixedOffset::east(-4 * 3600).unwrap())
+  assert_eq(winter_fixed.timezone(), @tz.FixedOffset::east(-5 * 3600).unwrap())
+  assert_eq(summer_fixed.naive_local(), summer.naive_local())
+  assert_eq(summer_fixed.compare_instant(summer), 0)
+  assert_eq(winter_fixed.naive_local(), winter.naive_local())
+}
