@@ -117,6 +117,8 @@ pub enum MappedLocalTime[T] {
 }
 ```
 
+`Absent` also covers components that do not form a valid reading (for example month 13) when the result is built from components (`DateTime::from_ymd_hms`, `DateTime::with_*`); to tell an invalid component from a gap, validate first with `NaiveDate::from_ymd`/`NaiveTime::from_hms`.
+
 `Utc` and `FixedOffset` only ever produce `Single` (neither has daylight saving). A `Location` can produce all three around a real DST transition: `Ambiguous` when a local clock reading occurs twice (the fold at the end of DST), and `Absent` when a local clock reading never occurs (the gap at the start of DST). `T` is usually a `FixedOffset` (`TimeZone::offset_from_local`) or a `DateTime[Tz]` (`DateTime::from_local`/`from_ymd_hms`).
 
 | Method | Signature | Description |

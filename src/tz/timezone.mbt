@@ -6,6 +6,12 @@
 /// where that wall-clock reading never occurs). `T` is usually a
 /// `FixedOffset` (see `TimeZone::offset_from_local`) or a `DateTime[Tz]`
 /// (see `DateTime::from_local`).
+///
+/// `Absent` also reports components that do not form a valid reading at all
+/// (for example month 13) when a `MappedLocalTime` is built from
+/// components, as `DateTime::from_ymd_hms` and `DateTime::with_*` do; a
+/// caller that must tell the two apart validates the components first with
+/// `NaiveDate::from_ymd` and `NaiveTime::from_hms`.
 pub(all) enum MappedLocalTime[T] {
   Single(T)
   Ambiguous(T, T)
