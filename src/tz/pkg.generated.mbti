@@ -65,6 +65,7 @@ pub fn[Tz : TimeZone] DateTime::output(Self[Tz], &Logger) -> Unit
 pub fn[Tz : TimeZone] DateTime::quarter(Self[Tz]) -> Int
 pub fn[Tz] DateTime::round(Self[Tz], @core.TimeDelta) -> Result[Self[Tz], @core.RoundingError]
 pub fn[Tz] DateTime::round_subsecs(Self[Tz], Int) -> Result[Self[Tz], @core.RoundingError]
+pub fn[Tz] DateTime::round_up(Self[Tz], @core.TimeDelta) -> Result[Self[Tz], @core.RoundingError]
 pub fn[Tz : TimeZone] DateTime::second(Self[Tz]) -> Int
 pub fn[Tz, Tz2] DateTime::signed_duration_since(Self[Tz], Self[Tz2]) -> @core.TimeDelta
 pub fn[Tz] DateTime::sub_days(Self[Tz], Int) -> Self[Tz]

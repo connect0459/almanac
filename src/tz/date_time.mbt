@@ -741,6 +741,22 @@ pub fn[Tz] DateTime::round(
 }
 
 ///|
+/// This datetime's underlying UTC instant rounded up (toward positive
+/// infinity) to the nearest multiple of `granularity` since the Unix epoch:
+/// unchanged if already a multiple, otherwise the next one after it, keeping
+/// the same time zone. See `@core.NaiveDateTime::round_up` for the failure
+/// reasons and `truncate` for how this operates on the absolute UTC instant
+/// rather than the local presentation.
+pub fn[Tz] DateTime::round_up(
+  self : DateTime[Tz],
+  granularity : @core.TimeDelta,
+) -> Result[DateTime[Tz], @core.RoundingError] {
+  self.datetime
+  .round_up(granularity)
+  .map(datetime => DateTime::{ datetime, tz: self.tz, })
+}
+
+///|
 /// This datetime's underlying UTC instant truncated to `digits`
 /// fractional-second digits (`0..=9`), keeping the same time zone. See
 /// `@core.NaiveDateTime::truncate_subsecs`; aborts if `digits` is outside

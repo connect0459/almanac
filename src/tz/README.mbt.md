@@ -230,6 +230,7 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 | `compare(Self[Tz])` / `<` / `>` / `<=` / `>=` | `-> Int` / `-> Bool` | Order by UTC instant, ignoring the zone value (requires `Tz : Eq`); equal instants in different zones compare as `0` yet are unequal under `==` (intentional: `==`/`Hash` also cover the zone; to test for the same instant, use `compare_instant(other) == 0`) |
 | `compare_instant(Self[Tz2])` | `-> Int` | Order by UTC instant against a datetime in a different time zone type |
 | `round(TimeDelta)` | `-> Result[Self[Tz], @core.RoundingError]` | Round the underlying UTC instant to the nearest multiple of a granularity since the Unix epoch, keeping the same time zone; see `TimeDelta::round` (in `core`) for which granularities are supported |
+| `round_up(TimeDelta)` | `-> Result[Self[Tz], @core.RoundingError]` | Round the underlying UTC instant up (toward positive infinity) to the next multiple of a granularity since the Unix epoch, unchanged if already a multiple, keeping the same time zone; see `NaiveDateTime::round_up` for the failure reasons |
 | `truncate(TimeDelta)` | `-> Result[Self[Tz], @core.RoundingError]` | Truncate the underlying UTC instant toward the Unix epoch; see Quick start above for how this differs from truncating the local presentation |
 | `round_subsecs(Int)` / `truncate_subsecs(Int)` | `-> Result[Self[Tz], @core.RoundingError]` / `-> Self[Tz]` | Round or truncate the underlying UTC instant to a number of fractional-second digits (`0..=9`; other values abort) |
 

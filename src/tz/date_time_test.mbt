@@ -946,3 +946,56 @@ test "the default DateTime in UTC is the Unix epoch" {
   let dt : @tz.DateTime[@tz.Utc] = Default::default()
   assert_eq(dt, @tz.DateTime::unix_epoch())
 }
+
+///|
+test "round_up moves a datetime to the next granularity boundary of its UTC instant, keeping the zone" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let dt = @tz.DateTime::from_utc(
+    @core.NaiveDateTime::new(
+      @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),
+      @core.NaiveTime::from_hms(12, 20, 0).unwrap(),
+    ),
+    tokyo,
+  )
+  let rounded = dt.round_up(@core.TimeDelta::hours(1L).unwrap()).unwrap()
+  assert_eq(
+    rounded.naive_utc().time(),
+    @core.NaiveTime::from_hms(13, 0, 0).unwrap(),
+  )
+  assert_eq(rounded.timezone(), tokyo)
+  assert_eq(
+    rounded.naive_local().time(),
+    @core.NaiveTime::from_hms(22, 0, 0).unwrap(),
+  )
+}
+
+///|
+test "round_up leaves a datetime already on a boundary unchanged" {
+  let dt = @tz.DateTime::unix_epoch()
+  assert_eq(dt.round_up(@core.TimeDelta::hours(1L).unwrap()), Ok(dt))
+}
+
+///|
+test "round_up reports the same failure reasons as NaiveDateTime::round_up" {
+  let dt = @tz.DateTime::unix_epoch()
+  assert_eq(
+    dt.round_up(@core.TimeDelta::zero()).map(_ => ()),
+    Err(@core.InvalidGranularity),
+  )
+  assert_eq(
+    dt.round_up(@core.TimeDelta::milliseconds(1_500L).unwrap()).map(_ => ()),
+    Err(@core.MixedGranularity),
+  )
+  let last_day = @core.NaiveDate::from_epoch_days(2_147_483_647 - 719_468).unwrap()
+  let last = @tz.DateTime::from_utc(
+    @core.NaiveDateTime::new(
+      last_day,
+      @core.NaiveTime::from_hms(23, 59, 59).unwrap(),
+    ),
+    @tz.Utc::new(),
+  )
+  assert_eq(
+    last.round_up(@core.TimeDelta::days(1L).unwrap()).map(_ => ()),
+    Err(@core.OutOfRange),
+  )
+}
