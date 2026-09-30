@@ -80,3 +80,15 @@ test "resolve prefers an IANA zone name over reading TZ as a POSIX rule" {
   let summer = @core.NaiveDateTime::from_timestamp(1_719_835_200L, 0).unwrap()
   assert_eq(resolved.tz_name(summer), "EDT")
 }
+
+///|
+test "resolve is None when TZ is unset and the localtime bytes are empty or malformed" {
+  assert_true(@tz.Local::resolve(None, Some(b"")) is None)
+  assert_true(@tz.Local::resolve(None, Some(b"not a tzif file")) is None)
+}
+
+///|
+test "resolve ignores empty localtime bytes when TZ names a zone" {
+  assert_true(@tz.Local::resolve(Some("Asia/Tokyo"), Some(b"")) is Some(_))
+  assert_true(@tz.Local::resolve(Some(""), Some(b"")) is Some(_))
+}
