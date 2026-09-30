@@ -582,3 +582,52 @@ test "format_date_time_tz renders %Z as a FixedZone's name rather than its offse
   )
   assert_eq(@format.format_date_time_tz(dt, "%T %Z %z"), "21:00:00 JST +0900")
 }
+
+///|
+test "format_time renders the 24-hour clock space-padded via %k" {
+  for case in [(0, " 0"), (9, " 9"), (10, "10"), (23, "23")] {
+    let (hour, expected) = case
+    let time = @core.NaiveTime::from_hms(hour, 5, 0).unwrap()
+    assert_eq(@format.format_time(time, "%k"), expected)
+  }
+}
+
+///|
+test "format_time renders %0k with zero-padding and %-k unpadded, overriding %k's space-padding" {
+  let time = @core.NaiveTime::from_hms(9, 5, 0).unwrap()
+  assert_eq(@format.format_time(time, "%0k"), "09")
+  assert_eq(@format.format_time(time, "%-k"), "9")
+  assert_eq(@format.format_time(time, "%k"), " 9")
+}
+
+///|
+test "format_time raises MissingField for %k when there is no time of day" {
+  try
+    @format.format_date(@core.NaiveDate::from_ymd(2024, 3, 5).unwrap(), "%k")
+    |> ignore
+  catch {
+    @format.MissingField(_) => ()
+    _ => fail("expected MissingField")
+  } noraise {
+    _ => fail("expected format_date to reject %k")
+  }
+}
+
+///|
+test "format_date raises MissingField for %0k, a padded %k with no time of day" {
+  try
+    @format.format_date(@core.NaiveDate::from_ymd(2024, 3, 5).unwrap(), "%0k")
+    |> ignore
+  catch {
+    @format.MissingField(_) => ()
+    _ => fail("expected MissingField")
+  } noraise {
+    _ => fail("expected format_date to reject %0k")
+  }
+}
+
+///|
+test "format renders %n as a newline and %t as a tab" {
+  let time = @core.NaiveTime::from_hms(9, 5, 7).unwrap()
+  assert_eq(@format.format_time(time, "%H%t%M%n%S"), "09\t05\n07")
+}

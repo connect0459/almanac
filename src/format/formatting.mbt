@@ -136,6 +136,11 @@ fn numeric_value(
         }
         None => raise MissingField(item)
       }
+    HourBlank =>
+      match time {
+        Some(t) => (t.hour(), 2)
+        None => raise MissingField(item)
+      }
     IsoYear =>
       match date {
         Some(d) => (d.iso_week().year(), 4)
@@ -414,6 +419,11 @@ fn render(
             let (_, hour) = t.hour12()
             out.write_string(pad_int_blank(hour, 2))
           }
+          None => raise MissingField(item)
+        }
+      Numeric(HourBlank) =>
+        match time {
+          Some(t) => out.write_string(pad_int_blank(t.hour(), 2))
           None => raise MissingField(item)
         }
       Numeric(Timestamp) =>

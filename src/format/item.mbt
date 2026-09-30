@@ -1,6 +1,6 @@
 ///|
-/// A numeric field. Most render at a fixed zero-padded width; `Hour12Blank`
-/// space-pads instead, and `Timestamp` renders unpadded (a signed count of
+/// A numeric field. Most render at a fixed zero-padded width; `Hour12Blank`,
+/// `HourBlank` and `DayBlank` space-pad instead, and `Timestamp` renders unpadded (a signed count of
 /// seconds, not a calendar component).
 pub(all) enum Numeric {
   Year
@@ -15,6 +15,8 @@ pub(all) enum Numeric {
   Hour12
   /// `%l`: the hour on a 12-hour clock, space-padded (`" 1"`..=`"12"`).
   Hour12Blank
+  /// `%k`: the hour on a 24-hour clock, space-padded (`" 0"`..=`"23"`).
+  HourBlank
   /// `%s`: the number of non-leap seconds since the Unix epoch.
   Timestamp
   /// `%G`: the ISO 8601 week-based year (distinct from the calendar year

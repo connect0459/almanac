@@ -118,6 +118,7 @@ pub(all) enum Numeric {
   Nanosecond
   Hour12
   Hour12Blank
+  HourBlank
   Timestamp
   IsoYear
   IsoYear2

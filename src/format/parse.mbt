@@ -651,6 +651,12 @@ fn apply_item(
         Some((value, p)) =>
           ({ ..parsed, hour12: merge_field(parsed.hour12, value), }, p)
       }
+    Numeric(HourBlank) =>
+      match parse_blank_or_zero_padded_digits(chars, pos, 2) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          ({ ..parsed, hour: merge_field(parsed.hour, value), }, p)
+      }
     Numeric(Timestamp) => raise InputMismatch
     Numeric(IsoYear) =>
       match parse_signed_greedy_digits(chars, pos) {

@@ -39,6 +39,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%b`, `%h` | Short month name | e.g. `"Mar"`; on parse, resolves `%m`'s field directly |
 | `%I` | Hour, 12-hour clock | Zero-padded, `01`..`12`; combines with `%p`/`%P` on parse (cross-checked against `%H`, if also present) |
 | `%l` | Hour, 12-hour clock | Space-padded, `" 1"`..`"12"`; parses the same field as `%I`, tolerating a blank or zero leading digit |
+| `%k` | Hour, 24-hour clock | Space-padded, `" 0"`..`"23"`; parses the same field as `%H`, tolerating a blank or zero leading digit |
 | `%P` | am/pm marker, lowercase | `"am"`/`"pm"`; parses `%p`/`%P` case-insensitively either way |
 | `%p` | am/pm marker, uppercase | `"AM"`/`"PM"`; see `%P` |
 | `%s` | Unix timestamp | Format-only: the underlying UTC instant's seconds since the epoch (unaffected by `format_date_time_tz`'s local zone shift); raises `InputMismatch` on parse |
@@ -69,6 +70,8 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%c` | `%a %b %e %H:%M:%S %Y` | ctime-style, e.g. `"Tue Mar  5 09:05:30 2024"`; expands to that specifier sequence |
 | `%+` | RFC 3339 date-time | A whole `DateTime`, rendered/parsed via the dedicated `to_rfc3339`/`parse_rfc3339` fast path rather than a sequence of simpler specifiers (mirrors chrono); needs a date, time, and offset together, like `%Z`/`%z` |
 | `%%` | Literal `%` | |
+| `%n` | Newline | Renders a single `\n`; on parse matches exactly one `\n` (expands to a literal item) |
+| `%t` | Tab | Renders a single `\t`; on parse matches exactly one `\t` (expands to a literal item) |
 | `%-X` | No padding | Overrides `X`'s own default padding; `X` must resolve to a single bare `Numeric` specifier (not a `Fixed` one or a compound expansion like `%F`) other than `%f`/`%.f`/`%3f`/`%6f`/`%s` — chrono itself treats the fractional-second family as `Fixed`, and `%s` has no natural fixed width |
 | `%0X` | Zero padding | See `%-X`; meaningful for a specifier that doesn't already zero-pad, e.g. `%0e` |
 | `%_X` | Space padding | See `%-X`; meaningful for a specifier that doesn't already space-pad, e.g. `%_d` |
@@ -215,6 +218,7 @@ pub(all) enum Numeric {
   Nanosecond
   Hour12
   Hour12Blank
+  HourBlank
   Timestamp
   IsoYear
   IsoYear2

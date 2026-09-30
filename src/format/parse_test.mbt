@@ -1375,3 +1375,63 @@ test "parse_date_time_in round-trips a FixedZone's name through %Z" {
   assert_eq(dt.naive_utc().time().hour(), 12)
   assert_eq(dt.timezone(), zone)
 }
+
+///|
+test "parse_time reads %k as a space- or zero-padded 24-hour field" {
+  let expected = @core.NaiveTime::from_hms(9, 5, 7).unwrap()
+  assert_eq(@format.parse_time(" 9:05:07", "%k:%M:%S"), expected)
+  assert_eq(@format.parse_time("09:05:07", "%k:%M:%S"), expected)
+  assert_eq(
+    @format.parse_time("23:05:07", "%k:%M:%S"),
+    @core.NaiveTime::from_hms(23, 5, 7).unwrap(),
+  )
+}
+
+///|
+test "parse_time round-trips %k through format_time for every hour" {
+  for hour in 0..<24 {
+    let time = @core.NaiveTime::from_hms(hour, 30, 15).unwrap()
+    let fmt = "%k:%M:%S"
+    assert_eq(@format.parse_time(@format.format_time(time, fmt), fmt), time)
+  }
+}
+
+///|
+test "parse_time rejects an out-of-range or non-numeric %k field" {
+  for input in ["24:00:00", "XX:00:00", " :00:00", "9:00:00"] {
+    try @format.parse_time(input, "%k:%M:%S") |> ignore catch {
+      @format.InputMismatch | @format.InconsistentFields => ()
+      _ => fail("expected a rejection for \{input}")
+    } noraise {
+      _ => fail("expected parse_time to reject \{input}")
+    }
+  }
+}
+
+///|
+test "parse_time reads %k alongside %H only when they agree" {
+  assert_eq(
+    @format.parse_time(" 9 09:05:07", "%k %H:%M:%S"),
+    @core.NaiveTime::from_hms(9, 5, 7).unwrap(),
+  )
+  try @format.parse_time(" 9 10:05:07", "%k %H:%M:%S") |> ignore catch {
+    @format.InconsistentFields => ()
+    _ => fail("expected InconsistentFields")
+  } noraise {
+    _ => fail("expected parse_time to reject a disagreeing hour")
+  }
+}
+
+///|
+test "parse_time matches %n and %t only against a single newline and tab" {
+  let expected = @core.NaiveTime::from_hms(9, 5, 7).unwrap()
+  assert_eq(@format.parse_time("09\t05\n07", "%H%t%M%n%S"), expected)
+  for input in ["09 05\n07", "09\t05 07", "09\t\t05\n07", "09\t05\n\n07"] {
+    try @format.parse_time(input, "%H%t%M%n%S") |> ignore catch {
+      @format.InputMismatch => ()
+      _ => fail("expected InputMismatch for \{input}")
+    } noraise {
+      _ => fail("expected parse_time to reject \{input}")
+    }
+  }
+}

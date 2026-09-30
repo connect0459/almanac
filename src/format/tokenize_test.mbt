@@ -308,3 +308,20 @@ test "tokenize raises TrailingPercent when the format string ends with a lone pe
     _ => fail("expected tokenize to raise TrailingPercent")
   }
 }
+
+///|
+test "tokenize recognizes %k as the space-padded 24-hour numeric field" {
+  assert_eq(@format.tokenize("%k"), [@format.Numeric(@format.HourBlank)])
+}
+
+///|
+test "tokenize expands %n and %t to a literal newline and tab" {
+  assert_eq(@format.tokenize("%n"), [@format.Literal("\n")])
+  assert_eq(@format.tokenize("%t"), [@format.Literal("\t")])
+  assert_eq(@format.tokenize("%H%t%M%n"), [
+    @format.Numeric(@format.Hour),
+    @format.Literal("\t"),
+    @format.Numeric(@format.Minute),
+    @format.Literal("\n"),
+  ])
+}
