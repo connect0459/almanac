@@ -1,9 +1,9 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "connect0459/chrono"
+package "connect0459/almanac"
 
 import {
-  "connect0459/chrono/core",
-  "connect0459/chrono/tz",
+  "connect0459/almanac/core",
+  "connect0459/almanac/tz",
 }
 
 // Values

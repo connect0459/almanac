@@ -9,8 +9,8 @@
 ## Setup
 
 ```sh
-git clone https://github.com/connect0459/chrono-mbt
-cd chrono-mbt
+git clone https://github.com/connect0459/almanac
+cd almanac
 just setup
 ```
 
@@ -75,7 +75,7 @@ moon test --target native
 
 **Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `tidy`, `test`, `chore`, `ci`, `perf`
 
-**Scope**: package name when the change targets a specific package (`chrono`,
+**Scope**: package name when the change targets a specific package (`almanac`,
 `tz`, etc.); omit for project-wide changes.
 
 **Subject**: imperative mood, 72 characters max, no trailing period.
@@ -83,9 +83,9 @@ moon test --target native
 Examples:
 
 ```text
-feat(chrono): add Date::add_days for calendar arithmetic
-fix(chrono): reject out-of-range month values in Date::new
-tidy(chrono): name days_per_week constant
+feat(almanac): add Date::add_days for calendar arithmetic
+fix(almanac): reject out-of-range month values in Date::new
+tidy(almanac): name days_per_week constant
 ```
 
 ## Pull request process
@@ -102,5 +102,5 @@ tidy(chrono): name days_per_week constant
 
 - No code comments unless the **why** is genuinely non-obvious.
 - Prefer immutability; avoid mutable state unless necessary.
-- Internal packages under `internal/` are not part of the public API and must not be re-exported through the root `connect0459/chrono` package.
+- Internal packages under `internal/` are not part of the public API and must not be re-exported through the root `connect0459/almanac` package.
 - All user-facing strings (test names, error messages, doc comments) must be in **English**.

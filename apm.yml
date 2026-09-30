@@ -1,6 +1,6 @@
-name: chrono-mbt
+name: almanac
 version: 0.1.0
-description: APM project for chrono-mbt
+description: APM project for almanac
 author: connect0459
 dependencies:
   apm:

@@ -1,7 +1,7 @@
 #include "moonbit.h"
 #include <stdio.h>
 
-moonbit_bytes_t chrono_read_etc_localtime(void) {
+moonbit_bytes_t almanac_read_etc_localtime(void) {
   FILE *f = fopen("/etc/localtime", "rb");
   if (f == NULL) {
     return moonbit_make_bytes(0, 0);

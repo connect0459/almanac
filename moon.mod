@@ -9,7 +9,7 @@
 //   "moonbitlang/x@0.4.6",
 // }
 
-name = "connect0459/chrono"
+name = "connect0459/almanac"
 
 version = "0.1.0"
 

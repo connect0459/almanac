@@ -342,8 +342,8 @@ pub fn NaiveTime::overflowing_sub_signed(
 /// to get it). See `overflowing_add_signed` for the leap-second rules.
 ///
 /// There is no aborting `add_signed` or `checked_add_signed` for a time of
-/// day: it cannot leave its range, so the vocabulary is that of Rust's
-/// integers, `wrapping_*` and `overflowing_*`.
+/// day: it cannot leave its range, so the vocabulary is that of integer
+/// arithmetic, `wrapping_*` and `overflowing_*`.
 pub fn NaiveTime::wrapping_add_signed(
   self : NaiveTime,
   delta : TimeDelta,

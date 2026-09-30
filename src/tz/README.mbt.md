@@ -1,6 +1,6 @@
 # `tz` package
 
-Time zone support layered on top of `core`'s `NaiveDateTime`. Import `connect0459/chrono/tz` for the `TimeZone` trait, `Utc`, `FixedOffset`, `DateTime[Tz]`, and `Location` (IANA tzdata lookup by zone name, e.g. `"America/New_York"`).
+Time zone support layered on top of `core`'s `NaiveDateTime`. Import `connect0459/almanac/tz` for the `TimeZone` trait, `Utc`, `FixedOffset`, `DateTime[Tz]`, and `Location` (IANA tzdata lookup by zone name, e.g. `"America/New_York"`).
 
 ## Key types
 
@@ -210,7 +210,7 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 | `DateTime::from_local(NaiveDateTime, Tz)` *(Tz : TimeZone)* | `-> MappedLocalTime[Self[Tz]]` | Build from a local (wall-clock) naive datetime, resolving DST ambiguity via `tz.offset_from_local` |
 | `DateTime::from_local_lenient(NaiveDateTime, Tz)` *(Tz : TimeZone)* | `-> Self[Tz]` | Like `from_local` but always succeeds: an unambiguous reading resolves exactly; a fold takes its first occurrence (as `earliest()`); a gap is read with the offset in effect just before the transition, landing after the gap by its length (`02:30` in a `02:00`-`03:00` gap becomes `03:30`) |
 
-The lenient rule is the library's only policy for a local reading that is repeated or skipped, and the calendar steps use it too. It is Temporal's `compatible` disambiguation; other choices come from `from_local` (`.latest()` for the later occurrence of a fold, `.single()` to reject both cases). To build one from components, use `NaiveDateTime::from_ymd_hms(..)` and then `DateTime::from_local_lenient`.
+The lenient rule is the library's only policy for a local reading that is repeated or skipped, and the calendar steps use it too. Other choices come from `from_local` (`.latest()` for the later occurrence of a fold, `.single()` to reject both cases). To build one from components, use `NaiveDateTime::from_ymd_hms(..)` and then `DateTime::from_local_lenient`.
 | `DateTime::from_ymd_hms(Int, Int, Int, Int, Int, Int, Tz)` *(Tz : TimeZone)* | `-> MappedLocalTime[Self[Tz]]` | Build from local calendar/time-of-day components; `Absent` for an invalid date/time-of-day, in addition to the usual DST-gap case |
 | `DateTime::from_timestamp(Int64, Int, Tz)` | `-> Self[Tz]?` | Build from a Unix timestamp (seconds + nanoseconds) through the given time zone; always unambiguous, `None` only on an out-of-range input |
 | `DateTime::from_timestamp_millis(Int64, Tz)` / `from_timestamp_micros` / `from_timestamp_nanos` | `-> Self[Tz]?` | Build from a Unix timestamp in that unit through the given time zone; `None` if the instant is outside `NaiveDate`'s range (reachable only for milliseconds at `Int64` extremes) |
@@ -263,7 +263,7 @@ The lenient rule is the library's only policy for a local reading that is repeat
 | `truncate(TimeDelta)` | `-> Result[Self[Tz], @core.RoundingError]` | Truncate the underlying UTC instant toward the Unix epoch; see Quick start above for how this differs from truncating the local presentation |
 | `round_subsecs(Int)` / `truncate_subsecs(Int)` | `-> Result[Self[Tz], @core.RoundingError]` / `-> Self[Tz]` | Round or truncate the underlying UTC instant to a number of fractional-second digits (`0..=9`; other values abort) |
 
-Rounding acts on the UTC instant, not the local reading (as Go's `Truncate` and `Round` act on absolute time), so in a zone such as `+05:30` a one-hour truncation leaves a local time that is not on the hour. To round to a local boundary, round `naive_local()` and resolve the result with `DateTime::from_local`. Calendar steps (`add_days`, `add_months`, `add_years`) act on the local reading, while `add_signed`, `add_seconds` and the rounding methods act on the instant.
+Rounding acts on the UTC instant, not the local reading, so in a zone such as `+05:30` a one-hour truncation leaves a local time that is not on the hour. To round to a local boundary, round `naive_local()` and resolve the result with `DateTime::from_local`. Calendar steps (`add_days`, `add_months`, `add_years`) act on the local reading, while `add_signed`, `add_seconds` and the rounding methods act on the instant.
 
 `DateTime[Tz]` also implements `Eq` (when `Tz : Eq`).
 

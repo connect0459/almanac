@@ -1,7 +1,7 @@
 ///|
 /// Reads `/etc/localtime`'s raw bytes, or `Bytes::default()` if it could
 /// not be read.
-extern "C" fn read_etc_localtime() -> Bytes = "chrono_read_etc_localtime"
+extern "C" fn read_etc_localtime() -> Bytes = "almanac_read_etc_localtime"
 
 ///|
 /// The host's configured local time zone, or `None` if it could not be

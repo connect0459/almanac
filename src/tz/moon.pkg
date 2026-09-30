@@ -1,5 +1,5 @@
 import {
-  "connect0459/chrono/core",
+  "connect0459/almanac/core",
   "moonbitlang/core/debug",
   "moonbitlang/core/encoding/utf8",
   "moonbitlang/core/env",

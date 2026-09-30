@@ -146,8 +146,7 @@ fn[Tz : TimeZone] offset_before_gap(
 /// taken as a UTC instant.
 ///
 /// This is the single policy of the library, also used by the calendar steps
-/// (`add_days` and the like); it is the `compatible` disambiguation of the
-/// JavaScript Temporal proposal. For another choice, resolve with
+/// (`add_days` and the like). For another choice, resolve with
 /// `from_local` and pick from the result: `.latest()` takes the later
 /// occurrence of a fold, and `.single()` rejects both a fold and a gap. To
 /// build one from components, go through `NaiveDateTime::from_ymd_hms`.

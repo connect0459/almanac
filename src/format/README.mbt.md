@@ -1,6 +1,6 @@
 # `format` package
 
-strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459/chrono/format` for `format_date`/`format_time`/`format_date_time`/`format_date_time_tz`, their `parse_*` counterparts, and dedicated RFC 3339 and RFC 2822 fast paths (`to_rfc3339`/`parse_rfc3339`, `to_rfc2822`/`parse_rfc2822`), and `parse_duration` for `TimeDelta`.
+strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459/almanac/format` for `format_date`/`format_time`/`format_date_time`/`format_date_time_tz`, their `parse_*` counterparts, and dedicated RFC 3339 and RFC 2822 fast paths (`to_rfc3339`/`parse_rfc3339`, `to_rfc2822`/`parse_rfc2822`), and `parse_duration` for `TimeDelta`.
 
 ## Key functions
 

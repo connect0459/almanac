@@ -1,5 +1,5 @@
 import {
-  "connect0459/chrono/core",
-  "connect0459/chrono/tz",
+  "connect0459/almanac/core",
+  "connect0459/almanac/tz",
   "moonbitlang/core/debug",
 }
