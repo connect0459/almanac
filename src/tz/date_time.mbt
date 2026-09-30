@@ -7,13 +7,16 @@
 pub struct DateTime[Tz] {
   priv datetime : @core.NaiveDateTime
   priv tz : Tz
-} derive(Eq, @debug.Debug)
+} derive(Eq, Hash, @debug.Debug)
 
 ///|
 pub extend DateTime with Eq::{equal}
 
 ///|
 pub extend DateTime with Eq::{not_equal}
+
+///|
+pub extend DateTime with Hash::{hash, hash_combine}
 
 ///|
 pub extend DateTime with @debug.Debug::{to_repr}

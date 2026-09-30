@@ -761,3 +761,56 @@ test "DateTime renders its local date-time followed by the zone's name at that i
     "2024-01-01 12:00:00 EST",
   )
 }
+
+///|
+test "equal Utc and FixedOffset values hash equally and can key a Map" {
+  assert_eq(@tz.Utc::new().hash(), @tz.Utc::new().hash())
+  let a = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let b = @tz.FixedOffset::east(9 * 3600).unwrap()
+  assert_eq(a.hash(), b.hash())
+  assert_true(a.hash() != @tz.FixedOffset::east(0).unwrap().hash())
+  let seen : Map[@tz.FixedOffset, Int] = Map([])
+  seen[a] = 1
+  assert_eq(seen.get(b), Some(1))
+}
+
+///|
+test "DateTime hashing agrees with its Eq, which also compares the zone" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let utc = @tz.FixedOffset::east(0).unwrap()
+  let a = @tz.DateTime::from_timestamp(1_000L, 0, tokyo).unwrap()
+  let b = @tz.DateTime::from_timestamp(1_000L, 0, tokyo).unwrap()
+  assert_eq(a.hash(), b.hash())
+  assert_true(
+    a.hash() != @tz.DateTime::from_timestamp(2_000L, 0, tokyo).unwrap().hash(),
+  )
+  assert_true(a != @tz.DateTime::from_timestamp(1_000L, 0, utc).unwrap())
+  let seen : Map[@tz.DateTime[@tz.FixedOffset], Int] = Map([])
+  seen[a] = 1
+  assert_eq(seen.get(b), Some(1))
+}
+
+///|
+test "Location and DateTime in a Location hash consistently with Eq" {
+  let a = @tz.Location::load("Asia/Tokyo").unwrap()
+  let b = @tz.Location::load("Asia/Tokyo").unwrap()
+  assert_eq(a.hash(), b.hash())
+  assert_true(a.hash() != @tz.Location::load("Japan").unwrap().hash())
+  assert_eq(
+    @tz.DateTime::from_timestamp(0L, 0, a).unwrap().hash(),
+    @tz.DateTime::from_timestamp(0L, 0, b).unwrap().hash(),
+  )
+}
+
+///|
+test "TransitionBounds hashing agrees with its Eq" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let instant = @core.NaiveDateTime::from_timestamp(1_719_835_200L, 0).unwrap()
+  let a = ny.transition_bounds(instant)
+  let b = ny.transition_bounds(instant)
+  assert_eq(a.hash(), b.hash())
+  let other = ny.transition_bounds(
+    @core.NaiveDateTime::from_timestamp(1_704_110_400L, 0).unwrap(),
+  )
+  assert_true(a.hash() != other.hash())
+}

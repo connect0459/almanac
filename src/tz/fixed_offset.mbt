@@ -5,13 +5,16 @@
 /// local time, within `±23:59:59` (`±86399` seconds).
 pub struct FixedOffset {
   priv local_minus_utc : Int
-} derive(Eq, @debug.Debug)
+} derive(Eq, Hash, @debug.Debug)
 
 ///|
 pub extend FixedOffset with Eq::{equal}
 
 ///|
 pub extend FixedOffset with Eq::{not_equal}
+
+///|
+pub extend FixedOffset with Hash::{hash, hash_combine}
 
 ///|
 pub extend FixedOffset with @debug.Debug::{to_repr}

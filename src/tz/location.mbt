@@ -6,13 +6,16 @@ pub struct Location {
   priv tzif : TzifData
   priv posix_tz : PosixTz?
   priv name : String?
-} derive(Eq)
+} derive(Eq, Hash)
 
 ///|
 pub extend Location with Eq::{equal}
 
 ///|
 pub extend Location with Eq::{not_equal}
+
+///|
+pub extend Location with Hash::{hash, hash_combine}
 
 ///|
 /// Renders as `name()`, or as an empty string for a `Location` without one.
@@ -208,13 +211,16 @@ pub fn Location::type_at(
 pub struct TransitionBounds {
   priv start : @core.NaiveDateTime?
   priv end : @core.NaiveDateTime?
-} derive(Eq, @debug.Debug)
+} derive(Eq, Hash, @debug.Debug)
 
 ///|
 pub extend TransitionBounds with Eq::{equal}
 
 ///|
 pub extend TransitionBounds with Eq::{not_equal}
+
+///|
+pub extend TransitionBounds with Hash::{hash, hash_combine}
 
 ///|
 pub extend TransitionBounds with @debug.Debug::{to_repr}

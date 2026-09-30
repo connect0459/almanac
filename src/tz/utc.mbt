@@ -1,12 +1,15 @@
 ///|
 /// The UTC time zone: a fixed offset of zero.
-pub struct Utc {} derive(Eq, @debug.Debug)
+pub struct Utc {} derive(Eq, Hash, @debug.Debug)
 
 ///|
 pub extend Utc with Eq::{equal}
 
 ///|
 pub extend Utc with Eq::{not_equal}
+
+///|
+pub extend Utc with Hash::{hash, hash_combine}
 
 ///|
 pub extend Utc with @debug.Debug::{to_repr}

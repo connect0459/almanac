@@ -165,6 +165,8 @@ A constant UTC offset, in seconds, within `±23:59:59`.
 
 A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored directly; the local (wall-clock) representation is derived on demand.
 
+`Eq` and `Hash` cover the UTC instant and the zone value, so equal instants in different zones are unequal (see `compare_instant` for an instant-only comparison). `Utc`, `FixedOffset`, `Location` and `TransitionBounds` implement `Hash` too, so all of them can key a `Map`.
+
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `DateTime::from_utc(NaiveDateTime, Tz)` | `-> Self[Tz]` | Wrap a UTC naive datetime with the given time zone |

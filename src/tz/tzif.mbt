@@ -5,13 +5,16 @@ pub struct LocalTimeType {
   priv utc_offset : Int
   priv is_dst : Bool
   priv abbreviation : String
-} derive(Eq, @debug.Debug)
+} derive(Eq, Hash, @debug.Debug)
 
 ///|
 pub extend LocalTimeType with Eq::{equal}
 
 ///|
 pub extend LocalTimeType with Eq::{not_equal}
+
+///|
+pub extend LocalTimeType with Hash::{hash, hash_combine}
 
 ///|
 pub extend LocalTimeType with @debug.Debug::{to_repr}
@@ -59,13 +62,16 @@ pub struct TzifData {
   priv local_time_types : Array[LocalTimeType]
   priv leap_seconds : Array[(Int64, Int)]
   priv posix_tz : String?
-} derive(Eq)
+} derive(Eq, Hash)
 
 ///|
 pub extend TzifData with Eq::{equal}
 
 ///|
 pub extend TzifData with Eq::{not_equal}
+
+///|
+pub extend TzifData with Hash::{hash, hash_combine}
 
 ///|
 pub fn TzifData::transitions(self : TzifData) -> Array[Int64] {
