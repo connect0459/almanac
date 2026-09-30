@@ -47,7 +47,7 @@ pub fn parse_date_time_fixed_offset_default(
   let (wall_clock, rest) = parse_date_time_and_remainder(input, "%F %T%.f ")
   let offset = parse_fixed_offset(rest)
   @tz.DateTime::from_utc(
-    wall_clock.sub_seconds(offset.local_minus_utc()),
+    wall_clock.sub_seconds(offset.local_minus_utc().to_int64()),
     offset,
   )
 }

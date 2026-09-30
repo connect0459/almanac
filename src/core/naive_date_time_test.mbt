@@ -1075,3 +1075,26 @@ test "round_subsecs and truncate_subsecs leave a leap second that has no digits 
   assert_eq(leap.truncate_subsecs(9), leap)
   assert_eq(leap.round_subsecs(9), Ok(leap))
 }
+
+///|
+test "add_seconds and sub_seconds take 64-bit counts reaching beyond the 32-bit range" {
+  let epoch = @core.NaiveDateTime::unix_epoch()
+  let seconds = 10_000_000_000L
+  let forward = epoch.add_seconds(seconds)
+  assert_eq(forward.timestamp(), seconds)
+  assert_eq(forward.sub_seconds(seconds), epoch)
+  assert_eq(epoch.sub_seconds(seconds).timestamp(), -seconds)
+  assert_eq(
+    epoch.add_seconds(seconds),
+    epoch.add_signed(@core.TimeDelta::seconds(seconds).unwrap()),
+  )
+}
+
+///|
+test "checked_add_seconds and checked_sub_seconds return None for a 64-bit count that leaves the representable range" {
+  let epoch = @core.NaiveDateTime::unix_epoch()
+  assert_eq(epoch.checked_add_seconds(9_223_372_036_854_775_807L), None)
+  assert_eq(epoch.checked_sub_seconds(9_223_372_036_854_775_807L), None)
+  assert_eq(epoch.checked_add_seconds(-9_223_372_036_854_775_807L - 1L), None)
+  assert_eq(epoch.checked_sub_seconds(-9_223_372_036_854_775_807L - 1L), None)
+}

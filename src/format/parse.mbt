@@ -1270,7 +1270,7 @@ fn resolve_at_timestamp(
   offset_secs : Int,
 ) -> @core.NaiveDateTime raise ParseError {
   let instant = timestamp_instant(parsed, ts)
-  let wall_clock = match instant.checked_add_seconds(offset_secs) {
+  let wall_clock = match instant.checked_add_seconds(offset_secs.to_int64()) {
     Some(reading) => reading
     None => raise FieldOutOfRange
   }
@@ -1311,7 +1311,7 @@ pub fn Parsed::to_date_time_fixed_offset(
     None => {
       let local_naive = self.to_date_time()
       @tz.DateTime::from_utc(
-        local_naive.sub_seconds(offset.local_minus_utc()),
+        local_naive.sub_seconds(offset.local_minus_utc().to_int64()),
         offset,
       )
     }
@@ -1341,7 +1341,7 @@ pub fn[Tz : @tz.TimeZone] Parsed::to_date_time_in(
         Some(offset) =>
           Single(
             @tz.DateTime::from_utc(
-              local_naive.sub_seconds(offset.local_minus_utc()),
+              local_naive.sub_seconds(offset.local_minus_utc().to_int64()),
               tz,
             ),
           )

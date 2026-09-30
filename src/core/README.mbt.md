@@ -376,14 +376,16 @@ A `NaiveDate` and `NaiveTime` combined into one zone-less instant.
 | `sub_months(Int)` | `-> Self` | Shift the date backward by whole months |
 | `add_days(Int)` | `-> Self` | Shift the date by a day count, keeping the time of day |
 | `sub_days(Int)` | `-> Self` | Shift the date backward by a day count |
-| `add_seconds(Int)` / `sub_seconds(Int)` | `-> Self` | Shift by a whole number of seconds (e.g. to apply a UTC offset), like `add_signed` with the same seconds: a nonzero shift follows its leap-second rule, a zero shift changes nothing |
-| `checked_add_seconds(Int)` / `checked_sub_seconds(Int)` | `-> Self?` | As `add_seconds`/`sub_seconds`, but `None` if the date is out of range |
+| `add_seconds(Int64)` / `sub_seconds(Int64)` | `-> Self` | Shift by a whole number of seconds (e.g. to apply a UTC offset), like `add_signed` with the same seconds: a nonzero shift follows its leap-second rule, a zero shift changes nothing |
+| `checked_add_seconds(Int64)` / `checked_sub_seconds(Int64)` | `-> Self?` | As `add_seconds`/`sub_seconds`, but `None` if the date is out of range |
 | `checked_add_signed(TimeDelta)` / `checked_sub_signed(TimeDelta)` | `-> Self?` | As `add_signed`/`sub_signed`, but `None` if the date is out of range |
 | `checked_add_days(Int)` / `checked_sub_days(Int)` | `-> Self?` | As `add_days`/`sub_days`, but `None` if out of range |
 | `checked_add_months(Int)` / `checked_sub_months(Int)` | `-> Self?` | As `add_months`/`sub_months`, but `None` if out of range |
 | `checked_add_years(Int)` / `checked_sub_years(Int)` | `-> Self?` | As `add_years`/`sub_years`, but `None` if out of range |
 
-An abort cannot be recovered from in MoonBit, so it is a contract violation by the caller: every function that can abort names the `checked_*`/`*_opt` (or other non-aborting) form in its documentation, and a caller that cannot guarantee the precondition uses that form. The non-`checked` arithmetic on `NaiveDate` and `NaiveDateTime` (`succ`, `pred`, `add_*`, `sub_*`) aborts if the result falls outside the representable date range (about ±5.87 million years around the epoch) rather than wrapping into an invalid date; use the `checked_*`/`*_opt` forms to get `None` instead.
+An abort cannot be recovered from in MoonBit, so it is a contract violation by the caller: every function that can abort names the `checked_*`/`*_opt` (or other non-aborting) form in its documentation, and a caller that cannot guarantee the precondition uses that form. Integer widths follow one rule: a count of fixed-length time (seconds, milliseconds, microseconds, nanoseconds, timestamps, and the `TimeDelta` unit constructors) or a difference that can exceed `Int` (`NaiveDate::abs_diff`) is `Int64`; a calendar step (`add_days`, `add_months`, `add_years`), a calendar or clock field, a sub-second component within one second, and a scalar multiplier or divisor are `Int`.
+
+The non-`checked` arithmetic on `NaiveDate` and `NaiveDateTime` (`succ`, `pred`, `add_*`, `sub_*`) aborts if the result falls outside the representable date range (about ±5.87 million years around the epoch) rather than wrapping into an invalid date; use the `checked_*`/`*_opt` forms to get `None` instead.
 | `signed_duration_since(Self)` | `-> TimeDelta` | The signed duration from `other` to `self` |
 | `round(TimeDelta)` | `-> Result[Self, RoundingError]` | Round to the nearest multiple of a granularity since the Unix epoch, ties breaking away from the epoch; see `TimeDelta::round` for which granularities are supported |
 | `truncate(TimeDelta)` | `-> Result[Self, RoundingError]` | Truncate toward the Unix epoch to the nearest multiple of a granularity; a datetime before the epoch is truncated *forward* in time (see Quick start above), never further into the past |

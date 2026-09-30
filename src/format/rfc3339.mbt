@@ -239,7 +239,7 @@ fn try_parse_rfc3339(s : String) -> @tz.DateTime[@tz.FixedOffset]? {
             let local_naive = @core.NaiveDateTime::new(date, time)
             Some(
               @tz.DateTime::from_utc(
-                local_naive.sub_seconds(offset_secs),
+                local_naive.sub_seconds(offset_secs.to_int64()),
                 offset,
               ),
             )

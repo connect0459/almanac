@@ -509,7 +509,7 @@ pub fn NaiveDateTime::checked_sub_signed(
 /// `checked_add_seconds` to get `None` instead.
 pub fn NaiveDateTime::add_seconds(
   self : NaiveDateTime,
-  seconds : Int,
+  seconds : Int64,
 ) -> NaiveDateTime {
   expect_in_range(
     self.checked_add_seconds(seconds),
@@ -525,7 +525,7 @@ pub fn NaiveDateTime::add_seconds(
 /// `checked_sub_seconds` to get `None` instead.
 pub fn NaiveDateTime::sub_seconds(
   self : NaiveDateTime,
-  seconds : Int,
+  seconds : Int64,
 ) -> NaiveDateTime {
   expect_in_range(
     self.checked_sub_seconds(seconds),
@@ -538,9 +538,9 @@ pub fn NaiveDateTime::sub_seconds(
 /// representable range.
 pub fn NaiveDateTime::checked_add_seconds(
   self : NaiveDateTime,
-  seconds : Int,
+  seconds : Int64,
 ) -> NaiveDateTime? {
-  self.checked_add_signed(TimeDelta::seconds(seconds.to_int64()).unwrap())
+  TimeDelta::seconds(seconds).bind(delta => self.checked_add_signed(delta))
 }
 
 ///|
@@ -548,9 +548,9 @@ pub fn NaiveDateTime::checked_add_seconds(
 /// representable range.
 pub fn NaiveDateTime::checked_sub_seconds(
   self : NaiveDateTime,
-  seconds : Int,
+  seconds : Int64,
 ) -> NaiveDateTime? {
-  self.checked_add_signed(TimeDelta::seconds(-seconds.to_int64()).unwrap())
+  TimeDelta::seconds(-seconds).bind(delta => self.checked_add_signed(delta))
 }
 
 ///|

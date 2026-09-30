@@ -100,5 +100,8 @@ pub fn parse_rfc2822(
   let time = rfc2822_require(@core.NaiveTime::from_hms(hour, minute, second))
   let offset = rfc2822_require(@tz.FixedOffset::east(offset_secs))
   let local_naive = @core.NaiveDateTime::new(date, time)
-  @tz.DateTime::from_utc(local_naive.sub_seconds(offset_secs), offset)
+  @tz.DateTime::from_utc(
+    local_naive.sub_seconds(offset_secs.to_int64()),
+    offset,
+  )
 }

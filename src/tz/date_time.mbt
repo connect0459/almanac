@@ -87,7 +87,10 @@ pub fn[Tz : TimeZone] DateTime::from_local(
   tz
   .offset_from_local(naive_local)
   .map(offset => {
-    DateTime::from_utc(naive_local.sub_seconds(offset.local_minus_utc()), tz)
+    DateTime::from_utc(
+      naive_local.sub_seconds(offset.local_minus_utc().to_int64()),
+      tz,
+    )
   })
 }
 
@@ -109,8 +112,10 @@ fn[Tz : TimeZone] offset_before_gap(
       Some(transition) => {
         let before = tz.offset_from_utc(transition.sub_seconds(1))
         let after = tz.offset_from_utc(transition)
-        let gap_start = transition.add_seconds(before.local_minus_utc())
-        let gap_end = transition.add_seconds(after.local_minus_utc())
+        let gap_start = transition.add_seconds(
+          before.local_minus_utc().to_int64(),
+        )
+        let gap_end = transition.add_seconds(after.local_minus_utc().to_int64())
         if reading >= gap_start && reading < gap_end {
           break Some(before)
         }
@@ -150,7 +155,10 @@ pub fn[Tz : TimeZone] DateTime::from_local_lenient(
         Some(offset) => offset
         None => tz.offset_from_utc(naive_local)
       }
-      DateTime::from_utc(naive_local.sub_seconds(offset.local_minus_utc()), tz)
+      DateTime::from_utc(
+        naive_local.sub_seconds(offset.local_minus_utc().to_int64()),
+        tz,
+      )
     }
   }
 }
@@ -293,7 +301,7 @@ pub extend DateTime with Default::{default}
 pub fn[Tz : TimeZone] DateTime::naive_local(
   self : DateTime[Tz],
 ) -> @core.NaiveDateTime {
-  self.datetime.add_seconds(self.offset().local_minus_utc())
+  self.datetime.add_seconds(self.offset().local_minus_utc().to_int64())
 }
 
 ///|
@@ -919,7 +927,7 @@ pub fn[Tz] DateTime::add_offset(
   offset : FixedOffset,
 ) -> DateTime[Tz] {
   DateTime::{
-    datetime: self.datetime.add_seconds(offset.local_minus_utc()),
+    datetime: self.datetime.add_seconds(offset.local_minus_utc().to_int64()),
     tz: self.tz,
   }
 }
@@ -935,7 +943,7 @@ pub fn[Tz] DateTime::sub_offset(
   offset : FixedOffset,
 ) -> DateTime[Tz] {
   DateTime::{
-    datetime: self.datetime.sub_seconds(offset.local_minus_utc()),
+    datetime: self.datetime.sub_seconds(offset.local_minus_utc().to_int64()),
     tz: self.tz,
   }
 }
@@ -948,7 +956,7 @@ pub fn[Tz] DateTime::checked_add_offset(
   offset : FixedOffset,
 ) -> DateTime[Tz]? {
   self.datetime
-  .checked_add_seconds(offset.local_minus_utc())
+  .checked_add_seconds(offset.local_minus_utc().to_int64())
   .map(datetime => DateTime::{ datetime, tz: self.tz, })
 }
 
@@ -960,7 +968,7 @@ pub fn[Tz] DateTime::checked_sub_offset(
   offset : FixedOffset,
 ) -> DateTime[Tz]? {
   self.datetime
-  .checked_sub_seconds(offset.local_minus_utc())
+  .checked_sub_seconds(offset.local_minus_utc().to_int64())
   .map(datetime => DateTime::{ datetime, tz: self.tz, })
 }
 
