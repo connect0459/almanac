@@ -114,3 +114,129 @@ test "rfc1123 parses back into its wall-clock reading, discarding the zone name"
     ),
   )
 }
+
+///|
+fn layout_instant() -> @core.NaiveDateTime {
+  @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+    @core.NaiveTime::from_hms(9, 5, 3).unwrap(),
+  )
+}
+
+///|
+fn layout_utc() -> @tz.DateTime[@tz.Utc] {
+  @tz.DateTime::from_utc(layout_instant(), @tz.Utc::new())
+}
+
+///|
+fn layout_tokyo() -> @tz.DateTime[@tz.FixedOffset] {
+  @tz.DateTime::from_utc(
+    layout_instant(),
+    @tz.FixedOffset::east(9 * 3600).unwrap(),
+  )
+}
+
+///|
+test "each added layout constant is Go's layout written as a strftime string" {
+  assert_eq(@format.ansic, "%a %b %e %H:%M:%S %Y")
+  assert_eq(@format.unix_date, "%a %b %e %H:%M:%S %Z %Y")
+  assert_eq(@format.ruby_date, "%a %b %d %H:%M:%S %z %Y")
+  assert_eq(@format.rfc822, "%d %b %y %H:%M %Z")
+  assert_eq(@format.rfc822z, "%d %b %y %H:%M %z")
+  assert_eq(@format.rfc850, "%A, %d-%b-%y %H:%M:%S %Z")
+  assert_eq(@format.rfc1123z, "%a, %d %b %Y %H:%M:%S %z")
+  assert_eq(@format.date_time, "%F %T")
+}
+
+///|
+test "the layout constants render Go's example text for a known instant" {
+  assert_eq(
+    @format.format_date_time_tz(layout_utc(), @format.ansic),
+    "Tue Mar  5 09:05:03 2024",
+  )
+  assert_eq(
+    @format.format_date_time_tz(layout_utc(), @format.unix_date),
+    "Tue Mar  5 09:05:03 UTC 2024",
+  )
+  assert_eq(
+    @format.format_date_time_tz(layout_tokyo(), @format.ruby_date),
+    "Tue Mar 05 18:05:03 +0900 2024",
+  )
+  assert_eq(
+    @format.format_date_time_tz(layout_utc(), @format.rfc822),
+    "05 Mar 24 09:05 UTC",
+  )
+  assert_eq(
+    @format.format_date_time_tz(layout_tokyo(), @format.rfc822z),
+    "05 Mar 24 18:05 +0900",
+  )
+  assert_eq(
+    @format.format_date_time_tz(layout_utc(), @format.rfc850),
+    "Tuesday, 05-Mar-24 09:05:03 UTC",
+  )
+  assert_eq(
+    @format.format_date_time_tz(layout_tokyo(), @format.rfc1123z),
+    "Tue, 05 Mar 2024 18:05:03 +0900",
+  )
+  assert_eq(
+    @format.format_date_time(layout_instant(), @format.date_time),
+    "2024-03-05 09:05:03",
+  )
+}
+
+///|
+test "the numeric-offset layouts read back the instant and offset they render" {
+  for layout in [@format.ruby_date, @format.rfc1123z] {
+    let text = @format.format_date_time_tz(layout_tokyo(), layout)
+    assert_eq(@format.parse_date_time_tz(text, layout), layout_tokyo())
+  }
+}
+
+///|
+test "the zone-name layouts read back the wall-clock reading they render" {
+  for layout in [@format.unix_date, @format.rfc850, @format.ansic] {
+    let text = @format.format_date_time_tz(layout_utc(), layout)
+    assert_eq(@format.parse_date_time(text, layout), layout_instant())
+  }
+}
+
+///|
+test "date_time reads back what it renders" {
+  assert_eq(
+    @format.parse_date_time(
+      @format.format_date_time(layout_instant(), @format.date_time),
+      @format.date_time,
+    ),
+    layout_instant(),
+  )
+}
+
+///|
+test "the minute-precision RFC 822 layouts drop the seconds and read back zero" {
+  let on_the_minute = @core.NaiveDateTime::new(
+    layout_instant().date(),
+    @core.NaiveTime::from_hms(9, 5, 0).unwrap(),
+  )
+  let text = @format.format_date_time_tz(layout_utc(), @format.rfc822)
+  assert_eq(@format.parse_date_time(text, @format.rfc822), on_the_minute)
+  let zoned = @format.format_date_time_tz(layout_tokyo(), @format.rfc822z)
+  assert_eq(
+    @format.parse_date_time_tz(zoned, @format.rfc822z).naive_local(),
+    @core.NaiveDateTime::new(
+      layout_instant().date(),
+      @core.NaiveTime::from_hms(18, 5, 0).unwrap(),
+    ),
+  )
+}
+
+///|
+test "the two-digit-year layouts read 69 and below as 20xx and 70 and above as 19xx" {
+  assert_eq(
+    @format.parse_date_time("05 Mar 69 09:05 UTC", @format.rfc822).date(),
+    @core.NaiveDate::from_ymd(2069, 3, 5).unwrap(),
+  )
+  assert_eq(
+    @format.parse_date_time("05 Mar 70 09:05 UTC", @format.rfc822).date(),
+    @core.NaiveDate::from_ymd(1970, 3, 5).unwrap(),
+  )
+}

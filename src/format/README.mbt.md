@@ -19,7 +19,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `parse_duration` | Reads a `TimeDelta` from Go-style text (`"1h30m"`, `"-1.5s"`, `"300ms"`); the inverse of `TimeDelta`'s `Show` |
 | `parse_fixed_offset` | Reads a `FixedOffset` from offset text (`"+09:00"`, `"+0900"`, `"+09"`, `"+09:00:30"`, `"Z"`); the inverse of `FixedOffset`'s `Show` |
 | `parse_date_default`/`parse_time_default`/`parse_date_time_default`/`parse_date_time_utc_default`/`parse_date_time_tz_default` | One-argument parsers that read the layout each type's `Show` renders (`2024-03-05`, `09:05:07.500`, `2024-03-05 09:05:07.500`, `... UTC`, `... +09:00`); the inverse of `Show`, so every rendered value reads back |
-| `rfc1123`/`kitchen`/`stamp`/`stamp_milli`/`stamp_micro`/`stamp_nano`/`date_only`/`time_only` | Named convenience format strings (Go `time` package layout equivalents) — pass one to `format_*`/`parse_*` like any other format string |
+| `rfc1123`/`rfc1123z`/`rfc822`/`rfc822z`/`rfc850`/`ansic`/`unix_date`/`ruby_date`/`kitchen`/`stamp`/`stamp_milli`/`stamp_micro`/`stamp_nano`/`date_only`/`time_only`/`date_time` | Named convenience format strings (Go `time` package layout equivalents) — pass one to `format_*`/`parse_*` like any other format string |
 
 ## Supported specifiers
 
@@ -180,6 +180,13 @@ Convenience format-string constants, mirroring Go's `time` package layouts (tran
 | Constant | Format string | Go equivalent | Example |
 | :--- | :--- | :--- | :--- |
 | `rfc1123` | `"%a, %d %b %Y %H:%M:%S %Z"` | `RFC1123` | `"Tue, 05 Mar 2024 09:05:03 UTC"` |
+| `rfc1123z` | `"%a, %d %b %Y %H:%M:%S %z"` | `RFC1123Z` | `"Tue, 05 Mar 2024 18:05:03 +0900"` |
+| `rfc822` | `"%d %b %y %H:%M %Z"` | `RFC822` | `"05 Mar 24 09:05 UTC"` |
+| `rfc822z` | `"%d %b %y %H:%M %z"` | `RFC822Z` | `"05 Mar 24 18:05 +0900"` |
+| `rfc850` | `"%A, %d-%b-%y %H:%M:%S %Z"` | `RFC850` | `"Tuesday, 05-Mar-24 09:05:03 UTC"` |
+| `ansic` | `"%a %b %e %H:%M:%S %Y"` | `ANSIC` | `"Tue Mar  5 09:05:03 2024"` |
+| `unix_date` | `"%a %b %e %H:%M:%S %Z %Y"` | `UnixDate` | `"Tue Mar  5 09:05:03 UTC 2024"` |
+| `ruby_date` | `"%a %b %d %H:%M:%S %z %Y"` | `RubyDate` | `"Tue Mar 05 18:05:03 +0900 2024"` |
 | `kitchen` | `"%-I:%M%p"` | `Kitchen` | `"9:05AM"` |
 | `stamp` | `"%b %e %H:%M:%S"` | `Stamp` | `"Mar  5 09:05:03"` |
 | `stamp_milli` | `"%b %e %H:%M:%S.%3f"` | `StampMilli` | `"Mar  5 09:05:03.123"` |
@@ -187,6 +194,7 @@ Convenience format-string constants, mirroring Go's `time` package layouts (tran
 | `stamp_nano` | `"%b %e %H:%M:%S.%9f"` | `StampNano` | `"Mar  5 09:05:03.123456789"` |
 | `date_only` | `"%F"` | `DateOnly` | `"2024-03-05"` |
 | `time_only` | `"%T"` | `TimeOnly` | `"09:05:03"` |
+| `date_time` | `"%F %T"` | `DateTime` | `"2024-03-05 09:05:03"` |
 
 The `stamp*` family (no year) doesn't carry enough fields to round-trip through the matching `parse_*` function on its own — matching Go's own `Stamp` family, meant for display alongside separately-known context. `date_only`/`time_only` are self-sufficient for parsing, and so is `kitchen` for a time on the minute, since `parse_time` reads a time without seconds as having zero seconds (a value with seconds loses them when rendered with `kitchen`).
 

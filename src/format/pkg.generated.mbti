@@ -8,7 +8,11 @@ import {
 }
 
 // Values
+pub let ansic : String
+
 pub let date_only : String
+
+pub let date_time : String
 
 pub fn format_date(@core.NaiveDate, String) -> String raise ParseError
 
@@ -72,6 +76,16 @@ pub fn parse_time_default(String) -> @core.NaiveTime raise ParseError
 
 pub let rfc1123 : String
 
+pub let rfc1123z : String
+
+pub let rfc822 : String
+
+pub let rfc822z : String
+
+pub let rfc850 : String
+
+pub let ruby_date : String
+
 pub let stamp : String
 
 pub let stamp_micro : String
@@ -89,6 +103,8 @@ pub fn[Tz : @tz.TimeZone] to_rfc3339(@tz.DateTime[Tz]) -> String
 pub fn[Tz : @tz.TimeZone] to_rfc3339_opts(@tz.DateTime[Tz], SecondsFormat, Bool) -> String
 
 pub fn tokenize(String) -> Array[Item] raise ParseError
+
+pub let unix_date : String
 
 // Errors
 pub suberror ParseError {
