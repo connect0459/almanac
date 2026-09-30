@@ -23,7 +23,7 @@ pub suberror ParseError {
   /// out-of-range hour).
   InconsistentFields
   /// The input text didn't match a literal or specifier at some
-  /// position, including `%Z`, which is never parseable (see
+  /// position, including a `%Z` with no name to consume (see
   /// `parse_date`/`parse_time`/`parse_date_time`/`parse_date_time_tz`).
   InputMismatch
 } derive(Eq, @debug.Debug)

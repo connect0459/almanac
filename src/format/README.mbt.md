@@ -52,7 +52,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%u` | Weekday number, Monday-based (ISO 8601) | `1`..`7` (Sunday `7`); parses the same field as `%A`/`%a` |
 | `%U` | Week number, Sunday-based | Zero-padded, `00`..`53`; combined with a weekday (`%A`/`%a`/`%w`/`%u`) on parse to construct a date when no month/day/ordinal is given, mirroring `%j`'s role; cross-checked against an already-determined date otherwise |
 | `%W` | Week number, Monday-based | Zero-padded, `00`..`53`; see `%U` |
-| `%Z` | Timezone name | Format-only: raises `InputMismatch` on parse (no generically parseable shape) |
+| `%Z` | Timezone name | On parse, consumes and discards one or more non-whitespace characters (the name is neither validated nor kept); an empty name raises `InputMismatch` |
 | `%z` | Timezone offset | `±HHMM`, no colon |
 | `%:z` | Timezone offset, minutes | `±HH:MM`; on parse, the colon is mandatory (exactly its own rendered shape) |
 | `%::z` | Timezone offset, seconds | `±HH:MM:SS`, always with seconds (unlike `FixedOffset`'s own `tz_name`, which only extends past minutes when they're nonzero); on parse, the seconds field is mandatory too |
@@ -171,7 +171,7 @@ Convenience format-string constants, mirroring Go's `time` package layouts (tran
 | `date_only` | `"%F"` | `DateOnly` | `"2024-03-05"` |
 | `time_only` | `"%T"` | `TimeOnly` | `"09:05:03"` |
 
-`rfc1123` (its `%Z` can't be parsed), `kitchen` (no seconds), and the `stamp*` family (no year) don't carry enough fields to round-trip through the matching `parse_*` function on their own — matching Go's own `Stamp` family, meant for display alongside separately-known context. Only `date_only`/`time_only` are self-sufficient for parsing.
+`kitchen` (no seconds), and the `stamp*` family (no year) don't carry enough fields to round-trip through the matching `parse_*` function on their own — matching Go's own `Stamp` family, meant for display alongside separately-known context. Only `date_only`/`time_only` are self-sufficient for parsing.
 
 ### `tokenize`
 
@@ -260,6 +260,6 @@ pub(all) enum Fixed {
 | `InvalidDuration` | `parse_duration`'s input is malformed (no digits, missing or unknown unit, misplaced sign, stray characters) or its value is outside `TimeDelta`'s representable range |
 | `IncompleteFields` | A `parse_*` call resolves fields that never populate a required value (e.g. no year) |
 | `InconsistentFields` | Two populated fields disagree, or don't jointly form a valid value (e.g. `%j` contradicting `%m`/`%d`, or an out-of-range calendar date) |
-| `InputMismatch` | Literal or specifier text fails to match the input, input remains unconsumed, or a format-only specifier (`%Z`, `%s`, `%G`, `%g`, `%V`) is parsed |
+| `InputMismatch` | Literal or specifier text fails to match the input, input remains unconsumed, or a format-only specifier (`%s`, `%G`, `%g`, `%V`) is parsed |
 
 `ParseError` also implements `Eq`.

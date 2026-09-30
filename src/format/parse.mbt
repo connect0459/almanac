@@ -439,9 +439,10 @@ fn parse_blank_or_zero_padded_digits(
 
 ///|
 /// Applies a single token against `input` at `pos`, returning the
-/// updated accumulator and the new position. `%Z` always raises
-/// `InputMismatch`: a zone name (an IANA abbreviation, `"UTC"`, or a bare
-/// offset's own string) has no generically parseable shape.
+/// updated accumulator and the new position. `%Z` consumes and discards a
+/// run of one or more non-whitespace characters: a zone name (an IANA
+/// abbreviation, `"UTC"`, or a bare offset's own string) has no generically
+/// parseable shape, so it is neither validated nor kept.
 fn apply_item(
   item : Item,
   parsed : Parsed,
@@ -560,7 +561,18 @@ fn apply_item(
       }
     Fixed(LongWeekdayName) => apply_weekday_specifier(chars, pos, parsed)
     Fixed(ShortWeekdayName) => apply_weekday_specifier(chars, pos, parsed)
-    Fixed(TimezoneName) => raise InputMismatch
+    Fixed(TimezoneName) => {
+      let end = for p = pos {
+        if p < chars.length() && !chars[p].is_whitespace() {
+          continue p + 1
+        }
+        break p
+      }
+      if end == pos {
+        raise InputMismatch
+      }
+      (parsed, end)
+    }
     Fixed(TimezoneOffset) =>
       match parse_offset_no_colon(chars, pos) {
         None => raise InputMismatch

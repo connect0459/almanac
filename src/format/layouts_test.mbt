@@ -79,10 +79,10 @@ test "time_only renders %H:%M:%S" {
 
 ///|
 test "date_only and time_only round-trip through parse_date/parse_time, being the only layouts here with a complete field set for it" {
-  // rfc1123's %Z can't be parsed, kitchen has no seconds, and stamp/
-  // stamp_milli/stamp_micro/stamp_nano carry no year at all (matching
-  // Go's own layouts, meant for display alongside separately-known
-  // context) — so only date_only/time_only round-trip on their own.
+  // kitchen has no seconds, and stamp/stamp_milli/stamp_micro/stamp_nano
+  // carry no year at all (matching Go's own layouts, meant for display
+  // alongside separately-known context) — so only date_only/time_only
+  // round-trip on their own.
   let date = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
   assert_eq(
     @format.parse_date(
@@ -98,5 +98,19 @@ test "date_only and time_only round-trip through parse_date/parse_time, being th
       @format.time_only,
     ),
     time,
+  )
+}
+
+///|
+test "rfc1123 parses back into its wall-clock reading, discarding the zone name" {
+  let parsed = @format.parse_date_time(
+    "Tue, 05 Mar 2024 09:05:03 UTC", @format.rfc1123,
+  )
+  assert_eq(
+    parsed,
+    @core.NaiveDateTime::new(
+      @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+      @core.NaiveTime::from_hms(9, 5, 3).unwrap(),
+    ),
   )
 }

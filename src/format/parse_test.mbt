@@ -489,13 +489,70 @@ test "parsing %:z/%::z/%:::z/%#z cross-checks against a redundantly-present %z, 
 }
 
 ///|
-test "parsing %Z always raises InputMismatch, since a zone name can't be resolved generically" {
-  try @format.parse_date_time("anything", "%Z") |> ignore catch {
-    @format.InputMismatch => ()
-    _ => fail("expected InputMismatch")
-  } noraise {
-    _ => fail("expected parse_date_time to reject %Z")
+test "parsing %Z consumes and discards a run of non-whitespace characters, whatever its shape" {
+  let expected = local_reading(2024, 3, 5, 9, 30)
+  for name in ["UTC", "JST", "EDT", "CEST", "+09:00", "XXXXXXXX"] {
+    let parsed = @format.parse_date_time(
+      "2024-03-05 09:30:00 \{name}",
+      "%F %T %Z",
+    )
+    assert_eq(
+      parsed,
+      @core.NaiveDateTime::new(
+        expected.date(),
+        @core.NaiveTime::from_hms(9, 30, 0).unwrap(),
+      ),
+    )
   }
+}
+
+///|
+test "parsing %Z stops at whitespace so a following specifier still applies" {
+  let dt = @format.parse_date_time_tz(
+    "2024-03-05 09:30:00 CEST +0100", "%F %T %Z %z",
+  )
+  assert_eq(dt.offset(), @tz.FixedOffset::east(3600).unwrap())
+  assert_eq(dt.naive_local(), local_reading(2024, 3, 5, 9, 30))
+}
+
+///|
+test "parsing %Z rejects an empty zone name" {
+  for input in ["2024-03-05 09:30:00 ", "2024-03-05 09:30:00"] {
+    try @format.parse_date_time(input, "%F %T %Z") |> ignore catch {
+      @format.InputMismatch => ()
+      _ => fail("expected InputMismatch for \{input}")
+    } noraise {
+      _ => fail("expected rejection for \{input}")
+    }
+  }
+}
+
+///|
+test "a datetime formatted with %Z parses back for every kind of zone name" {
+  let utc = @tz.DateTime::from_timestamp(1_709_631_000L, 0, @tz.Utc::new()).unwrap()
+  let tokyo = utc.with_timezone(@tz.FixedOffset::east(9 * 3600).unwrap())
+  let ny = utc.with_timezone(@tz.Location::load("America/New_York").unwrap())
+  assert_eq(
+    @format.parse_date_time(
+      @format.format_date_time_tz(utc, "%F %T %Z"),
+      "%F %T %Z",
+    ),
+    utc.naive_local(),
+  )
+  assert_eq(
+    @format.parse_date_time(
+      @format.format_date_time_tz(tokyo, "%F %T %Z"),
+      "%F %T %Z",
+    ),
+    tokyo.naive_local(),
+  )
+  assert_eq(
+    @format.parse_date_time(
+      @format.format_date_time_tz(ny, "%F %T %Z"),
+      "%F %T %Z",
+    ),
+    ny.naive_local(),
+  )
 }
 
 ///|
