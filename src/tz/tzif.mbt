@@ -69,7 +69,7 @@ pub struct TzifData {
   priv local_time_types : Array[LocalTimeType]
   priv leap_seconds : Array[(Int64, Int)]
   priv posix_tz : String?
-} derive(Eq, Hash)
+} derive(Eq, Hash, @debug.Debug)
 
 ///|
 pub extend TzifData with Eq::{equal}
@@ -79,6 +79,9 @@ pub extend TzifData with Eq::{not_equal}
 
 ///|
 pub extend TzifData with Hash::{hash, hash_combine}
+
+///|
+pub extend TzifData with @debug.Debug::{to_repr}
 
 ///|
 /// A copy of the transitions array; changing it does not affect

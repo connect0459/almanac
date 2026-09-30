@@ -204,11 +204,14 @@ pub fn PadMode::to_repr(Self) -> @debug.Repr
 
 pub struct Parsed {
   // private fields
-}
+} derive(Eq, @debug.Debug)
+pub fn Parsed::equal(Self, Self) -> Bool
+pub fn Parsed::not_equal(Self, Self) -> Bool
 pub fn Parsed::to_date(Self) -> @core.NaiveDate raise ParseError
 pub fn Parsed::to_date_time(Self) -> @core.NaiveDateTime raise ParseError
 pub fn Parsed::to_date_time_fixed_offset(Self) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
 pub fn[Tz : @tz.TimeZone] Parsed::to_date_time_in(Self, Tz) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise ParseError
+pub fn Parsed::to_repr(Self) -> @debug.Repr
 pub fn Parsed::to_time(Self) -> @core.NaiveTime raise ParseError
 
 pub(all) enum SecondsFormat {

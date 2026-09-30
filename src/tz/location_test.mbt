@@ -505,3 +505,12 @@ test "utc agrees with the Utc zone at any instant" {
 test "load rejects an empty zone name instead of treating it as UTC" {
   assert_true(@tz.Location::load("") is None)
 }
+
+///|
+test "Location and TzifData compare structurally with a diagnostic representation" {
+  let a = @tz.Location::load("Asia/Tokyo").unwrap()
+  let b = @tz.Location::load("Asia/Tokyo").unwrap()
+  assert_eq(a, b)
+  let tzif = @tz.parse_tzif(tzif_tokyo).unwrap()
+  assert_eq(tzif, @tz.parse_tzif(tzif_tokyo).unwrap())
+}

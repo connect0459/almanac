@@ -184,7 +184,7 @@ pub fn LocalTimeType::utc_offset(Self) -> Int
 
 pub struct Location {
   // private fields
-} derive(Eq, Hash)
+} derive(Eq, Hash, @debug.Debug)
 pub fn Location::equal(Self, Self) -> Bool
 pub fn Location::from_tzif_bytes(Bytes) -> Self?
 pub fn Location::from_tzif_bytes_named(String, Bytes) -> Self?
@@ -198,6 +198,7 @@ pub fn Location::offset_from_abbreviation(Self, String, @core.NaiveDateTime) -> 
 pub fn Location::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[FixedOffset]
 pub fn Location::offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
 pub fn Location::output(Self, &Logger) -> Unit
+pub fn Location::to_repr(Self) -> @debug.Repr
 pub fn Location::to_string(Self) -> String
 pub fn Location::transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds
 pub fn Location::type_at(Self, @core.NaiveDateTime) -> LocalTimeType
@@ -250,7 +251,7 @@ pub fn TransitionBounds::to_repr(Self) -> @debug.Repr
 
 pub struct TzifData {
   // private fields
-} derive(Eq, Hash)
+} derive(Eq, Hash, @debug.Debug)
 pub fn TzifData::equal(Self, Self) -> Bool
 pub fn TzifData::hash(Self) -> Int
 pub fn TzifData::hash_combine(Self, Hasher) -> Unit
@@ -258,6 +259,7 @@ pub fn TzifData::leap_seconds(Self) -> Array[(Int64, Int)]
 pub fn TzifData::local_time_types(Self) -> Array[LocalTimeType]
 pub fn TzifData::not_equal(Self, Self) -> Bool
 pub fn TzifData::posix_tz(Self) -> String?
+pub fn TzifData::to_repr(Self) -> @debug.Repr
 pub fn TzifData::transition_types(Self) -> Array[Int]
 pub fn TzifData::transitions(Self) -> Array[Int64]
 

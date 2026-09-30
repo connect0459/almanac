@@ -53,7 +53,13 @@ pub struct Parsed {
   /// Only the date-time resolvers use it (see `resolve_at_timestamp`);
   /// `to_date`/`to_time` ignore it.
   priv timestamp : Int64?
-}
+} derive(Eq, @debug.Debug)
+
+///|
+pub extend Parsed with Eq::{equal, not_equal}
+
+///|
+pub extend Parsed with @debug.Debug::{to_repr}
 
 ///|
 fn Parsed::empty() -> Parsed {

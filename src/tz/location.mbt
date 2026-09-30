@@ -11,7 +11,7 @@ pub struct Location {
   priv tzif : TzifData
   priv posix_tz : PosixTz?
   priv name : String?
-} derive(Eq, Hash)
+} derive(Eq, Hash, @debug.Debug)
 
 ///|
 pub extend Location with Eq::{equal}
@@ -21,6 +21,10 @@ pub extend Location with Eq::{not_equal}
 
 ///|
 pub extend Location with Hash::{hash, hash_combine}
+
+///|
+/// Expands the whole transition table, so the output of a real zone is long.
+pub extend Location with @debug.Debug::{to_repr}
 
 ///|
 /// Renders as `name()`, or as an empty string for a `Location` without one.

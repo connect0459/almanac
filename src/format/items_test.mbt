@@ -186,3 +186,13 @@ test "the _items formatters raise MissingField for a specifier the value cannot 
     _ => fail("expected format_time_items to reject %Y")
   }
 }
+
+///|
+test "Parsed compares equal for the same input and differs for different input" {
+  let items = @format.tokenize("%F")
+  let a = @format.parse_items("2024-03-05", items)
+  let b = @format.parse_items("2024-03-05", items)
+  let c = @format.parse_items("2024-03-06", items)
+  assert_eq(a, b)
+  assert_true(a != c)
+}
