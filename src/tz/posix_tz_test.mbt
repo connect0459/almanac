@@ -214,3 +214,67 @@ test "offset_from_local reports Ambiguous within the fall-back fold" {
     ),
   )
 }
+
+///|
+test "PosixTz as a TimeZone reports the offset and abbreviation in effect at a UTC instant (EST5EDT)" {
+  let tz = @tz.parse_posix_tz("EST5EDT,M3.2.0,M11.1.0").unwrap()
+  let winter = @core.NaiveDateTime::from_timestamp(1_704_110_400L, 0).unwrap()
+  let summer = @core.NaiveDateTime::from_timestamp(1_719_835_200L, 0).unwrap()
+  assert_eq(
+    tz.offset_from_utc(winter),
+    @tz.FixedOffset::east(-5 * 3600).unwrap(),
+  )
+  assert_eq(
+    tz.offset_from_utc(summer),
+    @tz.FixedOffset::east(-4 * 3600).unwrap(),
+  )
+  assert_eq(tz.tz_name(winter), "EST")
+  assert_eq(tz.tz_name(summer), "EDT")
+}
+
+///|
+test "PosixTz as a TimeZone resolves a local reading to Single, Absent in a gap and Ambiguous in a fold" {
+  let tz = @tz.parse_posix_tz("EST5EDT,M3.2.0,M11.1.0").unwrap()
+  let reading = fn(y, mo, d, h, mi) {
+    @core.NaiveDateTime::new(
+      @core.NaiveDate::from_ymd(y, mo, d).unwrap(),
+      @core.NaiveTime::from_hms(h, mi, 0).unwrap(),
+    )
+  }
+  assert_true(
+    tz.offset_from_local(reading(2024, 7, 1, 12, 0)).single() is Some(_),
+  )
+  assert_true(tz.from_local_datetime(reading(2024, 3, 10, 2, 30)) is @tz.Absent)
+  let fold = tz.from_local_datetime(reading(2024, 11, 3, 1, 30))
+  assert_eq(
+    fold.earliest().unwrap().compare_instant(fold.latest().unwrap()),
+    -1,
+  )
+}
+
+///|
+test "PosixTz without a DST rule is a constant-offset TimeZone (JST-9)" {
+  let tz = @tz.parse_posix_tz("JST-9").unwrap()
+  let any = @core.NaiveDateTime::from_timestamp(1_704_110_400L, 0).unwrap()
+  assert_eq(tz.offset_from_utc(any), @tz.FixedOffset::east(9 * 3600).unwrap())
+  assert_eq(tz.tz_name(any), "JST")
+  let dt = @tz.DateTime::from_timestamp(0L, 0, tz).unwrap()
+  assert_eq(dt.naive_local().hour(), 9)
+}
+
+///|
+test "PosixTz has a Debug representation" {
+  let tz = @tz.parse_posix_tz("JST-9").unwrap()
+  debug_inspect(
+    tz,
+    content=(
+      #|{
+      #|  std_offset: 32400,
+      #|  std_name: "JST",
+      #|  dst_offset: None,
+      #|  dst_name: None,
+      #|  rule: None,
+      #|}
+    ),
+  )
+}

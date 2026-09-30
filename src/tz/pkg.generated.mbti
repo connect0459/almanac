@@ -159,13 +159,19 @@ pub fn[T : @debug.Debug] MappedLocalTime::to_repr(Self[T]) -> @debug.Repr
 
 pub struct PosixTz {
   // private fields
-} derive(Eq)
+} derive(Eq, @debug.Debug)
 pub fn PosixTz::bounds_at(Self, Int64) -> (Int64, Int64)?
 pub fn PosixTz::equal(Self, Self) -> Bool
+pub fn PosixTz::from_local_datetime(Self, @core.NaiveDateTime) -> MappedLocalTime[DateTime[Self]]
+pub fn PosixTz::from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self]
 pub fn PosixTz::not_equal(Self, Self) -> Bool
 pub fn PosixTz::offset_at(Self, Int64) -> Int
 pub fn PosixTz::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[FixedOffset]
+pub fn PosixTz::offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
+pub fn PosixTz::to_repr(Self) -> @debug.Repr
 pub fn PosixTz::type_at(Self, Int64) -> LocalTimeType
+pub fn PosixTz::tz_name(Self, @core.NaiveDateTime) -> String
+pub impl TimeZone for PosixTz
 
 pub struct TransitionBounds {
   // private fields

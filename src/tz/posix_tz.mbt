@@ -11,7 +11,7 @@ priv enum RuleDate {
   /// `Mm.w.d`: the `w`-th occurrence of weekday `d` (`0` = Sunday) in
   /// month `m` (`w = 5` means "the last occurrence").
   MonthWeekDay(Int, Int, Int)
-} derive(Eq)
+} derive(Eq, @debug.Debug)
 
 ///|
 /// A POSIX TZ string's DST transition rule: when daylight saving starts
@@ -25,7 +25,7 @@ priv struct DstRule {
   /// Seconds after local midnight of `end`'s date, in daylight time (the
   /// time in effect immediately before this transition).
   end_time : Int
-} derive(Eq)
+} derive(Eq, @debug.Debug)
 
 ///|
 /// A parsed POSIX TZ string (the format used in a TZif footer and the
@@ -37,13 +37,16 @@ pub struct PosixTz {
   priv dst_offset : Int?
   priv dst_name : String?
   priv rule : DstRule?
-} derive(Eq)
+} derive(Eq, @debug.Debug)
 
 ///|
 pub extend PosixTz with Eq::{equal}
 
 ///|
 pub extend PosixTz with Eq::{not_equal}
+
+///|
+pub extend PosixTz with @debug.Debug::{to_repr}
 
 ///|
 fn is_ascii_alpha(c : Char) -> Bool {
@@ -476,4 +479,27 @@ pub fn PosixTz::offset_from_local(
       }
     }
   }
+}
+
+///|
+pub impl TimeZone for PosixTz with fn offset_from_utc(self, utc) {
+  FixedOffset::east(self.offset_at(utc.timestamp())).unwrap()
+}
+
+///|
+pub impl TimeZone for PosixTz with fn offset_from_local(self, naive_local) {
+  PosixTz::offset_from_local(self, naive_local)
+}
+
+///|
+pub impl TimeZone for PosixTz with fn tz_name(self, utc) {
+  self.type_at(utc.timestamp()).abbreviation()
+}
+
+///|
+pub extend PosixTz with TimeZone::{
+  offset_from_utc,
+  tz_name,
+  from_utc_datetime,
+  from_local_datetime,
 }

@@ -90,7 +90,7 @@ test {
 
 ### `TimeZone` trait
 
-Implemented by `Utc`, `FixedOffset`, and `Location`. `DateTime[Tz]::offset`/`naive_local` require `Tz : TimeZone`.
+Implemented by `Utc`, `FixedOffset`, `Location`, and `PosixTz`. `DateTime[Tz]::offset`/`naive_local` require `Tz : TimeZone`.
 
 | Method | Signature | Description |
 | :--- | :--- | :--- |
@@ -283,4 +283,4 @@ These back `Location` and are not usually needed directly; use `Location::load`/
 | Type | Key methods | Description |
 | :--- | :--- | :--- |
 | `TzifData` | `transitions()`, `transition_types()`, `local_time_types()`, `leap_seconds()`, `posix_tz()` | The parsed contents of a TZif file |
-| `PosixTz` | `type_at(Int64)`, `offset_at(Int64)`, `offset_from_local(NaiveDateTime)` | An evaluated POSIX TZ rule, for extrapolating past a TZif file's last recorded transition |
+| `PosixTz` | `type_at(Int64)`, `offset_at(Int64)`, `offset_from_local(NaiveDateTime)` | An evaluated POSIX TZ rule, for extrapolating past a TZif file's last recorded transition; also a `TimeZone` in its own right (a constant offset when the rule has no DST part, e.g. `JST-9`) |
