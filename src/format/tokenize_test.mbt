@@ -236,7 +236,7 @@ test "tokenize recognizes %-Y, %0e, and %_d as padding-flag overrides on a bare 
 }
 
 ///|
-test "tokenize applies a padding flag to a multi-character numeric specifier (%-3f is rejected, since %3f is Fixed in chrono's own model)" {
+test "tokenize applies a padding flag to a multi-character numeric specifier (%-3f is rejected, since %3f is a Fixed item)" {
   assert_eq(@format.tokenize("%-C"), [
     @format.PaddedNumeric(@format.Century, @format.NoPad),
   ])

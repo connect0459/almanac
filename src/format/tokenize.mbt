@@ -249,10 +249,9 @@ pub fn tokenize(fmt : String) -> Array[Item] raise ParseError {
         flush_literal()
         if resolved.length() == 1 {
           match resolved[0] {
-            // The fractional-second family and %s are Numeric in this
-            // project but map to Fixed (or have no fixed width) in
-            // chrono, so chrono itself rejects a padding flag on them —
-            // see PaddedNumeric's doc comment.
+            // The fractional-second family and %s have no fixed width to
+            // override, so a padding flag is rejected on them — see
+            // PaddedNumeric's doc comment.
             Numeric(
               Nanosecond
               | DotFraction

@@ -421,7 +421,7 @@ fn render(
           None => raise MissingField(item)
         }
       Fixed(TimezoneOffsetPermissive) =>
-        // Parse-only, like chrono's %#z (which panics if used to format).
+        // Parse-only: %#z has no rendering.
         raise MissingField(item)
       Fixed(LongMonthName) =>
         match date {

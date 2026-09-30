@@ -49,7 +49,7 @@ pub extend TimeDelta with Default::{default}
 pub extend TimeDelta with @debug.Debug::{to_repr}
 
 ///|
-/// Renders the duration in Go's `time.Duration` style: an optional leading
+/// Renders the duration compactly: an optional leading
 /// `-`, then hours, minutes and seconds (`1h2m3.5s`) with hours as the
 /// largest unit, no fractional part's trailing zeros, and every unit between
 /// the largest and the seconds kept even when zero (`1h0m0s`). A duration

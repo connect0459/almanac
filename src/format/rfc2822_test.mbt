@@ -98,7 +98,7 @@ test "parse_from_rfc2822 round-trips through to_rfc2822" {
 }
 
 ///|
-test "parse_from_rfc2822 accepts a documented chrono RFC 2822 example verbatim" {
+test "parse_from_rfc2822 accepts a documented RFC 2822 example verbatim" {
   assert_eq(
     @format.parse_from_rfc2822("Wed, 18 Feb 2015 23:16:09 +0000"),
     @tz.DateTime::from_utc(
@@ -133,7 +133,7 @@ test "parse_from_rfc2822 accepts either a one- or two-digit day" {
 }
 
 ///|
-test "parse_from_rfc2822 rejects malformed input at every field, since this project's parser is strict (not chrono's obsolete-format-tolerant grammar)" {
+test "parse_from_rfc2822 rejects malformed input at every field, since this project's parser is strict (with no tolerance for RFC 2822's obsolete format)" {
   for
     bad in [
       "1 Jul 2003 10:52:37 +0200", // missing weekday

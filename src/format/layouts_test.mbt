@@ -80,8 +80,8 @@ test "time_only renders %H:%M:%S" {
 ///|
 test "date_only and time_only round-trip through parse_date/parse_time, being the only layouts here with a complete field set for it" {
   // kitchen has no seconds, and stamp/stamp_milli/stamp_micro/stamp_nano
-  // carry no year at all (matching Go's own layouts, meant for display
-  // alongside separately-known context) — so only date_only/time_only
+  // carry no year at all (meant for display alongside
+  // separately-known context) — so only date_only/time_only
   // round-trip on their own.
   let date = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
   assert_eq(
@@ -137,7 +137,7 @@ fn layout_tokyo() -> @tz.DateTime[@tz.FixedOffset] {
 }
 
 ///|
-test "each added layout constant is Go's layout written as a strftime string" {
+test "each added layout constant is its documented strftime string" {
   assert_eq(@format.ansic, "%a %b %e %H:%M:%S %Y")
   assert_eq(@format.unix_date, "%a %b %e %H:%M:%S %Z %Y")
   assert_eq(@format.ruby_date, "%a %b %d %H:%M:%S %z %Y")
@@ -149,7 +149,7 @@ test "each added layout constant is Go's layout written as a strftime string" {
 }
 
 ///|
-test "the layout constants render Go's example text for a known instant" {
+test "the layout constants render the documented text for a known instant" {
   assert_eq(
     @format.format_date_time_tz(layout_utc(), @format.ansic),
     "Tue Mar  5 09:05:03 2024",

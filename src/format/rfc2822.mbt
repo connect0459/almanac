@@ -64,8 +64,7 @@ fn[T] rfc2822_require(opt : T?) -> T raise ParseError {
 /// Parses an RFC 2822 date-and-time string (`"Tue, 1 Jul 2003 10:52:37
 /// +0200"`), bypassing the general token engine.
 ///
-/// Strict, unlike chrono's own `parse_from_rfc2822`: this project
-/// supports only the exact shape `to_rfc2822` renders (day-of-week and
+/// Strict: this project supports only the exact shape `to_rfc2822` renders (day-of-week and
 /// seconds mandatory, single-space separators, a 4-digit year, a numeric
 /// `±HHMM` offset), not RFC 2822's "obsolete format" (optional
 /// day-of-week, arbitrary whitespace, 2-/3-digit year windowing, named

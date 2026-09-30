@@ -375,8 +375,7 @@ fn PosixTz::is_dst_at(self : PosixTz, utc_instant : Int64) -> Bool {
 /// start/end instants of the surrounding three calendar years (ample
 /// margin regardless of hemisphere: a wraparound rule's two same-year
 /// instants are not chronologically adjacent), rather than approximated
-/// near a year boundary the way Go's own `tzset` documents itself as
-/// doing.
+/// near a year boundary.
 pub fn PosixTz::bounds_at(
   self : PosixTz,
   utc_instant : Int64,

@@ -66,7 +66,7 @@ pub fn Location::from_tzif_bytes_named(
 /// `Location::from_tzif_bytes` instead. Distinct from `tz_name`, which
 /// reports the instant-specific abbreviation (e.g. `"JST"`). Reports the
 /// name exactly as given to `Location::load`, not the canonical name an
-/// alias resolves to (mirrors Go's `time.LoadLocation`).
+/// alias resolves to.
 pub fn Location::name(self : Location) -> String? {
   self.name
 }
@@ -106,7 +106,7 @@ pub fn Location::load(name : String) -> Location? {
 /// the separate `Utc` type: the embedded `"UTC"` zone, so `name()` is
 /// `Some("UTC")`. Equal to `Location::load("UTC")`.
 ///
-/// `Location::load("")` is not an alias for UTC (unlike Go's `LoadLocation`)
+/// `Location::load("")` is not an alias for UTC
 /// and returns `None`, so an empty name cannot silently become UTC.
 pub fn Location::utc() -> Location {
   Location::load("UTC").unwrap()
@@ -217,8 +217,7 @@ pub fn Location::type_at(
 /// The validity window of the time-zone segment covering a given instant:
 /// the local time type `type_at` reports is in effect from `start`
 /// (inclusive) until `end` (exclusive). `None` on either side means
-/// unbounded in that direction. Mirrors Go's `Time.ZoneBounds` (which
-/// instead uses a zero-value `Time` sentinel for "unbounded").
+/// unbounded in that direction.
 pub struct TransitionBounds {
   priv start : @core.NaiveDateTime?
   priv end : @core.NaiveDateTime?

@@ -102,12 +102,11 @@ pub(all) enum Fixed {
   /// `%:::z`: `±HH`, hours only — minutes and seconds are dropped, not
   /// just omitted when zero.
   TimezoneOffsetColonHours
-  /// `%#z`: parse-only (mirrors chrono, which panics if used to format).
+  /// `%#z`: parse-only.
   /// Accepts whichever shape is present: `±HHMM`, `±HH:MM`, hours-only
   /// `±HH`, or `Z`/`z` for a zero offset, with any run of `:`/space/tab
   /// allowed (or omitted) between the hour and minute digits. No
-  /// seconds component — matches chrono's own `%#z`, whose shared
-  /// parsing engine doesn't read one either.
+  /// seconds component.
   TimezoneOffsetPermissive
 } derive(Eq, @debug.Debug)
 
@@ -129,8 +128,7 @@ pub extend Fixed with @debug.Debug::{to_repr}
 /// inverse of rendering and only ever widens what the field accepts: `NoPad`
 /// reads one to the field's width in digits, greedily, and `SpacePad` a
 /// leading blank or zero; `ZeroPad` keeps the field's own default reading.
-/// Unlike chrono, whose parser never reads the flag, so that a value rendered
-/// with a flag reads back under the same flag.
+/// A value rendered with a flag reads back under the same flag.
 pub(all) enum PadMode {
   NoPad
   ZeroPad
@@ -155,17 +153,14 @@ pub(all) enum Item {
   Fixed(Fixed)
   /// `%+`: a whole RFC 3339 date-time, rendered/parsed via the dedicated
   /// fast path (`to_rfc3339`/`parse_rfc3339`) rather than as a sequence
-  /// of simpler items — chrono itself treats `%+` the same way.
+  /// of simpler items.
   Rfc3339
   /// `%-X`/`%0X`/`%_X`: a single numeric specifier `X` with its default
   /// padding overridden. Only produced when `X` resolves to a bare
   /// `Numeric` item on its own (not a `Fixed` item or a multi-item
-  /// compound expansion like `%F`) — matches chrono, which only allows a
-  /// padding flag on its own `Numeric`-carrying items. Also excludes the
-  /// fractional-second family (`%f`/`%.f`/`%3f`/`%6f`), which are
-  /// `Numeric` in this project for implementation convenience but map to
-  /// `Fixed` in chrono (so chrono itself rejects a flag on them), and
-  /// `%s` (`Timestamp`), which has no natural fixed width to override.
+  /// compound expansion like `%F`). Also excludes the fractional-second
+  /// family (`%f`/`%.f`/`%3f`/`%6f`) and `%s` (`Timestamp`), which have no
+  /// natural fixed width to override.
   PaddedNumeric(Numeric, PadMode)
 } derive(Eq, @debug.Debug)
 

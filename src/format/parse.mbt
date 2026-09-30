@@ -205,8 +205,7 @@ fn parse_offset_no_colon(chars : Array[Char], pos : Int) -> (Int, Int)? {
 
 ///|
 /// Parses `%:z`'s `±HH:MM`, colon mandatory (exactly this project's own
-/// rendered shape — unlike chrono's shared offset parser, which tolerates
-/// a missing or space colon across every `%z` variant).
+/// rendered shape; a missing or space colon is rejected).
 fn parse_offset_colon(chars : Array[Char], pos : Int) -> (Int, Int)? {
   if pos >= chars.length() {
     None
@@ -296,7 +295,7 @@ fn parse_offset_triple_colon(chars : Array[Char], pos : Int) -> (Int, Int)? {
 
 ///|
 /// Skips a run of zero or more `:`/space/tab characters (`%#z`'s
-/// permissive hour/minute separator — mirrors chrono's `colon_or_space`).
+/// permissive hour/minute separator).
 fn skip_offset_separator(chars : Array[Char], pos : Int) -> Int {
   for i = pos {
     if i < chars.length() &&
@@ -310,10 +309,9 @@ fn skip_offset_separator(chars : Array[Char], pos : Int) -> Int {
 
 ///|
 /// Parses `%#z`'s permissive offset: `Z`/`z` for zero, else a sign (`+`,
-/// `-`, or U+2212 MINUS SIGN, matching chrono) plus 2-digit hours, then
+/// `-`, or U+2212 MINUS SIGN) plus 2-digit hours, then
 /// optionally (after any run of `:`/space/tab) 2-digit minutes — absent
-/// minutes default to `0`. No seconds field, matching chrono's own `%#z`
-/// (its shared parsing engine doesn't read one either).
+/// minutes default to `0`. No seconds field.
 fn parse_offset_permissive(chars : Array[Char], pos : Int) -> (Int, Int)? {
   if pos < chars.length() && (chars[pos] == 'Z' || chars[pos] == 'z') {
     Some((0, pos + 1))
@@ -612,7 +610,7 @@ fn apply_item(
         None => raise InputMismatch
         Some(p) => (parsed, p)
       }
-    // A padding flag only affects rendering — chrono's parser reads the
+    // A padding flag only affects rendering — the parser reads the
     // same width/logic regardless of Pad, so this delegates verbatim to
     // the unwrapped specifier's own parsing.
     PaddedNumeric(kind, mode) =>
@@ -951,7 +949,7 @@ pub fn parse_items_and_remainder(
 /// rather than silently reconciled, since a negative year has no
 /// well-defined century/modulo split. `%y` alone (no `%C`, no `%Y`) is
 /// interpreted via the conventional two-digit-year pivot (`< 70` -> 20xx,
-/// `>= 70` -> 19xx), matching strftime/chrono convention. `None` when
+/// `>= 70` -> 19xx). `None` when
 /// none of the three fields is present at all.
 fn resolve_year(parsed : Parsed) -> Int? raise ParseError {
   match (parsed.year, parsed.year_div_100, parsed.year_mod_100) {
@@ -1456,7 +1454,7 @@ pub fn parse_date_time_tz_and_remainder(
 /// or contradict `tz`.
 ///
 /// A `%Z` zone name that `tz` recognizes (`TimeZone::offset_from_abbreviation`)
-/// fixes the offset, like Go's `ParseInLocation`: the reading is taken as
+/// fixes the offset: the reading is taken as
 /// that offset's instant even if the wall clock disagrees, and the result is
 /// `Single`, which is how an abbreviation such as `EDT` picks a side of a
 /// DST fold. A name `tz` does not recognize is ignored, resolving the
