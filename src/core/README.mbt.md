@@ -70,8 +70,6 @@ test {
 | Function | Signature | Description |
 | :--- | :--- | :--- |
 | `is_leap_year(Int)` | `-> Bool` | Standard 4/100/400 leap-year rule |
-| `days_from_civil(Int, Int, Int)` | `-> Int` | `(year, month, day)` to a day count since `1970-01-01` |
-| `civil_from_days(Int)` | `-> (Int, Int, Int)` | Inverse of `days_from_civil` |
 
 ---
 

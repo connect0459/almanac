@@ -6,7 +6,7 @@
 /// Closed-form algorithm (no lookup table), following Neri and Schneider,
 /// "Euclidean Affine Functions and Applications to Calendar Algorithms"
 /// (as also used by Howard Hinnant's `days_from_civil`).
-pub fn days_from_civil(year : Int, month : Int, day : Int) -> Int {
+fn days_from_civil(year : Int, month : Int, day : Int) -> Int {
   days_from_civil64(year.to_int64(), month, day).to_int()
 }
 
@@ -27,7 +27,7 @@ fn days_from_civil64(year : Int64, month : Int, day : Int) -> Int64 {
 /// Converts a day count relative to the Unix epoch (`1970-01-01` is day `0`)
 /// back into a proleptic Gregorian `(year, month, day)` triple. Inverse of
 /// `days_from_civil`.
-pub fn civil_from_days(days : Int) -> (Int, Int, Int) {
+fn civil_from_days(days : Int) -> (Int, Int, Int) {
   let z = days + 719468
   let era = (if z >= 0 { z } else { z - 146096 }) / 146097
   let doe = z - era * 146097

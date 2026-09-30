@@ -11,8 +11,6 @@ pub fn parse_posix_tz(String) -> PosixTz?
 
 pub fn parse_tzif(Bytes) -> TzifData?
 
-pub fn resolve_tzdata_bytes(Map[String, Bytes], Map[String, String], String) -> Bytes?
-
 // Errors
 
 // Types and methods

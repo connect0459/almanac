@@ -75,7 +75,7 @@ pub fn Location::name(self : Location) -> String? {
 /// The bytes for `name` in `zones`, following `name` through `aliases`
 /// (to its canonical name) when it is not itself a key of `zones`. `None`
 /// if `name` is not a key of either map.
-pub fn resolve_tzdata_bytes(
+fn resolve_tzdata_bytes(
   zones : Map[String, Bytes],
   aliases : Map[String, String],
   name : String,

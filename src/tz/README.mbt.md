@@ -320,7 +320,6 @@ These back `Location` and are not usually needed directly; use `Location::load`/
 | :--- | :--- | :--- |
 | `parse_tzif(Bytes)` | `-> TzifData?` | Parse raw TZif bytes (header, transition table, local-time-type table, leap seconds, POSIX TZ footer) |
 | `parse_posix_tz(String)` | `-> PosixTz?` | Parse a POSIX TZ rule string (all three date-rule forms: `Jn`, `n`, `Mm.w.d`) |
-| `resolve_tzdata_bytes(Map[String, Bytes], Map[String, String], String)` | `-> Bytes?` | Resolve a zone name to its embedded TZif bytes, following an alias table |
 
 | Type | Key methods | Description |
 | :--- | :--- | :--- |

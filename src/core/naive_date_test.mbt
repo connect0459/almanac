@@ -624,17 +624,6 @@ test "epoch_days counts days from the Unix epoch" {
 }
 
 ///|
-test "epoch_days agrees with days_from_civil" {
-  for ymd in [(1, 1, 1), (1900, 2, 28), (2000, 2, 29), (2024, 12, 31)] {
-    let (y, m, d) = ymd
-    assert_eq(
-      @core.NaiveDate::from_ymd(y, m, d).unwrap().epoch_days(),
-      @core.days_from_civil(y, m, d),
-    )
-  }
-}
-
-///|
 test "from_epoch_days inverts epoch_days" {
   for n in [-719162, -1, 0, 1, 11017, 2_000_000] {
     assert_eq(
@@ -645,15 +634,6 @@ test "from_epoch_days inverts epoch_days" {
   assert_eq(
     @core.NaiveDate::from_epoch_days(0),
     @core.NaiveDate::from_ymd(1970, 1, 1),
-  )
-}
-
-///|
-test "from_epoch_days agrees with civil_from_days" {
-  let (y, m, d) = @core.civil_from_days(19000)
-  assert_eq(
-    @core.NaiveDate::from_epoch_days(19000),
-    @core.NaiveDate::from_ymd(y, m, d),
   )
 }
 
