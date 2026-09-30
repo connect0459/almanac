@@ -28,6 +28,26 @@ pub fn[Tz] DateTime::from_utc(
 }
 
 ///|
+pub extend DateTime with Compare::{compare, op_lt, op_gt, op_le, op_ge}
+
+///|
+/// Orders two datetimes by their UTC instant, ignoring the time zone value.
+pub impl[Tz : Eq] Compare for DateTime[Tz] with fn compare(self, other) {
+  self.datetime.compare(other.datetime)
+}
+
+///|
+/// Orders this datetime against one in a possibly different time zone type,
+/// by UTC instant alone: `-1` if `self` is earlier, `0` if both are the same
+/// instant, `1` if `self` is later.
+pub fn[Tz, Tz2] DateTime::compare_instant(
+  self : DateTime[Tz],
+  other : DateTime[Tz2],
+) -> Int {
+  self.datetime.compare(other.datetime)
+}
+
+///|
 /// Builds a `DateTime[Tz]` from a local (wall-clock) naive datetime and a
 /// time zone, resolving DST ambiguity via `tz.offset_from_local`: `Single`
 /// for an unambiguous reading, `Ambiguous(earliest, latest)` within a

@@ -316,3 +316,47 @@ test "round_subsecs and truncate_subsecs keep the same time zone as self" {
   assert_eq(dt.truncate_subsecs(3).timezone(), fixed)
   assert_eq(dt.round_subsecs(3).unwrap().timezone(), fixed)
 }
+
+///|
+fn instant_at(
+  secs : Int64,
+  tz : @tz.FixedOffset,
+) -> @tz.DateTime[@tz.FixedOffset] {
+  @tz.DateTime::from_timestamp(secs, 0, tz).unwrap()
+}
+
+///|
+test "DateTime orders by UTC instant within the same time zone" {
+  let utc = @tz.FixedOffset::east(0).unwrap()
+  let earlier = instant_at(1_000L, utc)
+  let later = instant_at(2_000L, utc)
+  assert_true(earlier < later)
+  assert_true(later > earlier)
+  assert_true(earlier <= later)
+  assert_true(later >= earlier)
+  assert_true(earlier <= earlier)
+  assert_true(earlier >= earlier)
+  assert_eq(earlier.compare(later), -1)
+  assert_eq(later.compare(earlier), 1)
+  assert_eq(earlier.compare(earlier), 0)
+}
+
+///|
+test "DateTime ordering follows the instant rather than the local wall-clock reading" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let utc = @tz.FixedOffset::east(0).unwrap()
+  let a = instant_at(1_000L, tokyo)
+  let b = instant_at(1_000L, utc)
+  assert_true(a.naive_local() > b.naive_local())
+  assert_eq(a.compare_instant(b), 0)
+  assert_eq(b.compare_instant(a), 0)
+}
+
+///|
+test "compare_instant orders datetimes expressed in different time zone types" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let earlier = instant_at(1_000L, tokyo)
+  let later = @tz.DateTime::from_timestamp(2_000L, 0, @tz.Utc::new()).unwrap()
+  assert_eq(earlier.compare_instant(later), -1)
+  assert_eq(later.compare_instant(earlier), 1)
+}
