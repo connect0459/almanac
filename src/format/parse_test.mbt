@@ -1032,3 +1032,89 @@ test "parsing %s, %G, %g, and %V always raise InputMismatch, since parsing them 
     }
   }
 }
+
+///|
+fn local_reading(
+  y : Int,
+  mo : Int,
+  d : Int,
+  h : Int,
+  mi : Int,
+) -> @core.NaiveDateTime {
+  @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(y, mo, d).unwrap(),
+    @core.NaiveTime::from_hms(h, mi, 0).unwrap(),
+  )
+}
+
+///|
+test "parse_date_time_in reads a zone-less layout as wall-clock time in a fixed-offset zone" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let dt = @format.parse_date_time_in("2024-03-05 09:30:00", "%F %T", tokyo)
+    .single()
+    .unwrap()
+  assert_eq(dt.naive_local(), local_reading(2024, 3, 5, 9, 30))
+  assert_eq(dt.naive_utc(), local_reading(2024, 3, 5, 0, 30))
+  assert_eq(dt.timezone(), tokyo)
+}
+
+///|
+test "parse_date_time_in resolves the local reading through a Location's offset at that time (America/New_York)" {
+  let ny = @tz.Location::load("America/New_York").unwrap()
+  let summer = @format.parse_date_time_in("2024-07-01 12:00:00", "%F %T", ny)
+    .single()
+    .unwrap()
+  let winter = @format.parse_date_time_in("2024-01-01 12:00:00", "%F %T", ny)
+    .single()
+    .unwrap()
+  assert_eq(summer.offset(), @tz.FixedOffset::east(-4 * 3600).unwrap())
+  assert_eq(winter.offset(), @tz.FixedOffset::east(-5 * 3600).unwrap())
+}
+
+///|
+test "parse_date_time_in surfaces a spring-forward gap as Absent and a fall-back fold as Ambiguous (America/New_York)" {
+  let ny = @tz.Location::load("America/New_York").unwrap()
+  assert_true(
+    @format.parse_date_time_in("2024-03-10 02:30:00", "%F %T", ny) is @tz.Absent,
+  )
+  let fold = @format.parse_date_time_in("2024-11-03 01:30:00", "%F %T", ny)
+  assert_eq(
+    fold.earliest().unwrap().compare_instant(fold.latest().unwrap()),
+    -1,
+  )
+}
+
+///|
+test "parse_date_time_in rejects a layout that carries an offset" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  for
+    case in [
+      ("2024-03-05 09:30:00+0900", "%F %T%z"),
+      ("2024-03-05T09:30:00Z 2024", "%+ %Y"),
+    ] {
+    let (input, fmt) = case
+    try @format.parse_date_time_in(input, fmt, tokyo) |> ignore catch {
+      @format.InconsistentFields => ()
+      _ => fail("expected InconsistentFields for \{fmt}")
+    } noraise {
+      _ => fail("expected rejection for \{fmt}")
+    }
+  }
+}
+
+///|
+test "parse_date_time_in propagates a parse failure and an incomplete layout" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  try @format.parse_date_time_in("garbage", "%F %T", tokyo) |> ignore catch {
+    @format.InputMismatch => ()
+    _ => fail("expected InputMismatch")
+  } noraise {
+    _ => fail("expected rejection")
+  }
+  try @format.parse_date_time_in("2024-03-05", "%F", tokyo) |> ignore catch {
+    @format.IncompleteFields => ()
+    _ => fail("expected IncompleteFields")
+  } noraise {
+    _ => fail("expected rejection")
+  }
+}

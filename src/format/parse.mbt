@@ -982,3 +982,26 @@ pub fn parse_date_time_tz(
     offset,
   )
 }
+
+///|
+/// Parses `input` against a zone-less `fmt` (date and time-of-day fields
+/// only) and resolves the reading as wall-clock time in `tz`, surfacing DST
+/// ambiguity as `MappedLocalTime` (`Ambiguous` in a fold, `Absent` in a
+/// gap). Raises `InconsistentFields` if `fmt` yields an offset (`%z` and
+/// friends, or a compound like `%+`), since it would be silently discarded
+/// or contradict `tz`.
+pub fn[Tz : @tz.TimeZone] parse_date_time_in(
+  input : String,
+  fmt : String,
+  tz : Tz,
+) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise ParseError {
+  let parsed = parse_items(tokenize(fmt), input)
+  if parsed.offset_secs is Some(_) {
+    raise InconsistentFields
+  }
+  let local_naive = @core.NaiveDateTime::new(
+    resolve_date(parsed),
+    resolve_time(parsed),
+  )
+  tz.from_local_datetime(local_naive)
+}

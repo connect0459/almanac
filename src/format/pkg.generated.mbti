@@ -24,6 +24,8 @@ pub fn parse_date(String, String) -> @core.NaiveDate raise ParseError
 
 pub fn parse_date_time(String, String) -> @core.NaiveDateTime raise ParseError
 
+pub fn[Tz : @tz.TimeZone] parse_date_time_in(String, String, Tz) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise ParseError
+
 pub fn parse_date_time_tz(String, String) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
 
 pub fn parse_duration(String) -> @core.TimeDelta raise ParseError
