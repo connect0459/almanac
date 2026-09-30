@@ -2,6 +2,11 @@
 /// A named IANA time zone, backed by parsed TZif (RFC 8536) data plus,
 /// when the file provides one, the POSIX TZ rule used to extrapolate
 /// offsets past the file's last recorded transition.
+///
+/// Equality and hashing cover the parsed TZif data, the POSIX rule and
+/// `name()`, so a zone reached through an alias, or built without a name,
+/// is a different `Location` from the canonical one even when it resolves
+/// identically.
 pub struct Location {
   priv tzif : TzifData
   priv posix_tz : PosixTz?

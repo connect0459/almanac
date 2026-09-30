@@ -1,5 +1,8 @@
 ///|
 /// The UTC time zone: a fixed offset of zero.
+///
+/// Code outside this package cannot write `Utc::{}`; `Utc::new()` is the
+/// way to obtain the value.
 pub struct Utc {} derive(Eq, Hash, @debug.Debug)
 
 ///|
