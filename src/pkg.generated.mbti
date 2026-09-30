@@ -1,0 +1,40 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "connect0459/chrono"
+
+import {
+  "connect0459/chrono/core",
+  "connect0459/chrono/tz",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+pub using @tz {type DateTime}
+
+pub using @tz {type FixedOffset}
+
+pub using @tz {type Location}
+
+pub using @tz {type MappedLocalTime}
+
+pub using @core {type Month}
+
+pub using @core {type NaiveDate}
+
+pub using @core {type NaiveDateTime}
+
+pub using @core {type NaiveTime}
+
+pub using @core {type TimeDelta}
+
+pub using @tz {type Utc}
+
+pub using @core {type Weekday}
+
+pub using @tz {trait TimeZone}
+
+// Traits
