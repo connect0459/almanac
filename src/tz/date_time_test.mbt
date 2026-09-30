@@ -932,3 +932,17 @@ test "zone pairs the zone's name with the offset in effect at this instant" {
     ("+09:00", @tz.FixedOffset::east(9 * 3600).unwrap()),
   )
 }
+
+///|
+test "unix_epoch is the UTC instant at timestamp zero" {
+  let epoch = @tz.DateTime::unix_epoch()
+  assert_eq(epoch.timestamp(), 0L)
+  assert_eq(epoch.offset(), @tz.FixedOffset::east(0).unwrap())
+  assert_eq(epoch.naive_utc(), @core.NaiveDateTime::unix_epoch())
+}
+
+///|
+test "the default DateTime in UTC is the Unix epoch" {
+  let dt : @tz.DateTime[@tz.Utc] = Default::default()
+  assert_eq(dt, @tz.DateTime::unix_epoch())
+}

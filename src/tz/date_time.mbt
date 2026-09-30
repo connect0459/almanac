@@ -194,6 +194,22 @@ pub fn[Tz : TimeZone] DateTime::zone(
 }
 
 ///|
+/// The Unix epoch instant, `1970-01-01T00:00:00Z`: timestamp zero, in UTC.
+pub fn DateTime::unix_epoch() -> DateTime[Utc] {
+  DateTime::{ datetime: @core.NaiveDateTime::unix_epoch(), tz: Utc::new(), }
+}
+
+///|
+/// The Unix epoch instant; see `unix_epoch`. Only UTC has a natural default
+/// zone, so `Default` is not provided for other zones.
+pub impl Default for DateTime[Utc] with fn default() {
+  DateTime::unix_epoch()
+}
+
+///|
+pub extend DateTime with Default::{default}
+
+///|
 /// The naive local (wall-clock) datetime, i.e. the UTC datetime shifted by
 /// `offset()`. Always succeeds: an offset is at most `±23:59:59`, far
 /// within `TimeDelta`'s representable range.

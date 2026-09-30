@@ -188,6 +188,7 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `DateTime::from_utc(NaiveDateTime, Tz)` | `-> Self[Tz]` | Wrap a UTC naive datetime with the given time zone |
+| `DateTime::unix_epoch()` | `-> Self[Utc]` | The Unix epoch instant, `1970-01-01T00:00:00Z`; also the `Default` for `DateTime[Utc]` (no other zone has a natural default) |
 | `DateTime::from_local(NaiveDateTime, Tz)` *(Tz : TimeZone)* | `-> MappedLocalTime[Self[Tz]]` | Build from a local (wall-clock) naive datetime, resolving DST ambiguity via `tz.offset_from_local` |
 | `DateTime::from_ymd_hms(Int, Int, Int, Int, Int, Int, Tz)` *(Tz : TimeZone)* | `-> MappedLocalTime[Self[Tz]]` | Build from local calendar/time-of-day components; `Absent` for an invalid date/time-of-day, in addition to the usual DST-gap case |
 | `DateTime::from_timestamp(Int64, Int, Tz)` | `-> Self[Tz]?` | Build from a Unix timestamp (seconds + nanoseconds) through the given time zone; always unambiguous, `None` only on an out-of-range input |

@@ -28,6 +28,7 @@ pub fn[Tz, Tz2] DateTime::compare_instant(Self[Tz], Self[Tz2]) -> Int
 pub fn[Tz : TimeZone] DateTime::date_naive(Self[Tz]) -> @core.NaiveDate
 pub fn[Tz : TimeZone] DateTime::day(Self[Tz]) -> Int
 pub fn[Tz : TimeZone] DateTime::day0(Self[Tz]) -> Int
+pub fn DateTime::default() -> Self[Utc]
 pub fn[Tz : Eq] DateTime::equal(Self[Tz], Self[Tz]) -> Bool
 pub fn[Tz : TimeZone] DateTime::fixed_offset(Self[Tz]) -> Self[FixedOffset]
 pub fn[Tz : TimeZone] DateTime::from_local(@core.NaiveDateTime, Tz) -> MappedLocalTime[Self[Tz]]
@@ -84,6 +85,7 @@ pub fn[Tz : TimeZone] DateTime::to_string(Self[Tz]) -> String
 pub fn[Tz] DateTime::to_utc(Self[Tz]) -> Self[Utc]
 pub fn[Tz] DateTime::truncate(Self[Tz], @core.TimeDelta) -> Result[Self[Tz], @core.RoundingError]
 pub fn[Tz] DateTime::truncate_subsecs(Self[Tz], Int) -> Self[Tz]
+pub fn DateTime::unix_epoch() -> Self[Utc]
 pub fn[Tz : TimeZone] DateTime::weekday(Self[Tz]) -> @core.Weekday
 pub fn[Tz : TimeZone] DateTime::with_day(Self[Tz], Int) -> MappedLocalTime[Self[Tz]]
 pub fn[Tz : TimeZone] DateTime::with_day0(Self[Tz], Int) -> MappedLocalTime[Self[Tz]]
@@ -105,6 +107,7 @@ pub fn[Tz : TimeZone] DateTime::zone(Self[Tz]) -> (String, FixedOffset)
 pub fn[Tz : TimeZone] DateTime::zone_bounds(Self[Tz]) -> TransitionBounds
 pub fn[Tz : TimeZone] DateTime::zone_name(Self[Tz]) -> String
 pub impl[Tz : Eq] Compare for DateTime[Tz]
+pub impl Default for DateTime[Utc]
 pub impl[Tz : TimeZone] Show for DateTime[Tz]
 
 pub struct FixedOffset {
