@@ -292,20 +292,60 @@ fn format_fraction_auto(nanos : Int) -> String {
 }
 
 ///|
+/// How many fractional-second digits `to_rfc3339_opts` renders.
+pub(all) enum SecondsFormat {
+  /// No fractional part.
+  Secs
+  /// Exactly three digits, truncated.
+  Millis
+  /// Exactly six digits, truncated.
+  Micros
+  /// Exactly nine digits.
+  Nanos
+  /// The fewest of 3, 6 or 9 digits that represent the value exactly, or
+  /// none when it is a whole second: the rendering of `to_rfc3339`.
+  Auto
+} derive(Eq, @debug.Debug)
+
+///|
+pub extend SecondsFormat with Eq::{equal}
+
+///|
+pub extend SecondsFormat with Eq::{not_equal}
+
+///|
+pub extend SecondsFormat with @debug.Debug::{to_repr}
+
+///|
+fn format_fraction_for(nanos : Int, secform : SecondsFormat) -> String {
+  match secform {
+    Secs => ""
+    Millis => "." + pad_int(nanos / 1_000_000, 3)
+    Micros => "." + pad_int(nanos / 1_000, 6)
+    Nanos => "." + pad_int(nanos, 9)
+    Auto => format_fraction_auto(nanos)
+  }
+}
+
+///|
 /// Renders `date`/`time`/`offset_secs` as RFC 3339
-/// (`YYYY-MM-DDTHH:MM:SS[.fraction](Z|±HH:MM)`). A zero offset renders as
-/// `Z`. A leap second renders as `:60`, matching `NaiveTime`'s existing
-/// leap-second convention (`second() + nanosecond() / 1_000_000_000`).
-/// Shared by `to_rfc3339` and `%+`'s handling in the general token engine
+/// (`YYYY-MM-DDTHH:MM:SS[.fraction](Z|±HH:MM)`), with the fractional part
+/// chosen by `secform` and a zero offset written as `Z` when `use_z` is set
+/// and as `+00:00` otherwise. A leap second renders as `:60`, matching
+/// `NaiveTime`'s existing leap-second convention
+/// (`second() + nanosecond() / 1_000_000_000`). Shared by `to_rfc3339`,
+/// `to_rfc3339_opts` and `%+`'s handling in the general token engine
 /// (`render`, in `formatting.mbt`).
-fn render_rfc3339(
+fn render_rfc3339_opts(
   date : @core.NaiveDate,
   time : @core.NaiveTime,
   offset_secs : Int,
+  secform : SecondsFormat,
+  use_z : Bool,
 ) -> String {
   let seconds = time.second() + time.nanosecond() / 1_000_000_000
   let fraction_nanos = time.nanosecond() % 1_000_000_000
-  let offset_str = if offset_secs == 0 {
+  let offset_str = if offset_secs == 0 && use_z {
     "Z"
   } else {
     format_offset_colon(offset_secs)
@@ -321,8 +361,19 @@ fn render_rfc3339(
   pad_int(time.minute(), 2) +
   ":" +
   pad_int(seconds, 2) +
-  format_fraction_auto(fraction_nanos) +
+  format_fraction_for(fraction_nanos, secform) +
   offset_str
+}
+
+///|
+/// `render_rfc3339_opts` with `to_rfc3339`'s defaults: `Auto` fractional
+/// digits and a zero offset as `Z`.
+fn render_rfc3339(
+  date : @core.NaiveDate,
+  time : @core.NaiveTime,
+  offset_secs : Int,
+) -> String {
+  render_rfc3339_opts(date, time, offset_secs, Auto, true)
 }
 
 ///|
@@ -334,5 +385,26 @@ pub fn[Tz : @tz.TimeZone] to_rfc3339(dt : @tz.DateTime[Tz]) -> String {
     wall_clock.date(),
     wall_clock.time(),
     dt.offset().local_minus_utc(),
+  )
+}
+
+///|
+/// Renders `dt` as RFC 3339 with the fractional seconds given by `secform`
+/// and, when `use_z` is `true`, a zero offset as `Z` (otherwise `+00:00`;
+/// a non-zero offset is unaffected). A fixed-digit `secform` truncates
+/// rather than rounds, so the seconds field never changes. With `Auto` and
+/// `use_z = true` this is `to_rfc3339`.
+pub fn[Tz : @tz.TimeZone] to_rfc3339_opts(
+  dt : @tz.DateTime[Tz],
+  secform : SecondsFormat,
+  use_z : Bool,
+) -> String {
+  let wall_clock = dt.naive_local()
+  render_rfc3339_opts(
+    wall_clock.date(),
+    wall_clock.time(),
+    dt.offset().local_minus_utc(),
+    secform,
+    use_z,
   )
 }

@@ -11,7 +11,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `parse_date`/`parse_time`/`parse_date_time` | Parse a string against a format string into a `NaiveDate`/`NaiveTime`/`NaiveDateTime` |
 | `parse_date_time_tz` | Parse a string with a `%z` offset into a `DateTime[FixedOffset]`, interpreting the fields as local wall-clock time |
 | `parse_date_time_in` | Parse a zone-less string and resolve it as wall-clock time in a given `TimeZone`, surfacing DST ambiguity as `MappedLocalTime` |
-| `to_rfc3339`/`parse_rfc3339` | Dedicated RFC 3339 fast path, bypassing the specifier engine |
+| `to_rfc3339`/`to_rfc3339_opts`/`parse_rfc3339` | Dedicated RFC 3339 fast path, bypassing the specifier engine; `to_rfc3339_opts` picks the fractional digits (`SecondsFormat`) and `Z` versus `+00:00` |
 | `to_rfc2822`/`parse_from_rfc2822` | Dedicated RFC 2822 fast path (e.g. `"Tue, 1 Jul 2003 10:52:37 +0200"`), bypassing the specifier engine |
 | `parse_duration` | Reads a `TimeDelta` from Go-style text (`"1h30m"`, `"-1.5s"`, `"300ms"`); the inverse of `TimeDelta`'s `Show` |
 | `parse_fixed_offset` | Reads a `FixedOffset` from offset text (`"+09:00"`, `"+0900"`, `"+09"`, `"+09:00:30"`, `"Z"`); the inverse of `FixedOffset`'s `Show` |
@@ -147,6 +147,7 @@ test {
 | Function | Signature | Description |
 | :--- | :--- | :--- |
 | `to_rfc3339(DateTime[Tz])` *(Tz : TimeZone)* | `-> String` | Renders `YYYY-MM-DDTHH:MM:SS[.fraction](Z\|±HH:MM)`; a zero offset renders as `Z`, fractional seconds only when nonzero, with the fewest of 3, 6 or 9 digits that represent them, a leap second as `:60`. Total — never raises |
+| `to_rfc3339_opts(DateTime[Tz], SecondsFormat, Bool)` *(Tz : TimeZone)* | `-> String` | Like `to_rfc3339`, with the fractional seconds chosen by `SecondsFormat` (`Secs` none, `Millis`/`Micros`/`Nanos` exactly 3/6/9 digits, truncated rather than rounded so the seconds never change, `Auto` the fewest of 3/6/9 that are exact) and, when the `Bool` (`use_z`) is `true`, a zero offset written `Z`, else `+00:00`; a non-zero offset is unaffected. `Auto` with `true` is `to_rfc3339` |
 | `parse_rfc3339(String)` | `-> DateTime[FixedOffset] raise ParseError` | Strict RFC 3339 parsing (`T`/`t` and `Z`/`z` case-insensitive; a fractional-second field beyond 9 digits is truncated, not rejected); raises `InvalidRfc3339` on any mismatch |
 
 ### RFC 2822 fast path

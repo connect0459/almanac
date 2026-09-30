@@ -54,6 +54,8 @@ pub fn[Tz : @tz.TimeZone] to_rfc2822(@tz.DateTime[Tz]) -> String raise ParseErro
 
 pub fn[Tz : @tz.TimeZone] to_rfc3339(@tz.DateTime[Tz]) -> String
 
+pub fn[Tz : @tz.TimeZone] to_rfc3339_opts(@tz.DateTime[Tz], SecondsFormat, Bool) -> String
+
 pub fn tokenize(String) -> Array[Item] raise ParseError
 
 // Errors
@@ -144,6 +146,17 @@ pub(all) enum PadMode {
 pub fn PadMode::equal(Self, Self) -> Bool
 pub fn PadMode::not_equal(Self, Self) -> Bool
 pub fn PadMode::to_repr(Self) -> @debug.Repr
+
+pub(all) enum SecondsFormat {
+  Secs
+  Millis
+  Micros
+  Nanos
+  Auto
+} derive(Eq, @debug.Debug)
+pub fn SecondsFormat::equal(Self, Self) -> Bool
+pub fn SecondsFormat::not_equal(Self, Self) -> Bool
+pub fn SecondsFormat::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 
