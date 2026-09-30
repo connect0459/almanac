@@ -691,6 +691,9 @@ pub fn[Tz : TimeZone] DateTime::fixed_offset(
 /// This datetime advanced by the signed duration `delta`, keeping the same
 /// time zone. Delegates to `NaiveDateTime::add_signed` on the underlying
 /// UTC instant.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_add_signed` to get `None` instead.
 pub fn[Tz] DateTime::add_signed(
   self : DateTime[Tz],
   delta : @core.TimeDelta,
@@ -701,6 +704,9 @@ pub fn[Tz] DateTime::add_signed(
 ///|
 /// This datetime moved back by the signed duration `delta`. See
 /// `add_signed`.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_sub_signed` to get `None` instead.
 pub fn[Tz] DateTime::sub_signed(
   self : DateTime[Tz],
   delta : @core.TimeDelta,
@@ -713,6 +719,9 @@ pub fn[Tz] DateTime::sub_signed(
 /// `months` is negative), keeping the time of day and time zone unchanged.
 /// See `@core.NaiveDateTime::add_months` for the day-of-month clamping
 /// rule.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_add_months` to get `None` instead.
 pub fn[Tz] DateTime::add_months(
   self : DateTime[Tz],
   months : Int,
@@ -722,6 +731,9 @@ pub fn[Tz] DateTime::add_months(
 
 ///|
 /// This datetime with its date moved back by `months`. See `add_months`.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_sub_months` to get `None` instead.
 pub fn[Tz] DateTime::sub_months(
   self : DateTime[Tz],
   months : Int,
@@ -733,6 +745,9 @@ pub fn[Tz] DateTime::sub_months(
 /// This datetime with its date advanced by `years` (or moved back, if
 /// `years` is negative), keeping the time of day and time zone unchanged.
 /// See `@core.NaiveDate::add_years` for the day-of-month clamping rule.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_add_years` to get `None` instead.
 pub fn[Tz] DateTime::add_years(
   self : DateTime[Tz],
   years : Int,
@@ -742,6 +757,9 @@ pub fn[Tz] DateTime::add_years(
 
 ///|
 /// This datetime with its date moved back by `years`. See `add_years`.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_sub_years` to get `None` instead.
 pub fn[Tz] DateTime::sub_years(
   self : DateTime[Tz],
   years : Int,
@@ -752,12 +770,18 @@ pub fn[Tz] DateTime::sub_years(
 ///|
 /// This datetime with its date advanced by `days` (or moved back, if
 /// `days` is negative), keeping the time of day and time zone unchanged.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_add_days` to get `None` instead.
 pub fn[Tz] DateTime::add_days(self : DateTime[Tz], days : Int) -> DateTime[Tz] {
   DateTime::{ datetime: self.datetime.add_days(days), tz: self.tz, }
 }
 
 ///|
 /// This datetime with its date moved back by `days`. See `add_days`.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_sub_days` to get `None` instead.
 pub fn[Tz] DateTime::sub_days(self : DateTime[Tz], days : Int) -> DateTime[Tz] {
   DateTime::{ datetime: self.datetime.sub_days(days), tz: self.tz, }
 }
