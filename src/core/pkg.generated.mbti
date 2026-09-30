@@ -340,11 +340,8 @@ pub struct TimeDelta {
 pub fn TimeDelta::abs(Self) -> Self
 pub fn TimeDelta::add(Self, Self) -> Self
 pub fn TimeDelta::as_hours_double(Self) -> Double
-pub fn TimeDelta::as_hours_float(Self) -> Float
 pub fn TimeDelta::as_minutes_double(Self) -> Double
-pub fn TimeDelta::as_minutes_float(Self) -> Float
 pub fn TimeDelta::as_seconds_double(Self) -> Double
-pub fn TimeDelta::as_seconds_float(Self) -> Float
 pub fn TimeDelta::checked_add(Self, Self) -> Self?
 pub fn TimeDelta::checked_div(Self, Int) -> Self?
 pub fn TimeDelta::checked_mul(Self, Int) -> Self?

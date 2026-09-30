@@ -293,14 +293,6 @@ pub fn TimeDelta::as_seconds_double(self : TimeDelta) -> Double {
 }
 
 ///|
-/// This duration's total length in fractional seconds, as a 32-bit float.
-/// Loses precision for a very large duration; never fails.
-pub fn TimeDelta::as_seconds_float(self : TimeDelta) -> Float {
-  Float::from_int64(self.seconds) +
-  Float::from_int(self.nanoseconds) / 1_000_000_000.0
-}
-
-///|
 /// The duration of `seconds` fractional seconds, rounded to the nearest
 /// nanosecond with an exact half-nanosecond tie breaking away from zero (so
 /// a decimal such as `0.3` becomes exactly 300 000 000 ns despite its
@@ -339,20 +331,6 @@ pub fn TimeDelta::as_minutes_double(self : TimeDelta) -> Double {
 /// Loses precision for a very large duration; never fails.
 pub fn TimeDelta::as_hours_double(self : TimeDelta) -> Double {
   self.as_seconds_double() / 3600.0
-}
-
-///|
-/// This duration's total length in fractional minutes, as a 32-bit float.
-/// Loses precision for a very large duration; never fails.
-pub fn TimeDelta::as_minutes_float(self : TimeDelta) -> Float {
-  self.as_seconds_float() / 60.0
-}
-
-///|
-/// This duration's total length in fractional hours, as a 32-bit float.
-/// Loses precision for a very large duration; never fails.
-pub fn TimeDelta::as_hours_float(self : TimeDelta) -> Float {
-  self.as_seconds_float() / 3600.0
 }
 
 ///|

@@ -291,32 +291,6 @@ test "as_seconds_double is zero for the zero duration" {
 }
 
 ///|
-test "as_seconds_float reports a whole-second duration exactly" {
-  assert_eq(@core.TimeDelta::seconds(90L).unwrap().as_seconds_float(), 90.0)
-}
-
-///|
-test "as_seconds_float reports the fractional part of a positive duration" {
-  assert_eq(
-    @core.TimeDelta::milliseconds(1500L).unwrap().as_seconds_float(),
-    1.5,
-  )
-}
-
-///|
-test "as_seconds_float reports the fractional part of a negative duration" {
-  assert_eq(
-    @core.TimeDelta::milliseconds(-1250L).unwrap().as_seconds_float(),
-    -1.25,
-  )
-}
-
-///|
-test "as_seconds_float is zero for the zero duration" {
-  assert_eq(@core.TimeDelta::zero().as_seconds_float(), 0.0)
-}
-
-///|
 test "a longer duration compares greater than a shorter one" {
   let d1 = @core.TimeDelta::seconds(5L).unwrap()
   let d2 = @core.TimeDelta::seconds(10L).unwrap()
@@ -562,16 +536,6 @@ test "as_hours_double and as_minutes_double stay finite for the extreme duration
   assert_true(@core.TimeDelta::max_value().as_hours_double() > 2.5e12)
   assert_true(@core.TimeDelta::min_value().as_hours_double() < -2.5e12)
   assert_true(@core.TimeDelta::max_value().as_minutes_double() > 1.5e14)
-}
-
-///|
-test "as_hours_float and as_minutes_float report fractional values" {
-  assert_eq(@core.TimeDelta::seconds(5_400L).unwrap().as_hours_float(), 1.5)
-  assert_eq(@core.TimeDelta::seconds(-5_400L).unwrap().as_hours_float(), -1.5)
-  assert_eq(@core.TimeDelta::seconds(90L).unwrap().as_minutes_float(), 1.5)
-  assert_eq(@core.TimeDelta::seconds(-90L).unwrap().as_minutes_float(), -1.5)
-  assert_eq(@core.TimeDelta::zero().as_hours_float(), 0.0)
-  assert_eq(@core.TimeDelta::zero().as_minutes_float(), 0.0)
 }
 
 ///|
