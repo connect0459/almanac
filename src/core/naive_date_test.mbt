@@ -1031,18 +1031,24 @@ test "num_days_in_month reports the length of the date's own month, honoring lea
 }
 
 ///|
-test "abs_diff is the non-negative number of days between two dates in either order" {
+test "abs_diff_days is the non-negative number of days between two dates in either order" {
   let a = @core.NaiveDate::from_ymd(2024, 3, 1).unwrap()
   let b = @core.NaiveDate::from_ymd(2024, 2, 1).unwrap()
-  assert_eq(a.abs_diff(b), 29L)
-  assert_eq(b.abs_diff(a), 29L)
-  assert_eq(a.abs_diff(a), 0L)
+  assert_eq(a.abs_diff_days(b), 29L)
+  assert_eq(b.abs_diff_days(a), 29L)
+  assert_eq(a.abs_diff_days(a), 0L)
 }
 
 ///|
-test "abs_diff spans the full representable range without overflow" {
-  assert_eq(max_date().abs_diff(min_date()), 2L * (2_147_483_647L - 719_468L))
-  assert_eq(min_date().abs_diff(max_date()), 2L * (2_147_483_647L - 719_468L))
+test "abs_diff_days spans the full representable range without overflow" {
+  assert_eq(
+    max_date().abs_diff_days(min_date()),
+    2L * (2_147_483_647L - 719_468L),
+  )
+  assert_eq(
+    min_date().abs_diff_days(max_date()),
+    2L * (2_147_483_647L - 719_468L),
+  )
 }
 
 ///|
@@ -1128,4 +1134,12 @@ test "ymd reports a Month that converts back through number to rebuild the same 
     assert_eq(@core.NaiveDate::from_ymd(y, m.number(), d), Some(date))
     assert_eq(m.number(), date.month0() + 1)
   }
+}
+
+///|
+test "abs_diff_days equals the absolute span of signed_duration_since in days" {
+  let a = @core.NaiveDate::from_ymd(2024, 3, 1).unwrap()
+  let b = @core.NaiveDate::from_ymd(1999, 12, 31).unwrap()
+  assert_eq(a.abs_diff_days(b), a.signed_duration_since(b).abs().num_days())
+  assert_eq(b.abs_diff_days(a), a.signed_duration_since(b).abs().num_days())
 }

@@ -81,7 +81,7 @@ pub impl Show for Month
 pub struct NaiveDate {
   // private fields
 } derive(Compare, Eq, Hash, @debug.Debug)
-pub fn NaiveDate::abs_diff(Self, Self) -> Int64
+pub fn NaiveDate::abs_diff_days(Self, Self) -> Int64
 pub fn NaiveDate::add_days(Self, Int) -> Self
 pub fn NaiveDate::add_months(Self, Int) -> Self
 pub fn NaiveDate::add_signed(Self, TimeDelta) -> Self

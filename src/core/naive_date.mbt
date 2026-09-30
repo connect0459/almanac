@@ -241,8 +241,10 @@ pub fn NaiveDate::num_days_in_month(self : NaiveDate) -> Int {
 
 ///|
 /// The number of days between this date and `other`, always non-negative
-/// regardless of which is earlier.
-pub fn NaiveDate::abs_diff(self : NaiveDate, other : NaiveDate) -> Int64 {
+/// regardless of which is earlier. A plain count: `signed_duration_since`
+/// gives the signed span as a `TimeDelta`, and this equals
+/// `signed_duration_since(other).abs().num_days()`.
+pub fn NaiveDate::abs_diff_days(self : NaiveDate, other : NaiveDate) -> Int64 {
   let diff = self.days.to_int64() - other.days.to_int64()
   if diff < 0L {
     -diff
