@@ -23,6 +23,6 @@ keywords = [ "date", "time", "datetime", "timezone", "duration", "iana-tzdata" ]
 
 preferred_target = "wasm"
 
-description = "A chrono/time-inspired date and time library for MoonBit"
+description = "A date and time library for MoonBit"
 
 source = "src"

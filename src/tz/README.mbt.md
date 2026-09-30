@@ -169,7 +169,7 @@ A constant UTC offset, in seconds, within `±23:59:59`.
 
 ### `FixedZone`
 
-A named zone with a constant offset and no daylight saving, in the style of Go's `FixedZone`. Unlike a bare `FixedOffset`, whose `tz_name` is its own offset text (`"+09:00"`), a `FixedZone`'s `tz_name` (and so `%Z`) is the name it was given. Two zones are equal only when both the name and the offset match, so `FixedOffset`'s own equality and rendering are unaffected.
+A named zone with a constant offset and no daylight saving. Unlike a bare `FixedOffset`, whose `tz_name` is its own offset text (`"+09:00"`), a `FixedZone`'s `tz_name` (and so `%Z`) is the name it was given. Two zones are equal only when both the name and the offset match, so `FixedOffset`'s own equality and rendering are unaffected.
 
 | Method | Signature | Description |
 | :--- | :--- | :--- |
@@ -191,7 +191,7 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 | `DateTime::from_utc(NaiveDateTime, Tz)` | `-> Self[Tz]` | Wrap a UTC naive datetime with the given time zone |
 | `DateTime::unix_epoch()` | `-> Self[Utc]` | The Unix epoch instant, `1970-01-01T00:00:00Z`; also the `Default` for `DateTime[Utc]` (no other zone has a natural default) |
 | `DateTime::from_local(NaiveDateTime, Tz)` *(Tz : TimeZone)* | `-> MappedLocalTime[Self[Tz]]` | Build from a local (wall-clock) naive datetime, resolving DST ambiguity via `tz.offset_from_local` |
-| `DateTime::from_local_lenient(NaiveDateTime, Tz)` *(Tz : TimeZone)* | `-> Self[Tz]` | Like `from_local` but always succeeds, as Go's `time.Date` does: an unambiguous reading resolves exactly; a fold takes its first occurrence (as `earliest()`); a gap is read with the offset in effect just before the transition, landing after the gap by its length (`02:30` in a `02:00`-`03:00` gap becomes `03:30`) |
+| `DateTime::from_local_lenient(NaiveDateTime, Tz)` *(Tz : TimeZone)* | `-> Self[Tz]` | Like `from_local` but always succeeds: an unambiguous reading resolves exactly; a fold takes its first occurrence (as `earliest()`); a gap is read with the offset in effect just before the transition, landing after the gap by its length (`02:30` in a `02:00`-`03:00` gap becomes `03:30`) |
 | `DateTime::from_ymd_hms(Int, Int, Int, Int, Int, Int, Tz)` *(Tz : TimeZone)* | `-> MappedLocalTime[Self[Tz]]` | Build from local calendar/time-of-day components; `Absent` for an invalid date/time-of-day, in addition to the usual DST-gap case |
 | `DateTime::from_timestamp(Int64, Int, Tz)` | `-> Self[Tz]?` | Build from a Unix timestamp (seconds + nanoseconds) through the given time zone; always unambiguous, `None` only on an out-of-range input |
 | `DateTime::from_timestamp_millis(Int64, Tz)` / `from_timestamp_micros` / `from_timestamp_nanos` | `-> Self[Tz]?` | Build from a Unix timestamp in that unit through the given time zone; `None` if the instant is outside `NaiveDate`'s range (reachable only for milliseconds at `Int64` extremes) |
@@ -250,7 +250,7 @@ A time zone backed by parsed IANA tzdata (TZif binary format, plus a POSIX TZ st
 
 | Method | Signature | Description |
 | :--- | :--- | :--- |
-| `Location::load(String)` | `-> Self?` | Look up an embedded IANA zone by name (e.g. `"Asia/Tokyo"`), following aliases; `None` if the name is unknown, including the empty string (which, unlike in Go's `LoadLocation`, is not an alias for UTC); `"UTC"` resolves like any other zone |
+| `Location::load(String)` | `-> Self?` | Look up an embedded IANA zone by name (e.g. `"Asia/Tokyo"`), following aliases; `None` if the name is unknown, including the empty string (which is not an alias for UTC); `"UTC"` resolves like any other zone |
 | `Location::utc()` | `-> Self` | The UTC zone as a `Location` (equal to `Location::load("UTC")`, `name()` is `Some("UTC")`), for APIs taking a `Location` rather than the separate `Utc` type |
 | `Location::from_tzif_bytes(Bytes)` | `-> Self?` | Parse a zone directly from raw TZif bytes; `None` if malformed |
 | `Location::from_tzif_bytes_named(String, Bytes)` | `-> Self?` | Like `from_tzif_bytes`, but `name()` reports the given name; any text is accepted as given, without validation |
@@ -267,14 +267,14 @@ A time zone backed by parsed IANA tzdata (TZif binary format, plus a POSIX TZ st
 
 ### `TransitionBounds`
 
-The validity window of a `Location`'s segment covering a given instant, as returned by `Location::transition_bounds`: the local time type `type_at` reports is in effect from `start()` (inclusive) until `end()` (exclusive). Mirrors Go's `Time.ZoneBounds`, using `Option` instead of a zero-value sentinel for "unbounded."
+The validity window of a `Location`'s segment covering a given instant, as returned by `Location::transition_bounds`: the local time type `type_at` reports is in effect from `start()` (inclusive) until `end()` (exclusive). `None` on either side means unbounded in that direction.
 
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `start()` | `-> NaiveDateTime?` | The instant this segment began; `None` if unbounded (before the zone's first recorded transition, or for a zone with no transitions at all) |
 | `end()` | `-> NaiveDateTime?` | The instant the next segment begins; `None` if unbounded (past the zone's last recorded transition, when no POSIX rule extrapolates further) |
 
-Past the last recorded transition, the POSIX rule's own bounds are computed exactly (not approximated near a year boundary, unlike Go's own `tzset`, which documents itself as doing so).
+Past the last recorded transition, the POSIX rule's own bounds are computed exactly (not approximated near a year boundary).
 
 `TransitionBounds` also implements `Eq`.
 

@@ -16,10 +16,10 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `format_date_items`/`format_time_items`/`format_date_time_items`/`format_date_time_tz_items` | `format_*` taking a pre-tokenized `Item` sequence, so a format reused for many values is tokenized once |
 | `to_rfc3339`/`to_rfc3339_opts`/`parse_rfc3339` | Dedicated RFC 3339 fast path, bypassing the specifier engine; `to_rfc3339_opts` picks the fractional digits (`SecondsFormat`) and `Z` versus `+00:00` |
 | `to_rfc2822`/`parse_from_rfc2822` | Dedicated RFC 2822 fast path (e.g. `"Tue, 1 Jul 2003 10:52:37 +0200"`), bypassing the specifier engine |
-| `parse_duration` | Reads a `TimeDelta` from Go-style text (`"1h30m"`, `"-1.5s"`, `"300ms"`); the inverse of `TimeDelta`'s `Show` |
+| `parse_duration` | Reads a `TimeDelta` from duration text (`"1h30m"`, `"-1.5s"`, `"300ms"`); the inverse of `TimeDelta`'s `Show` |
 | `parse_fixed_offset` | Reads a `FixedOffset` from offset text (`"+09:00"`, `"+0900"`, `"+09"`, `"+09:00:30"`, `"Z"`); the inverse of `FixedOffset`'s `Show` |
 | `parse_date_default`/`parse_time_default`/`parse_date_time_default`/`parse_date_time_utc_default`/`parse_date_time_tz_default` | One-argument parsers that read the layout each type's `Show` renders (`2024-03-05`, `09:05:07.500`, `2024-03-05 09:05:07.500`, `... UTC`, `... +09:00`); the inverse of `Show`, so every rendered value reads back |
-| `rfc1123`/`rfc1123z`/`rfc822`/`rfc822z`/`rfc850`/`ansic`/`unix_date`/`ruby_date`/`kitchen`/`stamp`/`stamp_milli`/`stamp_micro`/`stamp_nano`/`date_only`/`time_only`/`date_time` | Named convenience format strings (Go `time` package layout equivalents) — pass one to `format_*`/`parse_*` like any other format string |
+| `rfc1123`/`rfc1123z`/`rfc822`/`rfc822z`/`rfc850`/`ansic`/`unix_date`/`ruby_date`/`kitchen`/`stamp`/`stamp_milli`/`stamp_micro`/`stamp_nano`/`date_only`/`time_only`/`date_time` | Named convenience format strings — pass one to `format_*`/`parse_*` like any other format string |
 
 ## Supported specifiers
 
@@ -66,7 +66,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%:z` | Timezone offset, minutes | `±HH:MM`; on parse, the colon is mandatory (exactly its own rendered shape) |
 | `%::z` | Timezone offset, seconds | `±HH:MM:SS`, always with seconds (unlike `FixedOffset`'s own `tz_name`, which only extends past minutes when they're nonzero); on parse, the seconds field is mandatory too |
 | `%:::z` | Timezone offset, hours only | `±HH` — minutes and seconds are dropped entirely, not just omitted when zero; parses the same shape |
-| `%#z` | Timezone offset, permissive | Parse-only (mirrors chrono, which panics if used to format): accepts `±HHMM`, `±HH:MM`, hours-only `±HH`, or `Z`/`z` for a zero offset, with any run of `:`/space/tab (or none) between the hour and minute digits; no seconds field |
+| `%#z` | Timezone offset, permissive | Parse-only: accepts `±HHMM`, `±HH:MM`, hours-only `±HH`, or `Z`/`z` for a zero offset, with any run of `:`/space/tab (or none) between the hour and minute digits; no seconds field |
 | `%F` | `%Y-%m-%d` | Expands to that specifier sequence |
 | `%T` | `%H:%M:%S` | Expands to that specifier sequence |
 | `%D`, `%x` | `%m/%d/%y` | Expands to that specifier sequence (no locale support, so `%x` is identical to `%D`) |
@@ -75,15 +75,15 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%X` | `%H:%M:%S` | Expands to that specifier sequence (identical to `%T`) |
 | `%r` | `%I:%M:%S %p` | Expands to that specifier sequence |
 | `%c` | `%a %b %e %H:%M:%S %Y` | ctime-style, e.g. `"Tue Mar  5 09:05:30 2024"`; expands to that specifier sequence |
-| `%+` | RFC 3339 date-time | A whole `DateTime`, rendered/parsed via the dedicated `to_rfc3339`/`parse_rfc3339` fast path rather than a sequence of simpler specifiers (mirrors chrono); needs a date, time, and offset together, like `%Z`/`%z` |
+| `%+` | RFC 3339 date-time | A whole `DateTime`, rendered/parsed via the dedicated `to_rfc3339`/`parse_rfc3339` fast path rather than a sequence of simpler specifiers; needs a date, time, and offset together, like `%Z`/`%z` |
 | `%%` | Literal `%` | |
 | `%n` | Newline | Renders a single `\n`; on parse matches exactly one `\n` (expands to a literal item) |
 | `%t` | Tab | Renders a single `\t`; on parse matches exactly one `\t` (expands to a literal item) |
-| `%-X` | No padding | Overrides `X`'s own default padding; on parse reads one to `X`'s width in digits, greedily (`%-d` reads `5` and `05`, and in `%-H%-M` the input `905` splits as `90` then `5`), the opt-in way to accept unpadded numbers, since an unflagged field stays fixed-width; `X` must resolve to a single bare `Numeric` specifier (not a `Fixed` one or a compound expansion like `%F`) other than `%f`/`%.f`/`%3f`/`%6f`/`%s` — chrono itself treats the fractional-second family as `Fixed`, and `%s` has no natural fixed width |
+| `%-X` | No padding | Overrides `X`'s own default padding; on parse reads one to `X`'s width in digits, greedily (`%-d` reads `5` and `05`, and in `%-H%-M` the input `905` splits as `90` then `5`), the opt-in way to accept unpadded numbers, since an unflagged field stays fixed-width; `X` must resolve to a single bare `Numeric` specifier (not a `Fixed` one or a compound expansion like `%F`) other than `%f`/`%.f`/`%3f`/`%6f`/`%s` — the fractional-second family and `%s` have no natural fixed width |
 | `%0X` | Zero padding | See `%-X`; meaningful for a specifier that doesn't already zero-pad, e.g. `%0e`. On parse it keeps `X`'s own default reading |
 | `%_X` | Space padding | See `%-X`; meaningful for a specifier that doesn't already space-pad, e.g. `%_d`. On parse it reads a leading blank or zero (`" 5"` or `"05"`), so a value rendered with `%_X` reads back |
 
-Padding flags only affect formatting. On parse, `%-X`/`%0X`/`%_X` behave exactly like bare `%X` (matching chrono, whose parser never reads a specifier's `Pad`).
+Padding flags only affect formatting. On parse, `%-X`/`%0X`/`%_X` behave exactly like bare `%X`.
 
 ## Quick start
 
@@ -150,7 +150,7 @@ test {
 | `parse_time(String, String)` | `-> NaiveTime raise ParseError` | Parse against a format string's time-of-day fields: an hour and a minute are required, while `%S` and `%f` are optional and default to zero (so `%R` and `kitchen` resolve) |
 | `parse_date_time(String, String)` | `-> NaiveDateTime raise ParseError` | Parse against a format string's date and time-of-day fields together |
 | `parse_date_time_tz(String, String)` | `-> DateTime[FixedOffset] raise ParseError` | Parse against a format string's date, time-of-day, and `%z` fields, interpreting them as the zone's local wall-clock reading |
-| `parse_date_time_in[Tz : TimeZone](String, String, Tz)` | `-> MappedLocalTime[DateTime[Tz]] raise ParseError` | Parse a zone-less format's date and time-of-day fields and resolve the reading in `tz` (`Ambiguous` in a DST fold, `Absent` in a gap); raises `InconsistentFields` if the format yields an offset (`%z`, `%+`, ...); a `%Z` name the zone recognizes fixes the offset (Go's `ParseInLocation`), so an abbreviation like `EDT` resolves a DST fold to `Single`, and an unrecognized name is ignored |
+| `parse_date_time_in[Tz : TimeZone](String, String, Tz)` | `-> MappedLocalTime[DateTime[Tz]] raise ParseError` | Parse a zone-less format's date and time-of-day fields and resolve the reading in `tz` (`Ambiguous` in a DST fold, `Absent` in a gap); raises `InconsistentFields` if the format yields an offset (`%z`, `%+`, ...); a `%Z` name the zone recognizes fixes the offset, so an abbreviation like `EDT` resolves a DST fold to `Single`, and an unrecognized name is ignored |
 | `parse_date_and_remainder(String, String)` / `parse_time_and_remainder` / `parse_date_time_and_remainder` / `parse_date_time_tz_and_remainder` / `parse_date_time_in_and_remainder` | `-> (T, String) raise ParseError` | The value the matching `parse_*` returns, paired with the leftover input (from the first character the format did not consume to the end, counted in characters, `""` when the whole input matched). A mismatch or unresolvable field inside the format still raises, exactly as in the strict form; only trailing input is tolerated |
 
 ### RFC 3339 fast path
@@ -166,7 +166,7 @@ test {
 | Function | Signature | Description |
 | :--- | :--- | :--- |
 | `to_rfc2822(DateTime[Tz])` *(Tz : TimeZone)* | `-> String raise ParseError` | Renders `"<short weekday>, <day> <short month> <year> <HH>:<MM>:<SS> ±HHMM"` (e.g. `"Tue, 1 Jul 2003 10:52:37 +0200"`); the day is unpadded (one or two digits, never a leading zero), unlike this package's other numeric fields. Raises `InvalidRfc2822` if the year is outside RFC 2822's own `0..=9999` range — unlike `to_rfc3339`, not total |
-| `parse_from_rfc2822(String)` | `-> DateTime[FixedOffset] raise ParseError` | Strict RFC 2822 parsing: only the exact shape `to_rfc2822` renders (day-of-week and seconds mandatory, single-space separators, a 4-digit year, a numeric `±HHMM` offset). Unlike chrono's own parser, does *not* support RFC 2822's "obsolete format" — optional day-of-week, arbitrary/folding whitespace, 2-/3-digit year windowing, named legacy zones (`GMT`, `EST`, ...), or parenthesized comments. Raises `InvalidRfc2822` on any mismatch |
+| `parse_from_rfc2822(String)` | `-> DateTime[FixedOffset] raise ParseError` | Strict RFC 2822 parsing: only the exact shape `to_rfc2822` renders (day-of-week and seconds mandatory, single-space separators, a 4-digit year, a numeric `±HHMM` offset). Does *not* support RFC 2822's "obsolete format" — optional day-of-week, arbitrary/folding whitespace, 2-/3-digit year windowing, named legacy zones (`GMT`, `EST`, ...), or parenthesized comments. Raises `InvalidRfc2822` on any mismatch |
 | `parse_duration(String)` | `-> TimeDelta raise ParseError` | Parses one or more `<number><unit>` components with an optional leading sign (`"1h30m"`, `"-1.5s"`, `"300ms"`, `".5s"`, `"1.5h"`). Units are `ns`, `us` (also `µs` U+00B5 and `μs` U+03BC), `ms`, `s`, `m`, `h`, case-sensitive, with hours the largest (no days/weeks); components are summed. A bare `"0"` (optionally signed) needs no unit. Fractional digits beyond the ninth, and precision finer than a nanosecond, are truncated toward zero. The inverse of `TimeDelta`'s `Show`. Raises `InvalidDuration` for malformed input or a value outside `TimeDelta`'s range |
 | `parse_fixed_offset(String)` | `-> FixedOffset raise ParseError` | Parses a whole offset string: `±HH:MM:SS`, `±HH:MM`, `±HHMM`, `±HH`, or `Z`/`z` for zero. Raises `InputMismatch` for any other text (including minutes or seconds above 59) and `FieldOutOfRange` for a well-shaped offset beyond `±23:59:59` |
 | `parse_date_default(String)` / `parse_time_default(String)` / `parse_date_time_default(String)` | `-> NaiveDate` / `NaiveTime` / `NaiveDateTime raise ParseError` | Parse exactly the text `Show` renders: `YYYY-MM-DD` (`-` for a negative year, `+` beyond 9999); `HH:MM:SS` with an optional fraction of any number of digits and a leap second as `:60`; a date and time joined by one space. Same failures as `parse_date`/`parse_time`/`parse_date_time` |
@@ -175,28 +175,28 @@ test {
 
 ### Named layouts
 
-Convenience format-string constants, mirroring Go's `time` package layouts (translated into this project's `%`-specifier style, not copied as Go's reference-time-layout syntax). Each is just a `String` — pass one to `format_date`/`format_time`/`format_date_time`/`format_date_time_tz`, or their `parse_*` counterparts, like any other format string.
+Convenience format-string constants. Each is just a `String` — pass one to `format_date`/`format_time`/`format_date_time`/`format_date_time_tz`, or their `parse_*` counterparts, like any other format string.
 
-| Constant | Format string | Go equivalent | Example |
-| :--- | :--- | :--- | :--- |
-| `rfc1123` | `"%a, %d %b %Y %H:%M:%S %Z"` | `RFC1123` | `"Tue, 05 Mar 2024 09:05:03 UTC"` |
-| `rfc1123z` | `"%a, %d %b %Y %H:%M:%S %z"` | `RFC1123Z` | `"Tue, 05 Mar 2024 18:05:03 +0900"` |
-| `rfc822` | `"%d %b %y %H:%M %Z"` | `RFC822` | `"05 Mar 24 09:05 UTC"` |
-| `rfc822z` | `"%d %b %y %H:%M %z"` | `RFC822Z` | `"05 Mar 24 18:05 +0900"` |
-| `rfc850` | `"%A, %d-%b-%y %H:%M:%S %Z"` | `RFC850` | `"Tuesday, 05-Mar-24 09:05:03 UTC"` |
-| `ansic` | `"%a %b %e %H:%M:%S %Y"` | `ANSIC` | `"Tue Mar  5 09:05:03 2024"` |
-| `unix_date` | `"%a %b %e %H:%M:%S %Z %Y"` | `UnixDate` | `"Tue Mar  5 09:05:03 UTC 2024"` |
-| `ruby_date` | `"%a %b %d %H:%M:%S %z %Y"` | `RubyDate` | `"Tue Mar 05 18:05:03 +0900 2024"` |
-| `kitchen` | `"%-I:%M%p"` | `Kitchen` | `"9:05AM"` |
-| `stamp` | `"%b %e %H:%M:%S"` | `Stamp` | `"Mar  5 09:05:03"` |
-| `stamp_milli` | `"%b %e %H:%M:%S.%3f"` | `StampMilli` | `"Mar  5 09:05:03.123"` |
-| `stamp_micro` | `"%b %e %H:%M:%S.%6f"` | `StampMicro` | `"Mar  5 09:05:03.123456"` |
-| `stamp_nano` | `"%b %e %H:%M:%S.%9f"` | `StampNano` | `"Mar  5 09:05:03.123456789"` |
-| `date_only` | `"%F"` | `DateOnly` | `"2024-03-05"` |
-| `time_only` | `"%T"` | `TimeOnly` | `"09:05:03"` |
-| `date_time` | `"%F %T"` | `DateTime` | `"2024-03-05 09:05:03"` |
+| Constant | Format string | Example |
+| :--- | :--- | :--- |
+| `rfc1123` | `"%a, %d %b %Y %H:%M:%S %Z"` | `"Tue, 05 Mar 2024 09:05:03 UTC"` |
+| `rfc1123z` | `"%a, %d %b %Y %H:%M:%S %z"` | `"Tue, 05 Mar 2024 18:05:03 +0900"` |
+| `rfc822` | `"%d %b %y %H:%M %Z"` | `"05 Mar 24 09:05 UTC"` |
+| `rfc822z` | `"%d %b %y %H:%M %z"` | `"05 Mar 24 18:05 +0900"` |
+| `rfc850` | `"%A, %d-%b-%y %H:%M:%S %Z"` | `"Tuesday, 05-Mar-24 09:05:03 UTC"` |
+| `ansic` | `"%a %b %e %H:%M:%S %Y"` | `"Tue Mar  5 09:05:03 2024"` |
+| `unix_date` | `"%a %b %e %H:%M:%S %Z %Y"` | `"Tue Mar  5 09:05:03 UTC 2024"` |
+| `ruby_date` | `"%a %b %d %H:%M:%S %z %Y"` | `"Tue Mar 05 18:05:03 +0900 2024"` |
+| `kitchen` | `"%-I:%M%p"` | `"9:05AM"` |
+| `stamp` | `"%b %e %H:%M:%S"` | `"Mar  5 09:05:03"` |
+| `stamp_milli` | `"%b %e %H:%M:%S.%3f"` | `"Mar  5 09:05:03.123"` |
+| `stamp_micro` | `"%b %e %H:%M:%S.%6f"` | `"Mar  5 09:05:03.123456"` |
+| `stamp_nano` | `"%b %e %H:%M:%S.%9f"` | `"Mar  5 09:05:03.123456789"` |
+| `date_only` | `"%F"` | `"2024-03-05"` |
+| `time_only` | `"%T"` | `"09:05:03"` |
+| `date_time` | `"%F %T"` | `"2024-03-05 09:05:03"` |
 
-The `stamp*` family (no year) doesn't carry enough fields to round-trip through the matching `parse_*` function on its own — matching Go's own `Stamp` family, meant for display alongside separately-known context. `date_only`/`time_only` are self-sufficient for parsing, and so is `kitchen` for a time on the minute, since `parse_time` reads a time without seconds as having zero seconds (a value with seconds loses them when rendered with `kitchen`).
+The `stamp*` family (no year) doesn't carry enough fields to round-trip through the matching `parse_*` function on its own — meant for display alongside separately-known context. `date_only`/`time_only` are self-sufficient for parsing, and so is `kitchen` for a time on the minute, since `parse_time` reads a time without seconds as having zero seconds (a value with seconds loses them when rendered with `kitchen`).
 
 ### `tokenize`
 
