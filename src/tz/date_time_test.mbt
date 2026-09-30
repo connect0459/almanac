@@ -986,7 +986,7 @@ test "round_up reports the same failure reasons as NaiveDateTime::round_up" {
     dt.round_up(@core.TimeDelta::milliseconds(1_500L).unwrap()).map(_ => ()),
     Err(@core.MixedGranularity),
   )
-  let last_day = @core.NaiveDate::from_epoch_days(2_147_483_647 - 719_468).unwrap()
+  let last_day = last_day()
   let last = @tz.DateTime::from_utc(
     @core.NaiveDateTime::new(
       last_day,
@@ -1061,8 +1061,8 @@ test "checked_add_offset and checked_sub_offset agree with the aborting forms in
 ///|
 test "checked_add_offset and checked_sub_offset return None outside the representable range" {
   let plus_nine = @tz.FixedOffset::east(9 * 3600).unwrap()
-  let last_day = @core.NaiveDate::from_epoch_days(2_147_483_647 - 719_468).unwrap()
-  let first_day = @core.NaiveDate::from_epoch_days(-(2_147_483_647 - 719_468)).unwrap()
+  let last_day = last_day()
+  let first_day = first_day()
   let last = @tz.DateTime::from_utc(
     @core.NaiveDateTime::new(
       last_day,
@@ -1081,7 +1081,7 @@ test "checked_add_offset and checked_sub_offset return None outside the represen
 ///|
 test "panic add_offset aborts when the shifted instant leaves the representable range" {
   let plus_nine = @tz.FixedOffset::east(9 * 3600).unwrap()
-  let last_day = @core.NaiveDate::from_epoch_days(2_147_483_647 - 719_468).unwrap()
+  let last_day = last_day()
   let last = @tz.DateTime::from_utc(
     @core.NaiveDateTime::new(
       last_day,
@@ -1093,18 +1093,22 @@ test "panic add_offset aborts when the shifted instant leaves the representable 
 }
 
 ///|
+fn last_day() -> @core.NaiveDate {
+  @core.NaiveDate::from_epoch_days(2_147_483_647 - 719_468).unwrap()
+}
+
+///|
+fn first_day() -> @core.NaiveDate {
+  @core.NaiveDate::from_epoch_days(-(2_147_483_647 - 719_468)).unwrap()
+}
+
+///|
 fn boundary_datetime(last : Bool) -> @tz.DateTime[@tz.FixedOffset] {
   let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
   let naive = if last {
-    @core.NaiveDate::from_epoch_days(2_147_483_647 - 719_468)
-    .unwrap()
-    .and_hms(23, 59, 59)
-    .unwrap()
+    last_day().and_hms(23, 59, 59).unwrap()
   } else {
-    @core.NaiveDate::from_epoch_days(-(2_147_483_647 - 719_468))
-    .unwrap()
-    .and_hms(0, 0, 0)
-    .unwrap()
+    first_day().and_hms(0, 0, 0).unwrap()
   }
   @tz.DateTime::from_utc(naive, tokyo)
 }
