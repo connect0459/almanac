@@ -41,6 +41,7 @@ pub fn[Tz : Hash] DateTime::hash(Self[Tz]) -> Int
 pub fn[Tz : Hash] DateTime::hash_combine(Self[Tz], Hasher) -> Unit
 pub fn[Tz : TimeZone] DateTime::hour(Self[Tz]) -> Int
 pub fn[Tz : TimeZone] DateTime::hour12(Self[Tz]) -> (Bool, Int)
+pub fn[Tz : TimeZone] DateTime::is_dst(Self[Tz]) -> Bool
 pub fn[Tz : TimeZone] DateTime::iso_week(Self[Tz]) -> @core.IsoWeek
 pub fn[Tz : TimeZone] DateTime::minute(Self[Tz]) -> Int
 pub fn[Tz : TimeZone] DateTime::month(Self[Tz]) -> @core.Month
@@ -112,6 +113,7 @@ pub fn FixedOffset::from_local_datetime(Self, @core.NaiveDateTime) -> MappedLoca
 pub fn FixedOffset::from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self]
 pub fn FixedOffset::hash(Self) -> Int
 pub fn FixedOffset::hash_combine(Self, Hasher) -> Unit
+pub fn FixedOffset::is_dst(Self, @core.NaiveDateTime) -> Bool
 pub fn FixedOffset::local_minus_utc(Self) -> Int
 pub fn FixedOffset::not_equal(Self, Self) -> Bool
 pub fn FixedOffset::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[Self]
@@ -147,6 +149,7 @@ pub fn Location::from_tzif_bytes_named(String, Bytes) -> Self?
 pub fn Location::from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self]
 pub fn Location::hash(Self) -> Int
 pub fn Location::hash_combine(Self, Hasher) -> Unit
+pub fn Location::is_dst(Self, @core.NaiveDateTime) -> Bool
 pub fn Location::load(String) -> Self?
 pub fn Location::name(Self) -> String?
 pub fn Location::not_equal(Self, Self) -> Bool
@@ -183,6 +186,7 @@ pub fn PosixTz::from_local_datetime(Self, @core.NaiveDateTime) -> MappedLocalTim
 pub fn PosixTz::from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self]
 pub fn PosixTz::hash(Self) -> Int
 pub fn PosixTz::hash_combine(Self, Hasher) -> Unit
+pub fn PosixTz::is_dst(Self, @core.NaiveDateTime) -> Bool
 pub fn PosixTz::not_equal(Self, Self) -> Bool
 pub fn PosixTz::offset_at(Self, Int64) -> Int
 pub fn PosixTz::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[FixedOffset]
@@ -223,6 +227,7 @@ pub fn Utc::from_local_datetime(Self, @core.NaiveDateTime) -> MappedLocalTime[Da
 pub fn Utc::from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self]
 pub fn Utc::hash(Self) -> Int
 pub fn Utc::hash_combine(Self, Hasher) -> Unit
+pub fn Utc::is_dst(Self, @core.NaiveDateTime) -> Bool
 pub fn Utc::new() -> Self
 pub fn Utc::not_equal(Self, Self) -> Bool
 pub fn Utc::now() -> DateTime[Self]
@@ -242,6 +247,7 @@ pub trait TimeZone {
   fn offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
   fn offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[FixedOffset]
   fn tz_name(Self, @core.NaiveDateTime) -> String
+  fn is_dst(Self, @core.NaiveDateTime) -> Bool
   fn from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self]
   fn from_local_datetime(Self, @core.NaiveDateTime) -> MappedLocalTime[DateTime[Self]]
 }

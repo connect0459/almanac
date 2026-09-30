@@ -385,10 +385,16 @@ pub impl TimeZone for Location with fn offset_from_local(self, naive_local) {
 }
 
 ///|
+pub impl TimeZone for Location with fn is_dst(self, utc) {
+  self.type_at(utc).is_dst()
+}
+
+///|
 pub extend Location with TimeZone::{
   offset_from_utc,
   offset_from_local,
   tz_name,
+  is_dst,
   from_utc_datetime,
   from_local_datetime,
 }

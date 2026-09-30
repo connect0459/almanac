@@ -500,9 +500,15 @@ pub impl TimeZone for PosixTz with fn tz_name(self, utc) {
 }
 
 ///|
+pub impl TimeZone for PosixTz with fn is_dst(self, utc) {
+  self.type_at(utc.timestamp()).is_dst()
+}
+
+///|
 pub extend PosixTz with TimeZone::{
   offset_from_utc,
   tz_name,
+  is_dst,
   from_utc_datetime,
   from_local_datetime,
 }

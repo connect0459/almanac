@@ -559,6 +559,13 @@ pub fn[Tz, Tz2] DateTime::with_timezone(
 }
 
 ///|
+/// Whether daylight saving time is in effect at this instant, according to
+/// the time zone.
+pub fn[Tz : TimeZone] DateTime::is_dst(self : DateTime[Tz]) -> Bool {
+  self.tz.is_dst(self.datetime)
+}
+
+///|
 /// This datetime re-expressed in UTC, keeping the same underlying instant.
 pub fn[Tz] DateTime::to_utc(self : DateTime[Tz]) -> DateTime[Utc] {
   self.with_timezone(Utc::new())

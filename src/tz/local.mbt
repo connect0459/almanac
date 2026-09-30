@@ -64,10 +64,20 @@ pub impl TimeZone for Local with fn tz_name(self, utc) {
 }
 
 ///|
+pub impl TimeZone for Local with fn is_dst(self, utc) {
+  match self.kind {
+    Iana(loc) => loc.is_dst(utc)
+    Fixed(off) => off.is_dst(utc)
+    Posix(p) => p.is_dst(utc)
+  }
+}
+
+///|
 pub extend Local with TimeZone::{
   offset_from_utc,
   offset_from_local,
   tz_name,
+  is_dst,
   from_utc_datetime,
   from_local_datetime,
 }

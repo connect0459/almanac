@@ -97,6 +97,7 @@ Implemented by `Utc`, `FixedOffset`, `Location`, and `PosixTz`. `DateTime[Tz]::o
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | The offset in effect at a given UTC instant; never ambiguous |
 | `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | The offset(s) for a given local (wall-clock) instant, handling DST ambiguity/gaps |
 | `tz_name(NaiveDateTime)` | `-> String` | The zone abbreviation/name in effect at a given instant |
+| `is_dst(NaiveDateTime)` | `-> Bool` | Whether daylight saving time is in effect at a given UTC instant; `false` by default, overridden by `Location`, `PosixTz` and `Local` |
 | `from_utc_datetime(NaiveDateTime)` | `-> DateTime[Self]` | Interpret a naive datetime as UTC and express it in this zone; same as `DateTime::from_utc` (default implementation) |
 | `from_local_datetime(NaiveDateTime)` | `-> MappedLocalTime[DateTime[Self]]` | Interpret a naive datetime as wall-clock time in this zone; same as `DateTime::from_local` (default implementation) |
 
@@ -202,6 +203,7 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 | `timestamp_micros()` / `timestamp_nanos()` | `-> Int64?` | Microseconds / nanoseconds since the Unix epoch; `None` if the instant overflows `Int64` |
 | `timestamp_subsec_nanos()` / `timestamp_subsec_millis()` / `timestamp_subsec_micros()` | `-> Int` | The sub-second component of the instant in that unit |
 | `signed_duration_since(Self[Tz2])` | `-> TimeDelta` | The signed duration from `other` to `self`, independent of either's time zone |
+| `is_dst()` | `-> Bool` | Whether daylight saving time is in effect at this instant (requires `Tz : TimeZone`) |
 | `to_string()` (`Show`) | `-> String` | The local date-time and the zone's name at that instant joined by a space, e.g. `"2024-01-02 13:45:06.500 +09:00"`, `"... UTC"`, `"... EDT"` (requires `Tz : TimeZone`) |
 | `years_since(Self[Tz])` | `-> Int?` | Full calendar years elapsed from `base`, comparing local dates and ignoring the time of day; `None` if `base` is later |
 | `compare(Self[Tz])` / `<` / `>` / `<=` / `>=` | `-> Int` / `-> Bool` | Order by UTC instant, ignoring the zone value (requires `Tz : Eq`); equal instants in different zones compare as `0` yet are unequal under `==` (intentional: `==`/`Hash` also cover the zone; to test for the same instant, use `compare_instant(other) == 0`) |

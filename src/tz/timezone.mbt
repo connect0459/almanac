@@ -123,6 +123,10 @@ pub trait TimeZone {
   /// `FixedOffset`'s own offset string (e.g. `"+09:00"`), since a fixed
   /// offset carries no name distinct from its offset.
   fn tz_name(Self, @core.NaiveDateTime) -> String
+  /// Whether daylight saving time is in effect at the given UTC naive
+  /// datetime. `false` by default: a zone with no daylight saving (`Utc`,
+  /// `FixedOffset`) never observes it.
+  fn is_dst(Self, @core.NaiveDateTime) -> Bool = _
   /// A `DateTime` for the given UTC naive datetime, expressed in this zone.
   /// See `DateTime::from_utc`.
   fn from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self] = _
@@ -131,6 +135,11 @@ pub trait TimeZone {
   fn from_local_datetime(Self, @core.NaiveDateTime) -> MappedLocalTime[
     DateTime[Self],
   ] = _
+}
+
+///|
+impl TimeZone with fn is_dst(_self, _utc) {
+  false
 }
 
 ///|

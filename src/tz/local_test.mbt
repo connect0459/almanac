@@ -92,3 +92,17 @@ test "resolve ignores empty localtime bytes when TZ names a zone" {
   assert_true(@tz.Local::resolve(Some("Asia/Tokyo"), Some(b"")) is Some(_))
   assert_true(@tz.Local::resolve(Some(""), Some(b"")) is Some(_))
 }
+
+///|
+test "a Local resolved from each source reports DST like the underlying zone" {
+  let summer = @core.NaiveDateTime::from_timestamp(1_719_835_200L, 0).unwrap()
+  let winter = @core.NaiveDateTime::from_timestamp(1_704_110_400L, 0).unwrap()
+  let iana = @tz.Local::resolve(Some("America/New_York"), None).unwrap()
+  let posix = @tz.Local::resolve(Some("FOO5BAR4,M3.2.0,M11.1.0"), None).unwrap()
+  let fixed = @tz.Local::resolve(Some(""), None).unwrap()
+  assert_true(iana.is_dst(summer))
+  assert_false(iana.is_dst(winter))
+  assert_true(posix.is_dst(summer))
+  assert_false(posix.is_dst(winter))
+  assert_false(fixed.is_dst(summer))
+}

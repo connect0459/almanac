@@ -814,3 +814,45 @@ test "TransitionBounds hashing agrees with its Eq" {
   )
   assert_true(a.hash() != other.hash())
 }
+
+///|
+test "DateTime in a zone without daylight saving is never in DST" {
+  let utc = @tz.DateTime::from_timestamp(1_719_835_200L, 0, @tz.Utc::new()).unwrap()
+  let tokyo = utc.with_timezone(@tz.FixedOffset::east(9 * 3600).unwrap())
+  assert_false(utc.is_dst())
+  assert_false(tokyo.is_dst())
+}
+
+///|
+test "DateTime in a Location reports DST only while the zone observes it (America/New_York)" {
+  let ny = @tz.Location::load("America/New_York").unwrap()
+  let summer = @tz.DateTime::from_timestamp(1_719_835_200L, 0, ny).unwrap()
+  let winter = @tz.DateTime::from_timestamp(1_704_110_400L, 0, ny).unwrap()
+  assert_true(summer.is_dst())
+  assert_false(winter.is_dst())
+}
+
+///|
+test "DateTime in a Location switches DST at the exact transition instant (America/New_York, 2024)" {
+  let ny = @tz.Location::load("America/New_York").unwrap()
+  let dst_start = 1_710_054_000L
+  assert_false(
+    @tz.DateTime::from_timestamp(dst_start - 1L, 0, ny).unwrap().is_dst(),
+  )
+  assert_true(@tz.DateTime::from_timestamp(dst_start, 0, ny).unwrap().is_dst())
+}
+
+///|
+test "DateTime in a PosixTz reports DST from its rule, and never for a rule without a DST part" {
+  let rule = @tz.parse_posix_tz("EST5EDT,M3.2.0,M11.1.0").unwrap()
+  assert_true(
+    @tz.DateTime::from_timestamp(1_719_835_200L, 0, rule).unwrap().is_dst(),
+  )
+  assert_false(
+    @tz.DateTime::from_timestamp(1_704_110_400L, 0, rule).unwrap().is_dst(),
+  )
+  let jst = @tz.parse_posix_tz("JST-9").unwrap()
+  assert_false(
+    @tz.DateTime::from_timestamp(1_719_835_200L, 0, jst).unwrap().is_dst(),
+  )
+}
