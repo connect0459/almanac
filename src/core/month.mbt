@@ -52,8 +52,8 @@ pub fn Month::succ(self : Month) -> Month {
 ///|
 /// The month `n` months after `self` (before it, for a negative `n`),
 /// wrapping around the year in either direction.
-pub fn Month::add(self : Month, n : Int) -> Month {
-  let index = (self.number_from_month() - 1 + n % 12 + 12) % 12
+pub fn Month::add_months(self : Month, n : Int) -> Month {
+  let index = (self.number() - 1 + n % 12 + 12) % 12
   Month::from_number(index + 1).unwrap()
 }
 
@@ -78,7 +78,7 @@ pub fn Month::pred(self : Month) -> Month {
 
 ///|
 /// Month-of-year number counting from `Jan = 1`.
-pub fn Month::number_from_month(self : Month) -> Int {
+pub fn Month::number(self : Month) -> Int {
   match self {
     Jan => 1
     Feb => 2

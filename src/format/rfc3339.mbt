@@ -352,7 +352,7 @@ fn render_rfc3339_opts(
   }
   pad_int(date.year(), 4) +
   "-" +
-  pad_int(date.month().number_from_month(), 2) +
+  pad_int(date.month().number(), 2) +
   "-" +
   pad_int(date.day(), 2) +
   "T" +

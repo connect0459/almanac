@@ -38,7 +38,7 @@ pub impl Show for NaiveDate with fn output(self, logger) {
   logger.write_string(
     year_text(self.year()) +
     "-" +
-    pad_zero(self.month().number_from_month(), 2) +
+    pad_zero(self.month().number(), 2) +
     "-" +
     pad_zero(self.day(), 2),
   )
@@ -201,7 +201,7 @@ pub fn NaiveDate::with_ordinal(self : NaiveDate, ordinal : Int) -> NaiveDate? {
 ///|
 /// The month of the year, counting from `0` (`Jan` is `0`, `Dec` is `11`).
 pub fn NaiveDate::month0(self : NaiveDate) -> Int {
-  self.month().number_from_month() - 1
+  self.month().number() - 1
 }
 
 ///|
@@ -620,7 +620,7 @@ pub fn NaiveDate::week(self : NaiveDate, start : Weekday) -> NaiveWeek {
 /// day have both reached (or passed) `base`'s.
 pub fn NaiveDate::years_since(self : NaiveDate, base : NaiveDate) -> Int? {
   let mut years = self.year() - base.year()
-  if self.month().number_from_month() < base.month().number_from_month() ||
+  if self.month().number() < base.month().number() ||
     (self.month() == base.month() && self.day() < base.day()) {
     years -= 1
   }
@@ -665,7 +665,7 @@ pub fn NaiveDate::from_weekday_of_month(
 ///|
 /// The calendar quarter, `1..=4`.
 pub fn NaiveDate::quarter(self : NaiveDate) -> Int {
-  (self.month().number_from_month() - 1) / 3 + 1
+  (self.month().number() - 1) / 3 + 1
 }
 
 ///|

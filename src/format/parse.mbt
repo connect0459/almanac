@@ -437,10 +437,7 @@ fn apply_month_name_specifier(
   match match_month_name(chars, pos) {
     None => raise InputMismatch
     Some((m, p)) =>
-      (
-        { ..parsed, month: merge_field(parsed.month, m.number_from_month()), },
-        p,
-      )
+      ({ ..parsed, month: merge_field(parsed.month, m.number()), }, p)
   }
 }
 
@@ -623,7 +620,7 @@ fn apply_item(
             {
               ..parsed,
               year: merge_field(parsed.year, date.year()),
-              month: merge_field(parsed.month, date.month().number_from_month()),
+              month: merge_field(parsed.month, date.month().number()),
               day: merge_field(parsed.day, date.day()),
               hour: merge_field(parsed.hour, time.hour()),
               minute: merge_field(parsed.minute, time.minute()),
@@ -1280,10 +1277,7 @@ fn resolve_at_timestamp(
   let seeded = {
     ..parsed,
     year: seed_missing(parsed.year, wall_clock.date().year()),
-    month: seed_missing(
-      parsed.month,
-      wall_clock.date().month().number_from_month(),
-    ),
+    month: seed_missing(parsed.month, wall_clock.date().month().number()),
     day: seed_missing(parsed.day, wall_clock.date().day()),
     hour: seed_missing(parsed.hour, wall_clock.time().hour()),
     minute: seed_missing(parsed.minute, wall_clock.time().minute()),

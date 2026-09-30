@@ -95,7 +95,7 @@ pub fn parse_rfc2822(
     raise InvalidRfc2822
   }
   let date = rfc2822_require(
-    @core.NaiveDate::from_ymd(year, month.number_from_month(), day),
+    @core.NaiveDate::from_ymd(year, month.number(), day),
   )
   let time = rfc2822_require(@core.NaiveTime::from_hms(hour, minute, second))
   let offset = rfc2822_require(@tz.FixedOffset::east(offset_secs))

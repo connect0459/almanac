@@ -43,7 +43,7 @@ test "pred goes back to the previous month and wraps from January to December" {
 }
 
 ///|
-test "number_from_month counts from 1 starting at January" {
+test "number counts from 1 starting at January" {
   for
     case in [
       (@core.Jan, 1),
@@ -60,7 +60,7 @@ test "number_from_month counts from 1 starting at January" {
       (@core.Dec, 12),
     ] {
     let (month, expected) = case
-    assert_eq(month.number_from_month(), expected)
+    assert_eq(month.number(), expected)
   }
 }
 
@@ -125,10 +125,7 @@ test "to_string renders the English month name" {
 ///|
 test "from_number returns the month for each number in 1..=12" {
   for n in 1..<=12 {
-    assert_eq(
-      @core.Month::from_number(n).map(fn(m) { m.number_from_month() }),
-      Some(n),
-    )
+    assert_eq(@core.Month::from_number(n).map(fn(m) { m.number() }), Some(n))
   }
 }
 
@@ -233,17 +230,17 @@ test "from_name rejects anything but an exact abbreviation or full name" {
 
 ///|
 test "Month add wraps around the year in both directions" {
-  assert_eq(@core.Dec.add(1), @core.Jan)
-  assert_eq(@core.Jan.add(-1), @core.Dec)
-  assert_eq(@core.Mar.add(0), @core.Mar)
-  assert_eq(@core.Nov.add(3), @core.Feb)
-  assert_eq(@core.Feb.add(-3), @core.Nov)
+  assert_eq(@core.Dec.add_months(1), @core.Jan)
+  assert_eq(@core.Jan.add_months(-1), @core.Dec)
+  assert_eq(@core.Mar.add_months(0), @core.Mar)
+  assert_eq(@core.Nov.add_months(3), @core.Feb)
+  assert_eq(@core.Feb.add_months(-3), @core.Nov)
 }
 
 ///|
 test "Month add of a whole number of years returns the same month" {
-  assert_eq(@core.Jul.add(12), @core.Jul)
-  assert_eq(@core.Jul.add(-24), @core.Jul)
+  assert_eq(@core.Jul.add_months(12), @core.Jul)
+  assert_eq(@core.Jul.add_months(-24), @core.Jul)
 }
 
 ///|
@@ -253,12 +250,12 @@ test "Month add agrees with repeated succ and pred" {
     for _ in 0..<n.abs() {
       expected = if n > 0 { expected.succ() } else { expected.pred() }
     }
-    assert_eq(@core.Sep.add(n), expected)
+    assert_eq(@core.Sep.add_months(n), expected)
   }
 }
 
 ///|
 test "Month add accepts the extreme Int values without overflowing" {
-  assert_eq(@core.Jan.add(2147483647), @core.Aug)
-  assert_eq(@core.Jan.add(-2147483648), @core.May)
+  assert_eq(@core.Jan.add_months(2147483647), @core.Aug)
+  assert_eq(@core.Jan.add_months(-2147483648), @core.May)
 }

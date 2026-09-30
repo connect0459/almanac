@@ -82,7 +82,7 @@ test {
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `succ()` | `-> Self` | Next day, wrapping `Sun` to `Mon` |
-| `add(n)` | `(Int) -> Self` | The weekday `n` days later (earlier for negative `n`), wrapping around the week; total for every `Int` |
+| `add_days(n)` | `(Int) -> Self` | The weekday `n` days later (earlier for negative `n`), wrapping around the week; total for every `Int` |
 | `pred()` | `-> Self` | Previous day, wrapping `Mon` to `Sun` |
 | `number_from_monday()` | `-> Int` | 1-based, `Mon` is `1` |
 | `number_from_sunday()` | `-> Int` | 1-based, `Sun` is `1` |
@@ -95,6 +95,8 @@ test {
 | `Weekday::from_num_days_from_monday(Int)` | `-> Weekday?` | Inverse of `num_days_from_monday()`; `None` outside `0..=6` |
 | `Weekday::from_num_days_from_sunday(Int)` | `-> Weekday?` | Inverse of `num_days_from_sunday()`; `None` outside `0..=6` |
 | `Weekday::from_name(String)` | `-> Weekday?` | The weekday for a full English name (`"Monday"`) or three-letter abbreviation (`"Mon"`), ignoring ASCII letter case; `None` for anything else (a prefix, `"Tues"`, surrounding whitespace, non-ASCII text) |
+
+Naming rule: `number_from_*` counts from 1 (ISO 8601 for Monday), and `num_days_from_*` counts whole days elapsed since that start day, from 0; each has a `from_*` inverse that returns `None` outside its range.
 
 `Weekday` also implements `Eq` and `Show` (renders `name()`). It deliberately has no `Compare`: a weekday ordering depends on which day starts the week, so use `num_days_from_monday`/`num_days_from_sunday`/`days_since` to compare with an explicit starting day.
 
@@ -138,12 +140,12 @@ An immutable set of `Weekday` values. Every mutating-looking operation (`insert`
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `succ()` | `-> Self` | Next month, wrapping `Dec` to `Jan` |
-| `add(n)` | `(Int) -> Self` | The month `n` months later (earlier for negative `n`), wrapping around the year; total for every `Int` |
+| `add_months(n)` | `(Int) -> Self` | The month `n` months later (earlier for negative `n`), wrapping around the year; total for every `Int` |
 | `pred()` | `-> Self` | Previous month, wrapping `Jan` to `Dec` |
-| `number_from_month()` | `-> Int` | 1-based, `Jan` is `1` |
+| `number()` | `-> Int` | 1-based, `Jan` is `1` |
 | `name()` | `-> String` | Full English name, e.g. `"February"` |
 | `num_days(Int)` | `-> Int` | Number of days in this month for the given year |
-| `Month::from_number(Int)` | `-> Month?` | Inverse of `number_from_month()`; `None` outside `1..=12` |
+| `Month::from_number(Int)` | `-> Month?` | Inverse of `number()`; `None` outside `1..=12` |
 | `Month::from_name(String)` | `-> Month?` | The month for a full English name (`"January"`) or three-letter abbreviation (`"Jan"`), ignoring ASCII letter case; `None` for anything else (a prefix, `"Sept"`, surrounding whitespace, non-ASCII text) |
 
 `Month` also implements `Eq`, `Compare` (`Jan` < ... < `Dec`) and `Show` (renders `name()`).

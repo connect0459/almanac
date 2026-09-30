@@ -49,7 +49,7 @@ pub(all) enum Month {
   Nov
   Dec
 } derive(Compare, Eq, Hash, @debug.Debug)
-pub fn Month::add(Self, Int) -> Self
+pub fn Month::add_months(Self, Int) -> Self
 pub fn Month::compare(Self, Self) -> Int
 pub fn Month::equal(Self, Self) -> Bool
 pub fn Month::from_name(String) -> Self?
@@ -59,7 +59,7 @@ pub fn Month::hash_combine(Self, Hasher) -> Unit
 pub fn Month::name(Self) -> String
 pub fn Month::not_equal(Self, Self) -> Bool
 pub fn Month::num_days(Self, Int) -> Int
-pub fn Month::number_from_month(Self) -> Int
+pub fn Month::number(Self) -> Int
 pub fn Month::op_ge(Self, Self) -> Bool
 pub fn Month::op_gt(Self, Self) -> Bool
 pub fn Month::op_le(Self, Self) -> Bool
@@ -410,7 +410,7 @@ pub(all) enum Weekday {
   Sat
   Sun
 } derive(Eq, Hash, @debug.Debug)
-pub fn Weekday::add(Self, Int) -> Self
+pub fn Weekday::add_days(Self, Int) -> Self
 pub fn Weekday::days_since(Self, Self) -> Int
 pub fn Weekday::equal(Self, Self) -> Bool
 pub fn Weekday::from_name(String) -> Self?

@@ -104,7 +104,7 @@ fn numeric_value(
       }
     Month =>
       match date {
-        Some(d) => (d.month().number_from_month(), 2)
+        Some(d) => (d.month().number(), 2)
         None => raise MissingField(item)
       }
     Day =>
@@ -302,7 +302,7 @@ fn render(
         }
       Numeric(Month) =>
         match date {
-          Some(d) => out.write_string(pad_int(d.month().number_from_month(), 2))
+          Some(d) => out.write_string(pad_int(d.month().number(), 2))
           None => raise MissingField(item)
         }
       Numeric(Day) =>
