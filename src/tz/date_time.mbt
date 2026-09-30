@@ -207,6 +207,134 @@ pub fn[Tz : TimeZone] DateTime::nanosecond(self : DateTime[Tz]) -> Int {
 }
 
 ///|
+/// This datetime with the local calendar year replaced, keeping the rest of the local
+/// wall-clock reading and re-resolving it through the time zone: `Absent`
+/// for a value that does not form a valid local reading (see
+/// `@core.NaiveDateTime::with_year`) or a reading inside a DST gap, and
+/// `Ambiguous` inside a DST fold.
+pub fn[Tz : TimeZone] DateTime::with_year(
+  self : DateTime[Tz],
+  year : Int,
+) -> MappedLocalTime[DateTime[Tz]] {
+  match self.naive_local().with_year(year) {
+    None => Absent
+    Some(naive) => DateTime::from_local(naive, self.tz)
+  }
+}
+
+///|
+/// This datetime with the local month (`1..=12`) replaced, keeping the rest of the local
+/// wall-clock reading and re-resolving it through the time zone: `Absent`
+/// for a value that does not form a valid local reading (see
+/// `@core.NaiveDateTime::with_month`) or a reading inside a DST gap, and
+/// `Ambiguous` inside a DST fold.
+pub fn[Tz : TimeZone] DateTime::with_month(
+  self : DateTime[Tz],
+  month : Int,
+) -> MappedLocalTime[DateTime[Tz]] {
+  match self.naive_local().with_month(month) {
+    None => Absent
+    Some(naive) => DateTime::from_local(naive, self.tz)
+  }
+}
+
+///|
+/// This datetime with the local day of the month replaced, keeping the rest of the local
+/// wall-clock reading and re-resolving it through the time zone: `Absent`
+/// for a value that does not form a valid local reading (see
+/// `@core.NaiveDateTime::with_day`) or a reading inside a DST gap, and
+/// `Ambiguous` inside a DST fold.
+pub fn[Tz : TimeZone] DateTime::with_day(
+  self : DateTime[Tz],
+  day : Int,
+) -> MappedLocalTime[DateTime[Tz]] {
+  match self.naive_local().with_day(day) {
+    None => Absent
+    Some(naive) => DateTime::from_local(naive, self.tz)
+  }
+}
+
+///|
+/// This datetime with the local day of the year replaced, keeping the rest of the local
+/// wall-clock reading and re-resolving it through the time zone: `Absent`
+/// for a value that does not form a valid local reading (see
+/// `@core.NaiveDateTime::with_ordinal`) or a reading inside a DST gap, and
+/// `Ambiguous` inside a DST fold.
+pub fn[Tz : TimeZone] DateTime::with_ordinal(
+  self : DateTime[Tz],
+  ordinal : Int,
+) -> MappedLocalTime[DateTime[Tz]] {
+  match self.naive_local().with_ordinal(ordinal) {
+    None => Absent
+    Some(naive) => DateTime::from_local(naive, self.tz)
+  }
+}
+
+///|
+/// This datetime with the local hour replaced, keeping the rest of the local
+/// wall-clock reading and re-resolving it through the time zone: `Absent`
+/// for a value that does not form a valid local reading (see
+/// `@core.NaiveDateTime::with_hour`) or a reading inside a DST gap, and
+/// `Ambiguous` inside a DST fold.
+pub fn[Tz : TimeZone] DateTime::with_hour(
+  self : DateTime[Tz],
+  hour : Int,
+) -> MappedLocalTime[DateTime[Tz]] {
+  match self.naive_local().with_hour(hour) {
+    None => Absent
+    Some(naive) => DateTime::from_local(naive, self.tz)
+  }
+}
+
+///|
+/// This datetime with the local minute replaced, keeping the rest of the local
+/// wall-clock reading and re-resolving it through the time zone: `Absent`
+/// for a value that does not form a valid local reading (see
+/// `@core.NaiveDateTime::with_minute`) or a reading inside a DST gap, and
+/// `Ambiguous` inside a DST fold.
+pub fn[Tz : TimeZone] DateTime::with_minute(
+  self : DateTime[Tz],
+  minute : Int,
+) -> MappedLocalTime[DateTime[Tz]] {
+  match self.naive_local().with_minute(minute) {
+    None => Absent
+    Some(naive) => DateTime::from_local(naive, self.tz)
+  }
+}
+
+///|
+/// This datetime with the local second replaced, keeping the rest of the local
+/// wall-clock reading and re-resolving it through the time zone: `Absent`
+/// for a value that does not form a valid local reading (see
+/// `@core.NaiveDateTime::with_second`) or a reading inside a DST gap, and
+/// `Ambiguous` inside a DST fold.
+pub fn[Tz : TimeZone] DateTime::with_second(
+  self : DateTime[Tz],
+  second : Int,
+) -> MappedLocalTime[DateTime[Tz]] {
+  match self.naive_local().with_second(second) {
+    None => Absent
+    Some(naive) => DateTime::from_local(naive, self.tz)
+  }
+}
+
+///|
+/// This datetime with the local nanosecond replaced, keeping the rest of the local
+/// wall-clock reading and re-resolving it through the time zone: `Absent`
+/// for a value that does not form a valid local reading (see
+/// `@core.NaiveDateTime::with_nanosecond`) or a reading inside a DST gap, and
+/// `Ambiguous` inside a DST fold.
+pub fn[Tz : TimeZone] DateTime::with_nanosecond(
+  self : DateTime[Tz],
+  nanosecond : Int,
+) -> MappedLocalTime[DateTime[Tz]] {
+  match self.naive_local().with_nanosecond(nanosecond) {
+    None => Absent
+    Some(naive) => DateTime::from_local(naive, self.tz)
+  }
+}
+
+///|
 /// This datetime re-expressed in `tz`, keeping the same underlying UTC
 /// instant.
 pub fn[Tz, Tz2] DateTime::with_timezone(

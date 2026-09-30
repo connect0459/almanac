@@ -395,3 +395,79 @@ test "DateTime time-of-day accessors report the local time, not the UTC time" {
     @core.NaiveTime::from_hms_nano(7, 30, 15, 123_456_789).unwrap(),
   )
 }
+
+///|
+fn assert_tokyo_reading(
+  actual : @tz.MappedLocalTime[@tz.DateTime[@tz.FixedOffset]],
+  ymd : (Int, Int, Int),
+  hms : (Int, Int, Int),
+  nanos : Int,
+) -> Unit raise {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let (y, mo, d) = ymd
+  let (h, mi, s) = hms
+  let want = @tz.DateTime::from_ymd_hms(y, mo, d, h, mi, s, tokyo)
+    .single()
+    .unwrap()
+    .add_signed(@core.TimeDelta::nanoseconds(nanos.to_int64()).unwrap())
+  assert_eq(actual.single().unwrap(), want)
+}
+
+///|
+test "with_* replaces a single local component and keeps the rest of the wall-clock reading" {
+  let dt = tokyo_new_year_morning()
+  let n = 123_456_789
+  assert_tokyo_reading(dt.with_year(2025), (2025, 1, 1), (7, 30, 15), n)
+  assert_tokyo_reading(dt.with_month(3), (2024, 3, 1), (7, 30, 15), n)
+  assert_tokyo_reading(dt.with_day(20), (2024, 1, 20), (7, 30, 15), n)
+  assert_tokyo_reading(dt.with_ordinal(60), (2024, 2, 29), (7, 30, 15), n)
+  assert_tokyo_reading(dt.with_hour(23), (2024, 1, 1), (23, 30, 15), n)
+  assert_tokyo_reading(dt.with_minute(0), (2024, 1, 1), (7, 0, 15), n)
+  assert_tokyo_reading(dt.with_second(59), (2024, 1, 1), (7, 30, 59), n)
+  assert_tokyo_reading(dt.with_nanosecond(5), (2024, 1, 1), (7, 30, 15), 5)
+}
+
+///|
+test "with_* reports Absent for a component value that does not form a valid local reading" {
+  let dt = tokyo_new_year_morning().with_month(1).single().unwrap()
+  assert_true(dt.with_day(32) is @tz.Absent)
+  assert_true(dt.with_month(13) is @tz.Absent)
+  assert_true(dt.with_ordinal(367) is @tz.Absent)
+  assert_true(dt.with_hour(24) is @tz.Absent)
+  assert_true(dt.with_minute(60) is @tz.Absent)
+  assert_true(dt.with_second(60) is @tz.Absent)
+  assert_true(dt.with_nanosecond(2_000_000_000) is @tz.Absent)
+  let leap_day = dt
+    .with_month(2)
+    .single()
+    .unwrap()
+    .with_day(29)
+    .single()
+    .unwrap()
+  assert_true(leap_day.with_year(2025) is @tz.Absent)
+  let jan_31 = dt.with_day(31).single().unwrap()
+  assert_true(jan_31.with_month(2) is @tz.Absent)
+}
+
+///|
+test "with_hour reports Absent when the new local reading falls in a spring-forward gap (America/New_York)" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let after_gap = @tz.DateTime::from_ymd_hms(2024, 3, 10, 3, 30, 0, ny)
+    .single()
+    .unwrap()
+  assert_true(after_gap.with_hour(2) is @tz.Absent)
+}
+
+///|
+test "with_hour reports Ambiguous when the new local reading falls in a fall-back fold (America/New_York)" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let after_fold = @tz.DateTime::from_ymd_hms(2024, 11, 3, 5, 30, 0, ny)
+    .single()
+    .unwrap()
+  let result = after_fold.with_hour(1)
+  let earliest = result.earliest().unwrap()
+  let latest = result.latest().unwrap()
+  assert_eq(earliest.hour(), 1)
+  assert_eq(latest.hour(), 1)
+  assert_eq(earliest.compare_instant(latest), -1)
+}
