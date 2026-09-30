@@ -12,11 +12,19 @@ pub let date_only : String
 
 pub fn format_date(@core.NaiveDate, String) -> String raise ParseError
 
+pub fn format_date_items(@core.NaiveDate, Array[Item]) -> String raise ParseError
+
 pub fn format_date_time(@core.NaiveDateTime, String) -> String raise ParseError
+
+pub fn format_date_time_items(@core.NaiveDateTime, Array[Item]) -> String raise ParseError
 
 pub fn[Tz : @tz.TimeZone] format_date_time_tz(@tz.DateTime[Tz], String) -> String raise ParseError
 
+pub fn[Tz : @tz.TimeZone] format_date_time_tz_items(@tz.DateTime[Tz], Array[Item]) -> String raise ParseError
+
 pub fn format_time(@core.NaiveTime, String) -> String raise ParseError
+
+pub fn format_time_items(@core.NaiveTime, Array[Item]) -> String raise ParseError
 
 pub let kitchen : String
 
@@ -41,6 +49,10 @@ pub fn parse_duration(String) -> @core.TimeDelta raise ParseError
 pub fn parse_fixed_offset(String) -> @tz.FixedOffset raise ParseError
 
 pub fn parse_from_rfc2822(String) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
+
+pub fn parse_items(Array[Item], String) -> Parsed raise ParseError
+
+pub fn parse_items_and_remainder(Array[Item], String) -> (Parsed, String) raise ParseError
 
 pub fn parse_rfc3339(String) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
 
@@ -157,6 +169,15 @@ pub(all) enum PadMode {
 pub fn PadMode::equal(Self, Self) -> Bool
 pub fn PadMode::not_equal(Self, Self) -> Bool
 pub fn PadMode::to_repr(Self) -> @debug.Repr
+
+pub struct Parsed {
+  // private fields
+}
+pub fn Parsed::to_date(Self) -> @core.NaiveDate raise ParseError
+pub fn Parsed::to_date_time(Self) -> @core.NaiveDateTime raise ParseError
+pub fn[Tz : @tz.TimeZone] Parsed::to_date_time_in(Self, Tz) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise ParseError
+pub fn Parsed::to_date_time_tz(Self) -> @tz.DateTime[@tz.FixedOffset] raise ParseError
+pub fn Parsed::to_time(Self) -> @core.NaiveTime raise ParseError
 
 pub(all) enum SecondsFormat {
   Secs

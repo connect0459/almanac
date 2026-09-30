@@ -1,53 +1,54 @@
 ///|
-/// An accumulator for fields discovered while walking a token sequence
-/// against input text. Every field is optional until its specifier is
-/// actually seen; `resolve_date`/`resolve_time`/`resolve_offset` decide
-/// afterward whether enough fields were populated, and whether they
-/// agree with each other.
-priv struct Parsed {
-  year : Int?
-  month : Int?
-  day : Int?
-  ordinal : Int?
-  hour : Int?
-  minute : Int?
-  second : Int?
-  nanosecond : Int?
-  weekday : @core.Weekday?
-  offset_secs : Int?
+/// The fields discovered while walking an `Item` sequence against input text
+/// (see `parse_items`), not yet resolved into a value. Every field is
+/// optional until its specifier is actually seen; the `to_*` methods decide
+/// afterward whether enough fields were populated, and whether they agree
+/// with each other. Opaque: the same `Parsed` can be resolved several ways
+/// (`to_date`, `to_time`, ...) without re-parsing.
+pub struct Parsed {
+  priv year : Int?
+  priv month : Int?
+  priv day : Int?
+  priv ordinal : Int?
+  priv hour : Int?
+  priv minute : Int?
+  priv second : Int?
+  priv nanosecond : Int?
+  priv weekday : @core.Weekday?
+  priv offset_secs : Int?
   /// `%I`/`%l`: the hour on a 12-hour clock (`1..=12`), reconciled with
   /// `is_pm` (and cross-checked against `hour`, if also present) by
   /// `resolve_hour`.
-  hour12 : Int?
+  priv hour12 : Int?
   /// `%p`/`%P`: whether the 12-hour clock reading is PM.
-  is_pm : Bool?
+  priv is_pm : Bool?
   /// `%C`: the calendar year divided by 100, reconciled with `year`
   /// and/or `year_mod_100` by `resolve_year`.
-  year_div_100 : Int?
+  priv year_div_100 : Int?
   /// `%y`: the calendar year modulo 100. See `resolve_year`.
-  year_mod_100 : Int?
+  priv year_mod_100 : Int?
   /// `%q`: cross-checked, like `ordinal`/`weekday`, against an
   /// already-determined date rather than used to construct one (a
   /// quarter alone doesn't determine a day).
-  quarter : Int?
+  priv quarter : Int?
   /// `%U`: the Sunday-based week number, combined with `weekday` by
   /// `resolve_date_from_week` when no month/day/ordinal is present, or
   /// else cross-checked against the constructed date.
-  week_sunday : Int?
+  priv week_sunday : Int?
   /// `%W`: the Monday-based week number. See `week_sunday`.
-  week_monday : Int?
+  priv week_monday : Int?
   /// `%Z`: the zone name text as it appeared (never validated). Only
   /// `parse_date_time_in` consults it, to resolve an abbreviation through
   /// the target zone; every other entry point discards it.
-  zone_name : String?
+  priv zone_name : String?
   /// `%G`: the ISO week-based year, combined with `iso_week` and `weekday`
   /// by `resolve_date_from_iso_week`, or else cross-checked against the
   /// constructed date.
-  iso_year : Int?
+  priv iso_year : Int?
   /// `%g`: the ISO week-based year modulo 100. See `resolve_iso_year`.
-  iso_year_mod_100 : Int?
+  priv iso_year_mod_100 : Int?
   /// `%V`: the ISO week number. See `iso_year`.
-  iso_week : Int?
+  priv iso_week : Int?
 }
 
 ///|
@@ -757,8 +758,11 @@ fn apply_item(
 /// Walks `items` against `input`, raising `InputMismatch` if any literal
 /// or specifier fails to match, or if input remains once every item has
 /// been consumed.
-fn parse_items(items : Array[Item], input : String) -> Parsed raise ParseError {
-  let (parsed, rest) = parse_items_prefix(items, input)
+pub fn parse_items(
+  items : Array[Item],
+  input : String,
+) -> Parsed raise ParseError {
+  let (parsed, rest) = parse_items_and_remainder(items, input)
   if rest != "" {
     raise InputMismatch
   }
@@ -769,7 +773,7 @@ fn parse_items(items : Array[Item], input : String) -> Parsed raise ParseError {
 /// Like `parse_items`, but stops once every item is consumed instead of
 /// rejecting leftover input, returning it (from the first unconsumed
 /// character to the end) alongside the accumulator.
-fn parse_items_prefix(
+pub fn parse_items_and_remainder(
   items : Array[Item],
   input : String,
 ) -> (Parsed, String) raise ParseError {
@@ -1061,16 +1065,39 @@ fn resolve_offset(parsed : Parsed) -> @tz.FixedOffset raise ParseError {
 }
 
 ///|
-fn finish_date_time(parsed : Parsed) -> @core.NaiveDateTime raise ParseError {
-  @core.NaiveDateTime::new(resolve_date(parsed), resolve_time(parsed))
+/// Resolves the date fields into a `NaiveDate`: `%Y` (or `%C`/`%y`, or the
+/// ISO year) plus `%m`/`%d`, `%j`, a week number and weekday, or an ISO
+/// week. Raises `IncompleteFields` if too few fields were parsed and
+/// `InconsistentFields` if they disagree or do not form a valid date.
+pub fn Parsed::to_date(self : Parsed) -> @core.NaiveDate raise ParseError {
+  resolve_date(self)
 }
 
 ///|
-fn finish_date_time_tz(
-  parsed : Parsed,
+/// Resolves the time-of-day fields into a `NaiveTime`, with the same
+/// failures as `to_date`.
+pub fn Parsed::to_time(self : Parsed) -> @core.NaiveTime raise ParseError {
+  resolve_time(self)
+}
+
+///|
+/// Resolves the date and time-of-day fields together into a
+/// `NaiveDateTime`.
+pub fn Parsed::to_date_time(
+  self : Parsed,
+) -> @core.NaiveDateTime raise ParseError {
+  @core.NaiveDateTime::new(resolve_date(self), resolve_time(self))
+}
+
+///|
+/// Resolves the date, time-of-day and `%z` offset fields into a
+/// `DateTime[FixedOffset]`, reading the date and time as that offset's
+/// local wall-clock time.
+pub fn Parsed::to_date_time_tz(
+  self : Parsed,
 ) -> @tz.DateTime[@tz.FixedOffset] raise ParseError {
-  let local_naive = finish_date_time(parsed)
-  let offset = resolve_offset(parsed)
+  let local_naive = self.to_date_time()
+  let offset = resolve_offset(self)
   @tz.DateTime::from_utc(
     local_naive.sub_seconds(offset.local_minus_utc()),
     offset,
@@ -1078,15 +1105,17 @@ fn finish_date_time_tz(
 }
 
 ///|
-fn[Tz : @tz.TimeZone] finish_date_time_in(
-  parsed : Parsed,
+/// Resolves a zone-less reading as wall-clock time in `tz`; see
+/// `parse_date_time_in` for the `%Z` handling and the offset rejection.
+pub fn[Tz : @tz.TimeZone] Parsed::to_date_time_in(
+  self : Parsed,
   tz : Tz,
 ) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise ParseError {
-  if parsed.offset_secs is Some(_) {
+  if self.offset_secs is Some(_) {
     raise InconsistentFields
   }
-  let local_naive = finish_date_time(parsed)
-  match parsed.zone_name {
+  let local_naive = self.to_date_time()
+  match self.zone_name {
     Some(name) =>
       match tz.offset_from_abbreviation(name, local_naive) {
         Some(offset) =>
@@ -1110,7 +1139,7 @@ pub fn parse_date(
   input : String,
   fmt : String,
 ) -> @core.NaiveDate raise ParseError {
-  resolve_date(parse_items(tokenize(fmt), input))
+  parse_items(tokenize(fmt), input).to_date()
 }
 
 ///|
@@ -1121,8 +1150,8 @@ pub fn parse_date_and_remainder(
   input : String,
   fmt : String,
 ) -> (@core.NaiveDate, String) raise ParseError {
-  let (parsed, rest) = parse_items_prefix(tokenize(fmt), input)
-  (resolve_date(parsed), rest)
+  let (parsed, rest) = parse_items_and_remainder(tokenize(fmt), input)
+  (parsed.to_date(), rest)
 }
 
 ///|
@@ -1132,7 +1161,7 @@ pub fn parse_time(
   input : String,
   fmt : String,
 ) -> @core.NaiveTime raise ParseError {
-  resolve_time(parse_items(tokenize(fmt), input))
+  parse_items(tokenize(fmt), input).to_time()
 }
 
 ///|
@@ -1142,8 +1171,8 @@ pub fn parse_time_and_remainder(
   input : String,
   fmt : String,
 ) -> (@core.NaiveTime, String) raise ParseError {
-  let (parsed, rest) = parse_items_prefix(tokenize(fmt), input)
-  (resolve_time(parsed), rest)
+  let (parsed, rest) = parse_items_and_remainder(tokenize(fmt), input)
+  (parsed.to_time(), rest)
 }
 
 ///|
@@ -1152,7 +1181,7 @@ pub fn parse_date_time(
   input : String,
   fmt : String,
 ) -> @core.NaiveDateTime raise ParseError {
-  finish_date_time(parse_items(tokenize(fmt), input))
+  parse_items(tokenize(fmt), input).to_date_time()
 }
 
 ///|
@@ -1162,8 +1191,8 @@ pub fn parse_date_time_and_remainder(
   input : String,
   fmt : String,
 ) -> (@core.NaiveDateTime, String) raise ParseError {
-  let (parsed, rest) = parse_items_prefix(tokenize(fmt), input)
-  (finish_date_time(parsed), rest)
+  let (parsed, rest) = parse_items_and_remainder(tokenize(fmt), input)
+  (parsed.to_date_time(), rest)
 }
 
 ///|
@@ -1174,7 +1203,7 @@ pub fn parse_date_time_tz(
   input : String,
   fmt : String,
 ) -> @tz.DateTime[@tz.FixedOffset] raise ParseError {
-  finish_date_time_tz(parse_items(tokenize(fmt), input))
+  parse_items(tokenize(fmt), input).to_date_time_tz()
 }
 
 ///|
@@ -1184,8 +1213,8 @@ pub fn parse_date_time_tz_and_remainder(
   input : String,
   fmt : String,
 ) -> (@tz.DateTime[@tz.FixedOffset], String) raise ParseError {
-  let (parsed, rest) = parse_items_prefix(tokenize(fmt), input)
-  (finish_date_time_tz(parsed), rest)
+  let (parsed, rest) = parse_items_and_remainder(tokenize(fmt), input)
+  (parsed.to_date_time_tz(), rest)
 }
 
 ///|
@@ -1207,7 +1236,7 @@ pub fn[Tz : @tz.TimeZone] parse_date_time_in(
   fmt : String,
   tz : Tz,
 ) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise ParseError {
-  finish_date_time_in(parse_items(tokenize(fmt), input), tz)
+  parse_items(tokenize(fmt), input).to_date_time_in(tz)
 }
 
 ///|
@@ -1218,6 +1247,6 @@ pub fn[Tz : @tz.TimeZone] parse_date_time_in_and_remainder(
   fmt : String,
   tz : Tz,
 ) -> (@tz.MappedLocalTime[@tz.DateTime[Tz]], String) raise ParseError {
-  let (parsed, rest) = parse_items_prefix(tokenize(fmt), input)
-  (finish_date_time_in(parsed, tz), rest)
+  let (parsed, rest) = parse_items_and_remainder(tokenize(fmt), input)
+  (parsed.to_date_time_in(tz), rest)
 }

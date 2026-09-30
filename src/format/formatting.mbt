@@ -506,11 +506,59 @@ fn render(
 }
 
 ///|
+/// Renders `date` against `items`, a sequence already produced by
+/// `tokenize` (or built by hand), so a format string reused for many values
+/// is tokenized once. Same as `format_date` otherwise.
+pub fn format_date_items(
+  date : @core.NaiveDate,
+  items : Array[Item],
+) -> String raise ParseError {
+  render(items, Some(date), None, None, None)
+}
+
+///|
+/// Renders `time` against `items`; see `format_date_items`.
+pub fn format_time_items(
+  time : @core.NaiveTime,
+  items : Array[Item],
+) -> String raise ParseError {
+  render(items, None, Some(time), None, None)
+}
+
+///|
+/// Renders `dt` against `items`; see `format_date_items`.
+pub fn format_date_time_items(
+  dt : @core.NaiveDateTime,
+  items : Array[Item],
+) -> String raise ParseError {
+  render(items, Some(dt.date()), Some(dt.time()), None, Some(dt.timestamp()))
+}
+
+///|
+/// Renders a zone-aware `dt` against `items`; see `format_date_items` and
+/// `format_date_time_tz`.
+pub fn[Tz : @tz.TimeZone] format_date_time_tz_items(
+  dt : @tz.DateTime[Tz],
+  items : Array[Item],
+) -> String raise ParseError {
+  let wall_clock = dt.naive_local()
+  let name = dt.timezone().tz_name(dt.naive_utc())
+  let offset = dt.offset().local_minus_utc()
+  render(
+    items,
+    Some(wall_clock.date()),
+    Some(wall_clock.time()),
+    Some((offset, name)),
+    Some(dt.naive_utc().timestamp()),
+  )
+}
+
+///|
 pub fn format_date(
   date : @core.NaiveDate,
   fmt : String,
 ) -> String raise ParseError {
-  render(tokenize(fmt), Some(date), None, None, None)
+  format_date_items(date, tokenize(fmt))
 }
 
 ///|
@@ -518,7 +566,7 @@ pub fn format_time(
   time : @core.NaiveTime,
   fmt : String,
 ) -> String raise ParseError {
-  render(tokenize(fmt), None, Some(time), None, None)
+  format_time_items(time, tokenize(fmt))
 }
 
 ///|
@@ -526,13 +574,7 @@ pub fn format_date_time(
   dt : @core.NaiveDateTime,
   fmt : String,
 ) -> String raise ParseError {
-  render(
-    tokenize(fmt),
-    Some(dt.date()),
-    Some(dt.time()),
-    None,
-    Some(dt.timestamp()),
-  )
+  format_date_time_items(dt, tokenize(fmt))
 }
 
 ///|
@@ -545,14 +587,5 @@ pub fn[Tz : @tz.TimeZone] format_date_time_tz(
   dt : @tz.DateTime[Tz],
   fmt : String,
 ) -> String raise ParseError {
-  let wall_clock = dt.naive_local()
-  let name = dt.timezone().tz_name(dt.naive_utc())
-  let offset = dt.offset().local_minus_utc()
-  render(
-    tokenize(fmt),
-    Some(wall_clock.date()),
-    Some(wall_clock.time()),
-    Some((offset, name)),
-    Some(dt.naive_utc().timestamp()),
-  )
+  format_date_time_tz_items(dt, tokenize(fmt))
 }
