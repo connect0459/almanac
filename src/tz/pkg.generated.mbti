@@ -21,8 +21,11 @@ pub struct DateTime[Tz] {
 } derive(Eq, Hash, @debug.Debug)
 pub fn[Tz] DateTime::add_days(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz] DateTime::add_months(Self[Tz], Int) -> Self[Tz]
+pub fn[Tz] DateTime::add_offset(Self[Tz], FixedOffset) -> Self[Tz]
 pub fn[Tz] DateTime::add_signed(Self[Tz], @core.TimeDelta) -> Self[Tz]
 pub fn[Tz] DateTime::add_years(Self[Tz], Int) -> Self[Tz]
+pub fn[Tz] DateTime::checked_add_offset(Self[Tz], FixedOffset) -> Self[Tz]?
+pub fn[Tz] DateTime::checked_sub_offset(Self[Tz], FixedOffset) -> Self[Tz]?
 pub fn[Tz : Eq] DateTime::compare(Self[Tz], Self[Tz]) -> Int
 pub fn[Tz, Tz2] DateTime::compare_instant(Self[Tz], Self[Tz2]) -> Int
 pub fn[Tz : TimeZone] DateTime::date_naive(Self[Tz]) -> @core.NaiveDate
@@ -70,6 +73,7 @@ pub fn[Tz : TimeZone] DateTime::second(Self[Tz]) -> Int
 pub fn[Tz, Tz2] DateTime::signed_duration_since(Self[Tz], Self[Tz2]) -> @core.TimeDelta
 pub fn[Tz] DateTime::sub_days(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz] DateTime::sub_months(Self[Tz], Int) -> Self[Tz]
+pub fn[Tz] DateTime::sub_offset(Self[Tz], FixedOffset) -> Self[Tz]
 pub fn[Tz] DateTime::sub_signed(Self[Tz], @core.TimeDelta) -> Self[Tz]
 pub fn[Tz] DateTime::sub_years(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz : TimeZone] DateTime::time(Self[Tz]) -> @core.NaiveTime

@@ -999,3 +999,95 @@ test "round_up reports the same failure reasons as NaiveDateTime::round_up" {
     Err(@core.OutOfRange),
   )
 }
+
+///|
+fn utc_datetime(h : Int, mi : Int) -> @tz.DateTime[@tz.Utc] {
+  @tz.DateTime::from_utc(
+    @core.NaiveDateTime::new(
+      @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),
+      @core.NaiveTime::from_hms(h, mi, 0).unwrap(),
+    ),
+    @tz.Utc::new(),
+  )
+}
+
+///|
+test "add_offset moves the instant forward by the offset's seconds, keeping the zone" {
+  let plus_nine = @tz.FixedOffset::east(9 * 3600).unwrap()
+  assert_eq(utc_datetime(12, 0).add_offset(plus_nine), utc_datetime(21, 0))
+}
+
+///|
+test "sub_offset moves the instant back by the offset's seconds, and a west offset reverses the direction" {
+  let plus_nine = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let minus_five = @tz.FixedOffset::west(5 * 3600).unwrap()
+  assert_eq(utc_datetime(12, 0).sub_offset(plus_nine), utc_datetime(3, 0))
+  assert_eq(utc_datetime(12, 0).add_offset(minus_five), utc_datetime(7, 0))
+}
+
+///|
+test "shifting by a zero offset leaves the datetime unchanged" {
+  let zero = @tz.FixedOffset::east(0).unwrap()
+  assert_eq(utc_datetime(12, 0).add_offset(zero), utc_datetime(12, 0))
+  assert_eq(utc_datetime(12, 0).sub_offset(zero), utc_datetime(12, 0))
+}
+
+///|
+test "add_offset and sub_offset carry across midnight and keep a non-UTC zone" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let dt = @tz.DateTime::from_utc(utc_datetime(20, 0).naive_utc(), tokyo)
+  let shifted = dt.add_offset(tokyo)
+  assert_eq(shifted.timezone(), tokyo)
+  assert_eq(
+    shifted.naive_utc().date(),
+    @core.NaiveDate::from_ymd(2024, 6, 16).unwrap(),
+  )
+  assert_eq(shifted.sub_offset(tokyo), dt)
+}
+
+///|
+test "checked_add_offset and checked_sub_offset agree with the aborting forms inside the representable range" {
+  let plus_nine = @tz.FixedOffset::east(9 * 3600).unwrap()
+  assert_eq(
+    utc_datetime(12, 0).checked_add_offset(plus_nine),
+    Some(utc_datetime(12, 0).add_offset(plus_nine)),
+  )
+  assert_eq(
+    utc_datetime(12, 0).checked_sub_offset(plus_nine),
+    Some(utc_datetime(12, 0).sub_offset(plus_nine)),
+  )
+}
+
+///|
+test "checked_add_offset and checked_sub_offset return None outside the representable range" {
+  let plus_nine = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let last_day = @core.NaiveDate::from_epoch_days(2_147_483_647 - 719_468).unwrap()
+  let first_day = @core.NaiveDate::from_epoch_days(-(2_147_483_647 - 719_468)).unwrap()
+  let last = @tz.DateTime::from_utc(
+    @core.NaiveDateTime::new(
+      last_day,
+      @core.NaiveTime::from_hms(23, 59, 59).unwrap(),
+    ),
+    @tz.Utc::new(),
+  )
+  let first = @tz.DateTime::from_utc(
+    @core.NaiveDateTime::new(first_day, @core.NaiveTime::midnight()),
+    @tz.Utc::new(),
+  )
+  assert_eq(last.checked_add_offset(plus_nine), None)
+  assert_eq(first.checked_sub_offset(plus_nine), None)
+}
+
+///|
+test "panic add_offset aborts when the shifted instant leaves the representable range" {
+  let plus_nine = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let last_day = @core.NaiveDate::from_epoch_days(2_147_483_647 - 719_468).unwrap()
+  let last = @tz.DateTime::from_utc(
+    @core.NaiveDateTime::new(
+      last_day,
+      @core.NaiveTime::from_hms(23, 59, 59).unwrap(),
+    ),
+    @tz.Utc::new(),
+  )
+  ignore(last.add_offset(plus_nine))
+}

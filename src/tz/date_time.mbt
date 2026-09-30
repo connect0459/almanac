@@ -710,6 +710,63 @@ pub fn[Tz, Tz2] DateTime::signed_duration_since(
 }
 
 ///|
+/// This datetime's instant moved forward by `offset`'s seconds (backward for
+/// a west offset), keeping the same time zone. Delegates to
+/// `@core.NaiveDateTime::add_seconds` on the underlying UTC datetime.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_add_offset` to get `None` instead.
+pub fn[Tz] DateTime::add_offset(
+  self : DateTime[Tz],
+  offset : FixedOffset,
+) -> DateTime[Tz] {
+  DateTime::{
+    datetime: self.datetime.add_seconds(offset.local_minus_utc()),
+    tz: self.tz,
+  }
+}
+
+///|
+/// This datetime's instant moved backward by `offset`'s seconds (forward for
+/// a west offset), keeping the same time zone. See `add_offset`.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_sub_offset` to get `None` instead.
+pub fn[Tz] DateTime::sub_offset(
+  self : DateTime[Tz],
+  offset : FixedOffset,
+) -> DateTime[Tz] {
+  DateTime::{
+    datetime: self.datetime.sub_seconds(offset.local_minus_utc()),
+    tz: self.tz,
+  }
+}
+
+///|
+/// Like `add_offset`, but `None` if the result falls outside `NaiveDate`'s
+/// representable range.
+pub fn[Tz] DateTime::checked_add_offset(
+  self : DateTime[Tz],
+  offset : FixedOffset,
+) -> DateTime[Tz]? {
+  self.datetime
+  .checked_add_seconds(offset.local_minus_utc())
+  .map(datetime => DateTime::{ datetime, tz: self.tz, })
+}
+
+///|
+/// Like `sub_offset`, but `None` if the result falls outside `NaiveDate`'s
+/// representable range.
+pub fn[Tz] DateTime::checked_sub_offset(
+  self : DateTime[Tz],
+  offset : FixedOffset,
+) -> DateTime[Tz]? {
+  self.datetime
+  .checked_sub_seconds(offset.local_minus_utc())
+  .map(datetime => DateTime::{ datetime, tz: self.tz, })
+}
+
+///|
 /// This datetime's underlying UTC instant truncated toward the Unix epoch
 /// to the nearest multiple of `granularity`, keeping the same time zone.
 /// Operates on the absolute UTC instant, not the offset-shifted local

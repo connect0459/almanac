@@ -202,6 +202,8 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 | `fixed_offset()` | `-> Self[FixedOffset]` | Re-express the same instant with the offset in effect at that instant frozen (requires `Tz : TimeZone`); it no longer follows later DST changes |
 | `add_signed(TimeDelta)` | `-> Self[Tz]` | Advance by a signed duration, keeping the same time zone |
 | `sub_signed(TimeDelta)` | `-> Self[Tz]` | Move back by a signed duration |
+| `add_offset(FixedOffset)` / `sub_offset(FixedOffset)` | `-> Self[Tz]` | Move the instant forward/backward by an offset's seconds (the opposite way for a west offset), keeping the same time zone; abort if the result leaves `NaiveDate`'s range |
+| `checked_add_offset(FixedOffset)` / `checked_sub_offset(FixedOffset)` | `-> Self[Tz]?` | The same, but `None` instead of aborting when out of range |
 | `add_months(Int)` | `-> Self[Tz]` | Advance the date by months, keeping the time of day and time zone; see `NaiveDate::add_months` (in `core`) for the day-of-month clamping rule |
 | `sub_months(Int)` | `-> Self[Tz]` | Move the date back by months |
 | `add_years(Int)` | `-> Self[Tz]` | Advance the date by years, keeping the time of day and time zone; see `NaiveDate::add_years` (in `core`) for the clamping rule |
