@@ -131,6 +131,17 @@ pub enum MappedLocalTime[T] {
 
 `MappedLocalTime[T]` also implements `Eq` (when `T : Eq`).
 
+There is deliberately no `and_then`. A step that itself returns a `MappedLocalTime`, applied to both sides of an `Ambiguous`, could yield up to four values with no obvious one to keep. Reduce to one value first with `single()`, `earliest()` or `latest()`, then continue; that choice stays with the caller:
+
+```mbt check
+///|
+test {
+  let dt = @tz.DateTime::from_ymd_hms(2024, 3, 5, 9, 0, 0, @tz.Utc::new()).unwrap()
+  let moved = dt.with_hour(10).single().bind(d => d.with_minute(30).single())
+  assert_eq(moved.map(d => d.hour() * 100 + d.minute()), Some(1030))
+}
+```
+
 ---
 
 ### `Utc`
