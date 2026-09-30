@@ -36,24 +36,17 @@ pub impl Show for Location with fn output(self, logger) {
 pub extend Location with Show::{to_string, output}
 
 ///|
-/// Constructs a `Location` from raw TZif bytes, or `None` if the bytes
-/// are malformed, or its POSIX TZ footer (when present) is malformed.
+/// Constructs a `Location` from raw TZif bytes, or `None` if `parse_tzif`
+/// rejects them (including a malformed POSIX TZ footer).
 /// `name()` reports `None`, since raw bytes carry no IANA identifier; use
 /// `Location::from_tzif_bytes_named` or `Location::load` to construct a
 /// `Location` whose `name()` is known.
 pub fn Location::from_tzif_bytes(data : Bytes) -> Location? {
-  match parse_tzif(data) {
-    None => None
-    Some(tzif) =>
-      match tzif.posix_tz() {
-        None => Some(Location::{ tzif, posix_tz: None, name: None, })
-        Some(s) =>
-          match parse_posix_tz(s) {
-            None => None
-            Some(p) => Some(Location::{ tzif, posix_tz: Some(p), name: None, })
-          }
-      }
-  }
+  parse_tzif(data).map(tzif => Location::{
+    tzif,
+    posix_tz: tzif.posix_tz(),
+    name: None,
+  })
 }
 
 ///|

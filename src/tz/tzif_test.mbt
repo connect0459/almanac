@@ -17,7 +17,7 @@ test "parse_tzif parses UTC: a single local time type, no transitions, no DST" {
   assert_eq(utc_type.utc_offset(), 0)
   assert_eq(utc_type.is_dst(), false)
   assert_eq(utc_type.abbreviation(), "UTC")
-  assert_eq(parsed.posix_tz(), Some("UTC0"))
+  assert_eq(parsed.posix_tz(), @tz.parse_posix_tz("UTC0"))
 }
 
 ///|
@@ -28,7 +28,7 @@ test "parse_tzif parses Asia/Tokyo's local time types, including negative-adjace
   assert_eq(types[0], @tz.LocalTimeType::new(33539, false, "LMT").unwrap())
   assert_eq(types[1], @tz.LocalTimeType::new(36000, true, "JDT").unwrap())
   assert_eq(types[2], @tz.LocalTimeType::new(32400, false, "JST").unwrap())
-  assert_eq(parsed.posix_tz(), Some("JST-9"))
+  assert_eq(parsed.posix_tz(), @tz.parse_posix_tz("JST-9"))
 }
 
 ///|
@@ -53,7 +53,7 @@ test "parse_tzif parses America/New_York, a zone with a negative (west-of-UTC) h
   assert_eq(parsed.transitions()[0], -2717650800L)
   assert_eq(parsed.transitions()[235], 2140668000L)
   assert_eq(parsed.transition_types()[235], 2)
-  assert_eq(parsed.posix_tz(), Some("EST5EDT,M3.2.0,M11.1.0"))
+  assert_eq(parsed.posix_tz(), @tz.parse_posix_tz("EST5EDT,M3.2.0,M11.1.0"))
   assert_eq(parsed.leap_seconds(), [])
 }
 
@@ -61,7 +61,10 @@ test "parse_tzif parses America/New_York, a zone with a negative (west-of-UTC) h
 test "parse_tzif parses Australia/Sydney's wraparound POSIX footer (DST spans a year boundary)" {
   let parsed = @tz.parse_tzif(tzif_sydney).unwrap()
   assert_eq(parsed.transitions().length(), 142)
-  assert_eq(parsed.posix_tz(), Some("AEST-10AEDT,M10.1.0,M4.1.0/3"))
+  assert_eq(
+    parsed.posix_tz(),
+    @tz.parse_posix_tz("AEST-10AEDT,M10.1.0,M4.1.0/3"),
+  )
 }
 
 ///|
@@ -139,4 +142,16 @@ test "parse_tzif rejects a local time type whose offset FixedOffset cannot repre
   too_far_east[46] = b'\x51'
   too_far_east[47] = b'\x80'
   assert_true(@tz.parse_tzif(Bytes::from_array(too_far_east)) is None)
+}
+
+///|
+test "parse_tzif rejects a file whose POSIX footer is malformed" {
+  assert_true(@tz.parse_tzif(tzif_bad_posix_footer) is None)
+}
+
+///|
+test "parse_tzif accepts an empty POSIX footer as no rule" {
+  let data = tzif_v2_build([], [], [(0, 0, 0)], [0x41, 0], "")
+  assert_eq(@tz.parse_tzif(data).unwrap().posix_tz(), None)
+  assert_true(@tz.Location::from_tzif_bytes(data) is Some(_))
 }

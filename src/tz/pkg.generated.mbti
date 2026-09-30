@@ -265,7 +265,7 @@ pub fn TzifData::hash_combine(Self, Hasher) -> Unit
 pub fn TzifData::leap_seconds(Self) -> Array[(Int64, Int)]
 pub fn TzifData::local_time_types(Self) -> Array[LocalTimeType]
 pub fn TzifData::not_equal(Self, Self) -> Bool
-pub fn TzifData::posix_tz(Self) -> String?
+pub fn TzifData::posix_tz(Self) -> PosixTz?
 pub fn TzifData::to_repr(Self) -> @debug.Repr
 pub fn TzifData::transition_types(Self) -> Array[Int]
 pub fn TzifData::transitions(Self) -> Array[Int64]

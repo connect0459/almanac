@@ -60,7 +60,7 @@ pub fn LocalTimeType::abbreviation(self : LocalTimeType) -> String {
 ///
 /// `transitions[i]` (a Unix instant) switches to the local time type
 /// `local_time_types[transition_types[i]]`; `transitions` is sorted
-/// ascending. `posix_tz` is the POSIX TZ footer string, present only in
+/// ascending. `posix_tz` is the POSIX TZ footer, parsed, present only in
 /// version 2 and later files, used to extrapolate offsets past the last
 /// recorded transition.
 pub struct TzifData {
@@ -68,7 +68,7 @@ pub struct TzifData {
   priv transition_types : Array[Int]
   priv local_time_types : Array[LocalTimeType]
   priv leap_seconds : Array[(Int64, Int)]
-  priv posix_tz : String?
+  priv posix_tz : PosixTz?
 } derive(Eq, Hash, @debug.Debug)
 
 ///|
@@ -112,9 +112,10 @@ pub fn TzifData::leap_seconds(self : TzifData) -> Array[(Int64, Int)] {
 }
 
 ///|
-/// The POSIX TZ footer string (e.g. `"EST5EDT,M3.2.0,M11.1.0"`), present
-/// only in version 2 and later files.
-pub fn TzifData::posix_tz(self : TzifData) -> String? {
+/// The parsed POSIX TZ footer (e.g. `"EST5EDT,M3.2.0,M11.1.0"`), present
+/// only in version 2 and later files and `None` when the footer is empty or
+/// absent; `parse_tzif` has already rejected a malformed one.
+pub fn TzifData::posix_tz(self : TzifData) -> PosixTz? {
   self.posix_tz
 }
 
@@ -271,7 +272,8 @@ fn parse_block(data : Bytes, header_offset : Int, time_size : Int) -> RawBlock? 
 /// malformed or truncated, or holds a UTC offset beyond `±23:59:59`. Also
 /// rejected are structures that would make lookups misbehave: no local time
 /// type, a transition naming a missing type, transitions that are not
-/// strictly increasing, and an abbreviation outside the designation block.
+/// strictly increasing, an abbreviation outside the designation block, and a
+/// non-empty POSIX TZ footer that `parse_posix_tz` rejects.
 ///
 /// For a version 2/3/4 file, only the 64-bit second data block (and the
 /// POSIX TZ footer that follows it) is returned: the initial 32-bit block
@@ -293,13 +295,23 @@ pub fn parse_tzif(data : Bytes) -> TzifData? {
         match parse_block(data, v1.next_offset, 8) {
           None => None
           Some(v2) =>
-            parse_posix_footer(data, v2.next_offset).map(posix_tz => TzifData::{
-              transitions: v2.transitions,
-              transition_types: v2.transition_types,
-              local_time_types: v2.local_time_types,
-              leap_seconds: v2.leap_seconds,
-              posix_tz: Some(posix_tz),
-            })
+            match parse_posix_footer(data, v2.next_offset) {
+              None => None
+              Some(footer) => {
+                let posix_tz = if footer == "" {
+                  Some(None)
+                } else {
+                  parse_posix_tz(footer).map(rule => Some(rule))
+                }
+                posix_tz.map(posix_tz => TzifData::{
+                  transitions: v2.transitions,
+                  transition_types: v2.transition_types,
+                  local_time_types: v2.local_time_types,
+                  leap_seconds: v2.leap_seconds,
+                  posix_tz,
+                })
+              }
+            }
         }
       }
   }

@@ -346,5 +346,5 @@ These back `Location` and are not usually needed directly; use `Location::load`/
 
 | Type | Key methods | Description |
 | :--- | :--- | :--- |
-| `TzifData` | `transitions()`, `transition_types()`, `local_time_types()`, `leap_seconds()`, `posix_tz()` | The parsed contents of a TZif file; the array accessors return copies |
+| `TzifData` | `transitions()`, `transition_types()`, `local_time_types()`, `leap_seconds()`, `posix_tz()` | The parsed contents of a TZif file; the array accessors return copies, and `posix_tz()` is the already-parsed `PosixTz?` footer (`None` when empty or absent; a malformed one makes `parse_tzif` return `None`) |
 | `PosixTz` | `type_at(NaiveDateTime)` (a UTC reading, like `Location::type_at`), `offset_from_local(NaiveDateTime)` | An evaluated POSIX TZ rule, for extrapolating past a TZif file's last recorded transition; also a `TimeZone` in its own right (a constant offset when the rule has no DST part, e.g. `JST-9`) |
