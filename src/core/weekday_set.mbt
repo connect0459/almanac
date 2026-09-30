@@ -3,18 +3,18 @@
 ///
 /// Bit `i` corresponds to the weekday whose `Weekday::index()` is `i`
 /// (`Mon = 0` .. `Sun = 6`); higher bits are always `0`.
+///
+/// Sets have no total order: the bit layout is a representation detail and
+/// the meaningful relation is `is_subset`.
 pub struct WeekdaySet {
   priv bits : Int
-} derive(Eq, Compare, Hash, @debug.Debug)
+} derive(Eq, Hash, @debug.Debug)
 
 ///|
 pub extend WeekdaySet with Eq::{equal}
 
 ///|
 pub extend WeekdaySet with Eq::{not_equal}
-
-///|
-pub extend WeekdaySet with Compare::{compare, op_lt, op_gt, op_le, op_ge}
 
 ///|
 /// Renders as a bracketed list of the members' short names in `Mon..Sun`

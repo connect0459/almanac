@@ -434,9 +434,8 @@ pub impl Show for Weekday
 
 pub struct WeekdaySet {
   // private fields
-} derive(Compare, Eq, Hash, @debug.Debug)
+} derive(Eq, Hash, @debug.Debug)
 pub fn WeekdaySet::all() -> Self
-pub fn WeekdaySet::compare(Self, Self) -> Int
 pub fn WeekdaySet::contains(Self, Weekday) -> Bool
 pub fn WeekdaySet::default() -> Self
 pub fn WeekdaySet::difference(Self, Self) -> Self
@@ -455,10 +454,6 @@ pub fn WeekdaySet::iter_from(Self, start? : Weekday) -> WeekdaySetIterator
 pub fn WeekdaySet::last(Self) -> Weekday?
 pub fn WeekdaySet::length(Self) -> Int
 pub fn WeekdaySet::not_equal(Self, Self) -> Bool
-pub fn WeekdaySet::op_ge(Self, Self) -> Bool
-pub fn WeekdaySet::op_gt(Self, Self) -> Bool
-pub fn WeekdaySet::op_le(Self, Self) -> Bool
-pub fn WeekdaySet::op_lt(Self, Self) -> Bool
 pub fn WeekdaySet::output(Self, &Logger) -> Unit
 pub fn WeekdaySet::remove(Self, Weekday) -> Self
 pub fn WeekdaySet::single(Weekday) -> Self
