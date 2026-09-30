@@ -81,6 +81,7 @@ test {
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `succ()` | `-> Self` | Next day, wrapping `Sun` to `Mon` |
+| `add(n)` | `(Int) -> Self` | The weekday `n` days later (earlier for negative `n`), wrapping around the week; total for every `Int` |
 | `pred()` | `-> Self` | Previous day, wrapping `Mon` to `Sun` |
 | `number_from_monday()` | `-> Int` | 1-based, `Mon` is `1` |
 | `number_from_sunday()` | `-> Int` | 1-based, `Sun` is `1` |
@@ -136,6 +137,7 @@ An immutable set of `Weekday` values. Every mutating-looking operation (`insert`
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `succ()` | `-> Self` | Next month, wrapping `Dec` to `Jan` |
+| `add(n)` | `(Int) -> Self` | The month `n` months later (earlier for negative `n`), wrapping around the year; total for every `Int` |
 | `pred()` | `-> Self` | Previous month, wrapping `Jan` to `Dec` |
 | `number_from_month()` | `-> Int` | 1-based, `Jan` is `1` |
 | `name()` | `-> String` | Full English name, e.g. `"February"` |

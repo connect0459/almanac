@@ -230,3 +230,35 @@ test "from_name rejects anything but an exact abbreviation or full name" {
     assert_eq(@core.Month::from_name(bad), None)
   }
 }
+
+///|
+test "Month add wraps around the year in both directions" {
+  assert_eq(@core.Dec.add(1), @core.Jan)
+  assert_eq(@core.Jan.add(-1), @core.Dec)
+  assert_eq(@core.Mar.add(0), @core.Mar)
+  assert_eq(@core.Nov.add(3), @core.Feb)
+  assert_eq(@core.Feb.add(-3), @core.Nov)
+}
+
+///|
+test "Month add of a whole number of years returns the same month" {
+  assert_eq(@core.Jul.add(12), @core.Jul)
+  assert_eq(@core.Jul.add(-24), @core.Jul)
+}
+
+///|
+test "Month add agrees with repeated succ and pred" {
+  for n in -30..<=30 {
+    let mut expected = @core.Sep
+    for _ in 0..<n.abs() {
+      expected = if n > 0 { expected.succ() } else { expected.pred() }
+    }
+    assert_eq(@core.Sep.add(n), expected)
+  }
+}
+
+///|
+test "Month add accepts the extreme Int values without overflowing" {
+  assert_eq(@core.Jan.add(2147483647), @core.Aug)
+  assert_eq(@core.Jan.add(-2147483648), @core.May)
+}

@@ -49,6 +49,7 @@ pub(all) enum Month {
   Nov
   Dec
 } derive(Compare, Eq, Hash, @debug.Debug)
+pub fn Month::add(Self, Int) -> Self
 pub fn Month::compare(Self, Self) -> Int
 pub fn Month::equal(Self, Self) -> Bool
 pub fn Month::from_name(String) -> Self?
@@ -390,6 +391,7 @@ pub(all) enum Weekday {
   Sat
   Sun
 } derive(Eq, Hash, @debug.Debug)
+pub fn Weekday::add(Self, Int) -> Self
 pub fn Weekday::days_since(Self, Self) -> Int
 pub fn Weekday::equal(Self, Self) -> Bool
 pub fn Weekday::from_name(String) -> Self?

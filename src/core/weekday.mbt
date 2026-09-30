@@ -63,6 +63,14 @@ fn Weekday::index(self : Weekday) -> Int {
 }
 
 ///|
+/// The weekday `n` days after `self` (before it, for a negative `n`),
+/// wrapping around the week in either direction.
+pub fn Weekday::add(self : Weekday, n : Int) -> Weekday {
+  let index = (self.index() + n % 7 + 7) % 7
+  Weekday::from_num_days_from_monday(index).unwrap()
+}
+
+///|
 /// The next day, wrapping from `Sun` back to `Mon`.
 pub fn Weekday::succ(self : Weekday) -> Weekday {
   match self {

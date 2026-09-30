@@ -320,3 +320,35 @@ test "from_name rejects anything but an exact abbreviation or full name" {
     assert_eq(@core.Weekday::from_name(bad), None)
   }
 }
+
+///|
+test "Weekday add wraps around the week in both directions" {
+  assert_eq(@core.Sun.add(1), @core.Mon)
+  assert_eq(@core.Mon.add(-1), @core.Sun)
+  assert_eq(@core.Wed.add(0), @core.Wed)
+  assert_eq(@core.Fri.add(4), @core.Tue)
+  assert_eq(@core.Tue.add(-4), @core.Fri)
+}
+
+///|
+test "Weekday add of a whole number of weeks returns the same weekday" {
+  assert_eq(@core.Thu.add(7), @core.Thu)
+  assert_eq(@core.Thu.add(-14), @core.Thu)
+}
+
+///|
+test "Weekday add agrees with repeated succ and pred" {
+  for n in -30..<=30 {
+    let mut expected = @core.Thu
+    for _ in 0..<n.abs() {
+      expected = if n > 0 { expected.succ() } else { expected.pred() }
+    }
+    assert_eq(@core.Thu.add(n), expected)
+  }
+}
+
+///|
+test "Weekday add accepts the extreme Int values without overflowing" {
+  assert_eq(@core.Mon.add(2147483647), @core.Tue)
+  assert_eq(@core.Mon.add(-2147483648), @core.Sat)
+}
