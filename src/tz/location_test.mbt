@@ -119,12 +119,12 @@ test "type_at reports the abbreviation and DST flag from the table, and from the
 }
 
 ///|
-test "tz_name reports the abbreviation in effect at the given instant, matching type_at" {
+test "zone_name reports the abbreviation in effect at the given instant, matching type_at" {
   let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
   let dst_start_2024 = @core.NaiveDateTime::from_timestamp(1_710_054_000L, 0).unwrap()
-  assert_eq(ny.tz_name(dst_start_2024), "EDT")
+  assert_eq(ny.zone_name(dst_start_2024), "EDT")
   let summer_2040 = @core.NaiveDateTime::from_timestamp(2_224_713_600L, 0).unwrap()
-  assert_eq(ny.tz_name(summer_2040), "EDT")
+  assert_eq(ny.zone_name(summer_2040), "EDT")
 }
 
 ///|
@@ -476,7 +476,7 @@ test "utc is a Location named UTC with a zero offset and no daylight saving" {
   let epoch = @core.NaiveDateTime::unix_epoch()
   assert_eq(utc.name(), Some("UTC"))
   assert_eq(utc.offset_from_utc(epoch), @tz.FixedOffset::east(0).unwrap())
-  assert_eq(utc.tz_name(epoch), "UTC")
+  assert_eq(utc.zone_name(epoch), "UTC")
   assert_eq(utc.is_dst(epoch), false)
 }
 

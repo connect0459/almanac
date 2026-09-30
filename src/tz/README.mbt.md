@@ -10,7 +10,7 @@ Time zone support layered on top of `core`'s `NaiveDateTime`. Import `connect045
 | `MappedLocalTime[T]` | The result of resolving a local (wall-clock) reading: `Single`, `Ambiguous` (DST fold), or `Absent` (DST gap); `T` is a `FixedOffset` or a `DateTime[Tz]` |
 | `Utc` | The UTC zone: always offset zero |
 | `FixedOffset` | A constant UTC offset, `±23:59:59` |
-| `FixedZone` | A named zone with one constant offset; `tz_name`/`%Z` report the name |
+| `FixedZone` | A named zone with one constant offset; `zone_name`/`%Z` report the name |
 | `DateTime[Tz]` | A `NaiveDateTime` paired with a time zone `Tz` |
 | `Location` | A time zone backed by parsed IANA tzdata, resolving historical transitions and DST |
 | `TransitionBounds` | The validity window (start/end) of a `Location`'s segment covering a given instant |
@@ -83,7 +83,7 @@ test {
     ny.offset_from_utc(dst_start_2024),
     @tz.FixedOffset::east(-14400).unwrap(),
   )
-  assert_eq(ny.tz_name(dst_start_2024), "EDT")
+  assert_eq(ny.zone_name(dst_start_2024), "EDT")
 }
 ```
 
@@ -93,13 +93,15 @@ test {
 
 Implemented by `Utc`, `FixedOffset`, `FixedZone`, `Location`, and `PosixTz`. The trait is readonly: other packages can use `Tz : TimeZone` as a bound but cannot implement it, so these are the only zones. `DateTime[Tz]::offset`/`naive_local` require `Tz : TimeZone`.
 
+Zone names have two roles with two spellings: `name()` (on `Location` and `FixedZone`) is the identifier that distinguishes the zone, such as the IANA id `"Asia/Tokyo"`, while `zone_name` (on every `TimeZone`, and on `DateTime`) is the name in effect at an instant, such as the abbreviation `"JST"` or `"EDT"`, `"UTC"`, or a bare `FixedOffset`'s offset text. `DateTime::timezone()` returns the zone value itself, as `with_timezone` takes one.
+
 Every `NaiveDateTime` argument is a UTC reading except the one taken by `offset_from_local`, which is a local (wall-clock) reading. The type does not tell them apart, so pass `DateTime::naive_utc()` for the former and `DateTime::naive_local()` for the latter. To build a `DateTime` from either reading, use `DateTime::from_utc`/`DateTime::from_local`.
 
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | The offset in effect at a given UTC instant; never ambiguous |
 | `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | The offset(s) for a given local (wall-clock) instant, handling DST ambiguity/gaps |
-| `tz_name(NaiveDateTime)` | `-> String` | The zone abbreviation/name in effect at a given UTC instant |
+| `zone_name(NaiveDateTime)` | `-> String` | The zone abbreviation/name in effect at a given UTC instant |
 | `is_dst(NaiveDateTime)` | `-> Bool` | Whether daylight saving time is in effect at a given UTC instant; `false` by default, overridden by `Location`, `PosixTz` and `Local` |
 | `transition_bounds(NaiveDateTime)` | `-> TransitionBounds` | The validity window of the offset in effect at a given UTC instant; unbounded on both sides by default, overridden by `Location` (its own `transition_bounds`), `PosixTz` and `Local` |
 | `offset_from_abbreviation(String, NaiveDateTime)` | `-> FixedOffset?` | The offset a zone abbreviation (e.g. `"EST"`) denotes in this zone, resolved at a given UTC instant; `None` by default (`Utc`, `FixedOffset`), overridden by `Location` (see its own method), `PosixTz` (its standard and DST names) and `Local` |
@@ -154,8 +156,8 @@ The UTC zone, always offset zero.
 | `Utc::now()` | `-> DateTime[Utc]` | The current UTC instant, read from the host's wall clock. Unlike every other function in this package, not a pure function of its arguments. Total: a host clock outside `NaiveDate`'s range (about 5.8 million years either side of 1970) is a broken environment, and aborts. |
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | Always `FixedOffset::east(0)` |
 | `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | Always `Single(FixedOffset::east(0))` |
-| `tz_name(NaiveDateTime)` | `-> String` | Always `"UTC"` |
-| `to_string()` (`Show`) | `-> String` | `"UTC"`, the same text as `tz_name` |
+| `zone_name(NaiveDateTime)` | `-> String` | Always `"UTC"` |
+| `to_string()` (`Show`) | `-> String` | `"UTC"`, the same text as `zone_name` |
 
 `Utc` also implements `Eq` and `TimeZone`.
 
@@ -175,8 +177,8 @@ Naming rule: a name with `offset` (`DateTime::offset`, `offset_from_utc`, `offse
 | `utc_minus_local()` | `-> Int` | The sign-reversed offset in seconds (positive for a western offset) |
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | Returns `self`, unchanged, regardless of the given instant |
 | `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | Always `Single(self)` |
-| `tz_name(NaiveDateTime)` | `-> String` | Colon-separated sign, hour, and minute, e.g. `"+09:00"`; extended with a seconds component for a non-whole-minute offset, e.g. `"-04:56:02"` |
-| `to_string()` (`Show`) | `-> String` | The same colon-separated text as `tz_name`, e.g. `"+09:00"` |
+| `zone_name(NaiveDateTime)` | `-> String` | Colon-separated sign, hour, and minute, e.g. `"+09:00"`; extended with a seconds component for a non-whole-minute offset, e.g. `"-04:56:02"` |
+| `to_string()` (`Show`) | `-> String` | The same colon-separated text as `zone_name`, e.g. `"+09:00"` |
 
 `FixedOffset` also implements `Eq` and `TimeZone`.
 
@@ -184,7 +186,7 @@ Naming rule: a name with `offset` (`DateTime::offset`, `offset_from_utc`, `offse
 
 ### `FixedZone`
 
-A named zone with a constant offset and no daylight saving. Unlike a bare `FixedOffset`, whose `tz_name` is its own offset text (`"+09:00"`), a `FixedZone`'s `tz_name` (and so `%Z`) is the name it was given. Two zones are equal only when both the name and the offset match, so `FixedOffset`'s own equality and rendering are unaffected.
+A named zone with a constant offset and no daylight saving. Unlike a bare `FixedOffset`, whose `zone_name` is its own offset text (`"+09:00"`), a `FixedZone`'s `zone_name` (and so `%Z`) is the name it was given. Two zones are equal only when both the name and the offset match, so `FixedOffset`'s own equality and rendering are unaffected.
 
 | Method | Signature | Description |
 | :--- | :--- | :--- |
@@ -192,7 +194,7 @@ A named zone with a constant offset and no daylight saving. Unlike a bare `Fixed
 | `name()` | `-> String` | The zone's name |
 | `offset()` | `-> FixedOffset` | The zone's constant offset |
 | `offset_from_utc(NaiveDateTime)` / `offset_from_local(NaiveDateTime)` | `-> FixedOffset` / `-> MappedLocalTime[FixedOffset]` | The constant offset; the local form is always `Single` |
-| `tz_name(NaiveDateTime)` | `-> String` | The zone's name |
+| `zone_name(NaiveDateTime)` | `-> String` | The zone's name |
 | `offset_from_abbreviation(String, NaiveDateTime)` | `-> FixedOffset?` | The offset when the abbreviation equals the zone's own name, else `None`, so `parse_date_time_in` can read a `%Z` name back |
 
 ### `DateTime[Tz]`
@@ -250,7 +252,6 @@ The lenient rule is the library's only policy for a local reading that is repeat
 | `timestamp_subsec_nanos()` / `timestamp_subsec_millis()` / `timestamp_subsec_micros()` | `-> Int` | The sub-second component of the instant in that unit |
 | `signed_duration_since(Self[Tz2])` | `-> TimeDelta` | The signed duration from `other` to `self`, independent of either's time zone |
 | `zone_name()` | `-> String` | The zone's name at this instant: an IANA abbreviation (`"EDT"`), a `FixedZone`'s name, `"UTC"`, or a bare `FixedOffset`'s offset text; the same text as `%Z` (requires `Tz : TimeZone`) |
-| `zone()` | `-> (String, FixedOffset)` | `zone_name()` paired with `offset()` (requires `Tz : TimeZone`) |
 | `is_dst()` | `-> Bool` | Whether daylight saving time is in effect at this instant (requires `Tz : TimeZone`) |
 | `zone_bounds()` | `-> TransitionBounds` | The validity window of the offset in effect at this instant, either side `None` when unbounded (requires `Tz : TimeZone`); see `TransitionBounds` |
 | `to_string()` (`Show`) | `-> String` | The local date-time and the zone's name at that instant joined by a space, e.g. `"2024-01-02 13:45:06.500 +09:00"`, `"... UTC"`, `"... EDT"` (requires `Tz : TimeZone`) |
@@ -284,7 +285,7 @@ A time zone backed by parsed IANA tzdata (TZif binary format, plus a POSIX TZ st
 | `type_at(NaiveDateTime)` | `-> LocalTimeType` | The offset, DST flag, and abbreviation in effect at a given UTC instant |
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | The offset in effect at a given UTC instant |
 | `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | The offset(s) for a given local instant, resolving DST folds and gaps |
-| `tz_name(NaiveDateTime)` | `-> String` | The abbreviation in effect at a given instant, e.g. `"EDT"` |
+| `zone_name(NaiveDateTime)` | `-> String` | The abbreviation in effect at a given instant, e.g. `"EDT"` |
 | `transition_bounds(NaiveDateTime)` | `-> TransitionBounds` | The validity window of the segment covering a given instant; see `TransitionBounds` |
 
 `Location` also implements `TimeZone`. `==` is structural: two `Location`s are equal when their parsed TZif data, POSIX rule and `name()` all match, so an alias (e.g. `"Japan"`) is unequal to its canonical zone (`"Asia/Tokyo"`) even though both resolve identically.
@@ -326,7 +327,7 @@ The OS-configured local time zone, resolved from `$TZ` or, when unset, `/etc/loc
 | `Local::resolve(String?, Bytes?)` | `-> Self?` | The pure resolution logic `new()` wraps: given the `TZ` environment variable and `/etc/localtime`'s bytes, applies POSIX `TZ` precedence (empty `TZ` → UTC, a named zone via `Location::load`, else a bare POSIX rule via `parse_posix_tz`; when `TZ` is unset, the given bytes via `Location::from_tzif_bytes`) |
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | Delegates to the resolved zone |
 | `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | Delegates to the resolved zone |
-| `tz_name(NaiveDateTime)` | `-> String` | Delegates to the resolved zone |
+| `zone_name(NaiveDateTime)` | `-> String` | Delegates to the resolved zone |
 
 `Local` also implements `TimeZone`. `$TZ` may be an IANA zone name, an empty string (UTC), or a bare POSIX TZ rule such as `"JST-9"` or `"FOO5BAR4,M3.2.0,M11.1.0"`; an IANA name takes precedence when a string is both (e.g. `"EST5EDT"`). The leading-colon form (`":Asia/Tokyo"`) is not handled.
 

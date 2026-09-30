@@ -35,10 +35,10 @@ pub extend DateTime with @debug.Debug::{to_repr}
 ///|
 /// Renders as the local date-time and the zone's name at this instant,
 /// joined by a space, e.g. `2024-01-02 13:45:06.500 +09:00`, `... UTC` or
-/// `... EDT`; see `NaiveDateTime`'s `Show` and `TimeZone::tz_name`.
+/// `... EDT`; see `NaiveDateTime`'s `Show` and `TimeZone::zone_name`.
 pub impl[Tz : TimeZone] Show for DateTime[Tz] with fn output(self, logger) {
   logger.write_string(
-    self.naive_local().to_string() + " " + self.tz.tz_name(self.datetime),
+    self.naive_local().to_string() + " " + self.tz.zone_name(self.datetime),
   )
 }
 
@@ -273,15 +273,7 @@ pub fn[Tz : TimeZone] DateTime::offset(self : DateTime[Tz]) -> FixedOffset {
 /// abbreviation (e.g. `"EDT"`), a `FixedZone`'s name, `"UTC"`, or a bare
 /// `FixedOffset`'s offset text. The same text as `%Z` and the end of `Show`.
 pub fn[Tz : TimeZone] DateTime::zone_name(self : DateTime[Tz]) -> String {
-  self.tz.tz_name(self.datetime)
-}
-
-///|
-/// The name (see `zone_name`) and UTC offset in effect at this instant.
-pub fn[Tz : TimeZone] DateTime::zone(
-  self : DateTime[Tz],
-) -> (String, FixedOffset) {
-  (self.zone_name(), self.offset())
+  self.tz.zone_name(self.datetime)
 }
 
 ///|

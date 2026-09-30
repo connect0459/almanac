@@ -244,7 +244,7 @@ fn format_offset_no_colon(secs : Int) -> String {
 
 ///|
 /// Renders `%::z`'s `±HH:MM:SS`, always including seconds (unlike
-/// `FixedOffset::tz_name`, in `tz`, which only extends past minutes when
+/// `FixedOffset::zone_name`, in `tz`, which only extends past minutes when
 /// they're nonzero).
 fn format_offset_colon_seconds(secs : Int) -> String {
   let sign = if secs < 0 { "-" } else { "+" }
@@ -584,7 +584,7 @@ pub fn[Tz : @tz.TimeZone] format_date_time_tz_items(
   items : Array[Item],
 ) -> String raise ParseError {
   let wall_clock = dt.naive_local()
-  let name = dt.timezone().tz_name(dt.naive_utc())
+  let name = dt.timezone().zone_name(dt.naive_utc())
   let offset = dt.offset().local_minus_utc()
   render(
     items,
@@ -621,7 +621,7 @@ pub fn format_date_time(
 
 ///|
 /// Renders a zone-aware `DateTime[Tz]` against `fmt`, in its local
-/// (wall-clock) representation. `%Z` renders `tz.tz_name()`; `%z` renders
+/// (wall-clock) representation. `%Z` renders `tz.zone_name()`; `%z` renders
 /// the numeric offset, strftime-style (`+HHMM`, no colon). `%s` renders
 /// the underlying UTC instant's timestamp, unaffected by the local zone
 /// shift applied to every other field.

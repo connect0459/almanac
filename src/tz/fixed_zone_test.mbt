@@ -25,8 +25,8 @@ test "FixedZone resolves every instant to its single offset, never ambiguous or 
 }
 
 ///|
-test "FixedZone's tz_name is its own name rather than the offset text" {
-  assert_eq(jst().tz_name(reading()), "JST")
+test "FixedZone's zone_name is its own name rather than the offset text" {
+  assert_eq(jst().zone_name(reading()), "JST")
 }
 
 ///|

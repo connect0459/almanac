@@ -123,7 +123,6 @@ pub fn[Tz : TimeZone] DateTime::year(Self[Tz]) -> Int
 pub fn[Tz : TimeZone] DateTime::year_ce(Self[Tz]) -> @core.YearCe
 pub fn[Tz : TimeZone, Tz2] DateTime::years_since(Self[Tz], Self[Tz2]) -> Int?
 pub fn[Tz : TimeZone] DateTime::ymd(Self[Tz]) -> (Int, @core.Month, Int)
-pub fn[Tz : TimeZone] DateTime::zone(Self[Tz]) -> (String, FixedOffset)
 pub fn[Tz : TimeZone] DateTime::zone_bounds(Self[Tz]) -> TransitionBounds
 pub fn[Tz : TimeZone] DateTime::zone_name(Self[Tz]) -> String
 pub impl[Tz] Compare for DateTime[Tz]
@@ -149,9 +148,9 @@ pub fn FixedOffset::output(Self, &Logger) -> Unit
 pub fn FixedOffset::to_repr(Self) -> @debug.Repr
 pub fn FixedOffset::to_string(Self) -> String
 pub fn FixedOffset::transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds
-pub fn FixedOffset::tz_name(Self, @core.NaiveDateTime) -> String
 pub fn FixedOffset::utc_minus_local(Self) -> Int
 pub fn FixedOffset::west(Int) -> Self?
+pub fn FixedOffset::zone_name(Self, @core.NaiveDateTime) -> String
 pub impl TimeZone for FixedOffset
 pub impl Show for FixedOffset
 
@@ -173,7 +172,7 @@ pub fn FixedZone::output(Self, &Logger) -> Unit
 pub fn FixedZone::to_repr(Self) -> @debug.Repr
 pub fn FixedZone::to_string(Self) -> String
 pub fn FixedZone::transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds
-pub fn FixedZone::tz_name(Self, @core.NaiveDateTime) -> String
+pub fn FixedZone::zone_name(Self, @core.NaiveDateTime) -> String
 pub impl TimeZone for FixedZone
 pub impl Show for FixedZone
 
@@ -210,8 +209,8 @@ pub fn Location::to_repr(Self) -> @debug.Repr
 pub fn Location::to_string(Self) -> String
 pub fn Location::transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds
 pub fn Location::type_at(Self, @core.NaiveDateTime) -> LocalTimeType
-pub fn Location::tz_name(Self, @core.NaiveDateTime) -> String
 pub fn Location::utc() -> Self
+pub fn Location::zone_name(Self, @core.NaiveDateTime) -> String
 pub impl TimeZone for Location
 pub impl Show for Location
 
@@ -243,7 +242,7 @@ pub fn PosixTz::offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
 pub fn PosixTz::to_repr(Self) -> @debug.Repr
 pub fn PosixTz::transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds
 pub fn PosixTz::type_at(Self, @core.NaiveDateTime) -> LocalTimeType
-pub fn PosixTz::tz_name(Self, @core.NaiveDateTime) -> String
+pub fn PosixTz::zone_name(Self, @core.NaiveDateTime) -> String
 pub impl TimeZone for PosixTz
 
 pub struct TransitionBounds {
@@ -287,7 +286,7 @@ pub fn Utc::output(Self, &Logger) -> Unit
 pub fn Utc::to_repr(Self) -> @debug.Repr
 pub fn Utc::to_string(Self) -> String
 pub fn Utc::transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds
-pub fn Utc::tz_name(Self, @core.NaiveDateTime) -> String
+pub fn Utc::zone_name(Self, @core.NaiveDateTime) -> String
 pub impl TimeZone for Utc
 pub impl Show for Utc
 
@@ -297,7 +296,7 @@ pub impl Show for Utc
 pub trait TimeZone {
   fn offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
   fn offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[FixedOffset]
-  fn tz_name(Self, @core.NaiveDateTime) -> String
+  fn zone_name(Self, @core.NaiveDateTime) -> String
   fn is_dst(Self, @core.NaiveDateTime) -> Bool
   fn transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds
   fn offset_from_abbreviation(Self, String, @core.NaiveDateTime) -> FixedOffset?

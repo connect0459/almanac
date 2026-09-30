@@ -12,7 +12,7 @@ impl TimeZone for AlwaysAbsent with fn offset_from_local(_self, _dt) {
 }
 
 ///|
-impl TimeZone for AlwaysAbsent with fn tz_name(_self, _dt) {
+impl TimeZone for AlwaysAbsent with fn zone_name(_self, _dt) {
   "ABS"
 }
 
@@ -70,7 +70,7 @@ impl TimeZone for TwoGaps with fn offset_from_local(_self, _dt) {
 }
 
 ///|
-impl TimeZone for TwoGaps with fn tz_name(_self, _dt) {
+impl TimeZone for TwoGaps with fn zone_name(_self, _dt) {
   "TWO"
 }
 

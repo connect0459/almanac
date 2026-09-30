@@ -69,7 +69,7 @@ fn exercise(loc : @tz.Location) -> Unit {
     ignore(loc.type_at(naive))
     ignore(@tz.TimeZone::offset_from_utc(loc, naive))
     ignore(@tz.TimeZone::offset_from_local(loc, naive))
-    ignore(@tz.TimeZone::tz_name(loc, naive))
+    ignore(@tz.TimeZone::zone_name(loc, naive))
     ignore(@tz.TimeZone::is_dst(loc, naive))
     ignore(@tz.TimeZone::transition_bounds(loc, naive))
     ignore(@tz.TimeZone::offset_from_abbreviation(loc, "X", naive))

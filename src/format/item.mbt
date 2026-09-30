@@ -97,7 +97,7 @@ pub(all) enum Fixed {
   /// `%:z`: `±HH:MM`, always with minutes, never seconds.
   TimezoneOffsetColonMinutes
   /// `%::z`: `±HH:MM:SS`, always with seconds (unlike `TimezoneOffset`'s
-  /// `tz`-package sibling `FixedOffset::tz_name`, which only extends to
+  /// `tz`-package sibling `FixedOffset::zone_name`, which only extends to
   /// seconds when they're nonzero).
   TimezoneOffsetColonSeconds
   /// `%:::z`: `±HH`, hours only — minutes and seconds are dropped, not

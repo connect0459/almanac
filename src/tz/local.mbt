@@ -55,11 +55,11 @@ pub impl TimeZone for Local with fn offset_from_local(self, naive_local) {
 }
 
 ///|
-pub impl TimeZone for Local with fn tz_name(self, utc) {
+pub impl TimeZone for Local with fn zone_name(self, utc) {
   match self.kind {
-    Iana(loc) => loc.tz_name(utc)
-    Fixed(off) => off.tz_name(utc)
-    Posix(p) => p.tz_name(utc)
+    Iana(loc) => loc.zone_name(utc)
+    Fixed(off) => off.zone_name(utc)
+    Posix(p) => p.zone_name(utc)
   }
 }
 
@@ -98,7 +98,7 @@ pub impl TimeZone for Local with fn offset_from_abbreviation(
 pub extend Local with TimeZone::{
   offset_from_utc,
   offset_from_local,
-  tz_name,
+  zone_name,
   is_dst,
   transition_bounds,
   offset_from_abbreviation,

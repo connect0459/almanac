@@ -22,7 +22,7 @@ pub extend FixedOffset with @debug.Debug::{to_repr}
 ///|
 /// Renders as a colon-separated sign, hour and minute, e.g. `+09:00`,
 /// extended with a seconds component for a non-whole-minute offset, e.g.
-/// `-04:56:02`; the same text as `tz_name`.
+/// `-04:56:02`; the same text as `zone_name`.
 pub impl Show for FixedOffset with fn output(self, logger) {
   logger.write_string(format_offset_colon(self.local_minus_utc))
 }
@@ -104,7 +104,7 @@ pub impl TimeZone for FixedOffset with fn offset_from_local(self, _dt) {
 }
 
 ///|
-pub impl TimeZone for FixedOffset with fn tz_name(self, _dt) {
+pub impl TimeZone for FixedOffset with fn zone_name(self, _dt) {
   format_offset_colon(self.local_minus_utc)
 }
 
@@ -112,7 +112,7 @@ pub impl TimeZone for FixedOffset with fn tz_name(self, _dt) {
 pub extend FixedOffset with TimeZone::{
   offset_from_utc,
   offset_from_local,
-  tz_name,
+  zone_name,
   is_dst,
   transition_bounds,
   offset_from_abbreviation,

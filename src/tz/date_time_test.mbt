@@ -1000,19 +1000,6 @@ test "zone_name follows an IANA zone's abbreviation across a daylight-saving cha
 }
 
 ///|
-test "zone pairs the zone's name with the offset in effect at this instant" {
-  let new_york = @tz.Location::load("America/New_York").unwrap()
-  let summer = @tz.DateTime::from_ymd_hms(2024, 7, 1, 12, 0, 0, new_york)
-    .single()
-    .unwrap()
-  assert_eq(summer.zone(), ("EDT", @tz.FixedOffset::west(4 * 3600).unwrap()))
-  assert_eq(
-    tokyo_new_year_morning().zone(),
-    ("+09:00", @tz.FixedOffset::east(9 * 3600).unwrap()),
-  )
-}
-
-///|
 test "unix_epoch is the UTC instant at timestamp zero" {
   let epoch = @tz.DateTime::unix_epoch()
   assert_eq(epoch.timestamp(), 0L)

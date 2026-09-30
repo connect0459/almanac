@@ -525,7 +525,7 @@ pub impl TimeZone for PosixTz with fn offset_from_local(self, naive_local) {
 }
 
 ///|
-pub impl TimeZone for PosixTz with fn tz_name(self, utc) {
+pub impl TimeZone for PosixTz with fn zone_name(self, utc) {
   self.type_at_secs(utc.timestamp()).abbreviation()
 }
 
@@ -564,7 +564,7 @@ pub impl TimeZone for PosixTz with fn offset_from_abbreviation(
 ///|
 pub extend PosixTz with TimeZone::{
   offset_from_utc,
-  tz_name,
+  zone_name,
   is_dst,
   transition_bounds,
   offset_from_abbreviation,

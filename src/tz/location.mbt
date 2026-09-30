@@ -72,7 +72,7 @@ pub fn Location::from_tzif_bytes_named(
 ///|
 /// The IANA zone identifier this `Location` was loaded with (e.g.
 /// `"Asia/Tokyo"`), or `None` if it was constructed via
-/// `Location::from_tzif_bytes` instead. Distinct from `tz_name`, which
+/// `Location::from_tzif_bytes` instead. Distinct from `zone_name`, which
 /// reports the instant-specific abbreviation (e.g. `"JST"`). Reports the
 /// name exactly as given to `Location::load`, not the canonical name an
 /// alias resolves to.
@@ -318,7 +318,7 @@ pub impl TimeZone for Location with fn offset_from_utc(self, utc) {
 }
 
 ///|
-pub impl TimeZone for Location with fn tz_name(self, utc) {
+pub impl TimeZone for Location with fn zone_name(self, utc) {
   self.type_at(utc).abbreviation()
 }
 
@@ -425,6 +425,6 @@ pub impl TimeZone for Location with fn offset_from_abbreviation(
 pub extend Location with TimeZone::{
   offset_from_utc,
   offset_from_local,
-  tz_name,
+  zone_name,
   is_dst,
 }

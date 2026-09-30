@@ -64,7 +64,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%Z` | Timezone name | On parse, consumes one or more non-whitespace characters without validating them; every entry point discards the name except `parse_date_time_in`, which resolves it through the target zone; an empty name raises `InputTooShort` at the end of input and `InputMismatch` before whitespace |
 | `%z` | Timezone offset | `±HHMM`, no colon |
 | `%:z` | Timezone offset, minutes | `±HH:MM`; on parse, the colon is mandatory (exactly its own rendered shape) |
-| `%::z` | Timezone offset, seconds | `±HH:MM:SS`, always with seconds (unlike `FixedOffset`'s own `tz_name`, which only extends past minutes when they're nonzero); on parse, the seconds field is mandatory too |
+| `%::z` | Timezone offset, seconds | `±HH:MM:SS`, always with seconds (unlike `FixedOffset`'s own `zone_name`, which only extends past minutes when they're nonzero); on parse, the seconds field is mandatory too |
 | `%:::z` | Timezone offset, hours only | `±HH` — minutes and seconds are dropped entirely, not just omitted when zero; parses the same shape |
 | `%#z` | Timezone offset, permissive | Parse-only: accepts `±HHMM`, `±HH:MM`, hours-only `±HH`, or `Z`/`z` for a zero offset, with any run of `:`/space/tab (or none) between the hour and minute digits; no seconds field |
 | `%F` | `%Y-%m-%d` | Expands to that specifier sequence |
@@ -146,7 +146,7 @@ Suffixes name where the zone comes from: `_tz` renders any `DateTime[Tz]` (`form
 | `format_date(NaiveDate, String)` | `-> String raise ParseError` | Render against a format string; raises `MissingField` for a time-of-day specifier (`%H`/`%M`/`%S`/`%f`/`%I`/`%l`/`%P`/`%p`) |
 | `format_time(NaiveTime, String)` | `-> String raise ParseError` | Render against a format string; raises `MissingField` for a date specifier (`%Y`/`%m`/`%d`/`%j`/`%A`/`%a`/`%B`/`%b`/`%h`/`%G`/`%g`/`%V`/`%C`/`%y`/`%q`/`%e`/`%w`/`%u`/`%U`/`%W`) or `%s` (no absolute instant to draw from) |
 | `format_date_time(NaiveDateTime, String)` | `-> String raise ParseError` | Render against a format string; raises `MissingField` for `%Z`/`%z`/`%:z`/`%::z`/`%:::z` (no zone to draw from), or `ParseOnly` for `%#z` (parse-only, never renders) |
-| `format_date_time_tz(DateTime[Tz], String)` *(Tz : TimeZone)* | `-> String raise ParseError` | Render in local (wall-clock) representation; `%Z` renders `tz.tz_name()`, `%z` the numeric offset, `%s` the underlying UTC instant's timestamp |
+| `format_date_time_tz(DateTime[Tz], String)` *(Tz : TimeZone)* | `-> String raise ParseError` | Render in local (wall-clock) representation; `%Z` renders `tz.zone_name()`, `%z` the numeric offset, `%s` the underlying UTC instant's timestamp |
 
 ### Parsing
 

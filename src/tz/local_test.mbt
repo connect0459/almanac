@@ -2,7 +2,7 @@
 test "resolve falls back to the given localtime bytes when TZ is unset" {
   let resolved = @tz.Local::resolve(None, Some(tzif_new_york)).unwrap()
   let dst_start_2024 = @core.NaiveDateTime::from_timestamp(1_710_054_000L, 0).unwrap()
-  assert_eq(resolved.tz_name(dst_start_2024), "EDT")
+  assert_eq(resolved.zone_name(dst_start_2024), "EDT")
 }
 
 ///|
@@ -22,7 +22,7 @@ test "resolve treats an empty TZ as UTC, ignoring any localtime bytes" {
     resolved.offset_from_local(dt),
     @tz.Single(@tz.FixedOffset::east(0).unwrap()),
   )
-  assert_eq(resolved.tz_name(dt), "+00:00")
+  assert_eq(resolved.zone_name(dt), "+00:00")
 }
 
 ///|
@@ -35,7 +35,7 @@ test "resolve loads a named IANA zone from TZ, ignoring any localtime bytes" {
   let tokyo = @tz.Location::load("Asia/Tokyo").unwrap()
   assert_eq(resolved.offset_from_utc(dt), tokyo.offset_from_utc(dt))
   assert_eq(resolved.offset_from_local(dt), tokyo.offset_from_local(dt))
-  assert_eq(resolved.tz_name(dt), tokyo.tz_name(dt))
+  assert_eq(resolved.zone_name(dt), tokyo.zone_name(dt))
 }
 
 ///|
@@ -49,7 +49,7 @@ test "resolve is None when TZ names an unrecognized zone, regardless of localtim
 test "resolve accepts a bare POSIX rule in TZ, ignoring any localtime bytes" {
   let resolved = @tz.Local::resolve(Some("JST-9"), Some(tzif_new_york)).unwrap()
   let any = @core.NaiveDateTime::from_timestamp(1_704_110_400L, 0).unwrap()
-  assert_eq(resolved.tz_name(any), "JST")
+  assert_eq(resolved.zone_name(any), "JST")
   assert_eq(
     resolved.offset_from_utc(any),
     @tz.FixedOffset::east(9 * 3600).unwrap(),
@@ -61,8 +61,8 @@ test "resolve applies the DST part of a bare POSIX rule in TZ" {
   let resolved = @tz.Local::resolve(Some("FOO5BAR4,M3.2.0,M11.1.0"), None).unwrap()
   let winter = @core.NaiveDateTime::from_timestamp(1_704_110_400L, 0).unwrap()
   let summer = @core.NaiveDateTime::from_timestamp(1_719_835_200L, 0).unwrap()
-  assert_eq(resolved.tz_name(winter), "FOO")
-  assert_eq(resolved.tz_name(summer), "BAR")
+  assert_eq(resolved.zone_name(winter), "FOO")
+  assert_eq(resolved.zone_name(summer), "BAR")
   assert_eq(
     resolved.offset_from_utc(summer),
     @tz.FixedOffset::east(-4 * 3600).unwrap(),
@@ -78,7 +78,7 @@ test "resolve applies the DST part of a bare POSIX rule in TZ" {
 test "resolve prefers an IANA zone name over reading TZ as a POSIX rule" {
   let resolved = @tz.Local::resolve(Some("EST5EDT"), None).unwrap()
   let summer = @core.NaiveDateTime::from_timestamp(1_719_835_200L, 0).unwrap()
-  assert_eq(resolved.tz_name(summer), "EDT")
+  assert_eq(resolved.zone_name(summer), "EDT")
 }
 
 ///|

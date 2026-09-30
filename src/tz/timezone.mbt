@@ -153,7 +153,7 @@ pub trait TimeZone {
   /// abbreviation (e.g. `"EDT"`), `Utc`'s fixed `"UTC"`, or a bare
   /// `FixedOffset`'s own offset string (e.g. `"+09:00"`), since a fixed
   /// offset carries no name distinct from its offset.
-  fn tz_name(Self, @core.NaiveDateTime) -> String
+  fn zone_name(Self, @core.NaiveDateTime) -> String
   /// Whether daylight saving time is in effect at the given UTC naive
   /// datetime. `false` by default: a zone with no daylight saving (`Utc`,
   /// `FixedOffset`) never observes it.

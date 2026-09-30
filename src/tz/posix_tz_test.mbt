@@ -243,8 +243,8 @@ test "PosixTz as a TimeZone reports the offset and abbreviation in effect at a U
     tz.offset_from_utc(summer),
     @tz.FixedOffset::east(-4 * 3600).unwrap(),
   )
-  assert_eq(tz.tz_name(winter), "EST")
-  assert_eq(tz.tz_name(summer), "EDT")
+  assert_eq(tz.zone_name(winter), "EST")
+  assert_eq(tz.zone_name(summer), "EDT")
 }
 
 ///|
@@ -274,7 +274,7 @@ test "PosixTz without a DST rule is a constant-offset TimeZone (JST-9)" {
   let tz = @tz.parse_posix_tz("JST-9").unwrap()
   let any = @core.NaiveDateTime::from_timestamp(1_704_110_400L, 0).unwrap()
   assert_eq(tz.offset_from_utc(any), @tz.FixedOffset::east(9 * 3600).unwrap())
-  assert_eq(tz.tz_name(any), "JST")
+  assert_eq(tz.zone_name(any), "JST")
   let dt = @tz.DateTime::from_timestamp(0L, 0, tz).unwrap()
   assert_eq(dt.naive_local().hour(), 9)
 }
