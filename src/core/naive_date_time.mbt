@@ -48,7 +48,9 @@ pub impl Show for NaiveDateTime with fn output(self, logger) {
 pub extend NaiveDateTime with Show::{to_string, output}
 
 ///|
-/// Composes a `NaiveDate` and a `NaiveTime` into a `NaiveDateTime`.
+/// Composes a `NaiveDate` and a `NaiveTime` into a `NaiveDateTime`. This is
+/// the constructor from two parts; `NaiveDate::and_time` reads the same from
+/// the date's side.
 pub fn NaiveDateTime::new(date : NaiveDate, time : NaiveTime) -> NaiveDateTime {
   NaiveDateTime::{ date, time, }
 }

@@ -321,7 +321,9 @@ pub fn NaiveDate::from_num_days_from_ce(days : Int) -> NaiveDate? {
 }
 
 ///|
-/// The datetime at `time` on this date.
+/// The datetime at `time` on this date, the total member of the `and_hms*`
+/// family (which take components and return `None` for invalid ones) and the
+/// same value as `NaiveDateTime::new(self, time)`.
 pub fn NaiveDate::and_time(self : NaiveDate, time : NaiveTime) -> NaiveDateTime {
   NaiveDateTime::new(self, time)
 }
