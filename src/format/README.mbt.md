@@ -83,7 +83,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%0X` | Zero padding | See `%-X`; meaningful for a specifier that doesn't already zero-pad, e.g. `%0e`. On parse it keeps `X`'s own default reading |
 | `%_X` | Space padding | See `%-X`; meaningful for a specifier that doesn't already space-pad, e.g. `%_d`. On parse it reads a leading blank or zero (`" 5"` or `"05"`), so a value rendered with `%_X` reads back |
 
-Padding flags only affect formatting. On parse, `%-X`/`%0X`/`%_X` behave exactly like bare `%X`.
+On format, a padding flag overrides the specifier's default padding. On parse, `%-X` and `%_X` widen what the field accepts (see above), while `%0X` and a year (already variable-width) read as bare `%X` does.
 
 ## Quick start
 

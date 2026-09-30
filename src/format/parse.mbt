@@ -610,9 +610,7 @@ fn apply_item(
         None => raise InputMismatch
         Some(p) => (parsed, p)
       }
-    // A padding flag only affects rendering — the parser reads the
-    // same width/logic regardless of Pad, so this delegates verbatim to
-    // the unwrapped specifier's own parsing.
+    // The flag's mode is forwarded so the field's reader can widen what it accepts.
     PaddedNumeric(kind, mode) =>
       apply_item(Numeric(kind), parsed, chars, pos, Some(mode))
     Rfc3339 =>
