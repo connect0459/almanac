@@ -49,7 +49,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%k` | Hour, 24-hour clock | Space-padded, `" 0"`..`"23"`; parses the same field as `%H`, tolerating a blank or zero leading digit |
 | `%P` | am/pm marker, lowercase | `"am"`/`"pm"`; parses `%p`/`%P` case-insensitively either way |
 | `%p` | am/pm marker, uppercase | `"AM"`/`"PM"`; see `%P` |
-| `%s` | Unix timestamp | Format-only: the underlying UTC instant's seconds since the epoch (unaffected by `format_date_time_tz`'s local zone shift); raises `InputMismatch` on parse |
+| `%s` | Unix timestamp | The UTC instant's seconds since the epoch (unaffected by `format_date_time_tz`'s local zone shift). On parse, a signed run of digits naming that instant: date-time resolvers derive the value from it (a `%f`-family field gives the sub-second part) and cross-check every other date or time field against the reading it has in the target offset (`InconsistentFields` on a mismatch); `to_date_time_tz` still needs `%z` (`IncompleteFields` without it), `to_date_time_in` takes the offset from the zone, and `to_date`/`to_time` ignore it. More than 18 digits, or an instant no date can hold, is `FieldOutOfRange` |
 | `%G` | ISO week-based year | Zero-padded to 4 digits on format, with `%Y`'s sign rules (`-` negative, `+` beyond 9999); on parse, an optionally-signed greedy field like `%Y`. With `%V` and a weekday, constructs the date via ISO week-date construction; otherwise cross-checked against the resolved date |
 | `%g` | ISO week-based year, no century | Zero-padded to 2 digits; on parse, a lone `%g` uses the same pivot as `%y` (below 70 is 20xx, otherwise 19xx), and is cross-checked against `%G` when both are present |
 | `%V` | ISO week number | Zero-padded, `01`..`53`; on parse, combined with `%G`/`%g` and a weekday, or else cross-checked against the resolved date |
@@ -288,7 +288,7 @@ pub(all) enum Fixed {
 | `IncompleteFields` | A `parse_*` call resolves fields that never populate a required value (e.g. no year) |
 | `InconsistentFields` | Two populated fields contradict each other (e.g. `%j` or a weekday name disagreeing with the date, two `%H` readings), or an offset is given to `Parsed::to_date_time_in` |
 | `FieldOutOfRange` | A parsed value is outside what its field can hold, so no value can be built (an hour of 24, February 30, an ISO week that does not exist in its year, an offset beyond `±23:59:59`) |
-| `InputMismatch` | Literal or specifier text fails to match the input, or a format-only specifier (`%s`) is parsed |
+| `InputMismatch` | Literal or specifier text fails to match the input |
 | `InputTooShort` | The input is exhausted when the format still has an item to match (e.g. `"2024-03"` against `%F`); a partial field such as one digit for `%m` is `InputMismatch` |
 | `TrailingInput` | The format is fully matched but input remains after it; the `_and_remainder` functions return that tail instead |
 

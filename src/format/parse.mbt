@@ -49,6 +49,10 @@ pub struct Parsed {
   priv iso_year_mod_100 : Int?
   /// `%V`: the ISO week number. See `iso_year`.
   priv iso_week : Int?
+  /// `%s`: the Unix timestamp in whole seconds, naming a UTC instant.
+  /// Only the date-time resolvers use it (see `resolve_at_timestamp`);
+  /// `to_date`/`to_time` ignore it.
+  priv timestamp : Int64?
 }
 
 ///|
@@ -72,6 +76,7 @@ fn Parsed::empty() -> Parsed {
     week_sunday: None,
     week_monday: None,
     zone_name: None,
+    timestamp: None,
     iso_year: None,
     iso_year_mod_100: None,
     iso_week: None,
@@ -132,6 +137,43 @@ fn parse_signed_greedy_digits(chars : Array[Char], pos : Int) -> (Int, Int)? {
     } else {
       break Some((sign * acc, i))
     }
+  }
+}
+
+///|
+/// Parses `%s`'s signed run of digits into whole seconds. A run longer than
+/// 18 digits cannot be a timestamp any date could hold (and would overflow
+/// `Int64`), so it raises `FieldOutOfRange` rather than failing to match.
+fn parse_timestamp_digits(
+  chars : Array[Char],
+  pos : Int,
+) -> (Int64, Int)? raise ParseError {
+  let (sign, start) = if pos < chars.length() && chars[pos] == '-' {
+    (-1L, pos + 1)
+  } else if pos < chars.length() && chars[pos] == '+' {
+    (1L, pos + 1)
+  } else {
+    (1L, pos)
+  }
+  let end = for i = start {
+    if i < chars.length() && is_ascii_digit(chars[i]) {
+      continue i + 1
+    } else {
+      break i
+    }
+  }
+  if end == start {
+    None
+  } else if end - start > 18 {
+    raise FieldOutOfRange
+  } else {
+    let value = for i = start, acc = 0L {
+      if i >= end {
+        break acc
+      }
+      continue i + 1, acc * 10L + digit_value(chars[i]).to_int64()
+    }
+    Some((sign * value, end))
   }
 }
 
@@ -704,7 +746,12 @@ fn apply_item(
         Some((value, p)) =>
           ({ ..parsed, hour: merge_field(parsed.hour, value), }, p)
       }
-    Numeric(Timestamp) => raise InputMismatch
+    Numeric(Timestamp) =>
+      match parse_timestamp_digits(chars, pos) {
+        None => raise InputMismatch
+        Some((value, p)) =>
+          ({ ..parsed, timestamp: merge_field(parsed.timestamp, value), }, p)
+      }
     Numeric(IsoYear) =>
       match parse_signed_greedy_digits(chars, pos) {
         None => raise InputMismatch
@@ -1132,7 +1179,72 @@ pub fn Parsed::to_time(self : Parsed) -> @core.NaiveTime raise ParseError {
 pub fn Parsed::to_date_time(
   self : Parsed,
 ) -> @core.NaiveDateTime raise ParseError {
-  @core.NaiveDateTime::new(resolve_date(self), resolve_time(self))
+  match self.timestamp {
+    Some(ts) => resolve_at_timestamp(self, ts, 0)
+    None => @core.NaiveDateTime::new(resolve_date(self), resolve_time(self))
+  }
+}
+
+///|
+fn[T] seed_missing(field : T?, seed : T) -> T? {
+  match field {
+    Some(_) => field
+    None => Some(seed)
+  }
+}
+
+///|
+/// The UTC instant a `%s` timestamp names, with the parsed nanosecond field
+/// (if any) as its sub-second part. `FieldOutOfRange` if no date can hold it.
+fn timestamp_instant(
+  parsed : Parsed,
+  ts : Int64,
+) -> @core.NaiveDateTime raise ParseError {
+  match
+    @core.NaiveDateTime::from_timestamp(ts, parsed.nanosecond.unwrap_or(0)) {
+    Some(instant) => instant
+    None => raise FieldOutOfRange
+  }
+}
+
+///|
+/// Resolves a `%s` timestamp to its UTC instant and checks every other
+/// date and time field against the wall-clock reading that instant has at
+/// `offset_secs` east of UTC. A field not parsed is filled from that reading,
+/// so the usual resolution cross-checks the ones that were (a month, a
+/// weekday, a 12-hour clock, ISO week fields, ...), and the resolved reading
+/// must equal it: `InconsistentFields` otherwise.
+fn resolve_at_timestamp(
+  parsed : Parsed,
+  ts : Int64,
+  offset_secs : Int,
+) -> @core.NaiveDateTime raise ParseError {
+  let instant = timestamp_instant(parsed, ts)
+  let wall_clock = match instant.checked_add_seconds(offset_secs) {
+    Some(reading) => reading
+    None => raise FieldOutOfRange
+  }
+  let seeded = {
+    ..parsed,
+    year: seed_missing(parsed.year, wall_clock.date().year()),
+    month: seed_missing(
+      parsed.month,
+      wall_clock.date().month().number_from_month(),
+    ),
+    day: seed_missing(parsed.day, wall_clock.date().day()),
+    hour: seed_missing(parsed.hour, wall_clock.time().hour()),
+    minute: seed_missing(parsed.minute, wall_clock.time().minute()),
+    second: seed_missing(parsed.second, wall_clock.time().second()),
+    nanosecond: seed_missing(parsed.nanosecond, wall_clock.time().nanosecond()),
+  }
+  let resolved = @core.NaiveDateTime::new(
+    resolve_date(seeded),
+    resolve_time(seeded),
+  )
+  if resolved != wall_clock {
+    raise InconsistentFields
+  }
+  instant
 }
 
 ///|
@@ -1142,12 +1254,21 @@ pub fn Parsed::to_date_time(
 pub fn Parsed::to_date_time_tz(
   self : Parsed,
 ) -> @tz.DateTime[@tz.FixedOffset] raise ParseError {
-  let local_naive = self.to_date_time()
   let offset = resolve_offset(self)
-  @tz.DateTime::from_utc(
-    local_naive.sub_seconds(offset.local_minus_utc()),
-    offset,
-  )
+  match self.timestamp {
+    Some(ts) =>
+      @tz.DateTime::from_utc(
+        resolve_at_timestamp(self, ts, offset.local_minus_utc()),
+        offset,
+      )
+    None => {
+      let local_naive = self.to_date_time()
+      @tz.DateTime::from_utc(
+        local_naive.sub_seconds(offset.local_minus_utc()),
+        offset,
+      )
+    }
+  }
 }
 
 ///|
@@ -1159,6 +1280,12 @@ pub fn[Tz : @tz.TimeZone] Parsed::to_date_time_in(
 ) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise ParseError {
   if self.offset_secs is Some(_) {
     raise InconsistentFields
+  }
+  if self.timestamp is Some(ts) {
+    let instant = timestamp_instant(self, ts)
+    let offset = tz.offset_from_utc(instant)
+    let utc = resolve_at_timestamp(self, ts, offset.local_minus_utc())
+    return Single(@tz.DateTime::from_utc(utc, tz))
   }
   let local_naive = self.to_date_time()
   match self.zone_name {

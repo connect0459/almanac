@@ -1082,14 +1082,6 @@ test "parse_date parses %0e and %_d identically to plain %e/%d, ignoring the pad
 }
 
 ///|
-test "parsing %s always raises InputMismatch, since parsing it is not yet supported" {
-  try @format.parse_date_time("anything", "%s") |> ignore catch {
-    @format.InputMismatch => ()
-    _ => fail("expected InputMismatch for %s")
-  } noraise {
-    _ => fail("expected parse_date_time to reject %s")
-  }
-}
 
 ///|
 test "parse_date round-trips ISO week dates through %G, %V and %u, including across a calendar-year boundary" {
