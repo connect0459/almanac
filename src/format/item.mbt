@@ -4,7 +4,7 @@
 /// seconds, not a calendar component).
 pub(all) enum Numeric {
   Year
-  Month
+  MonthNumber
   Day
   Ordinal
   Hour

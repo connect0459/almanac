@@ -33,7 +33,7 @@ test "parse_items accepts a hand-built item sequence" {
   let items = [
     @format.Numeric(@format.Day),
     @format.Literal("."),
-    @format.Numeric(@format.Month),
+    @format.Numeric(@format.MonthNumber),
     @format.Literal("."),
     @format.Numeric(@format.Year),
   ]

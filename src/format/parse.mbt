@@ -644,7 +644,7 @@ fn apply_item(
         Some((value, p)) =>
           ({ ..parsed, year: merge_field(parsed.year, value), }, p)
       }
-    Numeric(Month) =>
+    Numeric(MonthNumber) =>
       match read_digits(chars, pos, 2, pad, false) {
         None => raise InputMismatch
         Some((value, p)) =>
