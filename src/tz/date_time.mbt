@@ -427,6 +427,48 @@ pub fn[Tz : TimeZone] DateTime::with_ordinal0(
 }
 
 ///|
+/// The number of non-leap seconds since the Unix epoch, flooring toward negative infinity. Independent of the time zone.
+pub fn[Tz] DateTime::timestamp(self : DateTime[Tz]) -> Int64 {
+  self.datetime.timestamp()
+}
+
+///|
+/// The number of non-leap milliseconds since the Unix epoch. Independent of the time zone.
+pub fn[Tz] DateTime::timestamp_millis(self : DateTime[Tz]) -> Int64 {
+  self.datetime.timestamp_millis()
+}
+
+///|
+/// The number of non-leap microseconds since the Unix epoch; `None` if it overflows `Int64`. Independent of the time zone.
+pub fn[Tz] DateTime::timestamp_micros(self : DateTime[Tz]) -> Int64? {
+  self.datetime.timestamp_micros()
+}
+
+///|
+/// The number of non-leap nanoseconds since the Unix epoch; `None` if it overflows `Int64`. Independent of the time zone.
+pub fn[Tz] DateTime::timestamp_nanos(self : DateTime[Tz]) -> Int64? {
+  self.datetime.timestamp_nanos()
+}
+
+///|
+/// The nanosecond component of the instant within its second. Independent of the time zone.
+pub fn[Tz] DateTime::timestamp_subsec_nanos(self : DateTime[Tz]) -> Int {
+  self.datetime.timestamp_subsec_nanos()
+}
+
+///|
+/// The millisecond component of the instant within its second. Independent of the time zone.
+pub fn[Tz] DateTime::timestamp_subsec_millis(self : DateTime[Tz]) -> Int {
+  self.datetime.timestamp_subsec_millis()
+}
+
+///|
+/// The microsecond component of the instant within its second. Independent of the time zone.
+pub fn[Tz] DateTime::timestamp_subsec_micros(self : DateTime[Tz]) -> Int {
+  self.datetime.timestamp_subsec_micros()
+}
+
+///|
 /// This datetime re-expressed in `tz`, keeping the same underlying UTC
 /// instant.
 pub fn[Tz, Tz2] DateTime::with_timezone(

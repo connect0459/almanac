@@ -524,3 +524,46 @@ test "with_day0 reports Absent in a spring-forward gap and Ambiguous in a fall-b
   assert_true(before_fold.with_day0(2).earliest() is Some(_))
   assert_true(before_fold.with_day0(2).single() is None)
 }
+
+///|
+test "DateTime timestamp accessors report the UTC instant regardless of the time zone" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let utc = @tz.FixedOffset::east(0).unwrap()
+  let in_tokyo = @tz.DateTime::from_timestamp(
+    1_700_000_000L, 123_456_789, tokyo,
+  ).unwrap()
+  let in_utc = in_tokyo.with_timezone(utc)
+  for dt in [in_tokyo, in_utc] {
+    assert_eq(dt.timestamp(), 1_700_000_000L)
+    assert_eq(dt.timestamp_millis(), 1_700_000_000_123L)
+    assert_eq(dt.timestamp_micros(), Some(1_700_000_000_123_456L))
+    assert_eq(dt.timestamp_nanos(), Some(1_700_000_000_123_456_789L))
+    assert_eq(dt.timestamp_subsec_nanos(), 123_456_789)
+    assert_eq(dt.timestamp_subsec_millis(), 123)
+    assert_eq(dt.timestamp_subsec_micros(), 123_456)
+  }
+}
+
+///|
+test "DateTime timestamp accessors floor toward negative infinity before the Unix epoch" {
+  let utc = @tz.FixedOffset::east(0).unwrap()
+  let dt = @tz.DateTime::from_timestamp(-1L, 500_000_000, utc).unwrap()
+  assert_eq(dt.timestamp(), -1L)
+  assert_eq(dt.timestamp_millis(), -500L)
+  assert_eq(dt.timestamp_subsec_millis(), 500)
+}
+
+///|
+test "DateTime timestamp_millis stays total for a far date while timestamp_micros and timestamp_nanos are None" {
+  let utc = @tz.FixedOffset::east(0).unwrap()
+  let far_date = @core.NaiveDate::from_ymd(1970, 1, 1)
+    .unwrap()
+    .add_days(2_000_000_000)
+  let far = @tz.DateTime::from_utc(
+    @core.NaiveDateTime::new(far_date, @core.NaiveTime::midnight()),
+    utc,
+  )
+  assert_eq(far.timestamp_millis(), far.timestamp() * 1000L)
+  assert_eq(far.timestamp_micros(), None)
+  assert_eq(far.timestamp_nanos(), None)
+}

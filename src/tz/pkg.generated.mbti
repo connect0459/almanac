@@ -63,6 +63,13 @@ pub fn[Tz] DateTime::sub_months(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz] DateTime::sub_signed(Self[Tz], @core.TimeDelta) -> Self[Tz]
 pub fn[Tz] DateTime::sub_years(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz : TimeZone] DateTime::time(Self[Tz]) -> @core.NaiveTime
+pub fn[Tz] DateTime::timestamp(Self[Tz]) -> Int64
+pub fn[Tz] DateTime::timestamp_micros(Self[Tz]) -> Int64?
+pub fn[Tz] DateTime::timestamp_millis(Self[Tz]) -> Int64
+pub fn[Tz] DateTime::timestamp_nanos(Self[Tz]) -> Int64?
+pub fn[Tz] DateTime::timestamp_subsec_micros(Self[Tz]) -> Int
+pub fn[Tz] DateTime::timestamp_subsec_millis(Self[Tz]) -> Int
+pub fn[Tz] DateTime::timestamp_subsec_nanos(Self[Tz]) -> Int
 pub fn[Tz] DateTime::timezone(Self[Tz]) -> Tz
 pub fn[Tz : @debug.Debug] DateTime::to_repr(Self[Tz]) -> @debug.Repr
 pub fn[Tz] DateTime::truncate(Self[Tz], @core.TimeDelta) -> Self[Tz]?

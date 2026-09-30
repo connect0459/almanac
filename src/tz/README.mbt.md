@@ -188,6 +188,9 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 | `num_seconds_from_midnight()` | `-> Int` | Seconds since local midnight |
 | `with_year(Int)` / `with_month(Int)` / `with_day(Int)` / `with_ordinal(Int)` / `with_hour(Int)` / `with_minute(Int)` / `with_second(Int)` / `with_nanosecond(Int)` | `-> MappedLocalTime[Self[Tz]]` | Replace one local component and re-resolve the wall-clock reading through the zone: `Absent` for an invalid value or a DST gap, `Ambiguous` inside a DST fold |
 | `with_month0(Int)` / `with_day0(Int)` / `with_ordinal0(Int)` | `-> MappedLocalTime[Self[Tz]]` | 0-based counterparts of `with_month`/`with_day`/`with_ordinal`, resolved the same way |
+| `timestamp()` / `timestamp_millis()` | `-> Int64` | Non-leap seconds / milliseconds since the Unix epoch, flooring toward negative infinity; independent of the zone |
+| `timestamp_micros()` / `timestamp_nanos()` | `-> Int64?` | Microseconds / nanoseconds since the Unix epoch; `None` if the instant overflows `Int64` |
+| `timestamp_subsec_nanos()` / `timestamp_subsec_millis()` / `timestamp_subsec_micros()` | `-> Int` | The sub-second component of the instant in that unit |
 | `signed_duration_since(Self[Tz2])` | `-> TimeDelta` | The signed duration from `other` to `self`, independent of either's time zone |
 | `compare(Self[Tz])` / `<` / `>` / `<=` / `>=` | `-> Int` / `-> Bool` | Order by UTC instant, ignoring the zone value (requires `Tz : Eq`); equal instants in different zones compare as `0` yet are unequal under `==` |
 | `compare_instant(Self[Tz2])` | `-> Int` | Order by UTC instant against a datetime in a different time zone type |
