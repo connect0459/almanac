@@ -18,7 +18,7 @@ pub fn resolve_tzdata_bytes(Map[String, Bytes], Map[String, String], String) -> 
 // Types and methods
 pub struct DateTime[Tz] {
   // private fields
-} derive(Eq, Hash, @debug.Debug)
+} derive(@debug.Debug)
 pub fn[Tz] DateTime::add_days(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz] DateTime::add_months(Self[Tz], Int) -> Self[Tz]
 pub fn[Tz] DateTime::add_offset(Self[Tz], FixedOffset) -> Self[Tz]
@@ -34,13 +34,13 @@ pub fn[Tz] DateTime::checked_sub_months(Self[Tz], Int) -> Self[Tz]?
 pub fn[Tz] DateTime::checked_sub_offset(Self[Tz], FixedOffset) -> Self[Tz]?
 pub fn[Tz] DateTime::checked_sub_signed(Self[Tz], @core.TimeDelta) -> Self[Tz]?
 pub fn[Tz] DateTime::checked_sub_years(Self[Tz], Int) -> Self[Tz]?
-pub fn[Tz : Eq] DateTime::compare(Self[Tz], Self[Tz]) -> Int
+pub fn[Tz] DateTime::compare(Self[Tz], Self[Tz]) -> Int
 pub fn[Tz, Tz2] DateTime::compare_instant(Self[Tz], Self[Tz2]) -> Int
 pub fn[Tz : TimeZone] DateTime::date_naive(Self[Tz]) -> @core.NaiveDate
 pub fn[Tz : TimeZone] DateTime::day(Self[Tz]) -> Int
 pub fn[Tz : TimeZone] DateTime::day0(Self[Tz]) -> Int
 pub fn DateTime::default() -> Self[Utc]
-pub fn[Tz : Eq] DateTime::equal(Self[Tz], Self[Tz]) -> Bool
+pub fn[Tz] DateTime::equal(Self[Tz], Self[Tz]) -> Bool
 pub fn[Tz : TimeZone] DateTime::fixed_offset(Self[Tz]) -> Self[FixedOffset]
 pub fn[Tz : TimeZone] DateTime::from_local(@core.NaiveDateTime, Tz) -> MappedLocalTime[Self[Tz]]
 pub fn[Tz : TimeZone] DateTime::from_local_lenient(@core.NaiveDateTime, Tz) -> Self[Tz]
@@ -50,8 +50,8 @@ pub fn[Tz] DateTime::from_timestamp_millis(Int64, Tz) -> Self[Tz]?
 pub fn[Tz] DateTime::from_timestamp_nanos(Int64, Tz) -> Self[Tz]?
 pub fn[Tz] DateTime::from_utc(@core.NaiveDateTime, Tz) -> Self[Tz]
 pub fn[Tz : TimeZone] DateTime::from_ymd_hms(Int, Int, Int, Int, Int, Int, Tz) -> MappedLocalTime[Self[Tz]]
-pub fn[Tz : Hash] DateTime::hash(Self[Tz]) -> Int
-pub fn[Tz : Hash] DateTime::hash_combine(Self[Tz], Hasher) -> Unit
+pub fn[Tz] DateTime::hash(Self[Tz]) -> Int
+pub fn[Tz] DateTime::hash_combine(Self[Tz], Hasher) -> Unit
 pub fn[Tz : TimeZone] DateTime::hour(Self[Tz]) -> Int
 pub fn[Tz : TimeZone] DateTime::hour12(Self[Tz]) -> (Bool, Int)
 pub fn[Tz : TimeZone] DateTime::is_dst(Self[Tz]) -> Bool
@@ -62,15 +62,15 @@ pub fn[Tz : TimeZone] DateTime::month0(Self[Tz]) -> Int
 pub fn[Tz : TimeZone] DateTime::naive_local(Self[Tz]) -> @core.NaiveDateTime
 pub fn[Tz] DateTime::naive_utc(Self[Tz]) -> @core.NaiveDateTime
 pub fn[Tz : TimeZone] DateTime::nanosecond(Self[Tz]) -> Int
-pub fn[Tz : Eq] DateTime::not_equal(Self[Tz], Self[Tz]) -> Bool
+pub fn[Tz] DateTime::not_equal(Self[Tz], Self[Tz]) -> Bool
 pub fn[Tz : TimeZone] DateTime::num_days_from_ce(Self[Tz]) -> Int
 pub fn[Tz : TimeZone] DateTime::num_days_in_month(Self[Tz]) -> Int
 pub fn[Tz : TimeZone] DateTime::num_seconds_from_midnight(Self[Tz]) -> Int
 pub fn[Tz : TimeZone] DateTime::offset(Self[Tz]) -> FixedOffset
-pub fn[Tz : Eq] DateTime::op_ge(Self[Tz], Self[Tz]) -> Bool
-pub fn[Tz : Eq] DateTime::op_gt(Self[Tz], Self[Tz]) -> Bool
-pub fn[Tz : Eq] DateTime::op_le(Self[Tz], Self[Tz]) -> Bool
-pub fn[Tz : Eq] DateTime::op_lt(Self[Tz], Self[Tz]) -> Bool
+pub fn[Tz] DateTime::op_ge(Self[Tz], Self[Tz]) -> Bool
+pub fn[Tz] DateTime::op_gt(Self[Tz], Self[Tz]) -> Bool
+pub fn[Tz] DateTime::op_le(Self[Tz], Self[Tz]) -> Bool
+pub fn[Tz] DateTime::op_lt(Self[Tz], Self[Tz]) -> Bool
 pub fn[Tz : TimeZone] DateTime::ordinal(Self[Tz]) -> Int
 pub fn[Tz : TimeZone] DateTime::ordinal0(Self[Tz]) -> Int
 pub fn[Tz : TimeZone] DateTime::output(Self[Tz], &Logger) -> Unit
@@ -120,8 +120,10 @@ pub fn[Tz : TimeZone, Tz2] DateTime::years_since(Self[Tz], Self[Tz2]) -> Int?
 pub fn[Tz : TimeZone] DateTime::zone(Self[Tz]) -> (String, FixedOffset)
 pub fn[Tz : TimeZone] DateTime::zone_bounds(Self[Tz]) -> TransitionBounds
 pub fn[Tz : TimeZone] DateTime::zone_name(Self[Tz]) -> String
-pub impl[Tz : Eq] Compare for DateTime[Tz]
+pub impl[Tz] Compare for DateTime[Tz]
 pub impl Default for DateTime[Utc]
+pub impl[Tz] Eq for DateTime[Tz]
+pub impl[Tz] Hash for DateTime[Tz]
 pub impl[Tz : TimeZone] Show for DateTime[Tz]
 
 pub struct FixedOffset {

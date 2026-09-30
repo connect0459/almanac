@@ -4,16 +4,27 @@
 /// Internally stores the UTC naive datetime plus the zone value `tz`; the
 /// local (wall-clock) representation is derived on demand via
 /// `tz.offset_from_utc`, never stored redundantly.
+///
+/// Identity is the UTC instant: `Eq`, `Hash` and `Compare` all ignore the
+/// zone value, so the same instant expressed in different zones is equal,
+/// hashes alike and compares as `0`.
 pub struct DateTime[Tz] {
   priv datetime : @core.NaiveDateTime
   priv tz : Tz
-} derive(Eq, Hash, @debug.Debug)
+} derive(@debug.Debug)
 
 ///|
-pub extend DateTime with Eq::{equal}
+pub impl[Tz] Eq for DateTime[Tz] with fn equal(self, other) {
+  self.datetime == other.datetime
+}
 
 ///|
-pub extend DateTime with Eq::{not_equal}
+pub extend DateTime with Eq::{equal, not_equal}
+
+///|
+pub impl[Tz] Hash for DateTime[Tz] with fn hash_combine(self, hasher) {
+  self.datetime.hash_combine(hasher)
+}
 
 ///|
 pub extend DateTime with Hash::{hash, hash_combine}
@@ -47,8 +58,9 @@ pub fn[Tz] DateTime::from_utc(
 pub extend DateTime with Compare::{compare, op_lt, op_gt, op_le, op_ge}
 
 ///|
-/// Orders two datetimes by their UTC instant, ignoring the time zone value.
-pub impl[Tz : Eq] Compare for DateTime[Tz] with fn compare(self, other) {
+/// Orders two datetimes by their UTC instant, ignoring the time zone value,
+/// consistently with `Eq`.
+pub impl[Tz] Compare for DateTime[Tz] with fn compare(self, other) {
   self.datetime.compare(other.datetime)
 }
 

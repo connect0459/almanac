@@ -184,7 +184,7 @@ A named zone with a constant offset and no daylight saving. Unlike a bare `Fixed
 
 A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored directly; the local (wall-clock) representation is derived on demand.
 
-`Eq` and `Hash` cover the UTC instant and the zone value, so equal instants in different zones are unequal (see `compare_instant` for an instant-only comparison). `Utc`, `FixedOffset`, `Location` and `TransitionBounds` implement `Hash` too, so all of them can key a `Map`.
+`Eq`, `Hash` and `Compare` all identify the UTC instant and ignore the zone value, so the same instant in different zones is equal, hashes alike and compares as `0`; compare the zones themselves (or `naive_local()`) when the wall-clock reading matters. `Utc`, `FixedOffset`, `Location` and `TransitionBounds` implement `Hash` too, so all of them can key a `Map`.
 
 | Method | Signature | Description |
 | :--- | :--- | :--- |
@@ -233,7 +233,7 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 | `zone_bounds()` | `-> TransitionBounds` | The validity window of the offset in effect at this instant, either side `None` when unbounded (requires `Tz : TimeZone`); see `TransitionBounds` |
 | `to_string()` (`Show`) | `-> String` | The local date-time and the zone's name at that instant joined by a space, e.g. `"2024-01-02 13:45:06.500 +09:00"`, `"... UTC"`, `"... EDT"` (requires `Tz : TimeZone`) |
 | `years_since(Self[Tz2])` | `-> Int?` | Full calendar years elapsed from `base` (which may be in another time zone), reading both as local dates in the receiver's time zone and ignoring the time of day; `None` if `base` is later |
-| `compare(Self[Tz])` / `<` / `>` / `<=` / `>=` | `-> Int` / `-> Bool` | Order by UTC instant, ignoring the zone value (requires `Tz : Eq`); equal instants in different zones compare as `0` yet are unequal under `==` (intentional: `==`/`Hash` also cover the zone; to test for the same instant, use `compare_instant(other) == 0`) |
+| `compare(Self[Tz])` / `<` / `>` / `<=` / `>=` | `-> Int` / `-> Bool` | Order by UTC instant, ignoring the zone value; consistent with `==` |
 | `compare_instant(Self[Tz2])` | `-> Int` | Order by UTC instant against a datetime in a different time zone type |
 | `round(TimeDelta)` | `-> Result[Self[Tz], @core.RoundingError]` | Round the underlying UTC instant to the nearest multiple of a granularity since the Unix epoch, keeping the same time zone; see `TimeDelta::round` (in `core`) for which granularities are supported |
 | `round_up(TimeDelta)` | `-> Result[Self[Tz], @core.RoundingError]` | Round the underlying UTC instant up (toward positive infinity) to the next multiple of a granularity since the Unix epoch, unchanged if already a multiple, keeping the same time zone; see `NaiveDateTime::round_up` for the failure reasons |
@@ -263,7 +263,7 @@ A time zone backed by parsed IANA tzdata (TZif binary format, plus a POSIX TZ st
 | `tz_name(NaiveDateTime)` | `-> String` | The abbreviation in effect at a given instant, e.g. `"EDT"` |
 | `transition_bounds(NaiveDateTime)` | `-> TransitionBounds` | The validity window of the segment covering a given instant; see `TransitionBounds` |
 
-`Location` also implements `TimeZone`. `==` is structural: two `Location`s are equal when their parsed TZif data, POSIX rule and `name()` all match, so an alias (e.g. `"Japan"`) is unequal to its canonical zone (`"Asia/Tokyo"`) even though both resolve identically. This also lets `DateTime[Location]` use `==` and the ordering operators.
+`Location` also implements `TimeZone`. `==` is structural: two `Location`s are equal when their parsed TZif data, POSIX rule and `name()` all match, so an alias (e.g. `"Japan"`) is unequal to its canonical zone (`"Asia/Tokyo"`) even though both resolve identically.
 
 ### `TransitionBounds`
 

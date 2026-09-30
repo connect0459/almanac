@@ -353,6 +353,44 @@ test "DateTime ordering follows the instant rather than the local wall-clock rea
 }
 
 ///|
+test "DateTime equality and hash identify the instant, not the zone it is expressed in" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let utc = @tz.FixedOffset::east(0).unwrap()
+  let a = instant_at(1_000L, tokyo)
+  let b = instant_at(1_000L, utc)
+  let c = instant_at(1_001L, utc)
+  assert_eq(a, b)
+  assert_eq(a.hash(), b.hash())
+  assert_true(a != c)
+  assert_true(a.naive_local() != b.naive_local())
+}
+
+///|
+test "DateTime equality agrees with comparison for every pair" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let utc = @tz.FixedOffset::east(0).unwrap()
+  let values = [
+    instant_at(1_000L, tokyo),
+    instant_at(1_000L, utc),
+    instant_at(2_000L, tokyo),
+  ]
+  for a in values {
+    for b in values {
+      assert_eq(a == b, a.compare(b) == 0)
+    }
+  }
+}
+
+///|
+test "DateTime of the same instant in Locations with different names are equal" {
+  let utc = @tz.Location::load("UTC").unwrap()
+  let etc_utc = @tz.Location::load("Etc/UTC").unwrap()
+  let a = @tz.DateTime::from_timestamp(0L, 0, utc).unwrap()
+  let b = @tz.DateTime::from_timestamp(0L, 0, etc_utc).unwrap()
+  assert_true(a == b)
+}
+
+///|
 test "compare_instant orders datetimes expressed in different time zone types" {
   let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
   let earlier = instant_at(1_000L, tokyo)
@@ -803,7 +841,7 @@ test "equal Utc and FixedOffset values hash equally and can key a Map" {
 }
 
 ///|
-test "DateTime hashing agrees with its Eq, which also compares the zone" {
+test "DateTime hashing agrees with its Eq and can key a Map" {
   let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
   let utc = @tz.FixedOffset::east(0).unwrap()
   let a = @tz.DateTime::from_timestamp(1_000L, 0, tokyo).unwrap()
@@ -812,7 +850,10 @@ test "DateTime hashing agrees with its Eq, which also compares the zone" {
   assert_true(
     a.hash() != @tz.DateTime::from_timestamp(2_000L, 0, tokyo).unwrap().hash(),
   )
-  assert_true(a != @tz.DateTime::from_timestamp(1_000L, 0, utc).unwrap())
+  assert_eq(
+    a.hash(),
+    @tz.DateTime::from_timestamp(1_000L, 0, utc).unwrap().hash(),
+  )
   let seen : Map[@tz.DateTime[@tz.FixedOffset], Int] = Map([])
   seen[a] = 1
   assert_eq(seen.get(b), Some(1))
