@@ -1363,3 +1363,15 @@ test "parsing repeated %Z accepts the same name and rejects differing names" {
     _ => fail("expected rejection")
   }
 }
+
+///|
+test "parse_date_time_in round-trips a FixedZone's name through %Z" {
+  let zone = @tz.FixedZone::new("JST", @tz.FixedOffset::east(9 * 3600).unwrap())
+  let dt = @format.parse_date_time_in(
+      "2024-06-15 21:00:00 JST", "%F %T %Z", zone,
+    )
+    .single()
+    .unwrap()
+  assert_eq(dt.naive_utc().time().hour(), 12)
+  assert_eq(dt.timezone(), zone)
+}

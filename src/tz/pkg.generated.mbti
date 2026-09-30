@@ -130,6 +130,30 @@ pub fn FixedOffset::west(Int) -> Self?
 pub impl TimeZone for FixedOffset
 pub impl Show for FixedOffset
 
+pub struct FixedZone {
+  // private fields
+} derive(Eq, Hash, @debug.Debug)
+pub fn FixedZone::equal(Self, Self) -> Bool
+pub fn FixedZone::from_local_datetime(Self, @core.NaiveDateTime) -> MappedLocalTime[DateTime[Self]]
+pub fn FixedZone::from_utc_datetime(Self, @core.NaiveDateTime) -> DateTime[Self]
+pub fn FixedZone::hash(Self) -> Int
+pub fn FixedZone::hash_combine(Self, Hasher) -> Unit
+pub fn FixedZone::is_dst(Self, @core.NaiveDateTime) -> Bool
+pub fn FixedZone::name(Self) -> String
+pub fn FixedZone::new(String, FixedOffset) -> Self
+pub fn FixedZone::not_equal(Self, Self) -> Bool
+pub fn FixedZone::offset(Self) -> FixedOffset
+pub fn FixedZone::offset_from_abbreviation(Self, String, @core.NaiveDateTime) -> FixedOffset?
+pub fn FixedZone::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[FixedOffset]
+pub fn FixedZone::offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
+pub fn FixedZone::output(Self, &Logger) -> Unit
+pub fn FixedZone::to_repr(Self) -> @debug.Repr
+pub fn FixedZone::to_string(Self) -> String
+pub fn FixedZone::transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds
+pub fn FixedZone::tz_name(Self, @core.NaiveDateTime) -> String
+pub impl TimeZone for FixedZone
+pub impl Show for FixedZone
+
 pub struct LocalTimeType {
   // private fields
 } derive(Eq, Hash, @debug.Debug)

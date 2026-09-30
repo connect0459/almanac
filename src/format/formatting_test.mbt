@@ -569,3 +569,16 @@ test "format_time/format_date raise MissingField for every eligible padding-flag
     }
   }
 }
+
+///|
+test "format_date_time_tz renders %Z as a FixedZone's name rather than its offset" {
+  let zone = @tz.FixedZone::new("JST", @tz.FixedOffset::east(9 * 3600).unwrap())
+  let dt = @tz.DateTime::from_utc(
+    @core.NaiveDateTime::new(
+      @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),
+      @core.NaiveTime::from_hms(12, 0, 0).unwrap(),
+    ),
+    zone,
+  )
+  assert_eq(@format.format_date_time_tz(dt, "%T %Z %z"), "21:00:00 JST +0900")
+}

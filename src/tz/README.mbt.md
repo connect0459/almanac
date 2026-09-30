@@ -6,10 +6,11 @@ Time zone support layered on top of `core`'s `NaiveDateTime`. Import `connect045
 
 | Type | Description |
 | :--- | :--- |
-| `TimeZone` (trait) | Resolves a `NaiveDateTime` to a UTC offset; implemented by `Utc`, `FixedOffset`, and `Location` |
+| `TimeZone` (trait) | Resolves a `NaiveDateTime` to a UTC offset; implemented by `Utc`, `FixedOffset`, `FixedZone`, and `Location` |
 | `MappedLocalTime[T]` | The result of resolving a local (wall-clock) reading: `Single`, `Ambiguous` (DST fold), or `Absent` (DST gap); `T` is a `FixedOffset` or a `DateTime[Tz]` |
 | `Utc` | The UTC zone: always offset zero |
 | `FixedOffset` | A constant UTC offset, `±23:59:59` |
+| `FixedZone` | A named zone with one constant offset; `tz_name`/`%Z` report the name |
 | `DateTime[Tz]` | A `NaiveDateTime` paired with a time zone `Tz` |
 | `Location` | A time zone backed by parsed IANA tzdata, resolving historical transitions and DST |
 | `TransitionBounds` | The validity window (start/end) of a `Location`'s segment covering a given instant |
@@ -90,7 +91,7 @@ test {
 
 ### `TimeZone` trait
 
-Implemented by `Utc`, `FixedOffset`, `Location`, and `PosixTz`. `DateTime[Tz]::offset`/`naive_local` require `Tz : TimeZone`.
+Implemented by `Utc`, `FixedOffset`, `FixedZone`, `Location`, and `PosixTz`. `DateTime[Tz]::offset`/`naive_local` require `Tz : TimeZone`.
 
 | Method | Signature | Description |
 | :--- | :--- | :--- |
@@ -164,6 +165,19 @@ A constant UTC offset, in seconds, within `±23:59:59`.
 `FixedOffset` also implements `Eq` and `TimeZone`.
 
 ---
+
+### `FixedZone`
+
+A named zone with a constant offset and no daylight saving, in the style of Go's `FixedZone`. Unlike a bare `FixedOffset`, whose `tz_name` is its own offset text (`"+09:00"`), a `FixedZone`'s `tz_name` (and so `%Z`) is the name it was given. Two zones are equal only when both the name and the offset match, so `FixedOffset`'s own equality and rendering are unaffected.
+
+| Method | Signature | Description |
+| :--- | :--- | :--- |
+| `FixedZone::new(String, FixedOffset)` | `-> Self` | A zone with the given name and constant offset |
+| `name()` | `-> String` | The zone's name |
+| `offset()` | `-> FixedOffset` | The zone's constant offset |
+| `offset_from_utc(NaiveDateTime)` / `offset_from_local(NaiveDateTime)` | `-> FixedOffset` / `-> MappedLocalTime[FixedOffset]` | The constant offset; the local form is always `Single` |
+| `tz_name(NaiveDateTime)` | `-> String` | The zone's name |
+| `offset_from_abbreviation(String, NaiveDateTime)` | `-> FixedOffset?` | The offset when the abbreviation equals the zone's own name, else `None`, so `parse_date_time_in` can read a `%Z` name back |
 
 ### `DateTime[Tz]`
 
