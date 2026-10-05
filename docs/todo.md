@@ -476,14 +476,14 @@ Coverage target: none (no new behavior); the gate is the verification checklist 
 ### Preparation
 
 - [x] Confirm the release scope and version number with the user (initial version and pre-release policy) (resolved, confirmed with the user: publish `0.1.0` as it stands in `moon.mod`, without a pre-release suffix; the README and changelog state that a `0.x` minor release may break the API; `repository` is set to `https://github.com/connect0459/almanac`, the `origin` remote)
-- [ ] Re-run `moon info && moon fmt` and review the final `.mbti` diffs across all four packages
-- [ ] Verify that each package `README.mbt.md`, the top-level `README.md`/`README.mbt.md` and `moon.mod` metadata (`description`, `keywords`, `repository`, `license`, `readme`) match the final API
-- [ ] Record the IANA tzdata release the embedded database was generated from, and how to regenerate it (`just gen-tzdata`)
+- [x] Re-run `moon info && moon fmt` and review the final `.mbti` diffs across all four packages (resolved: `moon info` leaves every `.mbti` unchanged, and the public surface matches the Phase 12 and Phase 13 audits, which found no unrecorded contradiction)
+- [x] Verify that each package `README.mbt.md`, the top-level `README.md`/`README.mbt.md` and `moon.mod` metadata (`description`, `keywords`, `repository`, `license`, `readme`) match the final API (resolved: every public function and constant in each `.mbti` appears in its package README, `moon.mod` now has `repository`, and the module README, which was a bare title, is written)
+- [x] Record the IANA tzdata release the embedded database was generated from, and how to regenerate it (`just gen-tzdata`) (resolved: the embedded data is release `2026c`, verified byte for byte against a regeneration from that tree; `gen_tzdata.py` now writes the release from `+VERSION` into the generated header, and the `tz` README states it and the regeneration steps)
 - [ ] Add release notes or a changelog for the first version
-- [ ] Check the published package size and that the generated tzdata file is included as intended
-- [ ] Check that `LICENSE`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` and `SECURITY.md` are present and current
-- [ ] `pre-commit run --all-files` clean and `just verify` green on `js`, `wasm`, `wasm-gc` and `native`
-- [ ] Dry-run the publish (`moon package` or the equivalent) and inspect the resulting package contents
+- [x] Check the published package size and that the generated tzdata file is included as intended (resolved: `moon package` yields a 772 KB archive, 5.5 MB unpacked, with `tzdata_generated.mbt`; a `.moonignore` keeps `CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md`, `apm.*` and `docs/todo.md` out, since `moon package` follows `.gitignore` only and had bundled the globally ignored `CLAUDE.local.md`)
+- [x] Check that `LICENSE`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` and `SECURITY.md` are present and current (resolved: all four are present; `CONTRIBUTING.md` named a nonexistent `Date` type and package in its commit examples, now replaced)
+- [x] `pre-commit run --all-files` clean and `just verify` green on `js`, `wasm`, `wasm-gc` and `native` (resolved: both clean, with 1196 tests on the three non-native backends and 1212 on `native`)
+- [x] Dry-run the publish (`moon package` or the equivalent) and inspect the resulting package contents (resolved: `moon package` and `moon package --list` ran, and the unpacked archive holds no local-only path)
 
 ### Publish
 
