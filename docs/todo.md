@@ -475,7 +475,7 @@ Coverage target: none (no new behavior); the gate is the verification checklist 
 
 ### Preparation
 
-- [ ] Confirm the release scope and version number with the user (initial version and pre-release policy)
+- [x] Confirm the release scope and version number with the user (initial version and pre-release policy) (resolved, confirmed with the user: publish `0.1.0` as it stands in `moon.mod`, without a pre-release suffix; the README and changelog state that a `0.x` minor release may break the API; `repository` is set to `https://github.com/connect0459/almanac`, the `origin` remote)
 - [ ] Re-run `moon info && moon fmt` and review the final `.mbti` diffs across all four packages
 - [ ] Verify that each package `README.mbt.md`, the top-level `README.md`/`README.mbt.md` and `moon.mod` metadata (`description`, `keywords`, `repository`, `license`, `readme`) match the final API
 - [ ] Record the IANA tzdata release the embedded database was generated from, and how to regenerate it (`just gen-tzdata`)
