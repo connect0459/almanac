@@ -242,7 +242,7 @@ pub fn Cron::parse(expression : String) -> Cron raise CronError {
     allows_question: true,
   }.parse(tokens[offset + 2])
   let months = FieldSpec::{
-      field: Month,
+      field: MonthField,
       min: 1,
       max: 12,
       names: month_names(),

@@ -91,8 +91,8 @@ test "an out-of-range value names the field it is in" {
   assert_invalid_field("* 24 * * *", Hour)
   assert_invalid_field("* * 0 * *", DayOfMonth)
   assert_invalid_field("* * 32 * *", DayOfMonth)
-  assert_invalid_field("* * * 0 *", Month)
-  assert_invalid_field("* * * 13 *", Month)
+  assert_invalid_field("* * * 0 *", MonthField)
+  assert_invalid_field("* * * 13 *", MonthField)
   assert_invalid_field("* * * * 8", DayOfWeek)
 }
 
@@ -106,7 +106,7 @@ test "malformed items name the field they are in" {
   assert_invalid_field("-1 * * * *", Minute)
   assert_invalid_field("+1 * * * *", Minute)
   assert_invalid_field("a * * * *", Minute)
-  assert_invalid_field("* * * foo *", Month)
+  assert_invalid_field("* * * foo *", MonthField)
   assert_invalid_field("* * * * foo", DayOfWeek)
   assert_invalid_field("* * * * 1-foo", DayOfWeek)
   assert_invalid_field("*/5/2 * * * *", Minute)
@@ -117,7 +117,7 @@ test "malformed items name the field they are in" {
 test "a question mark outside the day fields is rejected" {
   assert_invalid_field("? * * * *", Minute)
   assert_invalid_field("* ? * * *", Hour)
-  assert_invalid_field("* * * ? *", Month)
+  assert_invalid_field("* * * ? *", MonthField)
   assert_invalid_field("*/5 * ?/2 * *", DayOfMonth)
 }
 
