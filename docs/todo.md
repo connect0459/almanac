@@ -479,7 +479,7 @@ Coverage target: none (no new behavior); the gate is the verification checklist 
 - [x] Re-run `moon info && moon fmt` and review the final `.mbti` diffs across all four packages (resolved: `moon info` leaves every `.mbti` unchanged, and the public surface matches the Phase 12 and Phase 13 audits, which found no unrecorded contradiction)
 - [x] Verify that each package `README.mbt.md`, the top-level `README.md`/`README.mbt.md` and `moon.mod` metadata (`description`, `keywords`, `repository`, `license`, `readme`) match the final API (resolved: every public function and constant in each `.mbti` appears in its package README, `moon.mod` now has `repository`, and the module README, which was a bare title, is written)
 - [x] Record the IANA tzdata release the embedded database was generated from, and how to regenerate it (`just gen-tzdata`) (resolved: the embedded data is release `2026c`, verified byte for byte against a regeneration from that tree; `gen_tzdata.py` now writes the release from `+VERSION` into the generated header, and the `tz` README states it and the regeneration steps)
-- [ ] Add release notes or a changelog for the first version
+- [x] Add release notes or a changelog for the first version (`CHANGELOG.md` in the Keep a Changelog format, with the `[Unreleased]` section to be renamed `[0.1.0]` at the bump step, since `publish.yml` extracts the release notes from the `[X.Y.Z]` section)
 - [x] Check the published package size and that the generated tzdata file is included as intended (resolved: `moon package` yields a 772 KB archive, 5.5 MB unpacked, with `tzdata_generated.mbt`; a `.moonignore` keeps `CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md`, `apm.*` and `docs/todo.md` out, since `moon package` follows `.gitignore` only and had bundled the globally ignored `CLAUDE.local.md`)
 - [x] Check that `LICENSE`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` and `SECURITY.md` are present and current (resolved: all four are present; `CONTRIBUTING.md` named a nonexistent `Date` type and package in its commit examples, now replaced)
 - [x] `pre-commit run --all-files` clean and `just verify` green on `js`, `wasm`, `wasm-gc` and `native` (resolved: both clean, with 1196 tests on the three non-native backends and 1212 on `native`)
@@ -487,8 +487,8 @@ Coverage target: none (no new behavior); the gate is the verification checklist 
 
 ### Publish
 
-- [ ] Confirm with the user immediately before publishing (publishing to the registry is not reversible)
-- [ ] Bump the version in `moon.mod`, commit, and tag the release
-- [ ] Publish to the registry (`moon publish`)
-- [ ] Verify the published package: resolve it from a clean project and run a minimal usage example on each backend
-- [ ] Push the tag and create the GitHub release
+- [x] Confirm with the user immediately before publishing (publishing to the registry is not reversible)
+- [x] Bump the version in `moon.mod`, commit, and tag the release
+- [x] Publish to the registry (`moon publish`)
+- [x] Verify the published package: resolve it from a clean project and run a minimal usage example on each backend
+- [x] Push the tag and create the GitHub release
