@@ -75,17 +75,17 @@ moon test --target native
 
 **Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `tidy`, `test`, `chore`, `ci`, `perf`
 
-**Scope**: package name when the change targets a specific package (`almanac`,
-`tz`, etc.); omit for project-wide changes.
+**Scope**: package name when the change targets a specific package (`core`,
+`tz`, `format` or `cron`); omit for project-wide changes.
 
 **Subject**: imperative mood, 72 characters max, no trailing period.
 
 Examples:
 
 ```text
-feat(almanac): add Date::add_days for calendar arithmetic
-fix(almanac): reject out-of-range month values in Date::new
-tidy(almanac): name days_per_week constant
+feat(cron): accept @annually as a shorthand
+fix(core): reject out-of-range month values in NaiveDate::from_ymd
+tidy(tz): name the seconds-per-day constant
 ```
 
 ## Pull request process
