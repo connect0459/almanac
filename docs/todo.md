@@ -445,12 +445,14 @@ Reference: a feature comparison against the `moondate` MoonBit library, run afte
 
 - [x] **Design decision (resolved, confirmed with the user)**: package placement is a new `src/cron` package rather than a file inside an existing one. `Cron::next` returns a zoned instant, so it depends on `core` and `tz` only; a separate package keeps builds that do not import it free of it, and gives the expression grammar its own test surface, which is the criterion the package-layout decision sets for splitting.
 - [x] **Design decision (resolved, confirmed with the user)**: `next`/`matches` take a generic `DateTime[Tz : TimeZone]` and evaluate the expression in the wall clock of that value's zone (rejected: a zone-free `NaiveDateTime`-only API, which leaves the gap and fold decisions to every caller, and a `FixedOffset`-only API, which cannot express a real scheduling zone). Proposed DST policy, to be fixed by tests when this item is implemented: a fire time inside a spring-forward gap is skipped, and a fire time inside a fall-back fold fires once, at the earlier occurrence.
-- [ ] Parse the five-field form and the six-field form with seconds in front: `*`, `n`, `a-b`, `*/n`, `a-b/n`, comma lists of those, month and weekday names, `?`, and the `@yearly`/`@monthly`/`@weekly`/`@daily`/`@hourly` shorthands; both `0` and `7` are Sunday
-- [ ] Day-of-month and day-of-week are OR-ed when both are restricted and AND-ed when either is `*`; a test states the rule, since `0 0 13 * 5` surprises most readers
-- [ ] `Cron::next` returns `None` for an expression that names a day that never exists (`0 0 30 2 *`) instead of searching forever
-- [ ] `Cron::matches`
-- [ ] Parse failures reported as a `suberror` carrying the offending field, consistent with `FormatError`
-- [ ] `README.mbt.md` for the new package; `.mbti` diff reviewed
+- [x] Parse the five-field form and the six-field form with seconds in front: `*`, `n`, `a-b`, `*/n`, `a-b/n`, comma lists of those, month and weekday names, `?`, and the `@yearly`/`@monthly`/`@weekly`/`@daily`/`@hourly` shorthands; both `0` and `7` are Sunday
+- [x] Day-of-month and day-of-week are OR-ed when both are restricted and AND-ed when either is `*`; a test states the rule, since `0 0 13 * 5` surprises most readers
+- [x] `Cron::next` returns `None` for an expression that names a day that never exists (`0 0 30 2 *`) instead of searching forever
+- [x] `Cron::matches`
+- [x] Parse failures reported as a `suberror` carrying the offending field, consistent with `FormatError`
+- [x] `README.mbt.md` for the new package; `.mbti` diff reviewed
+- [x] **Design decision (resolved, confirmed with the user)**: `next` is strictly after its argument (`matches` answers whether the argument itself fires), and searches the 400 years after it, the Gregorian cycle, so a rare but real combination such as a leap day that is a Sunday (`0 0 29 2 */7`, 40 years apart across 2100) is found and only an expression naming a day that never exists returns `None`. `CronError` is `InvalidField(CronField)` with `CronField` a `pub(all)` enum of the six time fields plus `FieldCount` and `Shorthand`; a finer reason (out of range versus malformed) is not carried, since a caller reports the field either way, and a new variant is breaking.
+- [x] **Design decision (resolved, decided during implementation)**: a day field "is a star" when its text begins with `*` or is `?`, as in Vixie cron, so `0 0 */2 * 5` ANDs the day fields; `a/n` (a step without a range) and wrapping ranges (`5-1`) are rejected; the shorthands are the five listed (no `@annually`, `@midnight` or `@reboot`), which can be added later without breaking. `matches` ignores a fractional second and is `false` for the later occurrence in a fold, so it agrees with `next`. `Cron` has no `Show`, since the source text is not kept and a rendering would have to be a second canonical form.
 
 ### `src/format`: HTTP dates
 
