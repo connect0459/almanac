@@ -246,7 +246,7 @@ pub(all) enum PadMode {
 ///|
 pub(all) enum Numeric {
   Year
-  MonthNumber
+  Month
   Day
   Ordinal
   Hour

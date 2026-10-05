@@ -102,7 +102,7 @@ fn numeric_value(
         Some(d) => (d.year(), 4)
         None => raise MissingField(item)
       }
-    MonthNumber =>
+    Month =>
       match date {
         Some(d) => (d.month().number(), 2)
         None => raise MissingField(item)
@@ -300,7 +300,7 @@ fn render(
           Some(d) => out.write_string(year_text(d.year(), 4))
           None => raise MissingField(item)
         }
-      Numeric(MonthNumber) =>
+      Numeric(Month) =>
         match date {
           Some(d) => out.write_string(pad_int(d.month().number(), 2))
           None => raise MissingField(item)

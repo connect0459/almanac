@@ -8,7 +8,7 @@ test "tokenize recognizes each numeric specifier" {
   for
     case in [
       ("%Y", @format.Year),
-      ("%m", @format.MonthNumber),
+      ("%m", @format.Month),
       ("%d", @format.Day),
       ("%j", @format.Ordinal),
       ("%H", @format.Hour),
@@ -59,7 +59,7 @@ test "tokenize expands %F into year-month-day numeric items joined by literal hy
   assert_eq(@format.tokenize("%F"), [
     @format.Numeric(@format.Year),
     @format.Literal("-"),
-    @format.Numeric(@format.MonthNumber),
+    @format.Numeric(@format.Month),
     @format.Literal("-"),
     @format.Numeric(@format.Day),
   ])
@@ -80,7 +80,7 @@ test "tokenize expands %T into hour-minute-second numeric items joined by litera
 test "tokenize expands %D and %x into month-day-year (2-digit year) joined by literal slashes" {
   for spec in ["%D", "%x"] {
     assert_eq(@format.tokenize(spec), [
-      @format.Numeric(@format.MonthNumber),
+      @format.Numeric(@format.Month),
       @format.Literal("/"),
       @format.Numeric(@format.Day),
       @format.Literal("/"),
@@ -281,7 +281,7 @@ test "tokenize mixes literal text and specifiers in sequence" {
   assert_eq(@format.tokenize("%Y-%m-%d"), [
     @format.Numeric(@format.Year),
     @format.Literal("-"),
-    @format.Numeric(@format.MonthNumber),
+    @format.Numeric(@format.Month),
     @format.Literal("-"),
     @format.Numeric(@format.Day),
   ])

@@ -12,7 +12,7 @@ fn resolve_specifier(
 ) -> (Array[Item], Int) raise FormatError {
   match chars[pos] {
     'Y' => ([Numeric(Year)], pos + 1)
-    'm' => ([Numeric(MonthNumber)], pos + 1)
+    'm' => ([Numeric(Month)], pos + 1)
     'd' => ([Numeric(Day)], pos + 1)
     'j' => ([Numeric(Ordinal)], pos + 1)
     'H' => ([Numeric(Hour)], pos + 1)
@@ -74,7 +74,7 @@ fn resolve_specifier(
         [
           Numeric(Year),
           Literal("-"),
-          Numeric(MonthNumber),
+          Numeric(Month),
           Literal("-"),
           Numeric(Day),
         ],
@@ -94,7 +94,7 @@ fn resolve_specifier(
     'D' | 'x' =>
       (
         [
-          Numeric(MonthNumber),
+          Numeric(Month),
           Literal("/"),
           Numeric(Day),
           Literal("/"),

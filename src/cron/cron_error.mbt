@@ -6,7 +6,7 @@ pub(all) enum CronField {
   Minute
   Hour
   DayOfMonth
-  MonthField
+  Month
   DayOfWeek
   FieldCount
   Shorthand
@@ -43,7 +43,7 @@ fn CronField::label(self : CronField) -> String {
     Minute => "minute"
     Hour => "hour"
     DayOfMonth => "day of month"
-    MonthField => "month"
+    Month => "month"
     DayOfWeek => "day of week"
     FieldCount => "number of fields"
     Shorthand => "shorthand"

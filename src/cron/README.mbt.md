@@ -8,7 +8,7 @@ Cron schedules evaluated against zoned datetimes. Import `connect0459/almanac/cr
 | :--- | :--- |
 | `Cron` | A parsed schedule of whole-second instants. An immutable value with private fields; implements `Eq`, `Hash` and `Debug`. It has no `Show`, since the original text is not kept |
 | `CronError` | The `suberror` raised by `Cron::parse`: `InvalidField(CronField)` |
-| `CronField` | The part that could not be read: `Second`, `Minute`, `Hour`, `DayOfMonth`, `MonthField`, `DayOfWeek`, `FieldCount` or `Shorthand`. A `pub(all)` enum, so a new variant is a breaking change |
+| `CronField` | The part that could not be read: `Second`, `Minute`, `Hour`, `DayOfMonth`, `Month`, `DayOfWeek`, `FieldCount` or `Shorthand`. A `pub(all)` enum, so a new variant is a breaking change |
 
 ## Key functions
 

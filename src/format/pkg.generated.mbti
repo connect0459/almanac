@@ -156,7 +156,7 @@ pub fn Item::to_repr(Self) -> @debug.Repr
 
 pub(all) enum Numeric {
   Year
-  MonthNumber
+  Month
   Day
   Ordinal
   Hour

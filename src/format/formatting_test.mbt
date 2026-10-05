@@ -218,7 +218,7 @@ test "format_time raises MissingField for a date, weekday, or timezone specifier
   for
     case in [
       ("%Y", @format.Numeric(@format.Year)),
-      ("%m", @format.Numeric(@format.MonthNumber)),
+      ("%m", @format.Numeric(@format.Month)),
       ("%d", @format.Numeric(@format.Day)),
       ("%j", @format.Numeric(@format.Ordinal)),
       ("%A", @format.Fixed(@format.LongWeekdayName)),
