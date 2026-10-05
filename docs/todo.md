@@ -454,11 +454,11 @@ Reference: a feature comparison against the `moondate` MoonBit library, run afte
 
 ### `src/format`: HTTP dates
 
-- [ ] IMF-fixdate (RFC 9110 section 5.6.7) as its own strict pair, `to_http_date`/`parse_http_date`, separate from `to_rfc2822`/`parse_rfc2822` because the shape is fixed-width, English-named and always `GMT`
-- [ ] Parsing additionally accepts the two obsolete forms HTTP recipients must read, RFC 850 and `asctime`; only IMF-fixdate is written
+- [x] IMF-fixdate (RFC 9110 section 5.6.7) as its own strict pair, `to_http_date`/`parse_http_date`, separate from `to_rfc2822`/`parse_rfc2822` because the shape is fixed-width, English-named and always `GMT`
+- [x] Parsing additionally accepts the two obsolete forms HTTP recipients must read, RFC 850 and `asctime`; only IMF-fixdate is written
 - [x] **Design decision (resolved, confirmed with the user)**: the RFC 850 two-digit year takes an optional `reference_year` argument that implements RFC 9110's rule (a year more than 50 years after the reference reads as the most recent past year with the same last two digits), so the function stays pure. When it is omitted, the fixed `%y` pivot (`< 70` -> 20xx, `>= 70` -> 19xx) applies, and the docstring states that this default ages (rejected: a fixed pivot only, which diverges from the rule after 2070, and refusing RFC 850, which RFC 9110 requires recipients to read).
 - [x] **Design decision (resolved, confirmed with the user)**: `parse_http_date` returns `DateTime[Utc]`, since an HTTP date is always GMT and the type can say so (precedent: `parse_date_time_utc_default`); `to_http_date` accepts any `Tz` and renders its UTC instant.
-- [ ] Add to `src/format/README.mbt.md`; `.mbti` diff reviewed
+- [x] Add to `src/format/README.mbt.md`; `.mbti` diff reviewed
 
 ## Phase 14: Publish Preparation and Release
 
