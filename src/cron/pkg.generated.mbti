@@ -1,0 +1,51 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "connect0459/almanac/cron"
+
+import {
+  "connect0459/almanac/tz",
+  "moonbitlang/core/debug",
+}
+
+// Values
+
+// Errors
+pub suberror CronError {
+  InvalidField(CronField)
+} derive(Eq, @debug.Debug)
+pub fn CronError::equal(Self, Self) -> Bool
+pub fn CronError::not_equal(Self, Self) -> Bool
+pub fn CronError::output(Self, &Logger) -> Unit
+pub fn CronError::to_repr(Self) -> @debug.Repr
+pub fn CronError::to_string(Self) -> String
+pub impl Show for CronError
+
+// Types and methods
+pub struct Cron {
+  // private fields
+} derive(Eq, Hash, @debug.Debug)
+pub fn Cron::equal(Self, Self) -> Bool
+pub fn Cron::hash(Self) -> Int
+pub fn Cron::hash_combine(Self, Hasher) -> Unit
+pub fn[Tz : @tz.TimeZone] Cron::matches(Self, @tz.DateTime[Tz]) -> Bool
+pub fn[Tz : @tz.TimeZone] Cron::next(Self, @tz.DateTime[Tz]) -> @tz.DateTime[Tz]?
+pub fn Cron::not_equal(Self, Self) -> Bool
+pub fn Cron::parse(String) -> Self raise CronError
+pub fn Cron::to_repr(Self) -> @debug.Repr
+
+pub(all) enum CronField {
+  Second
+  Minute
+  Hour
+  DayOfMonth
+  Month
+  DayOfWeek
+  FieldCount
+  Shorthand
+} derive(Eq, @debug.Debug)
+pub fn CronField::equal(Self, Self) -> Bool
+pub fn CronField::not_equal(Self, Self) -> Bool
+pub fn CronField::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits

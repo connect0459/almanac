@@ -1,6 +1,6 @@
 # `connect0459/almanac` (root package)
 
-A thin entry point over the three packages below. Importing this package alone gives the everyday date, time, duration and zoned-datetime types; the functions and the rest of each API live in the packages that define them.
+A thin entry point over the packages below. Importing this package alone gives the everyday date, time, duration and zoned-datetime types; the functions and the rest of each API live in the packages that define them.
 
 | Package | Import | Contents |
 | :--- | :--- | :--- |
@@ -8,6 +8,7 @@ A thin entry point over the three packages below. Importing this package alone g
 | `connect0459/almanac/core` | `@core` | Calendar and clock primitives with no time zone: `Weekday`, `WeekdaySet`, `Month`, `IsoWeek`, `NaiveDate`, `NaiveWeek`, `NaiveTime`, `TimeDelta`, `NaiveDateTime`, `RoundingError` |
 | `connect0459/almanac/tz` | `@tz` | Time zones: the `TimeZone` trait, `Utc`, `FixedOffset`, `FixedZone`, `Location` (IANA tzdata), `PosixTz`, `DateTime[Tz]`, `MappedLocalTime`, and on the `native` backend only, `Local` (the host's zone) |
 | `connect0459/almanac/format` | `@format` | `strftime`-style formatting and parsing, RFC 2822 and RFC 3339, plus the default-layout and duration parsers |
+| `connect0459/almanac/cron` | `@cron` | Cron expressions: `Cron::parse`, then `matches` and `next` over a zoned `DateTime[Tz]` |
 
 ## Re-exported types
 
