@@ -443,8 +443,8 @@ Reference: a feature comparison against the `moondate` MoonBit library, run afte
 
 ### `cron`
 
-- [ ] **Design decision (to confirm with the user)**: package placement, either a new `src/cron` package or inside an existing one. `Cron::next` returns a zoned instant, so the package depends on `core` and `tz`; a separate package keeps builds that do not import it free of it.
-- [ ] **Design decision (to confirm with the user)**: the result type of `next`/`matches` and the zone semantics. A generic `DateTime[Tz]` evaluates the expression in the wall clock of its zone, which raises the DST questions a fixed-offset implementation never meets (a fire time inside a spring-forward gap, a repeated fire time inside a fall-back fold).
+- [x] **Design decision (resolved, confirmed with the user)**: package placement is a new `src/cron` package rather than a file inside an existing one. `Cron::next` returns a zoned instant, so it depends on `core` and `tz` only; a separate package keeps builds that do not import it free of it, and gives the expression grammar its own test surface, which is the criterion the package-layout decision sets for splitting.
+- [x] **Design decision (resolved, confirmed with the user)**: `next`/`matches` take a generic `DateTime[Tz : TimeZone]` and evaluate the expression in the wall clock of that value's zone (rejected: a zone-free `NaiveDateTime`-only API, which leaves the gap and fold decisions to every caller, and a `FixedOffset`-only API, which cannot express a real scheduling zone). Proposed DST policy, to be fixed by tests when this item is implemented: a fire time inside a spring-forward gap is skipped, and a fire time inside a fall-back fold fires once, at the earlier occurrence.
 - [ ] Parse the five-field form and the six-field form with seconds in front: `*`, `n`, `a-b`, `*/n`, `a-b/n`, comma lists of those, month and weekday names, `?`, and the `@yearly`/`@monthly`/`@weekly`/`@daily`/`@hourly` shorthands; both `0` and `7` are Sunday
 - [ ] Day-of-month and day-of-week are OR-ed when both are restricted and AND-ed when either is `*`; a test states the rule, since `0 0 13 * 5` surprises most readers
 - [ ] `Cron::next` returns `None` for an expression that names a day that never exists (`0 0 30 2 *`) instead of searching forever
@@ -456,8 +456,8 @@ Reference: a feature comparison against the `moondate` MoonBit library, run afte
 
 - [ ] IMF-fixdate (RFC 9110 section 5.6.7) as its own strict pair, `to_http_date`/`parse_http_date`, separate from `to_rfc2822`/`parse_rfc2822` because the shape is fixed-width, English-named and always `GMT`
 - [ ] Parsing additionally accepts the two obsolete forms HTTP recipients must read, RFC 850 and `asctime`; only IMF-fixdate is written
-- [ ] **Design decision (to confirm with the user)**: the two-digit-year window RFC 850 needs. HTTP's rule is relative to the current year, which this module cannot read in a pure function; decide between a fixed pivot (documented) and an explicit reference-year parameter, and compare with the existing `%y` pivot (`< 70` -> 20xx)
-- [ ] Return type: `DateTime[Utc]` or `DateTime[FixedOffset]`
+- [x] **Design decision (resolved, confirmed with the user)**: the RFC 850 two-digit year takes an optional `reference_year` argument that implements RFC 9110's rule (a year more than 50 years after the reference reads as the most recent past year with the same last two digits), so the function stays pure. When it is omitted, the fixed `%y` pivot (`< 70` -> 20xx, `>= 70` -> 19xx) applies, and the docstring states that this default ages (rejected: a fixed pivot only, which diverges from the rule after 2070, and refusing RFC 850, which RFC 9110 requires recipients to read).
+- [x] **Design decision (resolved, confirmed with the user)**: `parse_http_date` returns `DateTime[Utc]`, since an HTTP date is always GMT and the type can say so (precedent: `parse_date_time_utc_default`); `to_http_date` accepts any `Tz` and renders its UTC instant.
 - [ ] Add to `src/format/README.mbt.md`; `.mbti` diff reviewed
 
 ## Phase 14: Publish Preparation and Release
