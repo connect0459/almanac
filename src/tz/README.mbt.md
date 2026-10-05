@@ -87,6 +87,12 @@ test {
 }
 ```
 
+## Embedded tz database
+
+`Location::load` reads a snapshot of the IANA tz database compiled into the package: release **2026c**, 598 zones, taken from the compiled `rearguard` data of a macOS system (`/var/db/timezone/zoneinfo`). Zone rules change after a release, so a zone that changed later (a government altering its DST rule) keeps its old rules until the snapshot is regenerated. The release is also named in the header of `tzdata_generated.mbt`.
+
+To regenerate from another compiled zoneinfo tree, such as one built with `zic` from a specific release, run `just gen-tzdata <zoneinfo dir>`; the release is read from the tree's `+VERSION` file.
+
 ## API reference
 
 ### `TimeZone` trait
