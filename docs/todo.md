@@ -437,9 +437,32 @@ Reference: an audit of the generated `.mbti` interfaces of `core`, `tz` and `for
 - [x] `NaiveDate::abs_diff` returns a bare `Int64` count of days, while `signed_duration_since` on the same type returns a `TimeDelta`, and the name does not state the unit; `NaiveDateTime`, `NaiveTime` and `DateTime` have no `abs_diff`. Decide whether it is a designed API (state the unit in the name or docstring, and whether other types get a counterpart) or should be withdrawn in favor of `signed_duration_since(...).abs()` (resolved: renamed `abs_diff_days`; the relation to `signed_duration_since` is documented and tested)
 - [x] `DateTime::with_time` replaces the time of day, but `NaiveDateTime` has no `with_time` (and neither type has `with_date`), so the naive side reaches the same result only through `NaiveDateTime::new(date, time)`. Decide whether the pair belongs on both types (resolved: `NaiveDateTime::with_time`/`with_date` and `DateTime::with_date` added)
 
-## Phase 13: Publish Preparation and Release
+## Phase 13: Scheduling and HTTP Dates
 
-Coverage target: none (no new behavior); the gate is the verification checklist below. The Phase 12 outcomes must land first, since they can change the public API.
+Reference: a feature comparison against the `moondate` MoonBit library, run after Phase 12. Its calendar, duration, RFC 3339 and `strftime`/`strptime` surface is already covered here; the two areas below are the ones this module lacks that are worth adding before the first release. ASN.1 `UTCTime`/`GeneralizedTime` was surveyed too and is deferred until a concrete need (X.509 validity) appears. Coverage target: to be agreed with the user before implementation.
+
+### `cron`
+
+- [ ] **Design decision (to confirm with the user)**: package placement, either a new `src/cron` package or inside an existing one. `Cron::next` returns a zoned instant, so the package depends on `core` and `tz`; a separate package keeps builds that do not import it free of it.
+- [ ] **Design decision (to confirm with the user)**: the result type of `next`/`matches` and the zone semantics. A generic `DateTime[Tz]` evaluates the expression in the wall clock of its zone, which raises the DST questions a fixed-offset implementation never meets (a fire time inside a spring-forward gap, a repeated fire time inside a fall-back fold).
+- [ ] Parse the five-field form and the six-field form with seconds in front: `*`, `n`, `a-b`, `*/n`, `a-b/n`, comma lists of those, month and weekday names, `?`, and the `@yearly`/`@monthly`/`@weekly`/`@daily`/`@hourly` shorthands; both `0` and `7` are Sunday
+- [ ] Day-of-month and day-of-week are OR-ed when both are restricted and AND-ed when either is `*`; a test states the rule, since `0 0 13 * 5` surprises most readers
+- [ ] `Cron::next` returns `None` for an expression that names a day that never exists (`0 0 30 2 *`) instead of searching forever
+- [ ] `Cron::matches`
+- [ ] Parse failures reported as a `suberror` carrying the offending field, consistent with `FormatError`
+- [ ] `README.mbt.md` for the new package; `.mbti` diff reviewed
+
+### `src/format`: HTTP dates
+
+- [ ] IMF-fixdate (RFC 9110 section 5.6.7) as its own strict pair, `to_http_date`/`parse_http_date`, separate from `to_rfc2822`/`parse_rfc2822` because the shape is fixed-width, English-named and always `GMT`
+- [ ] Parsing additionally accepts the two obsolete forms HTTP recipients must read, RFC 850 and `asctime`; only IMF-fixdate is written
+- [ ] **Design decision (to confirm with the user)**: the two-digit-year window RFC 850 needs. HTTP's rule is relative to the current year, which this module cannot read in a pure function; decide between a fixed pivot (documented) and an explicit reference-year parameter, and compare with the existing `%y` pivot (`< 70` -> 20xx)
+- [ ] Return type: `DateTime[Utc]` or `DateTime[FixedOffset]`
+- [ ] Add to `src/format/README.mbt.md`; `.mbti` diff reviewed
+
+## Phase 14: Publish Preparation and Release
+
+Coverage target: none (no new behavior); the gate is the verification checklist below. The Phase 12 and Phase 13 outcomes must land first, since they change the public API.
 
 ### Preparation
 
