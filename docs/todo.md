@@ -462,6 +462,10 @@ Reference: a feature comparison against the `moondate` MoonBit library, run afte
 - [x] **Design decision (resolved, confirmed with the user)**: `parse_http_date` returns `DateTime[Utc]`, since an HTTP date is always GMT and the type can say so (precedent: `parse_date_time_utc_default`); `to_http_date` accepts any `Tz` and renders its UTC instant.
 - [x] Add to `src/format/README.mbt.md`; `.mbti` diff reviewed
 
+### `src/core`: range check of date constructors
+
+- [x] **Defect found while implementing `cron` and fixed (confirmed with the user)**: `NaiveDate::from_ymd`, `from_yo` and `from_isoywd` converted with the truncating `days_from_civil` and never checked the result against `NaiveDate`'s range, so a year beyond about 5.8 million either way returned `Some` of a date wrapped into another year (`from_ymd(6_000_000, 6, 15)` read as `-5759221-05-27`), and a year just past the limit returned a date one day off. They now compute with `days_from_civil64` and go through the same range check as `from_epoch_days`, returning `None` outside `-5875671-04-25..=5879610-09-09`, which also fixes `with_year`/`with_month`/`with_day`/`with_ordinal`, `NaiveDateTime::from_ymd_hms`, `DateTime::from_ymd_hms` (`Absent`) and `format::parse_date` (`FieldOutOfRange`). chrono returns `None` outside its year range too, and Go's `Date` has none because its `int64` seconds cover about ±292 billion years. The limits stay unpublished (Phase 11), so the range is stated in the docstrings and the README without constants.
+
 ## Phase 14: Publish Preparation and Release
 
 Coverage target: none (no new behavior); the gate is the verification checklist below. The Phase 12 and Phase 13 outcomes must land first, since they change the public API.
