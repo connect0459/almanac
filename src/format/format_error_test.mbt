@@ -26,6 +26,10 @@ test "FormatError renders a one-line human-readable message for each variant a r
     "invalid RFC 2822 date-time",
   )
   assert_eq(
+    message_of(() => @format.parse_http_date("nope") |> ignore),
+    "invalid HTTP date",
+  )
+  assert_eq(
     message_of(() => @format.parse_duration("nope") |> ignore),
     "invalid duration",
   )

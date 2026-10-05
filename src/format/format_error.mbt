@@ -12,6 +12,11 @@ pub suberror FormatError {
   /// `parse_rfc2822` fails to match the (strict, non-obsolete)
   /// grammar this project supports.
   InvalidRfc2822
+  /// `to_http_date`'s year is outside `0..=9999`, or `parse_http_date`
+  /// fails to match any of the three HTTP date shapes (IMF-fixdate, RFC 850,
+  /// `asctime`), names a weekday that does not match the date, or names a
+  /// zone other than `GMT`.
+  InvalidHttpDate
   /// `parse_duration`'s input is malformed (no digits, a missing or unknown
   /// unit, a misplaced sign, stray characters) or its value falls outside
   /// `TimeDelta`'s representable range.
@@ -65,6 +70,7 @@ pub impl Show for FormatError with fn output(self, logger) {
       "format item can only be parsed, not rendered: " + @debug.to_string(item)
     InvalidRfc3339 => "invalid RFC 3339 date-time"
     InvalidRfc2822 => "invalid RFC 2822 date-time"
+    InvalidHttpDate => "invalid HTTP date"
     InvalidDuration => "invalid duration"
     IncompleteFields => "not enough fields to build the requested value"
     InconsistentFields => "parsed fields contradict each other"

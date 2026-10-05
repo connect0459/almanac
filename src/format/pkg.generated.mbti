@@ -74,6 +74,8 @@ pub fn parse_duration(String) -> @core.TimeDelta raise FormatError
 
 pub fn parse_fixed_offset(String) -> @tz.FixedOffset raise FormatError
 
+pub fn parse_http_date(String, reference_year? : Int) -> @tz.DateTime[@tz.Utc] raise FormatError
+
 pub fn parse_items(String, Array[Item]) -> Parsed raise FormatError
 
 pub fn parse_items_and_remainder(String, Array[Item]) -> (Parsed, String) raise FormatError
@@ -87,6 +89,8 @@ pub fn parse_time(String, String) -> @core.NaiveTime raise FormatError
 pub fn parse_time_and_remainder(String, String) -> (@core.NaiveTime, String) raise FormatError
 
 pub fn parse_time_default(String) -> @core.NaiveTime raise FormatError
+
+pub fn[Tz] to_http_date(@tz.DateTime[Tz]) -> String raise FormatError
 
 pub fn[Tz : @tz.TimeZone] to_rfc2822(@tz.DateTime[Tz]) -> String raise FormatError
 
@@ -104,6 +108,7 @@ pub suberror FormatError {
   ParseOnly(Item)
   InvalidRfc3339
   InvalidRfc2822
+  InvalidHttpDate
   InvalidDuration
   IncompleteFields
   InconsistentFields

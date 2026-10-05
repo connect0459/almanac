@@ -1,6 +1,6 @@
 # `format` package
 
-strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459/almanac/format` for `format_date`/`format_time`/`format_date_time`/`format_date_time_tz`, their `parse_*` counterparts, and dedicated RFC 3339 and RFC 2822 fast paths (`to_rfc3339`/`parse_rfc3339`, `to_rfc2822`/`parse_rfc2822`), and `parse_duration` for `TimeDelta`.
+strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459/almanac/format` for `format_date`/`format_time`/`format_date_time`/`format_date_time_tz`, their `parse_*` counterparts, and dedicated RFC 3339 and RFC 2822 fast paths (`to_rfc3339`/`parse_rfc3339`, `to_rfc2822`/`parse_rfc2822`, `to_http_date`/`parse_http_date`), and `parse_duration` for `TimeDelta`.
 
 ## Key functions
 
@@ -16,6 +16,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `format_date_items`/`format_time_items`/`format_date_time_items`/`format_date_time_tz_items` | `format_*` taking a pre-tokenized `Item` sequence, so a format reused for many values is tokenized once |
 | `to_rfc3339`/`to_rfc3339_opts`/`parse_rfc3339` | Dedicated RFC 3339 fast path, bypassing the specifier engine; `to_rfc3339_opts` picks the fractional digits (`SecondsFormat`) and `Z` versus `+00:00` |
 | `to_rfc2822`/`parse_rfc2822` | Dedicated RFC 2822 fast path (e.g. `"Tue, 1 Jul 2003 10:52:37 +0200"`), bypassing the specifier engine |
+| `to_http_date`/`parse_http_date` | Dedicated HTTP date fast path (IMF-fixdate, e.g. `"Sun, 06 Nov 1994 08:49:37 GMT"`), bypassing the specifier engine |
 | `parse_duration` | Reads a `TimeDelta` from duration text (`"1h30m"`, `"-1.5s"`, `"300ms"`); the inverse of `TimeDelta`'s `Show` |
 | `parse_fixed_offset` | Reads a `FixedOffset` from offset text (`"+09:00"`, `"+0900"`, `"+09"`, `"+09:00:30"`, `"Z"`); the inverse of `FixedOffset`'s `Show` |
 | `parse_date_default`/`parse_time_default`/`parse_date_time_default`/`parse_date_time_utc_default`/`parse_date_time_fixed_offset_default` | One-argument parsers that read the layout each type's `Show` renders (`2024-03-05`, `09:05:07.500`, `2024-03-05 09:05:07.500`, `... UTC`, `... +09:00`); the inverse of `Show`, so every rendered value reads back |
@@ -175,11 +176,15 @@ Suffixes name where the zone comes from: `_tz` renders any `DateTime[Tz]` (`form
 | :--- | :--- | :--- |
 | `to_rfc2822(DateTime[Tz])` *(Tz : TimeZone)* | `-> String raise FormatError` | Renders `"<short weekday>, <day> <short month> <year> <HH>:<MM>:<SS> ±HHMM"` (e.g. `"Tue, 1 Jul 2003 10:52:37 +0200"`); the day is unpadded (one or two digits, never a leading zero), unlike this package's other numeric fields. Raises `InvalidRfc2822` if the year is outside RFC 2822's own `0..=9999` range — unlike `to_rfc3339`, not total |
 | `parse_rfc2822(String)` | `-> DateTime[FixedOffset] raise FormatError` | Strict RFC 2822 parsing: only the exact shape `to_rfc2822` renders (day-of-week and seconds mandatory, single-space separators, a 4-digit year, a numeric `±HHMM` offset). Does *not* support RFC 2822's "obsolete format" — optional day-of-week, arbitrary/folding whitespace, 2-/3-digit year windowing, named legacy zones (`GMT`, `EST`, ...), or parenthesized comments. Raises `InvalidRfc2822` on any mismatch |
+| `to_http_date(DateTime[Tz])` | `-> String raise FormatError` | Renders the UTC instant as an IMF-fixdate (RFC 9110 section 5.6.7): `"<short weekday>, <DD> <short month> <YYYY> <HH>:<MM>:<SS> GMT"` (e.g. `"Sun, 06 Nov 1994 08:49:37 GMT"`), fixed width with a zero-padded day. Accepts any `Tz`. A fractional second is dropped and a leap second is written as `:60`. Raises `InvalidHttpDate` if the year is outside `0..=9999` |
+| `parse_http_date(String, reference_year? : Int)` | `-> DateTime[Utc] raise FormatError` | Reads IMF-fixdate and, as HTTP recipients must, the obsolete RFC 850 (`"Sunday, 06-Nov-94 08:49:37 GMT"`) and `asctime` (`"Sun Nov  6 08:49:37 1994"`) forms; only IMF-fixdate is written. Every form is exact: English names with their capitalisation, fixed widths, single spaces, `GMT` as the only zone, and a weekday that matches the date. A leap second (`:60`) is not read back, as with `parse_rfc2822`. Raises `InvalidHttpDate` on any mismatch |
 | `parse_duration(String)` | `-> TimeDelta raise FormatError` | Parses one or more `<number><unit>` components with an optional leading sign (`"1h30m"`, `"-1.5s"`, `"300ms"`, `".5s"`, `"1.5h"`). Units are `ns`, `us` (also `µs` U+00B5 and `μs` U+03BC), `ms`, `s`, `m`, `h`, case-sensitive, with hours the largest (no days/weeks); components are summed. A bare `"0"` (optionally signed) needs no unit. Fractional digits beyond the ninth, and precision finer than a nanosecond, are truncated toward zero. The inverse of `TimeDelta`'s `Show`. Raises `InvalidDuration` for malformed input or a value outside `TimeDelta`'s range |
 | `parse_fixed_offset(String)` | `-> FixedOffset raise FormatError` | Parses a whole offset string: `±HH:MM:SS`, `±HH:MM`, `±HHMM`, `±HH`, or `Z`/`z` for zero. Raises `InputMismatch` for any other text (including minutes or seconds above 59) and `FieldOutOfRange` for a well-shaped offset beyond `±23:59:59` |
 | `parse_date_default(String)` / `parse_time_default(String)` / `parse_date_time_default(String)` | `-> NaiveDate` / `NaiveTime` / `NaiveDateTime raise FormatError` | Parse exactly the text `Show` renders: `YYYY-MM-DD` (`-` for a negative year, `+` beyond 9999); `HH:MM:SS` with an optional fraction of any number of digits and a leap second as `:60`; a date and time joined by one space. Same failures as `parse_date`/`parse_time`/`parse_date_time` |
 | `parse_date_time_utc_default(String)` | `-> DateTime[Utc] raise FormatError` | `parse_date_time_default`'s layout followed by a space and `UTC`: the inverse of `Show` for `DateTime[Utc]` |
 | `parse_date_time_fixed_offset_default(String)` | `-> DateTime[FixedOffset] raise FormatError` | `parse_date_time_default`'s layout followed by a space and an offset as `parse_fixed_offset` reads it; the written clock is local time in that offset. The inverse of `Show` for `DateTime[FixedOffset]`; an IANA zone's abbreviation or a `FixedZone`'s name is not read back |
+
+`parse_http_date` returns `DateTime[Utc]` because an HTTP date is always GMT. RFC 850's two-digit year follows `reference_year` when it is given: a year more than 50 years after it reads as the most recent past year with the same last two digits (RFC 9110's rule), so `parse_http_date("Sunday, 06-Nov-94 08:49:37 GMT", reference_year=2024)` reads 1994 and `"...-30 ..."` reads 2030. Without it the fixed `%y` pivot applies (`< 70` is 20xx, `>= 70` is 19xx), which ages: after 2070 it disagrees with that rule, so a caller reading live traffic should pass the current year.
 
 ### Named layouts
 
@@ -302,6 +307,7 @@ pub(all) enum Fixed {
 | `ParseOnly(Item)` | A `format_*` call is given a specifier that can only be parsed (`%#z`); `tokenize` and the `parse_*` functions accept it, since the format string alone does not say which direction it serves |
 | `InvalidRfc3339` | `parse_rfc3339` fails to match the RFC 3339 grammar |
 | `InvalidRfc2822` | `to_rfc2822`'s year is outside `0..=9999`, or `parse_rfc2822` fails to match this package's (strict) RFC 2822 grammar |
+| `InvalidHttpDate` | `to_http_date`'s year is outside `0..=9999`, or `parse_http_date` fails to match one of the three HTTP date shapes, names a weekday that does not match the date, or names a zone other than `GMT` |
 | `InvalidDuration` | `parse_duration`'s input is malformed (no digits, missing or unknown unit, misplaced sign, stray characters) or its value is outside `TimeDelta`'s representable range |
 | `IncompleteFields` | A `parse_*` call resolves fields that never populate a required value (e.g. no year) |
 | `InconsistentFields` | Two populated fields contradict each other (e.g. `%j` or a weekday name disagreeing with the date, two `%H` readings), or an offset is given to `Parsed::to_date_time_in` |
