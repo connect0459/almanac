@@ -1485,3 +1485,15 @@ test "DateTime with_date reports Absent in a spring-forward gap and Ambiguous in
     is @tz.Ambiguous(_, _),
   )
 }
+
+///|
+test "from_ymd_hms reports Absent for a year outside NaiveDate's range" {
+  assert_true(
+    @tz.DateTime::from_ymd_hms(6_000_000, 6, 15, 0, 0, 0, @tz.Utc::new())
+    is Absent,
+  )
+  assert_true(
+    @tz.DateTime::from_ymd_hms(-6_000_000, 6, 15, 0, 0, 0, @tz.Utc::new())
+    is Absent,
+  )
+}

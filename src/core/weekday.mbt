@@ -187,6 +187,11 @@ pub fn Weekday::days_since(self : Weekday, other : Weekday) -> Int {
 }
 
 ///|
+fn weekday_from_days64(days : Int64) -> Weekday {
+  weekday_from_days(floor_mod64(days, 7L).to_int())
+}
+
+///|
 /// The weekday of the given day count relative to the Unix epoch
 /// (`1970-01-01`, day `0`, was a `Thu`).
 fn weekday_from_days(days : Int) -> Weekday {

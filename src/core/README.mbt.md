@@ -169,9 +169,9 @@ A proleptic Gregorian calendar date. Constructors are `Option`-returning: an inv
 
 | Method | Signature | Description |
 | :--- | :--- | :--- |
-| `NaiveDate::from_ymd(Int, Int, Int)` | `-> Self?` | From year, month, day |
-| `NaiveDate::from_yo(Int, Int)` | `-> Self?` | From year and ordinal day (`1..=365`/`366`) |
-| `NaiveDate::from_isoywd(Int, Int, Weekday)` | `-> Self?` | From ISO week-numbering year, week, and weekday |
+| `NaiveDate::from_ymd(Int, Int, Int)` | `-> Self?` | From year, month, day; `None` for an invalid month or day, or a date outside the representable range |
+| `NaiveDate::from_yo(Int, Int)` | `-> Self?` | From year and ordinal day (`1..=365`/`366`); `None` outside the representable range |
+| `NaiveDate::from_isoywd(Int, Int, Weekday)` | `-> Self?` | From ISO week-numbering year, week, and weekday; `None` outside the representable range |
 | `NaiveDate::from_weekday_of_month(Int, Int, Weekday, Int)` | `-> Self?` | The `n`-th (1-indexed) occurrence of a weekday in a month, e.g. the 2nd Friday of March 2017; `None` if `n` isn't positive or that occurrence doesn't exist |
 | `year()` | `-> Int` | Calendar year |
 | `month()` | `-> Month` | Calendar month |

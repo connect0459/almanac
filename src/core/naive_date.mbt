@@ -49,14 +49,17 @@ pub extend NaiveDate with Show::{to_string, output}
 
 ///|
 /// Constructs the date for a given proleptic Gregorian `(year, month, day)`,
-/// or `None` if `month` is outside `1..=12` or `day` is outside the range of
-/// days in that month.
+/// or `None` if `month` is outside `1..=12`, `day` is outside the range of
+/// days in that month, or the date falls outside `NaiveDate`'s representable
+/// range.
 pub fn NaiveDate::from_ymd(year : Int, month : Int, day : Int) -> NaiveDate? {
   match Month::from_number(month) {
     None => None
     Some(m) =>
       if day >= 1 && day <= m.num_days(year) {
-        Some(NaiveDate::{ days: days_from_civil(year, month, day), })
+        NaiveDate::from_epoch_days64(
+          days_from_civil64(year.to_int64(), month, day),
+        )
       } else {
         None
       }
@@ -65,11 +68,14 @@ pub fn NaiveDate::from_ymd(year : Int, month : Int, day : Int) -> NaiveDate? {
 
 ///|
 /// Constructs the date for a given `year` and 1-based day-of-year `ordinal`,
-/// or `None` if `ordinal` is outside `1..=365` (`1..=366` in a leap year).
+/// or `None` if `ordinal` is outside `1..=365` (`1..=366` in a leap year) or
+/// the date falls outside `NaiveDate`'s representable range.
 pub fn NaiveDate::from_yo(year : Int, ordinal : Int) -> NaiveDate? {
   let days_in_year = if is_leap_year(year) { 366 } else { 365 }
   if ordinal >= 1 && ordinal <= days_in_year {
-    Some(NaiveDate::{ days: days_from_civil(year, 1, 1) + ordinal - 1, })
+    NaiveDate::from_epoch_days64(
+      days_from_civil64(year.to_int64(), 1, 1) + (ordinal - 1).to_int64(),
+    )
   } else {
     None
   }
@@ -79,7 +85,9 @@ pub fn NaiveDate::from_yo(year : Int, ordinal : Int) -> NaiveDate? {
 /// The number of ISO 8601 weeks (52 or 53) in the given ISO week-numbering
 /// `year`.
 fn nisoweeks(year : Int) -> Int {
-  let jan1_weekday = weekday_from_days(days_from_civil(year, 1, 1))
+  let jan1_weekday = weekday_from_days64(
+    days_from_civil64(year.to_int64(), 1, 1),
+  )
   if jan1_weekday == Thu || (is_leap_year(year) && jan1_weekday == Wed) {
     53
   } else {
@@ -90,8 +98,9 @@ fn nisoweeks(year : Int) -> Int {
 ///|
 /// Constructs the date for a given ISO 8601 week date (ISO year, 1-based
 /// week number, and weekday), or `None` if `week` does not exist in that ISO
-/// year. The resulting date's calendar year may differ from `year` (a week
-/// near a year boundary can belong to the adjoining calendar year).
+/// year, or the date falls outside `NaiveDate`'s representable range. The
+/// resulting date's calendar year may differ from `year` (a week near a year
+/// boundary can belong to the adjoining calendar year).
 pub fn NaiveDate::from_isoywd(
   year : Int,
   week : Int,
@@ -100,10 +109,13 @@ pub fn NaiveDate::from_isoywd(
   if week < 1 || week > nisoweeks(year) {
     return None
   }
-  let jan4 = days_from_civil(year, 1, 4)
-  let week1_monday = jan4 - weekday_from_days(jan4).num_days_from_monday()
-  let days = week1_monday + (week - 1) * 7 + weekday.num_days_from_monday()
-  Some(NaiveDate::{ days, })
+  let jan4 = days_from_civil64(year.to_int64(), 1, 4)
+  let week1_monday = jan4 -
+    weekday_from_days64(jan4).num_days_from_monday().to_int64()
+  let days = week1_monday +
+    (week - 1).to_int64() * 7L +
+    weekday.num_days_from_monday().to_int64()
+  NaiveDate::from_epoch_days64(days)
 }
 
 ///|

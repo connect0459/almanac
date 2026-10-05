@@ -1764,3 +1764,15 @@ test "a time still needs its hour and its minute: only the seconds may be omitte
     }
   }
 }
+
+///|
+test "parse_date rejects a year outside NaiveDate's range instead of reading a wrapped date" {
+  for input in ["6000000-06-15", "+6000000-06-15", "-6000000-06-15"] {
+    try @format.parse_date(input, "%Y-%m-%d") |> ignore catch {
+      @format.FieldOutOfRange => ()
+      _ => fail("expected FieldOutOfRange for \{input}")
+    } noraise {
+      _ => fail("expected FieldOutOfRange for \{input}")
+    }
+  }
+}
