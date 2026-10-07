@@ -30,6 +30,34 @@ test "FixedZone's zone_name is its own name rather than the offset text" {
 }
 
 ///|
+test "FixedZone with an empty name reports its offset text as the zone name" {
+  let unnamed = @tz.FixedZone::new("", @tz.FixedOffset::east(9 * 3600).unwrap())
+  assert_eq(unnamed.zone_name(reading()), "+09:00")
+}
+
+///|
+test "FixedZone with an empty name renders as the same text as its zone_name" {
+  let unnamed = @tz.FixedZone::new("", @tz.FixedOffset::west(5 * 3600).unwrap())
+  assert_eq(unnamed.to_string(), "-05:00")
+  assert_eq(unnamed.to_string(), unnamed.zone_name(reading()))
+}
+
+///|
+test "FixedZone with an empty name keeps a sub-minute offset's seconds in its text" {
+  let unnamed = @tz.FixedZone::new(
+    "",
+    @tz.FixedOffset::west(4 * 3600 + 56 * 60 + 2).unwrap(),
+  )
+  assert_eq(unnamed.zone_name(reading()), "-04:56:02")
+}
+
+///|
+test "FixedZone with an empty name keeps the empty identifier" {
+  let unnamed = @tz.FixedZone::new("", @tz.FixedOffset::east(9 * 3600).unwrap())
+  assert_eq(unnamed.name(), "")
+}
+
+///|
 test "FixedZone never observes daylight saving and has unbounded transition bounds" {
   assert_eq(jst().is_dst(reading()), false)
   assert_eq(jst().transition_bounds(reading()).start(), None)
