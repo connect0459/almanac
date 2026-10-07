@@ -17,6 +17,7 @@ Calendar and clock primitives with no time zone awareness. Import `connect0459/a
 | `NaiveTime` | A time of day, precise to the nanosecond, with leap-second support |
 | `TimeDelta` | A signed duration, precise to the nanosecond |
 | `NaiveDateTime` | A `NaiveDate` and `NaiveTime` combined into one zone-less instant |
+| `Datelike` / `Timelike` | Traits over the calendar-date and time-of-day accessors, so one generic function reads a `NaiveDate`, `NaiveTime`, `NaiveDateTime` or `tz`'s `DateTime[Tz]` alike |
 | `YearCe` / `ClockHour12` | Named results of `year_ce()` and `hour12()`: `is_ce()`/`year()` and `is_pm()`/`hour()`, so the meaning of each part is in its name rather than its position in a tuple |
 | `RoundingError` | Why a `round`/`round_up`/`truncate` call failed: `InvalidGranularity` (zero or negative), `MixedGranularity` (a whole-second part combined with a sub-second remainder, e.g. 1.5 seconds), or `OutOfRange` (the result would leave the type's representable range) |
 
@@ -286,6 +287,50 @@ A time of day, precise to the nanosecond. Constructors are `Option`-returning. S
 | `signed_duration_since(Self)` | `-> TimeDelta` | The signed duration from `other` to `self`, with no day carry; a leap second is treated as coinciding with the prior non-leap second until time moves away from it |
 
 `NaiveTime` also implements `Eq`, `Compare` (`<`/`<=`/`>`/`>=` via `compare`) and `Show`, rendering `HH:MM:SS` plus, only when the nanoseconds are nonzero, the fewest of 3, 6 or 9 fractional digits that represent them exactly (`.500`, `.123456`, `.000000789`); a leap second is rendered with second `60`.
+
+---
+
+### `Datelike` / `Timelike`
+
+Read-only traits for code that should accept any value carrying a date or a time of day. `Datelike` is implemented by `NaiveDate`, `NaiveDateTime` and `DateTime[Tz]` (its local date); `Timelike` by `NaiveTime`, `NaiveDateTime` and `DateTime[Tz]` (its local time). Both are `pub(open)`, so a caller's own type can implement them too.
+
+| Trait | Required methods | Provided methods |
+| :--- | :--- | :--- |
+| `Datelike` | `year`, `month`, `day`, `ordinal`, `weekday` | `month0`, `day0`, `ordinal0`, `quarter`, `year_ce`, `num_days_in_month`, `leap_year`, `num_days_from_ce`, `iso_week` |
+| `Timelike` | `hour`, `minute`, `second`, `nanosecond` | `hour12`, `num_seconds_from_midnight` |
+
+The provided methods give the same results as the identically named methods on `NaiveDate`, `NaiveTime` and `NaiveDateTime`. The `with_*` modifiers are not part of either trait, because their return types differ per type (`Self?` for the naive types, `MappedLocalTime[Self]` for `DateTime[Tz]`).
+
+```mbt check
+///|
+fn[T : @core.Datelike] is_leap_day(value : T) -> Bool {
+  value.leap_year() && value.month() == @core.Feb && value.day() == 29
+}
+
+///|
+test "is_leap_day accepts any Datelike value" {
+  let date = @core.NaiveDate::from_ymd(2024, 2, 29).unwrap()
+  let time = @core.NaiveTime::midnight()
+  assert_true(is_leap_day(date))
+  assert_true(is_leap_day(@core.NaiveDateTime::new(date, time)))
+}
+```
+
+```mbt check
+///|
+fn[T : @core.Timelike] is_pm_noon_hour(value : T) -> Bool {
+  value.hour12().is_pm() && value.hour12().hour() == 12
+}
+
+///|
+test "is_pm_noon_hour accepts any Timelike value" {
+  let date = @core.NaiveDate::from_ymd(2024, 2, 29).unwrap()
+  let noon = @core.NaiveTime::from_hms(12, 30, 0).unwrap()
+  assert_true(is_pm_noon_hour(noon))
+  assert_true(is_pm_noon_hour(@core.NaiveDateTime::new(date, noon)))
+  assert_false(is_pm_noon_hour(@core.NaiveTime::midnight()))
+}
+```
 
 ---
 

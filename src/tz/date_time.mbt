@@ -1153,3 +1153,48 @@ pub fn[Tz] DateTime::round_subsecs(
   .round_subsecs(digits)
   .map(datetime => DateTime::{ datetime, tz: self.tz, })
 }
+
+///|
+pub impl[Tz : TimeZone] @core.Datelike for DateTime[Tz] with fn year(self) {
+  DateTime::year(self)
+}
+
+///|
+pub impl[Tz : TimeZone] @core.Datelike for DateTime[Tz] with fn month(self) {
+  DateTime::month(self)
+}
+
+///|
+pub impl[Tz : TimeZone] @core.Datelike for DateTime[Tz] with fn day(self) {
+  DateTime::day(self)
+}
+
+///|
+pub impl[Tz : TimeZone] @core.Datelike for DateTime[Tz] with fn ordinal(self) {
+  DateTime::ordinal(self)
+}
+
+///|
+pub impl[Tz : TimeZone] @core.Datelike for DateTime[Tz] with fn weekday(self) {
+  DateTime::weekday(self)
+}
+
+///|
+pub impl[Tz : TimeZone] @core.Timelike for DateTime[Tz] with fn hour(self) {
+  DateTime::hour(self)
+}
+
+///|
+pub impl[Tz : TimeZone] @core.Timelike for DateTime[Tz] with fn minute(self) {
+  DateTime::minute(self)
+}
+
+///|
+pub impl[Tz : TimeZone] @core.Timelike for DateTime[Tz] with fn second(self) {
+  DateTime::second(self)
+}
+
+///|
+pub impl[Tz : TimeZone] @core.Timelike for DateTime[Tz] with fn nanosecond(self) {
+  DateTime::nanosecond(self)
+}
