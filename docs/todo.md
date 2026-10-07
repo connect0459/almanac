@@ -499,7 +499,7 @@ Reference: a third feature-level gap survey against date/time libraries from oth
 
 ### Robustness (`src/tz`, `src/format`)
 
-- [ ] POSIX TZ rule validation: `parse_rule_date` accepts out-of-range rules (`M13.9.9`, `M4.5.7`, `J0`, `J400`), `parse_offset_seconds` accepts minutes or seconds of 60 or more, and `parse_uint` does not guard against `Int` overflow. A crafted TZif footer or `$TZ` is therefore accepted as a valid rule. Same hardening class as the Phase 12 TZif and offset decisions; verify that no later lookup aborts on such a rule
+- [x] POSIX TZ rule validation: `parse_rule_date` accepts out-of-range rules (`M13.9.9`, `M4.5.7`, `J0`, `J400`), `parse_offset_seconds` accepts minutes or seconds of 60 or more, and `parse_uint` does not guard against `Int` overflow. A crafted TZif footer or `$TZ` is therefore accepted as a valid rule. Same hardening class as the Phase 12 TZif and offset decisions; verify that no later lookup aborts on such a rule
 - [ ] Unsigned `%Y`/`%G` parse width: `parse_signed_greedy_digits` reads an unbounded digit run, so a compact format such as `%Y%m%d` cannot read `20240305`. Reading at most 4 digits unless an explicit sign is present would fix it, but narrows the documented "an unsigned year beyond 9999 still reads" behavior; decide whether that is acceptable
 - [ ] `%y`/`%g` rendering for negative years uses a truncating remainder and prints a negative two-digit value that `%y` cannot read back; `%C` has the same truncating division. Decide between following the euclidean rule and documenting the behavior
 - [ ] `NaiveDate::week` aborts at the edge of the date range because `first_day`, `last_day` and `days` use the aborting `add_days`; consider a checked form or a total constructor
