@@ -80,6 +80,8 @@ pub fn parse_http_date(String, reference_year? : Int) -> @tz.DateTime[@tz.Utc] r
 
 pub fn parse_iso8601(String) -> Iso8601 raise FormatError
 
+pub fn parse_iso8601_duration(String) -> @core.TimeDelta raise FormatError
+
 pub fn parse_items(String, Array[Item]) -> Parsed raise FormatError
 
 pub fn parse_items_and_remainder(String, Array[Item]) -> (Parsed, String) raise FormatError
@@ -101,6 +103,8 @@ pub fn parse_utc_time(String) -> @tz.DateTime[@tz.Utc] raise FormatError
 pub fn[Tz] to_generalized_time(@tz.DateTime[Tz]) -> String raise FormatError
 
 pub fn[Tz] to_http_date(@tz.DateTime[Tz]) -> String raise FormatError
+
+pub fn to_iso8601_duration(@core.TimeDelta) -> String
 
 pub fn[Tz : @tz.TimeZone] to_rfc2822(@tz.DateTime[Tz]) -> String raise FormatError
 
