@@ -127,7 +127,8 @@ pub extend Local with TimeZone::{
 /// The current instant expressed in the host's local time zone, or `None`
 /// if that zone could not be determined (see `Local::new`). The counterpart
 /// of `Utc::now`, and like it reads the host clock; the `None` is about the
-/// zone, not the clock.
+/// zone, not the clock. The precision is at most one millisecond, as for
+/// `Utc::now`.
 pub fn Local::now() -> DateTime[Local]? {
   Local::new().map(zone => Utc::now().with_timezone(zone))
 }

@@ -6,6 +6,10 @@
 /// range (about 5.8 million years either side of 1970) is a broken
 /// environment rather than a caller error, and this aborts on it. The
 /// failure `Local::now` reports is different, an undetermined local zone.
+///
+/// The precision is at most one millisecond: the host clock is read in whole
+/// milliseconds, so the sub-millisecond part of the result is always zero,
+/// and a host clock coarser than that gives coarser values.
 pub fn Utc::now() -> DateTime[Utc] {
   let naive = @core.NaiveDateTime::from_timestamp_millis(
     @env.now().reinterpret_as_int64(),
