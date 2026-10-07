@@ -201,7 +201,7 @@ A named zone with a constant offset and no daylight saving. Unlike a bare `Fixed
 | `offset()` | `-> FixedOffset` | The zone's constant offset |
 | `offset_from_utc(NaiveDateTime)` / `offset_from_local(NaiveDateTime)` | `-> FixedOffset` / `-> MappedLocalTime[FixedOffset]` | The constant offset; the local form is always `Single` |
 | `zone_name(NaiveDateTime)` | `-> String` | The zone's name, or the offset text (`"+09:00"`) when the name is empty |
-| `offset_from_abbreviation(String, NaiveDateTime)` | `-> FixedOffset?` | The offset when the abbreviation equals the zone's own name, else `None`, so `parse_date_time_in` can read a `%Z` name back |
+| `offset_from_abbreviation(String, NaiveDateTime)` | `-> FixedOffset?` | The offset when the abbreviation equals the text `zone_name` reports (the zone's name, or the offset text for an unnamed zone), else `None`, so `parse_date_time_in` can read a `%Z` name back |
 
 ### `DateTime[Tz]`
 
