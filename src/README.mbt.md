@@ -6,7 +6,7 @@ A thin entry point over the packages below. Importing this package alone gives t
 | :--- | :--- | :--- |
 | `connect0459/almanac` | `@almanac` | Re-exports of the everyday types (see below) |
 | `connect0459/almanac/core` | `@core` | Calendar and clock primitives with no time zone: `Weekday`, `WeekdaySet`, `Month`, `IsoWeek`, `NaiveDate`, `NaiveWeek`, `NaiveTime`, `TimeDelta`, `NaiveDateTime`, `RoundingError` |
-| `connect0459/almanac/tz` | `@tz` | Time zones: the `TimeZone` trait, `Utc`, `FixedOffset`, `FixedZone`, `Location` (IANA tzdata), `PosixTz`, `DateTime[Tz]`, `MappedLocalTime`, and on the `native` backend only, `Local` (the host's zone) |
+| `connect0459/almanac/tz` | `@tz` | Time zones: the `TimeZone` trait, `Utc`, `FixedOffset`, `FixedZone`, `Location` (IANA tzdata), `PosixTz`, `DateTime[Tz]`, `MappedLocalTime`, `Local` (the host's zone) |
 | `connect0459/almanac/format` | `@format` | `strftime`-style formatting and parsing, RFC 2822 and RFC 3339, plus the default-layout and duration parsers |
 | `connect0459/almanac/cron` | `@cron` | Cron expressions: `Cron::parse`, then `matches` and `next` over a zoned `DateTime[Tz]` |
 
