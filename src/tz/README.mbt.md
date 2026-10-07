@@ -334,7 +334,7 @@ The OS-configured local time zone, resolved from `$TZ` or, when unset, `/etc/loc
 | `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | Delegates to the resolved zone |
 | `zone_name(NaiveDateTime)` | `-> String` | Delegates to the resolved zone |
 
-`Local` also implements `TimeZone`. `$TZ` may be an IANA zone name, an empty string (UTC), or a bare POSIX TZ rule such as `"JST-9"` or `"FOO5BAR4,M3.2.0,M11.1.0"`; an IANA name takes precedence when a string is both (e.g. `"EST5EDT"`). The leading-colon form (`":Asia/Tokyo"`) is not handled.
+`Local` also implements `TimeZone`. One leading colon of `$TZ` is ignored (`":Asia/Tokyo"` is `"Asia/Tokyo"`). The remainder may be an empty string (UTC, so a lone `":"` is UTC too), the absolute path of a TZif file (`"/usr/share/zoneinfo/Asia/Tokyo"`), an IANA zone name, or a bare POSIX TZ rule such as `"JST-9"` or `"FOO5BAR4,M3.2.0,M11.1.0"`; an IANA name takes precedence when a string is both (e.g. `"EST5EDT"`). A path that cannot be read as TZif data makes `Local::new()` return `None` rather than falling back to UTC. Relative names are matched against the embedded tz database only, never against `/usr/share/zoneinfo`.
 
 ---
 
