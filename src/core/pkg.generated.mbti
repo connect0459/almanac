@@ -463,6 +463,7 @@ pub fn WeekdaySet::empty() -> Self
 pub fn WeekdaySet::equal(Self, Self) -> Bool
 pub fn WeekdaySet::first(Self) -> Weekday?
 pub fn WeekdaySet::from_array(Array[Weekday]) -> Self
+pub fn WeekdaySet::from_iter(Iter[Weekday]) -> Self
 pub fn WeekdaySet::hash(Self) -> Int
 pub fn WeekdaySet::hash_combine(Self, Hasher) -> Unit
 pub fn WeekdaySet::insert(Self, Weekday) -> Self
