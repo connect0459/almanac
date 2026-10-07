@@ -774,8 +774,10 @@ pub fn NaiveDateTime::signed_duration_since(
 
 ///|
 /// This datetime truncated toward the Unix epoch to the nearest multiple of
-/// `granularity`. See `TimeDelta::truncate` for the conditions under which
-/// `granularity` is rejected.
+/// `granularity`. Multiples are counted from `1970-01-01 00:00:00`, so a
+/// multi-day granularity does not align to any calendar boundary (seven-day
+/// buckets begin on a Thursday). See `TimeDelta::truncate` for the
+/// conditions under which `granularity` is rejected.
 pub fn NaiveDateTime::truncate(
   self : NaiveDateTime,
   granularity : TimeDelta,
@@ -788,7 +790,8 @@ pub fn NaiveDateTime::truncate(
 
 ///|
 /// This datetime rounded to the nearest multiple of `granularity` since the
-/// Unix epoch, ties breaking away from the epoch. See `TimeDelta::round`
+/// Unix epoch, ties breaking away from the epoch. A multi-day granularity is
+/// counted from the epoch, not from a calendar boundary. See `TimeDelta::round`
 /// for the conditions under which `granularity` is rejected; also fails with
 /// `OutOfRange` if rounding away from the epoch would leave `NaiveDate`'s
 /// representable range.
@@ -807,8 +810,9 @@ pub fn NaiveDateTime::round(
 ///|
 /// This datetime rounded up (toward positive infinity) to the nearest
 /// multiple of `granularity` since the Unix epoch: unchanged if already a
-/// multiple, otherwise the next one after it. See `TimeDelta::round_up`.
-/// Fails if `granularity` is rejected, or with `OutOfRange` if the result
+/// multiple, otherwise the next one after it. A multi-day granularity is
+/// counted from the epoch, not from a calendar boundary. See
+/// `TimeDelta::round_up`. Fails if `granularity` is rejected, or with `OutOfRange` if the result
 /// falls outside `NaiveDate`'s representable range.
 pub fn NaiveDateTime::round_up(
   self : NaiveDateTime,

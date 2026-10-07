@@ -65,6 +65,21 @@ test {
 }
 ```
 
+The same epoch anchor applies to multi-day granularities: multiples are counted from `1970-01-01 00:00:00`, not from the start of a week, month or year, so seven-day buckets begin on a Thursday (the weekday of the epoch). Callers who want Monday-based weeks, or any other calendar boundary, should compute it from the date (for example with `NaiveDate::week`) instead of from `truncate`:
+
+```mbt check
+///|
+test {
+  let dt = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 3, 15).unwrap(),
+    @core.NaiveTime::from_hms(9, 45, 30).unwrap(),
+  )
+  let truncated = dt.truncate(@core.TimeDelta::days(7L).unwrap()).unwrap()
+  assert_eq(truncated.date(), @core.NaiveDate::from_ymd(2024, 3, 14).unwrap())
+  assert_eq(truncated.weekday(), Thu)
+}
+```
+
 ## API reference
 
 ### Free functions
@@ -442,9 +457,9 @@ An abort cannot be recovered from in MoonBit, so it is a contract violation by t
 
 The non-`checked` arithmetic on `NaiveDate` and `NaiveDateTime` (`succ`, `pred`, `add_*`, `sub_*`) aborts if the result falls outside the representable date range (about ±5.87 million years around the epoch) rather than wrapping into an invalid date; use the `checked_*` forms to get `None` instead.
 | `signed_duration_since(Self)` | `-> TimeDelta` | The signed duration from `other` to `self` |
-| `round(TimeDelta)` | `-> Result[Self, RoundingError]` | Round to the nearest multiple of a granularity since the Unix epoch, ties breaking away from the epoch; see `TimeDelta::round` for which granularities are supported |
-| `truncate(TimeDelta)` | `-> Result[Self, RoundingError]` | Truncate toward the Unix epoch to the nearest multiple of a granularity; a datetime before the epoch is truncated *forward* in time (see Quick start above), never further into the past |
+| `round(TimeDelta)` | `-> Result[Self, RoundingError]` | Round to the nearest multiple of a granularity since the Unix epoch, ties breaking away from the epoch (a multi-day granularity is counted from the epoch, not from a calendar boundary); see `TimeDelta::round` for which granularities are supported |
+| `truncate(TimeDelta)` | `-> Result[Self, RoundingError]` | Truncate toward the Unix epoch to the nearest multiple of a granularity (a multi-day granularity is counted from the epoch, not from a calendar boundary); a datetime before the epoch is truncated *forward* in time (see Quick start above), never further into the past |
 | `round_subsecs(Int)` / `truncate_subsecs(Int)` | `-> Result[Self, RoundingError]` / `-> Self` | Round or truncate to a number of fractional-second digits (`0..=9`; other values abort), with the tie-breaking and epoch direction of `round`/`truncate`; `round_subsecs` fails with `OutOfRange` if rounding up leaves the range. A datetime with no digits beyond that count is returned unchanged, leap second included; otherwise a leap second folds into the following second |
-| `round_up(TimeDelta)` | `-> Result[Self, RoundingError]` | Round up (toward positive infinity) to the next multiple of a granularity since the Unix epoch, unchanged if already a multiple; a datetime before the epoch moves toward the epoch; `Err` for a rejected granularity, or `Err(OutOfRange)` if the result would leave `NaiveDate`'s range |
+| `round_up(TimeDelta)` | `-> Result[Self, RoundingError]` | Round up (toward positive infinity) to the next multiple of a granularity since the Unix epoch, unchanged if already a multiple (a multi-day granularity is counted from the epoch, not from a calendar boundary); a datetime before the epoch moves toward the epoch; `Err` for a rejected granularity, or `Err(OutOfRange)` if the result would leave `NaiveDate`'s range |
 
 `NaiveDateTime` also implements `Eq`, `Compare` (`<`/`<=`/`>`/`>=` via `compare`) and `Show`, rendering the date and time joined by a space (`2024-01-02 13:45:06.500`).

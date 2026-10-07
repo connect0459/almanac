@@ -270,6 +270,25 @@ test "round and truncate operate on the underlying UTC instant, not the offset-s
 }
 
 ///|
+test "truncate to a multi-day granularity anchors at the Unix epoch instant regardless of the offset" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let naive = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 3, 15).unwrap(),
+    @core.NaiveTime::from_hms(9, 45, 30).unwrap(),
+  )
+  let dt = @tz.DateTime::from_utc(naive, tokyo)
+  let truncated = dt.truncate(@core.TimeDelta::days(7L).unwrap()).unwrap()
+  assert_eq(
+    truncated.naive_utc(),
+    @core.NaiveDate::from_ymd(2024, 3, 14).unwrap().and_hms(0, 0, 0).unwrap(),
+  )
+  assert_eq(
+    truncated.naive_local(),
+    @core.NaiveDate::from_ymd(2024, 3, 14).unwrap().and_hms(9, 0, 0).unwrap(),
+  )
+}
+
+///|
 test "round and truncate report MixedGranularity for an unsupported granularity, matching NaiveDateTime" {
   let naive = @core.NaiveDateTime::new(
     @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),

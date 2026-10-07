@@ -227,6 +227,51 @@ test "round and truncate collapse to the Unix epoch when the granularity exceeds
 }
 
 ///|
+test "truncate to a multi-day granularity anchors at the Unix epoch, so seven-day buckets begin on a Thursday" {
+  let dt = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 3, 15).unwrap(),
+    @core.NaiveTime::from_hms(9, 45, 30).unwrap(),
+  )
+  let week = @core.TimeDelta::days(7L).unwrap()
+  let truncated = dt.truncate(week).unwrap()
+  assert_eq(truncated.date(), @core.NaiveDate::from_ymd(2024, 3, 14).unwrap())
+  assert_eq(truncated.time(), @core.NaiveTime::midnight())
+  assert_eq(truncated.weekday(), Thu)
+}
+
+///|
+test "round to a multi-day granularity picks the nearer multiple counted from the Unix epoch" {
+  let week = @core.TimeDelta::days(7L).unwrap()
+  let near_lower = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 3, 17).unwrap(),
+    @core.NaiveTime::from_hms(0, 0, 0).unwrap(),
+  )
+  let near_upper = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 3, 18).unwrap(),
+    @core.NaiveTime::from_hms(0, 0, 0).unwrap(),
+  )
+  assert_eq(
+    near_lower.round(week).unwrap().date(),
+    @core.NaiveDate::from_ymd(2024, 3, 14).unwrap(),
+  )
+  assert_eq(
+    near_upper.round(week).unwrap().date(),
+    @core.NaiveDate::from_ymd(2024, 3, 21).unwrap(),
+  )
+}
+
+///|
+test "truncate to a multi-day granularity before the Unix epoch moves forward to a multiple counted from the epoch" {
+  let dt = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(1969, 12, 20).unwrap(),
+    @core.NaiveTime::from_hms(12, 0, 0).unwrap(),
+  )
+  let truncated = dt.truncate(@core.TimeDelta::days(3L).unwrap()).unwrap()
+  assert_eq(truncated.date(), @core.NaiveDate::from_ymd(1969, 12, 23).unwrap())
+  assert_eq(truncated.time(), @core.NaiveTime::midnight())
+}
+
+///|
 test "round and truncate reject an unsupported granularity that mixes whole seconds with a sub-second remainder" {
   let dt = @core.NaiveDateTime::new(
     @core.NaiveDate::from_ymd(2024, 3, 15).unwrap(),
