@@ -8,6 +8,8 @@ pub suberror FormatError {
   /// as `%#z`), which has no rendering.
   ParseOnly(Item)
   InvalidRfc3339
+  /// `parse_iso8601`'s input matches none of its accepted shapes.
+  InvalidIso8601
   /// `to_rfc2822`'s year is outside RFC 2822's `0..=9999` range, or
   /// `parse_rfc2822` fails to match the (strict, non-obsolete)
   /// grammar this project supports.
@@ -69,6 +71,7 @@ pub impl Show for FormatError with fn output(self, logger) {
     ParseOnly(item) =>
       "format item can only be parsed, not rendered: " + @debug.to_string(item)
     InvalidRfc3339 => "invalid RFC 3339 date-time"
+    InvalidIso8601 => "invalid ISO 8601 date or time"
     InvalidRfc2822 => "invalid RFC 2822 date-time"
     InvalidHttpDate => "invalid HTTP date"
     InvalidDuration => "invalid duration"
