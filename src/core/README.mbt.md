@@ -349,6 +349,7 @@ A signed duration, precise to the nanosecond. Constructors and checked arithmeti
 | `TimeDelta::milliseconds(Int64)` | `-> Self?` | Whole milliseconds |
 | `TimeDelta::microseconds(Int64)` | `-> Self?` | Whole microseconds |
 | `TimeDelta::nanoseconds(Int64)` | `-> Self?` | Whole nanoseconds |
+| `TimeDelta::of(weeks?, days?, hours?, minutes?, seconds?, milliseconds?, microseconds?, nanoseconds?)` | `-> Self?` | Labelled units, each an `Int64` defaulting to `0` and of either sign (`of(hours=1L, minutes=30L)`); `None` if a component or the total is out of range |
 | `TimeDelta::new(Int64, Int)` | `-> Self?` | Whole seconds plus a nanosecond remainder in `0..=999_999_999` (the sign lives in the seconds: `new(-1, 500_000_000)` is minus half a second); `None` if the remainder is out of range or the result is out of range |
 | `TimeDelta::from_seconds_double(Double)` | `-> Self?` | From fractional seconds, rounded to the nearest nanosecond (an exact half-nanosecond tie goes away from zero, so `0.3` is exactly 300 000 000 ns); `None` for NaN, an infinity or an out-of-range value. Nanosecond precision holds only while the whole-second part is below about 9 million seconds, a `Double` limit |
 | `TimeDelta::zero()` | `-> Self` | The zero-length duration |
@@ -359,6 +360,7 @@ A signed duration, precise to the nanosecond. Constructors and checked arithmeti
 | `num_hours()` | `-> Int64` | Whole hours, truncated toward zero |
 | `num_minutes()` | `-> Int64` | Whole minutes, truncated toward zero |
 | `num_seconds()` | `-> Int64` | Whole seconds, truncated toward zero |
+| `seconds_of_day()` | `-> Int` | Seconds past the last day boundary in `0..=86399`, floored, so `-1s` is `86399` |
 | `num_milliseconds()` | `-> Int64` | Whole milliseconds, truncated toward zero; always succeeds |
 | `num_microseconds()` | `-> Int64?` | Whole microseconds, truncated toward zero; `None` if it overflows `Int64` |
 | `num_nanoseconds()` | `-> Int64?` | Whole nanoseconds; `None` if it overflows `Int64` |
