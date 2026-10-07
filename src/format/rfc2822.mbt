@@ -61,19 +61,34 @@ fn[T] rfc2822_require(opt : T?) -> T raise FormatError {
 }
 
 ///|
+fn match_short_weekday_name(
+  chars : Array[Char],
+  pos : Int,
+) -> (@core.Weekday, Int)? {
+  for entry in weekday_names() {
+    let (wd, _, short_name) = entry
+    match match_literal(chars, pos, short_name) {
+      Some(p) => return Some((wd, p))
+      None => ()
+    }
+  }
+  None
+}
+
+///|
 /// Parses an RFC 2822 date-and-time string (`"Tue, 1 Jul 2003 10:52:37
 /// +0200"`), bypassing the general token engine.
 ///
 /// Strict: this project supports only the exact shape `to_rfc2822` renders
 /// (day-of-week and seconds mandatory, single-space separators, a 4-digit
-/// year, a numeric `±HHMM` offset). The day of week is not checked against
-/// the date. `parse_rfc2822_lenient` reads RFC 2822's obsolete syntax as
-/// well.
+/// year, a numeric `±HHMM` offset). The day of week is a short name, as RFC
+/// 2822 defines it, and must match the date. `parse_rfc2822_lenient` reads
+/// RFC 2822's obsolete syntax as well.
 pub fn parse_rfc2822(
   s : String,
 ) -> @tz.DateTime[@tz.FixedOffset] raise FormatError {
   let chars = s.to_array()
-  let (_, p1) = rfc2822_require(match_weekday_name(chars, 0))
+  let (weekday, p1) = rfc2822_require(match_short_weekday_name(chars, 0))
   let p2 = rfc2822_require(expect_char(chars, p1, ','))
   let p3 = rfc2822_require(expect_char(chars, p2, ' '))
   let (day, p4) = rfc2822_require(parse_one_or_two_digits(chars, p3))
@@ -95,6 +110,9 @@ pub fn parse_rfc2822(
   let date = rfc2822_require(
     @core.NaiveDate::from_ymd(year, month.number(), day),
   )
+  if date.weekday() != weekday {
+    raise InvalidRfc2822
+  }
   let time = rfc2822_require(@core.NaiveTime::from_hms(hour, minute, second))
   let offset = rfc2822_require(@tz.FixedOffset::east(offset_secs))
   let local_naive = @core.NaiveDateTime::new(date, time)

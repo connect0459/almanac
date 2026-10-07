@@ -73,16 +73,14 @@ test "parse_rfc2822_lenient reads a conforming date the way the strict parser do
 }
 
 ///|
-test "parse_rfc2822_lenient rejects a day of week that disagrees with the date, which the strict parser ignores" {
+test "parse_rfc2822_lenient rejects a day of week that disagrees with the date" {
   let input = "Mon, 20 Jan 2015 17:35:20 -0800"
-  @format.parse_rfc2822(input) |> ignore
   assert_lenient_rejects(input)
 }
 
 ///|
-test "parse_rfc2822_lenient rejects a long day name, which the strict parser reads" {
+test "parse_rfc2822_lenient rejects a long day name" {
   let input = "Tuesday, 20 Jan 2015 17:35:20 -0800"
-  @format.parse_rfc2822(input) |> ignore
   assert_lenient_rejects(input)
 }
 
