@@ -1826,3 +1826,19 @@ test "parse_date rejects a year outside NaiveDate's range instead of reading a w
     }
   }
 }
+
+///|
+test "parse_date_time_in reads back the %Z offset text of a FixedZone with an empty name" {
+  let zone = @tz.FixedZone::new("", @tz.FixedOffset::east(9 * 3600).unwrap())
+  let dt = @format.parse_date_time_in(
+      "2024-06-15 21:00:00 +09:00", "%F %T %Z", zone,
+    )
+    .single()
+    .unwrap()
+  assert_eq(dt.naive_utc().time().hour(), 12)
+  assert_eq(dt.timezone(), zone)
+  assert_eq(
+    @format.format_date_time_tz(dt, "%F %T %Z"),
+    "2024-06-15 21:00:00 +09:00",
+  )
+}
