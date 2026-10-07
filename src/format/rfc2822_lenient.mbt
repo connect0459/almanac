@@ -223,9 +223,8 @@ pub fn parse_rfc2822_lenient(
 ///|
 /// Reads the lenient RFC 2822 shape starting at `pos` and returns the date,
 /// the time, the offset in seconds and the position after the last comment,
-/// without requiring that the rest of `chars` be consumed — shared by
-/// `parse_rfc2822_lenient` and the `Rfc2822` item of the general token
-/// engine (`apply_item`, in `parse.mbt`).
+/// without requiring that the rest of `chars` be consumed. Raises
+/// `InvalidRfc2822` on any mismatch.
 fn scan_rfc2822_lenient(
   chars : Array[Char],
   pos : Int,
