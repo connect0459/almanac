@@ -40,33 +40,12 @@ fn year_text(year : Int, width : Int) -> String {
 
 ///|
 fn weekday_short_name(w : @core.Weekday) -> String {
-  match w {
-    Mon => "Mon"
-    Tue => "Tue"
-    Wed => "Wed"
-    Thu => "Thu"
-    Fri => "Fri"
-    Sat => "Sat"
-    Sun => "Sun"
-  }
+  Locale::posix().weekday_name(w, short=true)
 }
 
 ///|
 fn month_short_name(m : @core.Month) -> String {
-  match m {
-    Jan => "Jan"
-    Feb => "Feb"
-    Mar => "Mar"
-    Apr => "Apr"
-    May => "May"
-    Jun => "Jun"
-    Jul => "Jul"
-    Aug => "Aug"
-    Sep => "Sep"
-    Oct => "Oct"
-    Nov => "Nov"
-    Dec => "Dec"
-  }
+  Locale::posix().month_name(m, short=true)
 }
 
 ///|
@@ -291,6 +270,7 @@ fn render(
   time : @core.NaiveTime?,
   tz_info : (Int, String)?,
   timestamp : Int64?,
+  locale : Locale,
 ) -> String raise FormatError {
   let out = StringBuilder()
   for item in items {
@@ -406,12 +386,13 @@ fn render(
         }
       Fixed(LongWeekdayName) =>
         match date {
-          Some(d) => out.write_string(d.weekday().name())
+          Some(d) => out.write_string(locale.weekday_name(d.weekday()))
           None => raise MissingField(item)
         }
       Fixed(ShortWeekdayName) =>
         match date {
-          Some(d) => out.write_string(weekday_short_name(d.weekday()))
+          Some(d) =>
+            out.write_string(locale.weekday_name(d.weekday(), short=true))
           None => raise MissingField(item)
         }
       Fixed(TimezoneName) =>
@@ -444,19 +425,19 @@ fn render(
       Fixed(TimezoneOffsetPermissive) => raise ParseOnly(item)
       Fixed(LongMonthName) =>
         match date {
-          Some(d) => out.write_string(d.month().name())
+          Some(d) => out.write_string(locale.month_name(d.month()))
           None => raise MissingField(item)
         }
       Fixed(ShortMonthName) =>
         match date {
-          Some(d) => out.write_string(month_short_name(d.month()))
+          Some(d) => out.write_string(locale.month_name(d.month(), short=true))
           None => raise MissingField(item)
         }
       Fixed(AmPmLower) =>
         match time {
           Some(t) => {
             let is_pm = t.hour12().is_pm()
-            out.write_string(if is_pm { "pm" } else { "am" })
+            out.write_string(ascii_lower_string(locale.am_pm(is_pm)))
           }
           None => raise MissingField(item)
         }
@@ -464,7 +445,7 @@ fn render(
         match time {
           Some(t) => {
             let is_pm = t.hour12().is_pm()
-            out.write_string(if is_pm { "PM" } else { "AM" })
+            out.write_string(locale.am_pm(is_pm))
           }
           None => raise MissingField(item)
         }
@@ -576,8 +557,9 @@ fn render(
 pub fn format_date_items(
   date : @core.NaiveDate,
   items : Array[Item],
+  locale? : Locale = Locale::posix(),
 ) -> String raise FormatError {
-  render(items, Some(date), None, None, None)
+  render(items, Some(date), None, None, None, locale)
 }
 
 ///|
@@ -585,8 +567,9 @@ pub fn format_date_items(
 pub fn format_time_items(
   time : @core.NaiveTime,
   items : Array[Item],
+  locale? : Locale = Locale::posix(),
 ) -> String raise FormatError {
-  render(items, None, Some(time), None, None)
+  render(items, None, Some(time), None, None, locale)
 }
 
 ///|
@@ -594,8 +577,16 @@ pub fn format_time_items(
 pub fn format_date_time_items(
   dt : @core.NaiveDateTime,
   items : Array[Item],
+  locale? : Locale = Locale::posix(),
 ) -> String raise FormatError {
-  render(items, Some(dt.date()), Some(dt.time()), None, Some(dt.timestamp()))
+  render(
+    items,
+    Some(dt.date()),
+    Some(dt.time()),
+    None,
+    Some(dt.timestamp()),
+    locale,
+  )
 }
 
 ///|
@@ -604,6 +595,7 @@ pub fn format_date_time_items(
 pub fn[Tz : @tz.TimeZone] format_date_time_tz_items(
   dt : @tz.DateTime[Tz],
   items : Array[Item],
+  locale? : Locale = Locale::posix(),
 ) -> String raise FormatError {
   let wall_clock = dt.naive_local()
   let name = dt.timezone().zone_name(dt.naive_utc())
@@ -614,6 +606,7 @@ pub fn[Tz : @tz.TimeZone] format_date_time_tz_items(
     Some(wall_clock.time()),
     Some((offset, name)),
     Some(dt.naive_utc().timestamp()),
+    locale,
   )
 }
 
@@ -621,24 +614,27 @@ pub fn[Tz : @tz.TimeZone] format_date_time_tz_items(
 pub fn format_date(
   date : @core.NaiveDate,
   fmt : String,
+  locale? : Locale = Locale::posix(),
 ) -> String raise FormatError {
-  format_date_items(date, tokenize(fmt))
+  format_date_items(date, tokenize(fmt, locale~), locale~)
 }
 
 ///|
 pub fn format_time(
   time : @core.NaiveTime,
   fmt : String,
+  locale? : Locale = Locale::posix(),
 ) -> String raise FormatError {
-  format_time_items(time, tokenize(fmt))
+  format_time_items(time, tokenize(fmt, locale~), locale~)
 }
 
 ///|
 pub fn format_date_time(
   dt : @core.NaiveDateTime,
   fmt : String,
+  locale? : Locale = Locale::posix(),
 ) -> String raise FormatError {
-  format_date_time_items(dt, tokenize(fmt))
+  format_date_time_items(dt, tokenize(fmt, locale~), locale~)
 }
 
 ///|
@@ -650,6 +646,7 @@ pub fn format_date_time(
 pub fn[Tz : @tz.TimeZone] format_date_time_tz(
   dt : @tz.DateTime[Tz],
   fmt : String,
+  locale? : Locale = Locale::posix(),
 ) -> String raise FormatError {
-  format_date_time_tz_items(dt, tokenize(fmt))
+  format_date_time_tz_items(dt, tokenize(fmt, locale~), locale~)
 }

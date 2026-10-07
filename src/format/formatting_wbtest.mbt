@@ -14,7 +14,9 @@ test "rendering a padded numeric of a kind without a default width reports Missi
       Timestamp,
     ] {
     let item = PaddedNumeric(kind, NoPad)
-    try render([item], date, time, None, Some(0L)) |> ignore catch {
+    try
+      render([item], date, time, None, Some(0L), Locale::posix()) |> ignore
+    catch {
       MissingField(reported) => assert_eq(reported, item)
       e => fail("expected MissingField for \{@debug.to_string(kind)}, got \{e}")
     } noraise {

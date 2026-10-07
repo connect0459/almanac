@@ -134,6 +134,55 @@ fn match_literal(chars : Array[Char], pos : Int, literal : String) -> Int? {
 }
 
 ///|
+fn match_literal_ci(chars : Array[Char], pos : Int, literal : String) -> Int? {
+  let lit_chars = literal.to_array()
+  let len = lit_chars.length()
+  if pos + len > chars.length() {
+    None
+  } else {
+    for i = 0 {
+      if i >= len {
+        break Some(pos + len)
+      }
+      if ascii_lower(chars[pos + i]) != ascii_lower(lit_chars[i]) {
+        break None
+      }
+      continue i + 1
+    }
+  }
+}
+
+///|
+/// Matches the candidate name that consumes the most input at `pos`, so a
+/// name that begins another (`月` and `月曜日`) never shadows it. The first of
+/// equally long matches wins.
+fn[T] match_longest(
+  chars : Array[Char],
+  pos : Int,
+  candidates : Array[(String, T)],
+  fold_case~ : Bool,
+) -> (T, Int)? {
+  let mut best : (T, Int)? = None
+  for candidate in candidates {
+    let (name, value) = candidate
+    let end = if fold_case {
+      match_literal_ci(chars, pos, name)
+    } else {
+      match_literal(chars, pos, name)
+    }
+    match (end, best) {
+      (Some(e), Some((_, best_end))) =>
+        if e > best_end {
+          best = Some((value, e))
+        }
+      (Some(e), None) => best = Some((value, e))
+      (None, _) => ()
+    }
+  }
+  best
+}
+
+///|
 let unsigned_year_max_digits : Int = 4
 
 ///|
@@ -377,22 +426,26 @@ fn weekday_names() -> Array[(@core.Weekday, String, String)] {
 /// Matches either the long (`%A`) or short (`%a`) name of any weekday at
 /// `pos` (whichever fits — the caller doesn't need to know which
 /// specifier requested it, since both resolve to the same `Weekday`).
-fn match_weekday_name(chars : Array[Char], pos : Int) -> (@core.Weekday, Int)? {
-  let names = weekday_names()
-  for i = 0 {
-    if i >= names.length() {
-      break None
-    }
-    let (wd, long_name, short_name) = names[i]
-    match match_literal(chars, pos, long_name) {
-      Some(p) => break Some((wd, p))
-      None =>
-        match match_literal(chars, pos, short_name) {
-          Some(p) => break Some((wd, p))
-          None => continue i + 1
-        }
-    }
+fn match_weekday_name(
+  chars : Array[Char],
+  pos : Int,
+  locale : Locale,
+) -> (@core.Weekday, Int)? {
+  let candidates = []
+  for
+    weekday in [
+      @core.Mon,
+      @core.Tue,
+      @core.Wed,
+      @core.Thu,
+      @core.Fri,
+      @core.Sat,
+      @core.Sun,
+    ] {
+    candidates.push((locale.weekday_name(weekday), weekday))
+    candidates.push((locale.weekday_name(weekday, short=true), weekday))
   }
+  match_longest(chars, pos, candidates, fold_case=false)
 }
 
 ///|
@@ -400,8 +453,9 @@ fn apply_weekday_specifier(
   chars : Array[Char],
   pos : Int,
   parsed : Parsed,
+  locale : Locale,
 ) -> (Parsed, Int) raise FormatError {
-  match match_weekday_name(chars, pos) {
+  match match_weekday_name(chars, pos, locale) {
     None => raise InputMismatch
     Some((wd, p)) =>
       ({ ..parsed, weekday: merge_field(parsed.weekday, wd), }, p)
@@ -429,22 +483,18 @@ fn month_names() -> Array[(@core.Month, String, String)] {
 ///|
 /// Matches either the long (`%B`) or short (`%b`/`%h`) name of any month
 /// at `pos` (whichever fits — mirrors `match_weekday_name`).
-fn match_month_name(chars : Array[Char], pos : Int) -> (@core.Month, Int)? {
-  let names = month_names()
-  for i = 0 {
-    if i >= names.length() {
-      break None
-    }
-    let (m, long_name, short_name) = names[i]
-    match match_literal(chars, pos, long_name) {
-      Some(p) => break Some((m, p))
-      None =>
-        match match_literal(chars, pos, short_name) {
-          Some(p) => break Some((m, p))
-          None => continue i + 1
-        }
-    }
+fn match_month_name(
+  chars : Array[Char],
+  pos : Int,
+  locale : Locale,
+) -> (@core.Month, Int)? {
+  let candidates = []
+  for number in 1..<=12 {
+    let month = @core.Month::from_number(number).unwrap()
+    candidates.push((locale.month_name(month), month))
+    candidates.push((locale.month_name(month, short=true), month))
   }
+  match_longest(chars, pos, candidates, fold_case=false)
 }
 
 ///|
@@ -455,8 +505,9 @@ fn apply_month_name_specifier(
   chars : Array[Char],
   pos : Int,
   parsed : Parsed,
+  locale : Locale,
 ) -> (Parsed, Int) raise FormatError {
-  match match_month_name(chars, pos) {
+  match match_month_name(chars, pos, locale) {
     None => raise InputMismatch
     Some((m, p)) =>
       ({ ..parsed, month: merge_field(parsed.month, m.number()), }, p)
@@ -464,26 +515,16 @@ fn apply_month_name_specifier(
 }
 
 ///|
-/// Matches `"am"`/`"pm"` case-insensitively at `pos`, regardless of
-/// whether the format used `%p` or `%P` to render it — the two specifiers
-/// differ only in rendered case, not in the value they carry.
-fn match_ampm(chars : Array[Char], pos : Int) -> (Bool, Int)? {
-  match expect_char_ci(chars, pos, 'A', 'a') {
-    Some(p1) =>
-      match expect_char_ci(chars, p1, 'M', 'm') {
-        Some(p2) => Some((false, p2))
-        None => None
-      }
-    None =>
-      match expect_char_ci(chars, pos, 'P', 'p') {
-        Some(p1) =>
-          match expect_char_ci(chars, p1, 'M', 'm') {
-            Some(p2) => Some((true, p2))
-            None => None
-          }
-        None => None
-      }
-  }
+/// Matches the locale's AM or PM name, ignoring ASCII case, at `pos`,
+/// regardless of whether the format used `%p` or `%P` to render it — the
+/// two specifiers differ only in rendered case, not in the value they carry.
+fn match_ampm(chars : Array[Char], pos : Int, locale : Locale) -> (Bool, Int)? {
+  match_longest(
+    chars,
+    pos,
+    [(locale.am_pm(false), false), (locale.am_pm(true), true)],
+    fold_case=true,
+  )
 }
 
 ///|
@@ -491,8 +532,9 @@ fn apply_ampm_specifier(
   chars : Array[Char],
   pos : Int,
   parsed : Parsed,
+  locale : Locale,
 ) -> (Parsed, Int) raise FormatError {
-  match match_ampm(chars, pos) {
+  match match_ampm(chars, pos, locale) {
     None => raise InputMismatch
     Some((is_pm, p)) =>
       ({ ..parsed, is_pm: merge_field(parsed.is_pm, is_pm), }, p)
@@ -644,6 +686,7 @@ fn apply_item(
   chars : Array[Char],
   pos : Int,
   pad : PadMode?,
+  locale : Locale,
 ) -> (Parsed, Int) raise FormatError {
   if pos >= chars.length() && item_needs_input(item) {
     raise InputTooShort
@@ -656,7 +699,7 @@ fn apply_item(
       }
     // The flag's mode is forwarded so the field's reader can widen what it accepts.
     PaddedNumeric(kind, mode) =>
-      apply_item(Numeric(kind), parsed, chars, pos, Some(mode))
+      apply_item(Numeric(kind), parsed, chars, pos, Some(mode), locale)
     Rfc3339 =>
       match parse_rfc3339_datetime(chars, pos) {
         None => raise InputMismatch
@@ -751,8 +794,10 @@ fn apply_item(
       apply_dot_fraction(chars, pos, parsed, 3, 1_000_000)
     Numeric(DotNanosecond6) => apply_dot_fraction(chars, pos, parsed, 6, 1_000)
     Numeric(DotNanosecond9) => apply_dot_fraction(chars, pos, parsed, 9, 1)
-    Fixed(LongWeekdayName) => apply_weekday_specifier(chars, pos, parsed)
-    Fixed(ShortWeekdayName) => apply_weekday_specifier(chars, pos, parsed)
+    Fixed(LongWeekdayName) =>
+      apply_weekday_specifier(chars, pos, parsed, locale)
+    Fixed(ShortWeekdayName) =>
+      apply_weekday_specifier(chars, pos, parsed, locale)
     Fixed(TimezoneName) => {
       let end = for p = pos {
         if p < chars.length() && !chars[p].is_whitespace() {
@@ -811,10 +856,12 @@ fn apply_item(
             p,
           )
       }
-    Fixed(LongMonthName) => apply_month_name_specifier(chars, pos, parsed)
-    Fixed(ShortMonthName) => apply_month_name_specifier(chars, pos, parsed)
-    Fixed(AmPmLower) => apply_ampm_specifier(chars, pos, parsed)
-    Fixed(AmPmUpper) => apply_ampm_specifier(chars, pos, parsed)
+    Fixed(LongMonthName) =>
+      apply_month_name_specifier(chars, pos, parsed, locale)
+    Fixed(ShortMonthName) =>
+      apply_month_name_specifier(chars, pos, parsed, locale)
+    Fixed(AmPmLower) => apply_ampm_specifier(chars, pos, parsed, locale)
+    Fixed(AmPmUpper) => apply_ampm_specifier(chars, pos, parsed, locale)
     Numeric(Hour12) =>
       match read_digits(chars, pos, 2, pad, false) {
         None => raise InputMismatch
@@ -941,8 +988,9 @@ fn apply_item(
 pub fn parse_items(
   input : String,
   items : Array[Item],
+  locale? : Locale = Locale::posix(),
 ) -> Parsed raise FormatError {
-  let (parsed, rest) = parse_items_and_remainder(input, items)
+  let (parsed, rest) = parse_items_and_remainder(input, items, locale~)
   if rest != "" {
     raise TrailingInput
   }
@@ -956,13 +1004,21 @@ pub fn parse_items(
 pub fn parse_items_and_remainder(
   input : String,
   items : Array[Item],
+  locale? : Locale = Locale::posix(),
 ) -> (Parsed, String) raise FormatError {
   let chars = input.to_array()
   let (parsed, pos) = for i = 0, parsed = Parsed::new(), pos = 0 {
     if i >= items.length() {
       break (parsed, pos)
     }
-    let (next_parsed, next_pos) = apply_item(items[i], parsed, chars, pos, None)
+    let (next_parsed, next_pos) = apply_item(
+      items[i],
+      parsed,
+      chars,
+      pos,
+      None,
+      locale,
+    )
     continue i + 1, next_parsed, next_pos
   }
   (parsed, String::from_array(chars[pos:]))
@@ -1395,8 +1451,9 @@ pub fn[Tz : @tz.TimeZone] Parsed::to_date_time_in(
 pub fn parse_date(
   input : String,
   fmt : String,
+  locale? : Locale = Locale::posix(),
 ) -> @core.NaiveDate raise FormatError {
-  parse_items(input, tokenize(fmt)).to_date()
+  parse_items(input, tokenize(fmt, locale~), locale~).to_date()
 }
 
 ///|
@@ -1406,8 +1463,13 @@ pub fn parse_date(
 pub fn parse_date_and_remainder(
   input : String,
   fmt : String,
+  locale? : Locale = Locale::posix(),
 ) -> (@core.NaiveDate, String) raise FormatError {
-  let (parsed, rest) = parse_items_and_remainder(input, tokenize(fmt))
+  let (parsed, rest) = parse_items_and_remainder(
+    input,
+    tokenize(fmt, locale~),
+    locale~,
+  )
   (parsed.to_date(), rest)
 }
 
@@ -1417,8 +1479,9 @@ pub fn parse_date_and_remainder(
 pub fn parse_time(
   input : String,
   fmt : String,
+  locale? : Locale = Locale::posix(),
 ) -> @core.NaiveTime raise FormatError {
-  parse_items(input, tokenize(fmt)).to_time()
+  parse_items(input, tokenize(fmt, locale~), locale~).to_time()
 }
 
 ///|
@@ -1427,8 +1490,13 @@ pub fn parse_time(
 pub fn parse_time_and_remainder(
   input : String,
   fmt : String,
+  locale? : Locale = Locale::posix(),
 ) -> (@core.NaiveTime, String) raise FormatError {
-  let (parsed, rest) = parse_items_and_remainder(input, tokenize(fmt))
+  let (parsed, rest) = parse_items_and_remainder(
+    input,
+    tokenize(fmt, locale~),
+    locale~,
+  )
   (parsed.to_time(), rest)
 }
 
@@ -1437,8 +1505,9 @@ pub fn parse_time_and_remainder(
 pub fn parse_date_time(
   input : String,
   fmt : String,
+  locale? : Locale = Locale::posix(),
 ) -> @core.NaiveDateTime raise FormatError {
-  parse_items(input, tokenize(fmt)).to_date_time()
+  parse_items(input, tokenize(fmt, locale~), locale~).to_date_time()
 }
 
 ///|
@@ -1447,8 +1516,13 @@ pub fn parse_date_time(
 pub fn parse_date_time_and_remainder(
   input : String,
   fmt : String,
+  locale? : Locale = Locale::posix(),
 ) -> (@core.NaiveDateTime, String) raise FormatError {
-  let (parsed, rest) = parse_items_and_remainder(input, tokenize(fmt))
+  let (parsed, rest) = parse_items_and_remainder(
+    input,
+    tokenize(fmt, locale~),
+    locale~,
+  )
   (parsed.to_date_time(), rest)
 }
 
@@ -1459,8 +1533,9 @@ pub fn parse_date_time_and_remainder(
 pub fn parse_date_time_fixed_offset(
   input : String,
   fmt : String,
+  locale? : Locale = Locale::posix(),
 ) -> @tz.DateTime[@tz.FixedOffset] raise FormatError {
-  parse_items(input, tokenize(fmt)).to_date_time_fixed_offset()
+  parse_items(input, tokenize(fmt, locale~), locale~).to_date_time_fixed_offset()
 }
 
 ///|
@@ -1469,8 +1544,13 @@ pub fn parse_date_time_fixed_offset(
 pub fn parse_date_time_fixed_offset_and_remainder(
   input : String,
   fmt : String,
+  locale? : Locale = Locale::posix(),
 ) -> (@tz.DateTime[@tz.FixedOffset], String) raise FormatError {
-  let (parsed, rest) = parse_items_and_remainder(input, tokenize(fmt))
+  let (parsed, rest) = parse_items_and_remainder(
+    input,
+    tokenize(fmt, locale~),
+    locale~,
+  )
   (parsed.to_date_time_fixed_offset(), rest)
 }
 
@@ -1492,8 +1572,9 @@ pub fn[Tz : @tz.TimeZone] parse_date_time_in(
   input : String,
   fmt : String,
   tz : Tz,
+  locale? : Locale = Locale::posix(),
 ) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise FormatError {
-  parse_items(input, tokenize(fmt)).to_date_time_in(tz)
+  parse_items(input, tokenize(fmt, locale~), locale~).to_date_time_in(tz)
 }
 
 ///|
@@ -1503,7 +1584,12 @@ pub fn[Tz : @tz.TimeZone] parse_date_time_in_and_remainder(
   input : String,
   fmt : String,
   tz : Tz,
+  locale? : Locale = Locale::posix(),
 ) -> (@tz.MappedLocalTime[@tz.DateTime[Tz]], String) raise FormatError {
-  let (parsed, rest) = parse_items_and_remainder(input, tokenize(fmt))
+  let (parsed, rest) = parse_items_and_remainder(
+    input,
+    tokenize(fmt, locale~),
+    locale~,
+  )
   (parsed.to_date_time_in(tz), rest)
 }

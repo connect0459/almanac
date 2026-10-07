@@ -30,43 +30,43 @@ pub const TIME_ONLY : String = "%T"
 
 pub const UNIX_DATE : String = "%a %b %e %H:%M:%S %Z %Y"
 
-pub fn format_date(@core.NaiveDate, String) -> String raise FormatError
+pub fn format_date(@core.NaiveDate, String, locale? : Locale) -> String raise FormatError
 
-pub fn format_date_items(@core.NaiveDate, Array[Item]) -> String raise FormatError
+pub fn format_date_items(@core.NaiveDate, Array[Item], locale? : Locale) -> String raise FormatError
 
-pub fn format_date_time(@core.NaiveDateTime, String) -> String raise FormatError
+pub fn format_date_time(@core.NaiveDateTime, String, locale? : Locale) -> String raise FormatError
 
-pub fn format_date_time_items(@core.NaiveDateTime, Array[Item]) -> String raise FormatError
+pub fn format_date_time_items(@core.NaiveDateTime, Array[Item], locale? : Locale) -> String raise FormatError
 
-pub fn[Tz : @tz.TimeZone] format_date_time_tz(@tz.DateTime[Tz], String) -> String raise FormatError
+pub fn[Tz : @tz.TimeZone] format_date_time_tz(@tz.DateTime[Tz], String, locale? : Locale) -> String raise FormatError
 
-pub fn[Tz : @tz.TimeZone] format_date_time_tz_items(@tz.DateTime[Tz], Array[Item]) -> String raise FormatError
+pub fn[Tz : @tz.TimeZone] format_date_time_tz_items(@tz.DateTime[Tz], Array[Item], locale? : Locale) -> String raise FormatError
 
-pub fn format_time(@core.NaiveTime, String) -> String raise FormatError
+pub fn format_time(@core.NaiveTime, String, locale? : Locale) -> String raise FormatError
 
-pub fn format_time_items(@core.NaiveTime, Array[Item]) -> String raise FormatError
+pub fn format_time_items(@core.NaiveTime, Array[Item], locale? : Locale) -> String raise FormatError
 
-pub fn parse_date(String, String) -> @core.NaiveDate raise FormatError
+pub fn parse_date(String, String, locale? : Locale) -> @core.NaiveDate raise FormatError
 
-pub fn parse_date_and_remainder(String, String) -> (@core.NaiveDate, String) raise FormatError
+pub fn parse_date_and_remainder(String, String, locale? : Locale) -> (@core.NaiveDate, String) raise FormatError
 
 pub fn parse_date_default(String) -> @core.NaiveDate raise FormatError
 
-pub fn parse_date_time(String, String) -> @core.NaiveDateTime raise FormatError
+pub fn parse_date_time(String, String, locale? : Locale) -> @core.NaiveDateTime raise FormatError
 
-pub fn parse_date_time_and_remainder(String, String) -> (@core.NaiveDateTime, String) raise FormatError
+pub fn parse_date_time_and_remainder(String, String, locale? : Locale) -> (@core.NaiveDateTime, String) raise FormatError
 
 pub fn parse_date_time_default(String) -> @core.NaiveDateTime raise FormatError
 
-pub fn parse_date_time_fixed_offset(String, String) -> @tz.DateTime[@tz.FixedOffset] raise FormatError
+pub fn parse_date_time_fixed_offset(String, String, locale? : Locale) -> @tz.DateTime[@tz.FixedOffset] raise FormatError
 
-pub fn parse_date_time_fixed_offset_and_remainder(String, String) -> (@tz.DateTime[@tz.FixedOffset], String) raise FormatError
+pub fn parse_date_time_fixed_offset_and_remainder(String, String, locale? : Locale) -> (@tz.DateTime[@tz.FixedOffset], String) raise FormatError
 
 pub fn parse_date_time_fixed_offset_default(String) -> @tz.DateTime[@tz.FixedOffset] raise FormatError
 
-pub fn[Tz : @tz.TimeZone] parse_date_time_in(String, String, Tz) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise FormatError
+pub fn[Tz : @tz.TimeZone] parse_date_time_in(String, String, Tz, locale? : Locale) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise FormatError
 
-pub fn[Tz : @tz.TimeZone] parse_date_time_in_and_remainder(String, String, Tz) -> (@tz.MappedLocalTime[@tz.DateTime[Tz]], String) raise FormatError
+pub fn[Tz : @tz.TimeZone] parse_date_time_in_and_remainder(String, String, Tz, locale? : Locale) -> (@tz.MappedLocalTime[@tz.DateTime[Tz]], String) raise FormatError
 
 pub fn parse_date_time_utc_default(String) -> @tz.DateTime[@tz.Utc] raise FormatError
 
@@ -82,9 +82,9 @@ pub fn parse_iso8601(String) -> Iso8601 raise FormatError
 
 pub fn parse_iso8601_duration(String) -> @core.TimeDelta raise FormatError
 
-pub fn parse_items(String, Array[Item]) -> Parsed raise FormatError
+pub fn parse_items(String, Array[Item], locale? : Locale) -> Parsed raise FormatError
 
-pub fn parse_items_and_remainder(String, Array[Item]) -> (Parsed, String) raise FormatError
+pub fn parse_items_and_remainder(String, Array[Item], locale? : Locale) -> (Parsed, String) raise FormatError
 
 pub fn parse_rfc2822(String) -> @tz.DateTime[@tz.FixedOffset] raise FormatError
 
@@ -92,9 +92,9 @@ pub fn parse_rfc2822_lenient(String) -> @tz.DateTime[@tz.FixedOffset] raise Form
 
 pub fn parse_rfc3339(String) -> @tz.DateTime[@tz.FixedOffset] raise FormatError
 
-pub fn parse_time(String, String) -> @core.NaiveTime raise FormatError
+pub fn parse_time(String, String, locale? : Locale) -> @core.NaiveTime raise FormatError
 
-pub fn parse_time_and_remainder(String, String) -> (@core.NaiveTime, String) raise FormatError
+pub fn parse_time_and_remainder(String, String, locale? : Locale) -> (@core.NaiveTime, String) raise FormatError
 
 pub fn parse_time_default(String) -> @core.NaiveTime raise FormatError
 
@@ -114,7 +114,7 @@ pub fn[Tz : @tz.TimeZone] to_rfc3339_opts(@tz.DateTime[Tz], SecondsFormat, use_z
 
 pub fn[Tz] to_utc_time(@tz.DateTime[Tz]) -> String raise FormatError
 
-pub fn tokenize(String) -> Array[Item] raise FormatError
+pub fn tokenize(String, locale? : Locale) -> Array[Item] raise FormatError
 
 // Errors
 pub suberror FormatError {
@@ -141,6 +141,19 @@ pub fn FormatError::output(Self, &Logger) -> Unit
 pub fn FormatError::to_repr(Self) -> @debug.Repr
 pub fn FormatError::to_string(Self) -> String
 pub impl Show for FormatError
+
+pub(all) suberror LocaleError {
+  InvalidMonthNames
+  InvalidWeekdayNames
+  InvalidAmPmNames
+  InvalidPattern(String)
+} derive(Eq, @debug.Debug)
+pub fn LocaleError::equal(Self, Self) -> Bool
+pub fn LocaleError::not_equal(Self, Self) -> Bool
+pub fn LocaleError::output(Self, &Logger) -> Unit
+pub fn LocaleError::to_repr(Self) -> @debug.Repr
+pub fn LocaleError::to_string(Self) -> String
+pub impl Show for LocaleError
 
 // Types and methods
 pub(all) enum Fixed {
@@ -182,6 +195,19 @@ pub(all) enum Item {
 pub fn Item::equal(Self, Self) -> Bool
 pub fn Item::not_equal(Self, Self) -> Bool
 pub fn Item::to_repr(Self) -> @debug.Repr
+
+pub struct Locale {
+  // private fields
+}
+pub fn Locale::am_pm(Self, Bool) -> String
+pub fn Locale::date_format(Self) -> String
+pub fn Locale::date_time_format(Self) -> String
+pub fn Locale::month_name(Self, @core.Month, short? : Bool) -> String
+pub fn Locale::new(long_months~ : Array[String], short_months~ : Array[String], long_weekdays~ : Array[String], short_weekdays~ : Array[String], am~ : String, pm~ : String, date_format~ : String, time_format~ : String, date_time_format~ : String, time_format_12h~ : String) -> Self raise LocaleError
+pub fn Locale::posix() -> Self
+pub fn Locale::time_format(Self) -> String
+pub fn Locale::time_format_12h(Self) -> String
+pub fn Locale::weekday_name(Self, @core.Weekday, short? : Bool) -> String
 
 pub(all) enum Numeric {
   Year
