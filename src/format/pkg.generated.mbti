@@ -231,7 +231,30 @@ pub struct Parsed {
   // private fields
 } derive(Eq, @debug.Debug)
 pub fn Parsed::equal(Self, Self) -> Bool
+pub fn Parsed::new() -> Self
 pub fn Parsed::not_equal(Self, Self) -> Bool
+pub fn Parsed::set_day(Self, Int) -> Self raise FormatError
+pub fn Parsed::set_hour(Self, Int) -> Self raise FormatError
+pub fn Parsed::set_hour12(Self, Int) -> Self raise FormatError
+pub fn Parsed::set_iso_week(Self, Int) -> Self raise FormatError
+pub fn Parsed::set_iso_year(Self, Int) -> Self raise FormatError
+pub fn Parsed::set_iso_year_mod_100(Self, Int) -> Self raise FormatError
+pub fn Parsed::set_minute(Self, Int) -> Self raise FormatError
+pub fn Parsed::set_month(Self, Int) -> Self raise FormatError
+pub fn Parsed::set_nanosecond(Self, Int) -> Self raise FormatError
+pub fn Parsed::set_offset(Self, Int) -> Self raise FormatError
+pub fn Parsed::set_ordinal(Self, Int) -> Self raise FormatError
+pub fn Parsed::set_pm(Self, Bool) -> Self raise FormatError
+pub fn Parsed::set_quarter(Self, Int) -> Self raise FormatError
+pub fn Parsed::set_second(Self, Int) -> Self raise FormatError
+pub fn Parsed::set_timestamp(Self, Int64) -> Self raise FormatError
+pub fn Parsed::set_week_from_monday(Self, Int) -> Self raise FormatError
+pub fn Parsed::set_week_from_sunday(Self, Int) -> Self raise FormatError
+pub fn Parsed::set_weekday(Self, @core.Weekday) -> Self raise FormatError
+pub fn Parsed::set_year(Self, Int) -> Self raise FormatError
+pub fn Parsed::set_year_div_100(Self, Int) -> Self raise FormatError
+pub fn Parsed::set_year_mod_100(Self, Int) -> Self raise FormatError
+pub fn Parsed::set_zone_name(Self, String) -> Self raise FormatError
 pub fn Parsed::to_date(Self) -> @core.NaiveDate raise FormatError
 pub fn Parsed::to_date_time(Self) -> @core.NaiveDateTime raise FormatError
 pub fn Parsed::to_date_time_fixed_offset(Self) -> @tz.DateTime[@tz.FixedOffset] raise FormatError

@@ -101,34 +101,6 @@ pub extend Parsed with Eq::{equal, not_equal}
 pub extend Parsed with @debug.Debug::{to_repr}
 
 ///|
-fn Parsed::empty() -> Parsed {
-  Parsed::{
-    year: None,
-    month: None,
-    day: None,
-    ordinal: None,
-    hour: None,
-    minute: None,
-    second: None,
-    nanosecond: None,
-    weekday: None,
-    offset_secs: None,
-    hour12: None,
-    is_pm: None,
-    year_div_100: None,
-    year_mod_100: None,
-    quarter: None,
-    week_sunday: None,
-    week_monday: None,
-    zone_name: None,
-    timestamp: None,
-    iso_year: None,
-    iso_year_mod_100: None,
-    iso_week: None,
-  }
-}
-
-///|
 /// Records `value` for a field that hasn't been seen yet, or confirms it
 /// against an already-recorded value for one seen again (e.g. the same
 /// specifier twice, or two specifiers that both determine it, like `%j`
@@ -986,7 +958,7 @@ pub fn parse_items_and_remainder(
   items : Array[Item],
 ) -> (Parsed, String) raise FormatError {
   let chars = input.to_array()
-  let (parsed, pos) = for i = 0, parsed = Parsed::empty(), pos = 0 {
+  let (parsed, pos) = for i = 0, parsed = Parsed::new(), pos = 0 {
     if i >= items.length() {
       break (parsed, pos)
     }
