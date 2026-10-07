@@ -75,7 +75,10 @@ fn try_parse_iso8601(s : String) -> Iso8601? {
 /// `DateOnly` or `TimeOnly`. An offset on a bare date or time is rejected.
 /// Fractional seconds follow `parse_rfc3339` (any number of digits,
 /// truncated to nanoseconds, only after the seconds field), as does second
-/// `60` for a leap second. Raises `InvalidIso8601` on any other input.
+/// `60` for a leap second. Only this extended-format subset is read: the
+/// basic format (`20240305T093000`), an hour-only time, a comma as the
+/// decimal mark, and week or ordinal dates raise `InvalidIso8601`, as does
+/// any other input.
 pub fn parse_iso8601(s : String) -> Iso8601 raise FormatError {
   match try_parse_iso8601(s) {
     Some(parsed) => parsed
