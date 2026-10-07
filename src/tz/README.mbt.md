@@ -159,7 +159,7 @@ The UTC zone, always offset zero.
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `Utc::new()` | `-> Self` | Construct the (zero-sized) UTC zone value |
-| `Utc::now()` | `-> DateTime[Utc]` | The current UTC instant, read from the host's wall clock. Unlike every other function in this package, not a pure function of its arguments. Total: a host clock outside `NaiveDate`'s range (about 5.8 million years either side of 1970) is a broken environment, and aborts. |
+| `Utc::now()` | `-> DateTime[Utc]` | The current UTC instant, read from the host's wall clock. Unlike every other function in this package, not a pure function of its arguments. Total: a host clock outside `NaiveDate`'s range (about 5.8 million years either side of 1970) is a broken environment, and aborts. The precision is at most one millisecond: the clock is read in whole milliseconds, so the sub-millisecond part is always zero, and a coarser host clock gives coarser values. |
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | Always `FixedOffset::east(0)` |
 | `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | Always `Single(FixedOffset::east(0))` |
 | `zone_name(NaiveDateTime)` | `-> String` | Always `"UTC"` |
@@ -340,7 +340,7 @@ The one place the host environment is read is `Local::new`; the rule it applies 
 | Method | Signature | Description |
 | :--- | :--- | :--- |
 | `Local::new()` | `-> Self?` | Resolves the host's configured time zone; `None` if it could not be determined. Reads live host state — not a pure function of its arguments. |
-| `Local::now()` | `-> DateTime[Local]?` | The current instant in the host's local zone, the counterpart of `Utc::now()`; `None` when `Local::new()` is `None`, that is, when the zone cannot be determined; the clock itself is read as in `Utc::now()` |
+| `Local::now()` | `-> DateTime[Local]?` | The current instant in the host's local zone, the counterpart of `Utc::now()`; `None` when `Local::new()` is `None`, that is, when the zone cannot be determined; the clock itself is read as in `Utc::now()`, so with the same precision of at most one millisecond |
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | Delegates to the resolved zone |
 | `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | Delegates to the resolved zone |
 | `zone_name(NaiveDateTime)` | `-> String` | Delegates to the resolved zone |
