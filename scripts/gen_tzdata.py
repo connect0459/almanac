@@ -101,6 +101,9 @@ def generate(zones, aliases, release):
     out.append("// Source release: %s" % release)
     out.append("// Do not edit by hand; re-run the script to regenerate.")
     out.append("")
+    out.append("///|")
+    out.append("let tzdata_release : String = %s" % mbt_string_literal(release))
+    out.append("")
     idents = {}
     for index, name in enumerate(sorted(zones)):
         ident = mbt_identifier(name, index)

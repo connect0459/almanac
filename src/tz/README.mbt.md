@@ -89,7 +89,7 @@ test {
 
 ## Embedded tz database
 
-`Location::load` reads a snapshot of the IANA tz database compiled into the package: release **2026c**, 598 zones, taken from the compiled `rearguard` data of a macOS system (`/var/db/timezone/zoneinfo`). Zone rules change after a release, so a zone that changed later (a government altering its DST rule) keeps its old rules until the snapshot is regenerated. The release is also named in the header of `tzdata_generated.mbt`.
+`Location::load` reads a snapshot of the IANA tz database compiled into the package: release **2026c**, 598 zones, taken from the compiled `rearguard` data of a macOS system (`/var/db/timezone/zoneinfo`). Zone rules change after a release, so a zone that changed later (a government altering its DST rule) keeps its old rules until the snapshot is regenerated. `Location::tzdata_version()` reports the release and `Location::zone_names()` lists the zones. The release is also named in the header of `tzdata_generated.mbt`.
 
 To regenerate from another compiled zoneinfo tree, such as one built with `zic` from a specific release, run `just gen-tzdata <zoneinfo dir>`; the release is read from the tree's `+VERSION` file.
 
@@ -283,6 +283,8 @@ A time zone backed by parsed IANA tzdata (TZif binary format, plus a POSIX TZ st
 | :--- | :--- | :--- |
 | `Location::load(String)` | `-> Self?` | Look up an embedded IANA zone by name (e.g. `"Asia/Tokyo"`), following aliases; `None` if the name is unknown, including the empty string (which is not an alias for UTC); `"UTC"` resolves like any other zone; a zone is parsed once per name and reused by later calls |
 | `Location::load_system(String)` | `-> Self?` | Like `Location::load`, but on `native` searches the directory named by `$ZONEINFO`, then the system zoneinfo directories (`/usr/share/zoneinfo`, `/usr/share/lib/zoneinfo`, `/usr/lib/locale/TZ`, `/etc/zoneinfo`), then the embedded database, so host tzdata newer than the embedded release takes effect. File names match as the host file system does (on a case-insensitive one, `"asia/tokyo"` is found, and `name()` keeps the given text), while the embedded database is case-sensitive. A file that is not TZif is skipped; `None` if no source has the zone or the name is empty, absolute, or contains `..`. On `js`, `wasm` and `wasm-gc` it is `Location::load`. `$ZONEINFO` must be a directory; zip archives are not supported. Reads live OS state |
+| `Location::zone_names()` | `-> Array[String]` | The names of the embedded zones, ascending by string order; each loads through `Location::load`. Names the source tzdata tree linked to another zone are aliases and are not listed, though `load` accepts them. A new array on every call |
+| `Location::tzdata_version()` | `-> String` | The IANA tz database release of the embedded snapshot (e.g. `"2026c"`), or `"unknown"` when the snapshot was generated from a tree without a `+VERSION` file. `Location::load_system` may read newer host data |
 | `Location::utc()` | `-> Self` | The UTC zone as a `Location` (equal to `Location::load("UTC")`, `name()` is `Some("UTC")`), for APIs taking a `Location` rather than the separate `Utc` type |
 | `Location::from_tzif_bytes(Bytes)` | `-> Self?` | Parse a zone directly from raw TZif bytes; `None` if malformed |
 | `Location::from_tzif_bytes_named(String, Bytes)` | `-> Self?` | Like `from_tzif_bytes`, but `name()` reports the given name; any text is accepted as given, without validation |
