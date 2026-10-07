@@ -74,6 +74,10 @@ test "parse_iso8601 accepts an offset on a date-time with or without seconds" {
     @format.parse_iso8601("2024-03-05 09:30Z"),
     Zoned(@tz.DateTime::from_utc(naive(2024, 3, 5, 9, 30, 0), utc)),
   )
+  assert_eq(
+    @format.parse_iso8601("2024-03-05 09:30:15Z"),
+    Zoned(@tz.DateTime::from_utc(naive(2024, 3, 5, 9, 30, 15), utc)),
+  )
 }
 
 ///|
@@ -105,7 +109,7 @@ test "parse_iso8601 keeps fractional seconds and truncates beyond nanoseconds" {
 }
 
 ///|
-test "parse_iso8601 maps second 60 to the leap-second convention of NaiveTime" {
+test "parse_iso8601 reads second 60 as a leap second" {
   assert_eq(
     @format.parse_iso8601("2016-12-31T23:59:60"),
     Local(naive(2016, 12, 31, 23, 59, 59, nano=1_000_000_000)),
@@ -134,5 +138,62 @@ fn assert_iso8601_rejected(bad : String) -> Unit raise {
     _ => fail("expected InvalidIso8601 for \{bad}")
   } noraise {
     _ => fail("expected \{bad} to be rejected")
+  }
+}
+
+///|
+test "parse_iso8601 keeps a leap second on a zero offset and folds it into the next second on any other offset" {
+  let utc = @tz.FixedOffset::east(0).unwrap()
+  let east = @tz.FixedOffset::east(9 * 3600).unwrap()
+  assert_eq(
+    @format.parse_iso8601("2016-12-31T23:59:60Z"),
+    Zoned(
+      @tz.DateTime::from_utc(
+        naive(2016, 12, 31, 23, 59, 59, nano=1_000_000_000),
+        utc,
+      ),
+    ),
+  )
+  assert_eq(
+    @format.parse_iso8601("2017-01-01T08:59:60+09:00"),
+    Zoned(@tz.DateTime::from_utc(naive(2017, 1, 1, 0, 0, 0), east)),
+  )
+}
+
+///|
+test "parse_iso8601 keeps fractional seconds on an offset date-time" {
+  let east = @tz.FixedOffset::east(9 * 3600).unwrap()
+  assert_eq(
+    @format.parse_iso8601("2024-03-05T09:30:15.5+09:00"),
+    Zoned(
+      @tz.DateTime::from_utc(
+        naive(2024, 3, 5, 0, 30, 15, nano=500_000_000),
+        east,
+      ),
+    ),
+  )
+}
+
+///|
+test "parse_iso8601 reads a leap second and a fraction on a bare time of day" {
+  assert_eq(
+    @format.parse_iso8601("09:30:15.5"),
+    TimeOnly(@core.NaiveTime::from_hms_nano(9, 30, 15, 500_000_000).unwrap()),
+  )
+  assert_eq(
+    @format.parse_iso8601("23:59:60"),
+    TimeOnly(@core.NaiveTime::from_hms_nano(23, 59, 59, 1_000_000_000).unwrap()),
+  )
+}
+
+///|
+test "parse_iso8601 reads every offset date-time parse_rfc3339 accepts as the same instant" {
+  for
+    s in [
+      "2024-03-05T09:30:15Z", "2024-03-05t09:30:15z", "2024-03-05T09:30:15+09:00",
+      "2024-03-05T09:30:15.123456789-05:30", "2024-03-05T09:30:15.1234567891Z", "2016-12-31T23:59:60Z",
+      "2016-12-31T23:59:60.5+09:00",
+    ] {
+    assert_eq(@format.parse_iso8601(s), Zoned(@format.parse_rfc3339(s)))
   }
 }
