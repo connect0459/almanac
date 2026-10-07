@@ -27,14 +27,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
-### Added
-
-- `parse_rfc2822_lenient`, an opt-in reader for RFC 2822's obsolete syntax (legacy zone names, optional day of week and seconds, folding whitespace, comments, and two- and three-digit years)
-
-### Changed
-
-- `parse_rfc2822` now raises `InvalidRfc2822` for a day of week that does not match the date and for a long day name such as `Tuesday`; RFC 2822's `day-name` is a short name only
-
 ## [0.1.0] - 2026-10-05
 
 ### Added
