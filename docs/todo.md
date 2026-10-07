@@ -1,4 +1,4 @@
-# Chrono.mbt Implementation Plan
+# almanac Implementation Plan
 
 Reference target: **chrono/time**-equivalent functionality (calendar arithmetic, `Duration`/`Span` types, IANA timezone database support), studied from two reference implementations:
 
