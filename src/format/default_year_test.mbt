@@ -1,5 +1,5 @@
 ///|
-fn yearless_kind(f : () -> Unit raise @format.FormatError) -> String {
+fn error_kind(f : () -> Unit raise @format.FormatError) -> String {
   try f() catch {
     @format.FieldOutOfRange => "FieldOutOfRange"
     @format.InconsistentFields => "InconsistentFields"
@@ -33,9 +33,9 @@ fn naive_dt(
 ///|
 test "a layout without a year cannot be resolved unless a default year is supplied" {
   let parsed = stamp_parsed("Mar  5 09:05:03")
-  assert_eq(yearless_kind(() => parsed.to_date() |> ignore), "IncompleteFields")
+  assert_eq(error_kind(() => parsed.to_date() |> ignore), "IncompleteFields")
   assert_eq(
-    yearless_kind(() => parsed.to_date_time() |> ignore),
+    error_kind(() => parsed.to_date_time() |> ignore),
     "IncompleteFields",
   )
 }
@@ -51,7 +51,7 @@ test "a default year completes a syslog STAMP reading" {
 test "supplying a default year leaves the original reading unresolvable" {
   let parsed = stamp_parsed("Mar  5 09:05:03")
   let _ = parsed.with_default_year(2024)
-  assert_eq(yearless_kind(() => parsed.to_date() |> ignore), "IncompleteFields")
+  assert_eq(error_kind(() => parsed.to_date() |> ignore), "IncompleteFields")
 }
 
 ///|
@@ -91,7 +91,7 @@ test "a leap day resolves only when the default year is a leap year" {
   let leap = stamp_parsed("Feb 29 00:00:00").with_default_year(2024)
   assert_eq(leap.to_date(), @core.NaiveDate::from_ymd(2024, 2, 29).unwrap())
   let common = stamp_parsed("Feb 29 00:00:00").with_default_year(2023)
-  assert_eq(yearless_kind(() => common.to_date() |> ignore), "FieldOutOfRange")
+  assert_eq(error_kind(() => common.to_date() |> ignore), "FieldOutOfRange")
 }
 
 ///|
@@ -105,7 +105,7 @@ test "a weekday in the text is checked against the default year" {
     2024,
   )
   assert_eq(
-    yearless_kind(() => mismatching.to_date() |> ignore),
+    error_kind(() => mismatching.to_date() |> ignore),
     "InconsistentFields",
   )
 }
@@ -159,4 +159,28 @@ test "a default year completes the zone-aware resolvers" {
     naive_dt(2024, 3, 5, 9, 5, 3),
   )
   assert_eq(offset.to_date_time_fixed_offset().offset(), tokyo)
+}
+
+///|
+test "a century alone is not completed by a default year" {
+  let parsed = @format.parse_items("19-03-05", @format.tokenize("%C-%m-%d")).with_default_year(
+    2024,
+  )
+  assert_eq(error_kind(() => parsed.to_date() |> ignore), "IncompleteFields")
+}
+
+///|
+test "a two-digit ISO week year keeps its own year when a default year is supplied" {
+  let parsed = @format.parse_items("20-W53-5", @format.tokenize("%g-W%V-%u")).with_default_year(
+    2024,
+  )
+  assert_eq(parsed.to_date(), @core.NaiveDate::from_ymd(2021, 1, 1).unwrap())
+}
+
+///|
+test "a default year is not read as an ISO week year" {
+  let parsed = @format.parse_items("W10-2", @format.tokenize("W%V-%u")).with_default_year(
+    2024,
+  )
+  assert_eq(error_kind(() => parsed.to_date() |> ignore), "IncompleteFields")
 }
