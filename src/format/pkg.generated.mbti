@@ -84,6 +84,8 @@ pub fn parse_items_and_remainder(String, Array[Item]) -> (Parsed, String) raise 
 
 pub fn parse_rfc2822(String) -> @tz.DateTime[@tz.FixedOffset] raise FormatError
 
+pub fn parse_rfc2822_lenient(String) -> @tz.DateTime[@tz.FixedOffset] raise FormatError
+
 pub fn parse_rfc3339(String) -> @tz.DateTime[@tz.FixedOffset] raise FormatError
 
 pub fn parse_time(String, String) -> @core.NaiveTime raise FormatError

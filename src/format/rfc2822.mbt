@@ -66,11 +66,8 @@ fn[T] rfc2822_require(opt : T?) -> T raise FormatError {
 ///
 /// Strict: this project supports only the exact shape `to_rfc2822` renders (day-of-week and
 /// seconds mandatory, single-space separators, a 4-digit year, a numeric
-/// `±HHMM` offset), not RFC 2822's "obsolete format" (optional
-/// day-of-week, arbitrary whitespace, 2-/3-digit year windowing, named
-/// legacy zones such as `GMT`/`EST`, or parenthesized comments) — mirrors
-/// this project's existing RFC 3339 fast path, which is likewise strict
-/// rather than maximally lenient.
+/// `±HHMM` offset). `parse_rfc2822_lenient` reads RFC 2822's obsolete
+/// syntax as well.
 pub fn parse_rfc2822(
   s : String,
 ) -> @tz.DateTime[@tz.FixedOffset] raise FormatError {
