@@ -93,13 +93,27 @@ fn resolve_tzdata_bytes(
 }
 
 ///|
+let loaded_zones : Map[String, Location] = Map([])
+
+///|
 /// Loads the `Location` for the given embedded IANA zone name (e.g.
 /// `"America/New_York"`), or `None` if `name` is not a known zone or its
-/// embedded TZif bytes are malformed.
+/// embedded TZif bytes are malformed. A zone is parsed once per `name` and
+/// reused by later calls.
 pub fn Location::load(name : String) -> Location? {
-  match resolve_tzdata_bytes(tzdata_zones, tzdata_aliases, name) {
-    None => None
-    Some(bytes) => Location::from_tzif_bytes_named(name, bytes)
+  match loaded_zones.get(name) {
+    Some(_) as cached => cached
+    None =>
+      match resolve_tzdata_bytes(tzdata_zones, tzdata_aliases, name) {
+        None => None
+        Some(bytes) => {
+          let loaded = Location::from_tzif_bytes_named(name, bytes)
+          if loaded is Some(loc) {
+            loaded_zones[name] = loc
+          }
+          loaded
+        }
+      }
   }
 }
 
