@@ -78,8 +78,40 @@ test "a field count other than five or six names FieldCount" {
 }
 
 ///|
+test "@annually is a synonym of @yearly" {
+  assert_eq(@cron.Cron::parse("@annually"), @cron.Cron::parse("@yearly"))
+}
+
+///|
+test "@midnight is a synonym of @daily" {
+  assert_eq(@cron.Cron::parse("@midnight"), @cron.Cron::parse("@daily"))
+}
+
+///|
+test "an upper-case shorthand is read like its lower-case form" {
+  assert_eq(@cron.Cron::parse("@DAILY"), @cron.Cron::parse("@daily"))
+}
+
+///|
+test "a mixed-case shorthand is read like its lower-case form" {
+  assert_eq(@cron.Cron::parse("@AnNuAlLy"), @cron.Cron::parse("@yearly"))
+}
+
+///|
+test "a synonym is matched without regard to case" {
+  assert_eq(@cron.Cron::parse("@MIDNIGHT"), @cron.Cron::parse("@daily"))
+}
+
+///|
+test "a shorthand spelled with non-ASCII look-alike letters names Shorthand" {
+  assert_invalid_field("@DA\u{130}LY", Shorthand)
+  assert_invalid_field("@wee\u{212A}ly", Shorthand)
+}
+
+///|
 test "an unknown shorthand names Shorthand" {
   assert_invalid_field("@reboot", Shorthand)
+  assert_invalid_field("@REBOOT", Shorthand)
   assert_invalid_field("@", Shorthand)
 }
 
