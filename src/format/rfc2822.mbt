@@ -76,14 +76,30 @@ fn match_short_weekday_name(
 }
 
 ///|
+fn match_short_month_name(
+  chars : Array[Char],
+  pos : Int,
+) -> (@core.Month, Int)? {
+  for entry in month_names() {
+    let (m, _, short_name) = entry
+    match match_literal(chars, pos, short_name) {
+      Some(p) => return Some((m, p))
+      None => ()
+    }
+  }
+  None
+}
+
+///|
 /// Parses an RFC 2822 date-and-time string (`"Tue, 1 Jul 2003 10:52:37
 /// +0200"`), bypassing the general token engine.
 ///
 /// Strict: this project supports only the exact shape `to_rfc2822` renders
 /// (day-of-week and seconds mandatory, single-space separators, a 4-digit
-/// year, a numeric `±HHMM` offset). The day of week is a short name, as RFC
-/// 2822 defines it, and must match the date. `parse_rfc2822_lenient` reads
-/// RFC 2822's obsolete syntax as well.
+/// year, a numeric `±HHMM` offset). Day and month names are short names, as RFC
+/// 2822 defines them, matched case-sensitively, and the day of week must
+/// match the date. `parse_rfc2822_lenient` reads RFC 2822's obsolete syntax
+/// as well.
 pub fn parse_rfc2822(
   s : String,
 ) -> @tz.DateTime[@tz.FixedOffset] raise FormatError {
@@ -93,7 +109,7 @@ pub fn parse_rfc2822(
   let p3 = rfc2822_require(expect_char(chars, p2, ' '))
   let (day, p4) = rfc2822_require(parse_one_or_two_digits(chars, p3))
   let p5 = rfc2822_require(expect_char(chars, p4, ' '))
-  let (month, p6) = rfc2822_require(match_month_name(chars, p5))
+  let (month, p6) = rfc2822_require(match_short_month_name(chars, p5))
   let p7 = rfc2822_require(expect_char(chars, p6, ' '))
   let (year, p8) = rfc2822_require(parse_fixed_digits(chars, p7, 4))
   let p9 = rfc2822_require(expect_char(chars, p8, ' '))

@@ -186,3 +186,31 @@ test "parse_rfc2822 rejects a long day name, since RFC 2822 day-name has short n
     _ => fail("expected rejection of a long day name")
   }
 }
+
+///|
+test "parse_rfc2822 rejects a long month name, since RFC 2822 month-name has short names only" {
+  try
+    @format.parse_rfc2822("Tue, 20 January 2015 17:35:20 -0800") |> ignore
+  catch {
+    @format.InvalidRfc2822 => ()
+    _ => fail("expected InvalidRfc2822")
+  } noraise {
+    _ => fail("expected rejection of a long month name")
+  }
+}
+
+///|
+test "parse_rfc2822 matches day and month names case-sensitively" {
+  for
+    bad in [
+      "tue, 20 Jan 2015 17:35:20 -0800", "TUE, 20 Jan 2015 17:35:20 -0800", "Tue, 20 jan 2015 17:35:20 -0800",
+      "Tue, 20 JAN 2015 17:35:20 -0800",
+    ] {
+    try @format.parse_rfc2822(bad) |> ignore catch {
+      @format.InvalidRfc2822 => ()
+      _ => fail("expected InvalidRfc2822 for \{bad}")
+    } noraise {
+      _ => fail("expected rejection for \{bad}")
+    }
+  }
+}
