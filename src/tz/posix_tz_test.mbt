@@ -306,3 +306,39 @@ test "parse_posix_tz rejects an offset FixedOffset cannot represent instead of a
   assert_true(@tz.parse_posix_tz("AAA0BBB-99,M3.2.0,M11.1.0") is None)
   assert_true(@tz.parse_posix_tz("AAA-23:59:59BBB,M3.2.0,M11.1.0") is None)
 }
+
+///|
+test "parse_posix_tz rejects a rule date outside its field's range" {
+  assert_true(@tz.parse_posix_tz("EST5EDT,M13.1.0,M11.1.0") is None)
+  assert_true(@tz.parse_posix_tz("EST5EDT,M0.1.0,M11.1.0") is None)
+  assert_true(@tz.parse_posix_tz("EST5EDT,M3.0.0,M11.1.0") is None)
+  assert_true(@tz.parse_posix_tz("EST5EDT,M4.5.7,M11.1.0") is None)
+  assert_true(@tz.parse_posix_tz("EST5EDT,M3.6.0,M11.1.0") is None)
+  assert_true(@tz.parse_posix_tz("EST5EDT,M3.2.0,M11.9.9") is None)
+  assert_true(@tz.parse_posix_tz("EST5EDT,J0,M11.1.0") is None)
+  assert_true(@tz.parse_posix_tz("EST5EDT,J366,M11.1.0") is None)
+  assert_true(@tz.parse_posix_tz("EST5EDT,366,M11.1.0") is None)
+  assert_true(@tz.parse_posix_tz("EST5EDT,J1,J365") is Some(_))
+  assert_true(@tz.parse_posix_tz("EST5EDT,0,365") is Some(_))
+  assert_true(@tz.parse_posix_tz("EST5EDT,M12.5.6,M1.1.0") is Some(_))
+}
+
+///|
+test "parse_posix_tz rejects minutes or seconds of 60 or more in an offset or rule time" {
+  assert_true(@tz.parse_posix_tz("EST5:60") is None)
+  assert_true(@tz.parse_posix_tz("EST5:00:60") is None)
+  assert_true(@tz.parse_posix_tz("EST5EDT,M3.2.0/2:60,M11.1.0") is None)
+  assert_true(@tz.parse_posix_tz("EST5EDT,M3.2.0,M11.1.0/2:00:60") is None)
+  assert_true(@tz.parse_posix_tz("EST5:59:59") is Some(_))
+}
+
+///|
+test "parse_posix_tz rejects numbers too large to represent instead of overflowing" {
+  assert_true(@tz.parse_posix_tz("EST99999999999999999999") is None)
+  assert_true(@tz.parse_posix_tz("EST5EDT,M3.2.0/99999999999,M11.1.0") is None)
+  assert_true(
+    @tz.parse_posix_tz("EST5EDT,99999999999999999999,M11.1.0") is None,
+  )
+  assert_true(@tz.parse_posix_tz("EST5EDT,M3.2.0/168,M11.1.0") is Some(_))
+  assert_true(@tz.parse_posix_tz("EST5EDT,M3.2.0/169,M11.1.0") is None)
+}
