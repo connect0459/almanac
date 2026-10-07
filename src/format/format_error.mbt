@@ -19,6 +19,11 @@ pub suberror FormatError {
   /// `asctime`), names a weekday that does not match the date, or names a
   /// zone other than `GMT`.
   InvalidHttpDate
+  /// `to_utc_time`'s year is outside `1950..=2049` or `to_generalized_time`'s
+  /// outside `0..=9999`, or `parse_utc_time`/`parse_generalized_time` fails to
+  /// match the DER shape (fixed widths, seconds, a trailing `Z`) or names a
+  /// date or time that does not exist.
+  InvalidAsn1Time
   /// `parse_duration`'s input is malformed (no digits, a missing or unknown
   /// unit, a misplaced sign, stray characters) or its value falls outside
   /// `TimeDelta`'s representable range.
@@ -74,6 +79,7 @@ pub impl Show for FormatError with fn output(self, logger) {
     InvalidIso8601 => "invalid ISO 8601 date or time"
     InvalidRfc2822 => "invalid RFC 2822 date-time"
     InvalidHttpDate => "invalid HTTP date"
+    InvalidAsn1Time => "invalid ASN.1 time"
     InvalidDuration => "invalid duration"
     IncompleteFields => "not enough fields to build the requested value"
     InconsistentFields => "parsed fields contradict each other"
