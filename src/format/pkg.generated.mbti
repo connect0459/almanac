@@ -46,27 +46,27 @@ pub fn format_time(@core.NaiveTime, String, locale? : Locale) -> String raise Fo
 
 pub fn format_time_items(@core.NaiveTime, Array[Item], locale? : Locale) -> String raise FormatError
 
-pub fn parse_date(String, String) -> @core.NaiveDate raise FormatError
+pub fn parse_date(String, String, locale? : Locale) -> @core.NaiveDate raise FormatError
 
-pub fn parse_date_and_remainder(String, String) -> (@core.NaiveDate, String) raise FormatError
+pub fn parse_date_and_remainder(String, String, locale? : Locale) -> (@core.NaiveDate, String) raise FormatError
 
 pub fn parse_date_default(String) -> @core.NaiveDate raise FormatError
 
-pub fn parse_date_time(String, String) -> @core.NaiveDateTime raise FormatError
+pub fn parse_date_time(String, String, locale? : Locale) -> @core.NaiveDateTime raise FormatError
 
-pub fn parse_date_time_and_remainder(String, String) -> (@core.NaiveDateTime, String) raise FormatError
+pub fn parse_date_time_and_remainder(String, String, locale? : Locale) -> (@core.NaiveDateTime, String) raise FormatError
 
 pub fn parse_date_time_default(String) -> @core.NaiveDateTime raise FormatError
 
-pub fn parse_date_time_fixed_offset(String, String) -> @tz.DateTime[@tz.FixedOffset] raise FormatError
+pub fn parse_date_time_fixed_offset(String, String, locale? : Locale) -> @tz.DateTime[@tz.FixedOffset] raise FormatError
 
-pub fn parse_date_time_fixed_offset_and_remainder(String, String) -> (@tz.DateTime[@tz.FixedOffset], String) raise FormatError
+pub fn parse_date_time_fixed_offset_and_remainder(String, String, locale? : Locale) -> (@tz.DateTime[@tz.FixedOffset], String) raise FormatError
 
 pub fn parse_date_time_fixed_offset_default(String) -> @tz.DateTime[@tz.FixedOffset] raise FormatError
 
-pub fn[Tz : @tz.TimeZone] parse_date_time_in(String, String, Tz) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise FormatError
+pub fn[Tz : @tz.TimeZone] parse_date_time_in(String, String, Tz, locale? : Locale) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise FormatError
 
-pub fn[Tz : @tz.TimeZone] parse_date_time_in_and_remainder(String, String, Tz) -> (@tz.MappedLocalTime[@tz.DateTime[Tz]], String) raise FormatError
+pub fn[Tz : @tz.TimeZone] parse_date_time_in_and_remainder(String, String, Tz, locale? : Locale) -> (@tz.MappedLocalTime[@tz.DateTime[Tz]], String) raise FormatError
 
 pub fn parse_date_time_utc_default(String) -> @tz.DateTime[@tz.Utc] raise FormatError
 
@@ -82,9 +82,9 @@ pub fn parse_iso8601(String) -> Iso8601 raise FormatError
 
 pub fn parse_iso8601_duration(String) -> @core.TimeDelta raise FormatError
 
-pub fn parse_items(String, Array[Item]) -> Parsed raise FormatError
+pub fn parse_items(String, Array[Item], locale? : Locale) -> Parsed raise FormatError
 
-pub fn parse_items_and_remainder(String, Array[Item]) -> (Parsed, String) raise FormatError
+pub fn parse_items_and_remainder(String, Array[Item], locale? : Locale) -> (Parsed, String) raise FormatError
 
 pub fn parse_rfc2822(String) -> @tz.DateTime[@tz.FixedOffset] raise FormatError
 
@@ -92,9 +92,9 @@ pub fn parse_rfc2822_lenient(String) -> @tz.DateTime[@tz.FixedOffset] raise Form
 
 pub fn parse_rfc3339(String) -> @tz.DateTime[@tz.FixedOffset] raise FormatError
 
-pub fn parse_time(String, String) -> @core.NaiveTime raise FormatError
+pub fn parse_time(String, String, locale? : Locale) -> @core.NaiveTime raise FormatError
 
-pub fn parse_time_and_remainder(String, String) -> (@core.NaiveTime, String) raise FormatError
+pub fn parse_time_and_remainder(String, String, locale? : Locale) -> (@core.NaiveTime, String) raise FormatError
 
 pub fn parse_time_default(String) -> @core.NaiveTime raise FormatError
 

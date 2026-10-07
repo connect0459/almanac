@@ -40,33 +40,12 @@ fn year_text(year : Int, width : Int) -> String {
 
 ///|
 fn weekday_short_name(w : @core.Weekday) -> String {
-  match w {
-    Mon => "Mon"
-    Tue => "Tue"
-    Wed => "Wed"
-    Thu => "Thu"
-    Fri => "Fri"
-    Sat => "Sat"
-    Sun => "Sun"
-  }
+  Locale::posix().weekday_name(w, short=true)
 }
 
 ///|
 fn month_short_name(m : @core.Month) -> String {
-  match m {
-    Jan => "Jan"
-    Feb => "Feb"
-    Mar => "Mar"
-    Apr => "Apr"
-    May => "May"
-    Jun => "Jun"
-    Jul => "Jul"
-    Aug => "Aug"
-    Sep => "Sep"
-    Oct => "Oct"
-    Nov => "Nov"
-    Dec => "Dec"
-  }
+  Locale::posix().month_name(m, short=true)
 }
 
 ///|
