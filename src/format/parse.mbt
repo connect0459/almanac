@@ -636,6 +636,31 @@ fn apply_dot_fraction(
 }
 
 ///|
+/// Merges a whole date-time reading with its offset into `parsed`, the way
+/// each of its fields would be if read alone; a leap second's extra
+/// nanoseconds are split back into a seconds value of 60.
+fn merge_date_time_offset(
+  parsed : Parsed,
+  date : @core.NaiveDate,
+  time : @core.NaiveTime,
+  offset_secs : Int,
+) -> Parsed raise FormatError {
+  let seconds = time.second() + time.nanosecond() / 1_000_000_000
+  let nanos = time.nanosecond() % 1_000_000_000
+  {
+    ..parsed,
+    year: merge_field(parsed.year, date.year()),
+    month: merge_field(parsed.month, date.month().number()),
+    day: merge_field(parsed.day, date.day()),
+    hour: merge_field(parsed.hour, time.hour()),
+    minute: merge_field(parsed.minute, time.minute()),
+    second: merge_field(parsed.second, seconds),
+    nanosecond: merge_field(parsed.nanosecond, nanos),
+    offset_secs: merge_field(parsed.offset_secs, offset_secs),
+  }
+}
+
+///|
 /// Applies a single token against `input` at `pos`, returning the
 /// updated accumulator and the new position. `%Z` consumes and discards a
 /// run of one or more non-whitespace characters: a zone name (an IANA
@@ -663,25 +688,15 @@ fn apply_item(
     Rfc3339 =>
       match parse_rfc3339_datetime(chars, pos) {
         None => raise InputMismatch
-        Some((date, time, offset_secs, p)) => {
-          let seconds = time.second() + time.nanosecond() / 1_000_000_000
-          let nanos = time.nanosecond() % 1_000_000_000
-          (
-            {
-              ..parsed,
-              year: merge_field(parsed.year, date.year()),
-              month: merge_field(parsed.month, date.month().number()),
-              day: merge_field(parsed.day, date.day()),
-              hour: merge_field(parsed.hour, time.hour()),
-              minute: merge_field(parsed.minute, time.minute()),
-              second: merge_field(parsed.second, seconds),
-              nanosecond: merge_field(parsed.nanosecond, nanos),
-              offset_secs: merge_field(parsed.offset_secs, offset_secs),
-            },
-            p,
-          )
-        }
+        Some((date, time, offset_secs, p)) =>
+          (merge_date_time_offset(parsed, date, time, offset_secs), p)
       }
+    Rfc2822 => {
+      let (date, time, offset_secs, p) = scan_rfc2822_lenient(chars, pos) catch {
+        _ => raise InputMismatch
+      }
+      (merge_date_time_offset(parsed, date, time, offset_secs), p)
+    }
     Numeric(Year) =>
       match parse_year_digits(chars, pos) {
         None => raise InputMismatch
