@@ -160,6 +160,11 @@ pub(all) enum Item {
   /// fast path (`to_rfc3339`/`parse_rfc3339`) rather than as a sequence
   /// of simpler items.
   Rfc3339
+  /// A whole RFC 2822 date-time, rendered as `to_rfc2822` does and parsed as
+  /// `parse_rfc2822_lenient` does, so the obsolete syntax is read too. No
+  /// format-string specifier produces it; it is built directly. Like
+  /// `Rfc3339`, it needs a date, a time and an offset together.
+  Rfc2822
   /// `%-X`/`%0X`/`%_X`: a single numeric specifier `X` with its default
   /// padding overridden. Only produced when `X` resolves to a bare
   /// `Numeric` item on its own (not a `Fixed` item or a multi-item

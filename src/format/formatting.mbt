@@ -310,6 +310,12 @@ fn render(
             out.write_string(render_rfc3339(d, t, offset))
           _ => raise MissingField(item)
         }
+      Rfc2822 =>
+        match (date, time, tz_info) {
+          (Some(d), Some(t), Some((offset, _))) =>
+            out.write_string(render_rfc2822(d, t, offset))
+          _ => raise MissingField(item)
+        }
       Numeric(Year) =>
         match date {
           Some(d) => out.write_string(year_text(d.year(), 4))

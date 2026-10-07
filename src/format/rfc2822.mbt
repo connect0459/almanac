@@ -10,8 +10,19 @@ pub fn[Tz : @tz.TimeZone] to_rfc2822(
   dt : @tz.DateTime[Tz],
 ) -> String raise FormatError {
   let wall_clock = dt.naive_local()
-  let date = wall_clock.date()
-  let time = wall_clock.time()
+  render_rfc2822(
+    wall_clock.date(),
+    wall_clock.time(),
+    dt.offset().local_minus_utc(),
+  )
+}
+
+///|
+fn render_rfc2822(
+  date : @core.NaiveDate,
+  time : @core.NaiveTime,
+  offset_secs : Int,
+) -> String raise FormatError {
   let year = date.year()
   if year < 0 || year > 9999 {
     raise InvalidRfc2822
@@ -31,7 +42,7 @@ pub fn[Tz : @tz.TimeZone] to_rfc2822(
   ":" +
   pad_int(seconds, 2) +
   " " +
-  format_offset_no_colon(dt.offset().local_minus_utc())
+  format_offset_no_colon(offset_secs)
 }
 
 ///|

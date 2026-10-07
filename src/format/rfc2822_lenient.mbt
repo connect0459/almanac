@@ -209,7 +209,28 @@ pub fn parse_rfc2822_lenient(
   s : String,
 ) -> @tz.DateTime[@tz.FixedOffset] raise FormatError {
   let chars = s.to_array()
-  let p0 = skip_whitespace(chars, 0)
+  let (date, time, offset_secs, end) = scan_rfc2822_lenient(chars, 0)
+  if end != chars.length() {
+    raise InvalidRfc2822
+  }
+  let offset = rfc2822_require(@tz.FixedOffset::east(offset_secs))
+  @tz.DateTime::from_utc(
+    @core.NaiveDateTime::new(date, time).sub_seconds(offset_secs.to_int64()),
+    offset,
+  )
+}
+
+///|
+/// Reads the lenient RFC 2822 shape starting at `pos` and returns the date,
+/// the time, the offset in seconds and the position after the last comment,
+/// without requiring that the rest of `chars` be consumed — shared by
+/// `parse_rfc2822_lenient` and the `Rfc2822` item of the general token
+/// engine (`apply_item`, in `parse.mbt`).
+fn scan_rfc2822_lenient(
+  chars : Array[Char],
+  pos : Int,
+) -> (@core.NaiveDate, @core.NaiveTime, Int, Int) raise FormatError {
+  let p0 = skip_whitespace(chars, pos)
   let (weekday, p1) = match match_short_weekday_ignoring_case(chars, p0) {
     Some((wd, after_name)) =>
       (Some(wd), rfc2822_require(expect_char(chars, after_name, ',')))
@@ -238,9 +259,7 @@ pub fn parse_rfc2822_lenient(
   }
   let p13 = rfc2822_require(require_whitespace(chars, p12))
   let (offset_secs, p14) = rfc2822_require(parse_obsolete_zone(chars, p13))
-  if skip_comments(chars, p14) != chars.length() {
-    raise InvalidRfc2822
-  }
+  let end = skip_comments(chars, p14)
   let date = rfc2822_require(
     @core.NaiveDate::from_ymd(year, month.number(), day),
   )
@@ -249,9 +268,5 @@ pub fn parse_rfc2822_lenient(
     _ => ()
   }
   let time = rfc2822_require(@core.NaiveTime::from_hms(hour, minute, second))
-  let offset = rfc2822_require(@tz.FixedOffset::east(offset_secs))
-  @tz.DateTime::from_utc(
-    @core.NaiveDateTime::new(date, time).sub_seconds(offset_secs.to_int64()),
-    offset,
-  )
+  (date, time, offset_secs, end)
 }
