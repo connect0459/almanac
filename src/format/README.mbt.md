@@ -13,6 +13,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `parse_date_time_in` | Parse a zone-less string and resolve it as wall-clock time in a given `TimeZone`, surfacing DST ambiguity as `MappedLocalTime` |
 | `parse_date_and_remainder`/`parse_time_and_remainder`/`parse_date_time_and_remainder`/`parse_date_time_fixed_offset_and_remainder`/`parse_date_time_in_and_remainder` | Like each `parse_*` above, but return the unparsed tail instead of rejecting trailing input |
 | `Parsed`/`parse_items`/`parse_items_and_remainder` | Walk a pre-tokenized `Item` sequence against input into a `Parsed` whose fields are not exposed one by one, then resolve it with `to_date`/`to_time`/`to_date_time`/`to_date_time_fixed_offset`/`to_date_time_in`, for building custom parsers on the engine's resolution rules |
+| `Locale`/`Locale::new`/`Locale::posix` | The names and layouts behind `%A %a %B %b %p %P %x %X %c %r`; every `format_*`, `parse_*`, `*_items` and `tokenize` function takes an optional `locale` argument that defaults to `Locale::posix()`; see [Locales](#locales) |
 | `format_date_items`/`format_time_items`/`format_date_time_items`/`format_date_time_tz_items` | `format_*` taking a pre-tokenized `Item` sequence, so a format reused for many values is tokenized once |
 | `to_rfc3339`/`to_rfc3339_opts`/`parse_rfc3339` | Dedicated RFC 3339 fast path, bypassing the specifier engine; `to_rfc3339_opts` picks the fractional digits (`SecondsFormat`) and `Z` versus `+00:00` |
 | `to_rfc2822`/`parse_rfc2822` | Dedicated RFC 2822 fast path (e.g. `"Tue, 1 Jul 2003 10:52:37 +0200"`), bypassing the specifier engine |
@@ -22,6 +23,32 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `parse_fixed_offset` | Reads a `FixedOffset` from offset text (`"+09:00"`, `"+0900"`, `"+09"`, `"+09:00:30"`, `"Z"`); the inverse of `FixedOffset`'s `Show` |
 | `parse_date_default`/`parse_time_default`/`parse_date_time_default`/`parse_date_time_utc_default`/`parse_date_time_fixed_offset_default` | One-argument parsers that read the layout each type's `Show` renders (`2024-03-05`, `09:05:07.500`, `2024-03-05 09:05:07.500`, `... UTC`, `... +09:00`); the inverse of `Show`, so every rendered value reads back |
 | `ANSIC`/`UNIX_DATE`/`RUBY_DATE`/`KITCHEN`/`STAMP`/`STAMP_MILLI`/`STAMP_MICRO`/`STAMP_NANO`/`DATE_ONLY`/`TIME_ONLY`/`DATE_TIME` | Named convenience format strings — pass one to `format_*`/`parse_*` like any other format string |
+
+## Locales
+
+A `Locale` supplies the names and layouts behind the text-bearing specifiers. Build one with `Locale::new`, which takes the twelve long and short month names (from January), the seven long and short weekday names (from Monday), the AM and PM names, and four layouts: what `%x` (date), `%X` (time), `%c` (date-time) and `%r` (12-hour time) expand to. Pass it as the `locale` argument of `format_*`, `parse_*`, `format_*_items`, `parse_items`, `parse_items_and_remainder` and `tokenize`; omitting it means `Locale::posix()`, the English names with `AM`/`PM`.
+
+- `Locale::new` raises `LocaleError` for a wrong number of names, an empty name, an empty layout, one name shared by two months or two weekdays, equal day-period names (ignoring ASCII case), and a layout that is not a valid format string or uses `%x`, `%X`, `%c` or `%r` (which would expand into itself).
+- On parse, month and weekday names are matched exactly and day-period names ignoring ASCII case; when several names fit at the same position the longest wins (`月曜日` over `月`).
+- The specifiers that name a month, weekday or day period (`%A`, `%a`, `%B`, `%b`, `%h`, `%p`, `%P`) and the four layouts follow the locale, and so does any specifier that expands to them: `%v` (`%e-%b-%Y`) renders and reads the locale's short month name. `%D`, `%F`, `%T`, `%R`, `%+`, the RFC 2822, RFC 3339 and HTTP date functions, and the numeric specifiers (decimal point, digits, first day of the week) do not change with the locale.
+- `almanac` bundles only `Locale::posix()`; build other locales with `Locale::new` from your own data.
+
+```mbt nocheck
+let japanese = @format.Locale::new(
+  long_months=["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
+  short_months=["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
+  long_weekdays=["月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日", "日曜日"],
+  short_weekdays=["月", "火", "水", "木", "金", "土", "日"],
+  am="午前",
+  pm="午後",
+  date_format="%Y/%m/%d",
+  time_format="%H:%M:%S",
+  date_time_format="%Y年%m月%d日 %A %H:%M:%S",
+  time_format_12h="%p%I時%M分%S秒",
+)
+let date = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
+@format.format_date(date, "%B%d日 %A", locale=japanese) // "3月05日 火曜日"
+```
 
 ## Supported specifiers
 
@@ -42,15 +69,15 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%.3f` | Dot-prefixed fractional second, milliseconds | A dot then exactly 3 digits, truncated (not rounded), present even for a whole second (`.000`); on parse the dot and all 3 digits are mandatory, unlike the optional `%.f` |
 | `%.6f` | Dot-prefixed fractional second, microseconds | Like `%.3f` with 6 digits |
 | `%.9f` | Dot-prefixed fractional second, nanoseconds | Like `%.3f` with 9 digits |
-| `%A` | Long weekday name | e.g. `"Monday"` |
-| `%a` | Short weekday name | e.g. `"Mon"` |
-| `%B` | Long month name | e.g. `"March"`; on parse, resolves `%m`'s field directly |
-| `%b`, `%h` | Short month name | e.g. `"Mar"`; on parse, resolves `%m`'s field directly |
+| `%A` | Long weekday name | e.g. `"Monday"`; the locale's name when a `locale` is given |
+| `%a` | Short weekday name | e.g. `"Mon"`; the locale's name when a `locale` is given |
+| `%B` | Long month name | e.g. `"March"`; on parse, resolves `%m`'s field directly; the locale's name when a `locale` is given |
+| `%b`, `%h` | Short month name | e.g. `"Mar"`; on parse, resolves `%m`'s field directly; the locale's name when a `locale` is given |
 | `%I` | Hour, 12-hour clock | Zero-padded, `01`..`12`; combines with `%p`/`%P` on parse (cross-checked against `%H`, if also present) |
 | `%l` | Hour, 12-hour clock | Space-padded, `" 1"`..`"12"`; parses the same field as `%I`, tolerating a blank or zero leading digit |
 | `%k` | Hour, 24-hour clock | Space-padded, `" 0"`..`"23"`; parses the same field as `%H`, tolerating a blank or zero leading digit |
-| `%P` | am/pm marker, lowercase | `"am"`/`"pm"`; parses `%p`/`%P` case-insensitively either way |
-| `%p` | am/pm marker, uppercase | `"AM"`/`"PM"`; see `%P` |
+| `%P` | am/pm marker, lowercase | `"am"`/`"pm"` (the ASCII lowercase of the locale's name when a `locale` is given); parses `%p`/`%P` case-insensitively either way |
+| `%p` | am/pm marker, uppercase | `"AM"`/`"PM"` (the locale's name as given when a `locale` is given); see `%P` |
 | `%s` | Unix timestamp | The UTC instant's seconds since the epoch (unaffected by `format_date_time_tz`'s local zone shift). On parse, a signed run of digits naming that instant: date-time resolvers derive the value from it (a `%f`-family field gives the sub-second part) and cross-check every other date or time field against the reading it has in the target offset (`InconsistentFields` on a mismatch); `to_date_time_fixed_offset` still needs `%z` (`IncompleteFields` without it), `to_date_time_in` takes the offset from the zone, and `to_date`/`to_time` ignore it. More than 18 digits, or an instant no date can hold, is `FieldOutOfRange` |
 | `%G` | ISO week-based year | Zero-padded to 4 digits on format, with `%Y`'s sign rules (`-` negative, `+` beyond 9999); on parse, read like `%Y` (signed: any number of digits; unsigned: at most 4). With `%V` and a weekday, constructs the date via ISO week-date construction; otherwise cross-checked against the resolved date |
 | `%g` | ISO week-based year, no century | Zero-padded to 2 digits, always `00`..`99` (floor modulo, so year `-7` renders `93`); on parse, a lone `%g` uses the same pivot as `%y` (below 70 is 20xx, otherwise 19xx), and is cross-checked against `%G` when both are present |
@@ -71,12 +98,13 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%#z` | Timezone offset, permissive | Parse-only: accepts `±HHMM`, `±HH:MM`, hours-only `±HH`, or `Z`/`z` for a zero offset, with any run of `:`/space/tab (or none) between the hour and minute digits; no seconds field |
 | `%F` | `%Y-%m-%d` | Expands to that specifier sequence |
 | `%T` | `%H:%M:%S` | Expands to that specifier sequence |
-| `%D`, `%x` | `%m/%d/%y` | Expands to that specifier sequence (no locale support, so `%x` is identical to `%D`) |
-| `%v` | `%e-%b-%Y` | VMS-style date, e.g. `" 5-Mar-2024"`; expands to that specifier sequence |
+| `%D` | `%m/%d/%y` | Expands to that specifier sequence, whatever the locale |
+| `%x` | The locale's date layout | `%m/%d/%y` in `Locale::posix()`; see [Locales](#locales) |
+| `%v` | `%e-%b-%Y` | VMS-style date, e.g. `" 5-Mar-2024"`; expands to that specifier sequence, so its month follows the locale |
 | `%R` | `%H:%M` | Expands to that specifier sequence; carries no seconds, which `parse_time` reads as zero (add `%S` for a seconds field, or see `%X`) |
-| `%X` | `%H:%M:%S` | Expands to that specifier sequence (identical to `%T`) |
-| `%r` | `%I:%M:%S %p` | Expands to that specifier sequence |
-| `%c` | `%a %b %e %H:%M:%S %Y` | ctime-style, e.g. `"Tue Mar  5 09:05:30 2024"`; expands to that specifier sequence |
+| `%X` | The locale's time layout | `%H:%M:%S` in `Locale::posix()` |
+| `%r` | The locale's 12-hour time layout | `%I:%M:%S %p` in `Locale::posix()` |
+| `%c` | The locale's date-time layout | `%a %b %e %H:%M:%S %Y` in `Locale::posix()`, ctime-style, e.g. `"Tue Mar  5 09:05:30 2024"` |
 | `%+` | RFC 3339 date-time | A whole `DateTime`, rendered/parsed via the dedicated `to_rfc3339`/`parse_rfc3339` fast path rather than a sequence of simpler specifiers; needs a date, time, and offset together, like `%Z`/`%z` |
 | `%%` | Literal `%` | |
 | `%n` | Newline | Renders a single `\n`; on parse matches exactly one `\n` (expands to a literal item) |
