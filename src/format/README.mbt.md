@@ -229,6 +229,8 @@ The `STAMP*` family (no year) doesn't carry enough fields to round-trip through 
 
 The token types produced by `tokenize`.
 
+`Rfc2822` is the one `Item` that no format-string specifier produces; build it directly for `format_date_time_tz_items`, `parse_items` and the like. It renders as `to_rfc2822` does and reads as `parse_rfc2822_lenient` does (the obsolete syntax, and a trailing run of comments, included); like `%+`, it needs a date, time and offset together, a year outside `0..=9999` raises `InvalidRfc2822` on render, and text that is not an RFC 2822 date-time raises `InputMismatch` on parse.
+
 ```mbt nocheck
 ///|
 pub(all) enum Item {
@@ -236,6 +238,7 @@ pub(all) enum Item {
   Numeric(Numeric)
   Fixed(Fixed)
   Rfc3339
+  Rfc2822
   PaddedNumeric(Numeric, PadMode)
 }
 
