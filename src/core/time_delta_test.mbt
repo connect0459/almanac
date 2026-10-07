@@ -539,6 +539,75 @@ test "as_hours_double and as_minutes_double stay finite for the extreme duration
 }
 
 ///|
+test "as_hours_double is exact for 1e12 whole hours in either sign" {
+  assert_eq(
+    @core.TimeDelta::hours(1_000_000_000_000L).unwrap().as_hours_double(),
+    1.0e12,
+  )
+  assert_eq(
+    @core.TimeDelta::hours(-1_000_000_000_000L).unwrap().as_hours_double(),
+    -1.0e12,
+  )
+}
+
+///|
+test "as_minutes_double is exact for 1e14 whole minutes in either sign" {
+  assert_eq(
+    @core.TimeDelta::minutes(100_000_000_000_000L).unwrap().as_minutes_double(),
+    1.0e14,
+  )
+  assert_eq(
+    @core.TimeDelta::minutes(-100_000_000_000_000L).unwrap().as_minutes_double(),
+    -1.0e14,
+  )
+}
+
+///|
+test "as_hours_double and as_minutes_double ignore a single nanosecond on top of 9e15 seconds" {
+  let delta = @core.TimeDelta::new(9_000_000_000_000_000L, 1).unwrap()
+  assert_eq(delta.as_hours_double(), 9_000_000_000_000_000.0 / 3600.0)
+  assert_eq(delta.as_minutes_double(), 9_000_000_000_000_000.0 / 60.0)
+}
+
+///|
+test "as_hours_double and as_minutes_double round a fraction above half a second up to the next whole second at 9e15 seconds" {
+  let below_half = @core.TimeDelta::new(9_000_000_000_000_000L, 499_999_999).unwrap()
+  let above_half = @core.TimeDelta::new(9_000_000_000_000_000L, 999_999_999).unwrap()
+  assert_eq(below_half.as_hours_double(), 9_000_000_000_000_000.0 / 3600.0)
+  assert_eq(above_half.as_hours_double(), 9_000_000_000_000_001.0 / 3600.0)
+  assert_eq(below_half.as_minutes_double(), 9_000_000_000_000_000.0 / 60.0)
+  assert_eq(above_half.as_minutes_double(), 9_000_000_000_000_001.0 / 60.0)
+}
+
+///|
+test "as_hours_double and as_minutes_double of the extreme durations match their exact values within a relative error of 1e-15" {
+  let max_hours = @core.TimeDelta::max_value().as_hours_double()
+  let max_minutes = @core.TimeDelta::max_value().as_minutes_double()
+  assert_true(
+    ((max_hours - 2562047788015.2153) / 2562047788015.2153).abs() < 1.0e-15,
+  )
+  assert_true(
+    ((max_minutes - 153722867280912.9) / 153722867280912.9).abs() < 1.0e-15,
+  )
+  assert_eq(@core.TimeDelta::min_value().as_hours_double(), -max_hours)
+  assert_eq(@core.TimeDelta::min_value().as_minutes_double(), -max_minutes)
+}
+
+///|
+test "as_hours_double and as_minutes_double resolve a single positive nanosecond" {
+  let one = @core.TimeDelta::nanoseconds(1L).unwrap()
+  assert_true((one.as_minutes_double() - 1.0 / 60.0e9).abs() < 1.0e-24)
+  assert_true((one.as_hours_double() - 1.0 / 3600.0e9).abs() < 1.0e-24)
+}
+
+///|
+test "as_hours_double and as_minutes_double of a single negative nanosecond are off by about 5e-19 minutes and 8e-21 hours" {
+  let minus_one = @core.TimeDelta::nanoseconds(-1L).unwrap()
+  assert_true((minus_one.as_minutes_double() + 1.0 / 60.0e9).abs() < 1.0e-18)
+  assert_true((minus_one.as_hours_double() + 1.0 / 3600.0e9).abs() < 2.0e-20)
+}
+
+///|
 test "equal durations hash equally and work as map keys" {
   let a = @core.TimeDelta::milliseconds(1_500L).unwrap()
   let b = @core.TimeDelta::new(1L, 500_000_000).unwrap()
