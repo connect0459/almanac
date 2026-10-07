@@ -87,27 +87,31 @@ fn parse_name(chars : Array[Char], pos : Int) -> (String, Int)? {
 }
 
 ///|
-fn digits_to_int(chars : Array[Char], start : Int, end : Int) -> Int {
-  for i = start, acc = 0 {
-    if i >= end {
-      break acc
-    }
-    continue i + 1, acc * 10 + (chars[i].to_int() - '0'.to_int())
-  }
-}
-
-///|
-fn parse_uint(chars : Array[Char], pos : Int) -> (Int, Int)? {
-  for i = pos {
+fn parse_uint(
+  chars : Array[Char],
+  pos : Int,
+  min : Int,
+  max : Int,
+) -> (Int, Int)? {
+  for i = pos, acc = 0 {
     if i < chars.length() && is_ascii_digit(chars[i]) {
-      continue i + 1
-    } else if i > pos {
-      break Some((digits_to_int(chars, pos, i), i))
+      let next = acc * 10 + (chars[i].to_int() - '0'.to_int())
+      if next > max {
+        break None
+      }
+      continue i + 1, next
+    } else if i > pos && acc >= min {
+      break Some((acc, i))
     } else {
       break None
     }
   }
 }
+
+///|
+/// The largest hour count accepted in an offset or rule time (`24 * 7`, the
+/// tzdata extension of POSIX's `0..=24`).
+const MAX_OFFSET_HOURS : Int = 168
 
 ///|
 /// Parses a POSIX offset/time field: `[+-]hh[:mm[:ss]]`, seconds.
@@ -119,11 +123,11 @@ fn parse_offset_seconds(chars : Array[Char], pos : Int) -> (Int, Int)? {
   } else {
     (1, pos)
   }
-  match parse_uint(chars, p) {
+  match parse_uint(chars, p, 0, MAX_OFFSET_HOURS) {
     None => None
     Some((hh, p1)) => {
       let (mm, p2) = if p1 < chars.length() && chars[p1] == ':' {
-        match parse_uint(chars, p1 + 1) {
+        match parse_uint(chars, p1 + 1, 0, 59) {
           None => (0, p1)
           Some(pair) => pair
         }
@@ -131,7 +135,7 @@ fn parse_offset_seconds(chars : Array[Char], pos : Int) -> (Int, Int)? {
         (0, p1)
       }
       let (ss, p3) = if p2 < chars.length() && chars[p2] == ':' {
-        match parse_uint(chars, p2 + 1) {
+        match parse_uint(chars, p2 + 1, 0, 59) {
           None => (0, p2)
           Some(pair) => pair
         }
@@ -148,20 +152,20 @@ fn parse_rule_date(chars : Array[Char], pos : Int) -> (RuleDate, Int)? {
   if pos >= chars.length() {
     None
   } else if chars[pos] == 'J' {
-    match parse_uint(chars, pos + 1) {
+    match parse_uint(chars, pos + 1, 1, 365) {
       None => None
       Some((n, p)) => Some((JulianNoLeap(n), p))
     }
   } else if chars[pos] == 'M' {
-    match parse_uint(chars, pos + 1) {
+    match parse_uint(chars, pos + 1, 1, 12) {
       None => None
       Some((m, p1)) =>
         if p1 < chars.length() && chars[p1] == '.' {
-          match parse_uint(chars, p1 + 1) {
+          match parse_uint(chars, p1 + 1, 1, 5) {
             None => None
             Some((w, p2)) =>
               if p2 < chars.length() && chars[p2] == '.' {
-                match parse_uint(chars, p2 + 1) {
+                match parse_uint(chars, p2 + 1, 0, 6) {
                   None => None
                   Some((d, p3)) => Some((MonthWeekDay(m, w, d), p3))
                 }
@@ -174,7 +178,7 @@ fn parse_rule_date(chars : Array[Char], pos : Int) -> (RuleDate, Int)? {
         }
     }
   } else {
-    match parse_uint(chars, pos) {
+    match parse_uint(chars, pos, 0, 365) {
       None => None
       Some((n, p)) => Some((JulianWithLeap(n), p))
     }
