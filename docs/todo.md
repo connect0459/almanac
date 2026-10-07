@@ -1,5 +1,7 @@
 # almanac Implementation Plan
 
+> This task list tracks work only up to the `v0.1.0` publish. Later work is tracked in GitHub Issues. For the latest specification, see each package's `README.mbt.md` and its source code.
+
 Reference target: **chrono/time**-equivalent functionality (calendar arithmetic, `Duration`/`Span` types, IANA timezone database support), studied from two reference implementations:
 
 - the Rust `chrono` crate
