@@ -27,6 +27,51 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-07
+
+### Added
+
+#### Calendar and clock values (`connect0459/almanac/core`)
+
+- The open `Datelike` and `Timelike` traits, implemented by `NaiveDate`, `NaiveTime`, `NaiveDateTime` and `DateTime[Tz]`; any method added later has a default implementation, so existing implementations keep compiling
+- `WeekdaySet::from_iter`, `TimeDelta::of` and `TimeDelta::seconds_of_day`
+- `NaiveWeek::checked_first_day`, `checked_last_day` and `checked_days`, which stay total at the edge of the date range
+
+#### Time zones (`connect0459/almanac/tz`)
+
+- `Local` on the `js`, `wasm` and `wasm-gc` backends, in addition to native; on native it honours colon-prefixed and absolute-path `TZ` values
+- `Location::load_system`, `Location::zone_names` and `Location::tzdata_version`; native targets also read `ZONEINFO` and the system zoneinfo directory
+- `Location::load` memoizes each zone name
+- An unnamed `FixedZone` renders its offset text as the abbreviation, and `%Z` reads that text back
+
+#### Formatting and parsing (`connect0459/almanac/format`)
+
+- `Locale`, with a `locale?` argument on every `format_*`, `parse_*` and `tokenize` function, so names, day periods and `%x`, `%X`, `%c` and `%r` follow the locale
+- `parse_iso8601`, a lenient ISO 8601 reader returning `Iso8601`
+- `parse_rfc2822_lenient` for RFC 2822 obsolete syntax, and `Item::Rfc2822` for item sequences
+- `Parsed::new`, the `Parsed::set_*` methods and `Parsed::with_default_year` for layouts without a year
+- ASN.1 `UTCTime` and `GeneralizedTime` through `parse_utc_time`, `parse_generalized_time`, `to_utc_time` and `to_generalized_time`
+- ISO 8601 durations through `parse_iso8601_duration` and `to_iso8601_duration`
+
+#### Scheduling (`connect0459/almanac/cron`)
+
+- The `@annually` and `@midnight` shorthands; shorthands match in any case
+
+### Changed
+
+- **Breaking:** `Item` gains the `Rfc2822` variant and `FormatError` gains `InvalidIso8601` and `InvalidAsn1Time`; an exhaustive `match` on either type must handle the new cases
+- **Breaking:** `parse_rfc2822` now checks the day of the week against the date and rejects long month names; use `parse_rfc2822_lenient` to accept them
+- **Breaking:** the `Debug` output of `NaiveWeek` shows its first day alone
+- **Breaking:** the `format_*`, `parse_*` and `tokenize` functions take an optional `locale?` argument; calls that omit it behave as before, but code that passes one of these functions around as a value sees a different type
+
+### Fixed
+
+- `NaiveDate::week`, `NaiveWeek::first_day`, `last_day` and `days` no longer abort for a week that touches either end of the date range; `first_day`, `last_day` and `days` still abort where the result would leave the range, and the new `checked_*` methods return `None` instead
+- An unsigned `%Y` or `%G` reads at most 4 digits when parsing
+- `%y`, `%g` and `%C` of a negative year are rendered with floor division
+- POSIX TZ rules and offsets are validated
+- The zone in effect before the first transition is chosen as Go and tzcode choose it
+
 ## [0.1.0] - 2026-10-05
 
 ### Added
@@ -60,5 +105,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
-[Unreleased]: <https://github.com/connect0459/almanac/compare/v0.1.0...HEAD>
+[Unreleased]: <https://github.com/connect0459/almanac/compare/v0.2.0...HEAD>
+[0.2.0]: <https://github.com/connect0459/almanac/compare/v0.1.0...v0.2.0>
 [0.1.0]: <https://github.com/connect0459/almanac/releases/tag/v0.1.0>
