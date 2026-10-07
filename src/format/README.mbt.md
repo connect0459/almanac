@@ -26,7 +26,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 
 | Specifier | Field | Description |
 | :--- | :--- | :--- |
-| `%Y` | Year | Zero-padded to 4 digits on format, `-` for a negative year and an explicit `+` beyond 9999 (`0024`, `-0001`, `+10000`, as ISO 8601 requires and as `NaiveDate`'s `Show` renders); variable-width on parse, accepting an optional `-` or `+` and an unsigned year beyond 9999 |
+| `%Y` | Year | Zero-padded to 4 digits on format, `-` for a negative year and an explicit `+` beyond 9999 (`0024`, `-0001`, `+10000`, as ISO 8601 requires and as `NaiveDate`'s `Show` renders); on parse, an optional `-` or `+` followed by any number of digits, or at most 4 digits when unsigned (so `%Y%m%d` reads `20240305`; a year beyond 9999 needs its sign) |
 | `%m` | Month | Zero-padded, `01`..`12` |
 | `%d` | Day | Zero-padded, `01`..`31` |
 | `%j` | Ordinal | Day of year, zero-padded to 3 digits |
@@ -51,7 +51,7 @@ strftime-style formatting and parsing for `core`/`tz` types. Import `connect0459
 | `%P` | am/pm marker, lowercase | `"am"`/`"pm"`; parses `%p`/`%P` case-insensitively either way |
 | `%p` | am/pm marker, uppercase | `"AM"`/`"PM"`; see `%P` |
 | `%s` | Unix timestamp | The UTC instant's seconds since the epoch (unaffected by `format_date_time_tz`'s local zone shift). On parse, a signed run of digits naming that instant: date-time resolvers derive the value from it (a `%f`-family field gives the sub-second part) and cross-check every other date or time field against the reading it has in the target offset (`InconsistentFields` on a mismatch); `to_date_time_fixed_offset` still needs `%z` (`IncompleteFields` without it), `to_date_time_in` takes the offset from the zone, and `to_date`/`to_time` ignore it. More than 18 digits, or an instant no date can hold, is `FieldOutOfRange` |
-| `%G` | ISO week-based year | Zero-padded to 4 digits on format, with `%Y`'s sign rules (`-` negative, `+` beyond 9999); on parse, an optionally-signed greedy field like `%Y`. With `%V` and a weekday, constructs the date via ISO week-date construction; otherwise cross-checked against the resolved date |
+| `%G` | ISO week-based year | Zero-padded to 4 digits on format, with `%Y`'s sign rules (`-` negative, `+` beyond 9999); on parse, read like `%Y` (signed: any number of digits; unsigned: at most 4). With `%V` and a weekday, constructs the date via ISO week-date construction; otherwise cross-checked against the resolved date |
 | `%g` | ISO week-based year, no century | Zero-padded to 2 digits; on parse, a lone `%g` uses the same pivot as `%y` (below 70 is 20xx, otherwise 19xx), and is cross-checked against `%G` when both are present |
 | `%V` | ISO week number | Zero-padded, `01`..`53`; on parse, combined with `%G`/`%g` and a weekday, or else cross-checked against the resolved date |
 | `%C` | Century | Zero-padded to 2 digits (`year / 100`); combines with `%y` on parse (`%y` alone is interpreted via the conventional two-digit-year pivot: `< 70` -> 20xx, `>= 70` -> 19xx); cross-checked against `%Y`, if also present |
