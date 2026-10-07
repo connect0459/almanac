@@ -142,20 +142,25 @@ fn match_literal(chars : Array[Char], pos : Int, literal : String) -> Int? {
 }
 
 ///|
-/// Parses `%Y`'s variable-width, optionally-signed decimal field: an
-/// optional `-` or `+`, then one or more digits, greedily. Unlike every other
-/// numeric specifier, `%Y`'s render width isn't fixed (a year can exceed
-/// 4 digits), so it isn't parsed via `parse_fixed_digits`.
-fn parse_signed_greedy_digits(chars : Array[Char], pos : Int) -> (Int, Int)? {
-  let (sign, p0) = if pos < chars.length() && chars[pos] == '-' {
-    (-1, pos + 1)
+let unsigned_year_max_digits : Int = 4
+
+///|
+/// Parses the optionally-signed year field shared by `%Y` and `%G`. An
+/// explicit `-` or `+` is followed by any number of digits, since a year can
+/// exceed 4 digits when rendered; without a sign at most 4 digits are read,
+/// so a compact format such as `%Y%m%d` can split `20240305`.
+fn parse_year_digits(chars : Array[Char], pos : Int) -> (Int, Int)? {
+  let (sign, p0, signed) = if pos < chars.length() && chars[pos] == '-' {
+    (-1, pos + 1, true)
   } else if pos < chars.length() && chars[pos] == '+' {
-    (1, pos + 1)
+    (1, pos + 1, true)
   } else {
-    (1, pos)
+    (1, pos, false)
   }
   for i = p0, acc = 0, count = 0 {
-    if i < chars.length() && is_ascii_digit(chars[i]) {
+    if (signed || count < unsigned_year_max_digits) &&
+      i < chars.length() &&
+      is_ascii_digit(chars[i]) {
       continue i + 1, acc * 10 + digit_value(chars[i]), count + 1
     } else if count == 0 {
       break None
@@ -658,7 +663,7 @@ fn apply_item(
         }
       }
     Numeric(Year) =>
-      match parse_signed_greedy_digits(chars, pos) {
+      match parse_year_digits(chars, pos) {
         None => raise InputMismatch
         Some((value, p)) =>
           ({ ..parsed, year: merge_field(parsed.year, value), }, p)
@@ -828,7 +833,7 @@ fn apply_item(
           ({ ..parsed, timestamp: merge_field(parsed.timestamp, value), }, p)
       }
     Numeric(IsoYear) =>
-      match parse_signed_greedy_digits(chars, pos) {
+      match parse_year_digits(chars, pos) {
         None => raise InputMismatch
         Some((value, p)) =>
           ({ ..parsed, iso_year: merge_field(parsed.iso_year, value), }, p)

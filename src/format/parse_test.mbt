@@ -1657,15 +1657,65 @@ test "parse_date reads a year written with an explicit plus sign" {
 }
 
 ///|
-test "parse_date still reads an unsigned year beyond 9999 and a negative year" {
-  assert_eq(
-    @format.parse_date("10000-01-01", "%F"),
-    @core.NaiveDate::from_ymd(10000, 1, 1).unwrap(),
-  )
+test "parse_date still reads a negative year" {
   assert_eq(
     @format.parse_date("-0001-12-31", "%F"),
     @core.NaiveDate::from_ymd(-1, 12, 31).unwrap(),
   )
+}
+
+///|
+test "parse_date reads a compact year-month-day without separators" {
+  assert_eq(
+    @format.parse_date("20240305", "%Y%m%d"),
+    @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+  )
+}
+
+///|
+test "parse_date reads a compact ISO week date without separators" {
+  let date = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
+  assert_eq(@format.parse_date("2024102", "%G%V%u"), date)
+}
+
+///|
+test "parse_date rejects an unsigned year of more than 4 digits" {
+  for input in ["10000-01-01", "123456-01-01"] {
+    try @format.parse_date(input, "%F") |> ignore catch {
+      @format.InputMismatch => ()
+      _ => fail("expected InputMismatch for \{input}")
+    } noraise {
+      _ => fail("expected parse_date to reject \{input}")
+    }
+  }
+}
+
+///|
+test "parse_date rejects an unsigned ISO year of more than 4 digits" {
+  try @format.parse_date("123456-W01-1", "%G-W%V-%u") |> ignore catch {
+    @format.InputMismatch => ()
+    _ => fail("expected InputMismatch")
+  } noraise {
+    _ => fail("expected an unsigned 6-digit ISO year to be rejected")
+  }
+}
+
+///|
+test "parse_date reads an explicitly signed ISO year of more than 4 digits" {
+  let date = @core.NaiveDate::from_ymd(123456, 6, 15).unwrap()
+  assert_eq(
+    @format.parse_date("+123456-W24-3", "%G-W%V-%u").year(),
+    date.year(),
+  )
+}
+
+///|
+test "parse_date cannot split a signed year from the digits that follow it" {
+  try @format.parse_date("+20240305", "%Y%m%d") |> ignore catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected a signed year to consume every following digit")
+  }
 }
 
 ///|
@@ -1767,7 +1817,7 @@ test "a time still needs its hour and its minute: only the seconds may be omitte
 
 ///|
 test "parse_date rejects a year outside NaiveDate's range instead of reading a wrapped date" {
-  for input in ["6000000-06-15", "+6000000-06-15", "-6000000-06-15"] {
+  for input in ["+6000000-06-15", "-6000000-06-15"] {
     try @format.parse_date(input, "%Y-%m-%d") |> ignore catch {
       @format.FieldOutOfRange => ()
       _ => fail("expected FieldOutOfRange for \{input}")
