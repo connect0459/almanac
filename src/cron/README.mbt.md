@@ -31,7 +31,7 @@ Fields are separated by runs of spaces or tabs. A five-field expression fires at
 | month | `1..=12` | `JAN`..`DEC` |
 | day of week | `0..=7` (`0` and `7` are Sunday), `?` | `SUN`..`SAT` |
 
-Each field is a comma list of `*`, `n`, `a-b`, `*/n` and `a-b/n` (`n` in a step is at least `1`); names are case-insensitive and may form ranges. `?` is `*` and is accepted only in the two day fields. `a/n` and ranges that wrap (`5-1`) are rejected. The shorthands are `@yearly` (`0 0 1 1 *`), `@monthly` (`0 0 1 * *`), `@weekly` (`0 0 * * 0`), `@daily` (`0 0 * * *`) and `@hourly` (`0 * * * *`).
+Each field is a comma list of `*`, `n`, `a-b`, `*/n` and `a-b/n` (`n` in a step is at least `1`); names are case-insensitive and may form ranges. `?` is `*` and is accepted only in the two day fields. `a/n` and ranges that wrap (`5-1`) are rejected. The shorthands, matched in either case, are `@yearly` or `@annually` (`0 0 1 1 *`), `@monthly` (`0 0 1 * *`), `@weekly` (`0 0 * * 0`), `@daily` or `@midnight` (`0 0 * * *`) and `@hourly` (`0 * * * *`).
 
 ## Day-of-month and day-of-week
 
