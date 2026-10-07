@@ -146,6 +146,16 @@ test "parse_rfc3339 truncates a fractional-second field with more than 9 digits"
 }
 
 ///|
+fn assert_rfc3339_rejected(bad : String) -> Unit raise {
+  try @format.parse_rfc3339(bad) |> ignore catch {
+    @format.InvalidRfc3339 => ()
+    _ => fail("expected InvalidRfc3339 for \{bad}")
+  } noraise {
+    _ => fail("expected parse_rfc3339 to reject \{bad}")
+  }
+}
+
+///|
 test "parse_rfc3339 rejects malformed input" {
   for
     bad in [
@@ -172,13 +182,32 @@ test "parse_rfc3339 rejects malformed input" {
        "2024-03-05T09:30:00+99:00", // offset magnitude out of range
        "2024-03-05T09:30:00Q", // unrecognized offset marker
     ] {
-    try @format.parse_rfc3339(bad) |> ignore catch {
-      @format.InvalidRfc3339 => ()
-      _ => fail("expected InvalidRfc3339 for \{bad}")
-    } noraise {
-      _ => fail("expected parse_rfc3339 to reject \{bad}")
-    }
+    assert_rfc3339_rejected(bad)
   }
+}
+
+///|
+test "parse_rfc3339 rejects out-of-range or non-canonical hour, fraction, offset and calendar fields" {
+  for
+    bad in [
+      "2000-01-01T1:12:34Z", "2000-01-01T00:00:00,000Z", "2000-01-01T00:00:00+24:00",
+      "2000-01-01T00:00:00+00:60", "2000-01-01T00:00:00+123:45", "2000-02-30T00:00:00Z",
+      "2023-02-29T00:00:00Z",
+    ] {
+    assert_rfc3339_rejected(bad)
+  }
+}
+
+///|
+test "parse_rfc3339 accepts the extreme offsets of +23:59 and -23:59" {
+  assert_eq(
+    @format.parse_rfc3339("2000-01-01T00:00:00+23:59").offset(),
+    @tz.FixedOffset::east(23 * 3600 + 59 * 60).unwrap(),
+  )
+  assert_eq(
+    @format.parse_rfc3339("2000-01-01T00:00:00-23:59").offset(),
+    @tz.FixedOffset::east(-(23 * 3600 + 59 * 60)).unwrap(),
+  )
 }
 
 ///|

@@ -538,5 +538,6 @@ Reference: a third feature-level gap survey against date/time libraries from oth
 ### Tests only (no behavior change)
 
 - [ ] Real-zone regression tests: negative DST (Dublin), negative rule times such as `M3.5.0/-1` (Nuuk), a southern zone without DST, a date-line skip, a slim TZif that relies on its footer, `PST8PDT` in 1918, `New_York` in 1900
-- [ ] Parse edge cases from Go's error tables for RFC 3339 (one-digit hour, comma fraction, `+24:00`, `+00:60`, `+123:45`, February 30 and February 29 in a non-leap year) and for `%j` against a mismatched date, `%z` range checks and `%Z` name shapes
+- [x] Parse edge cases from Go's error tables for RFC 3339 (one-digit hour, comma fraction, `+24:00`, `+00:60`, `+123:45`, February 30 and February 29 in a non-leap year)
+- [ ] Parse edge cases from Go's error tables for `%j` against a mismatched date, `%z` range checks and `%Z` name shapes
 - [ ] Large-value precision of `as_hours_double` and `as_minutes_double`
