@@ -185,3 +185,23 @@ test "tokenize has no specifier that produces Rfc2822" {
     assert_true(!@format.tokenize(spec).contains(@format.Rfc2822))
   }
 }
+
+///|
+test "Rfc2822 consumes a trailing comment before the next literal is matched" {
+  let items = [@format.Rfc2822, @format.Literal(" (")]
+  try
+    @format.parse_items("Tue, 1 Jul 2003 10:52:37 +0200 (x)", items) |> ignore
+  catch {
+    @format.InputTooShort => ()
+    _ => fail("expected InputTooShort")
+  } noraise {
+    _ => fail("expected the comment to be consumed by Rfc2822")
+  }
+}
+
+///|
+test "Rfc2822 leaves whitespace that does not precede a comment for the next literal" {
+  let items = [@format.Rfc2822, @format.Literal(" end")]
+  let parsed = @format.parse_items("Tue, 1 Jul 2003 10:52:37 +0200 end", items)
+  assert_eq(parsed.to_date_time_fixed_offset(), rfc2822_sample())
+}
