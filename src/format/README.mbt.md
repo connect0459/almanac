@@ -207,7 +207,7 @@ Convenience format-string constants, declared `const` (hence the upper-case name
 
 The RFC shapes have no constants: `to_rfc2822`/`parse_rfc2822` and `to_rfc3339`/`parse_rfc3339` are the exact implementations, and a caller who wants another shape writes its format string (for example `"%a, %d %b %Y %H:%M:%S %z"`, the RFC 2822 layout with a numeric offset).
 
-The `STAMP*` family (no year) doesn't carry enough fields to round-trip through the matching `parse_*` function on its own — meant for display alongside separately-known context. `DATE_ONLY`/`TIME_ONLY` are self-sufficient for parsing, and so is `KITCHEN` for a time on the minute, since `parse_time` reads a time without seconds as having zero seconds (a value with seconds loses them when rendered with `KITCHEN`).
+The `STAMP*` family (no year) doesn't carry enough fields to round-trip through the matching `parse_*` function on its own; read it with `parse_items` and `Parsed::with_default_year`, which supplies the missing year. `DATE_ONLY`/`TIME_ONLY` are self-sufficient for parsing, and so is `KITCHEN` for a time on the minute, since `parse_time` reads a time without seconds as having zero seconds (a value with seconds loses them when rendered with `KITCHEN`).
 
 ### `tokenize`
 
@@ -219,6 +219,7 @@ The `STAMP*` family (no year) doesn't carry enough fields to round-trip through 
 | `parse_items_and_remainder(String, Array[Item])` | `-> (Parsed, String) raise FormatError` | Like `parse_items`, but returns leftover input instead of rejecting it |
 | `Parsed::to_date()` / `to_time()` / `to_date_time()` | `-> NaiveDate` / `NaiveTime` / `NaiveDateTime raise FormatError` | Resolve the accumulated fields; `IncompleteFields` if too few were parsed, `FieldOutOfRange` if a value is outside its range (an hour of 24, February 30), `InconsistentFields` if fields contradict each other. One `Parsed` resolves any number of ways |
 | `Parsed::utc_offset()` | `-> Int?` | The offset, in seconds, that a `%z`-family specifier read, or `None`; the raw reading, rejected only on resolution if beyond `±23:59:59`. Tells a caller whether to resolve with `to_date_time_fixed_offset` or `to_date_time_in` |
+| `Parsed::with_default_year(Int)` | `-> Parsed` | Returns a copy that reads the given year when the input named none (`%Y`, `%y`, `%C`, an ISO week year and `%s` are never overridden, and a partial year such as a lone `%C` is not completed), so a yearless layout such as `STAMP` resolves. The year still takes part in the usual checks: a leap day needs a leap year, and a weekday must match the date. The original `Parsed` is unchanged |
 | `Parsed::zone_name()` | `-> String?` | The text `%Z` read, as written and unvalidated, or `None`; otherwise visible only through `parse_date_time_in` |
 | `Parsed::to_date_time_fixed_offset()` | `-> DateTime[FixedOffset] raise FormatError` | Resolve the date, time and `%z` offset, reading the fields as that offset's local time |
 | `Parsed::to_date_time_in(Tz)` *(Tz : TimeZone)* | `-> MappedLocalTime[DateTime[Tz]] raise FormatError` | Resolve a zone-less reading in `tz`; see `parse_date_time_in` for `%Z` handling and the offset rejection |
