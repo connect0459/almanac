@@ -118,6 +118,30 @@ pub fn Location::load(name : String) -> Location? {
 }
 
 ///|
+/// The names of the zones embedded in the package, in ascending string
+/// order (by code unit). Names that the source tzdata tree linked to another
+/// zone are aliases and are not listed, though `Location::load` accepts
+/// them. Every listed name loads through `Location::load`. Each call
+/// returns a new array.
+pub fn Location::zone_names() -> Array[String] {
+  let names = []
+  for name, _ in tzdata_zones {
+    names.push(name)
+  }
+  names.sort()
+  names
+}
+
+///|
+/// The IANA tz database release the embedded zones were compiled from
+/// (e.g. `"2026c"`), or `"unknown"` if the snapshot was generated from a
+/// tree that named no release. `Location::load_system` may read newer
+/// host data than this release.
+pub fn Location::tzdata_version() -> String {
+  tzdata_release
+}
+
+///|
 fn is_safe_zone_name(name : String) -> Bool {
   name.length() > 0 &&
   !name.contains("..") &&

@@ -223,8 +223,10 @@ pub fn Location::to_repr(Self) -> @debug.Repr
 pub fn Location::to_string(Self) -> String
 pub fn Location::transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds
 pub fn Location::type_at(Self, @core.NaiveDateTime) -> LocalTimeType
+pub fn Location::tzdata_version() -> String
 pub fn Location::utc() -> Self
 pub fn Location::zone_name(Self, @core.NaiveDateTime) -> String
+pub fn Location::zone_names() -> Array[String]
 pub impl TimeZone for Location
 pub impl Show for Location
 

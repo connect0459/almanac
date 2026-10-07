@@ -4,6 +4,9 @@
 // Do not edit by hand; re-run the script to regenerate.
 
 ///|
+let tzdata_release : String = "2026c"
+
+///|
 let tzdata_zone_africa_abidjan_0 : Bytes = (
   [
     0x54, 0x5A, 0x69, 0x66, 0x32, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
