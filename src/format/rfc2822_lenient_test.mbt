@@ -38,7 +38,28 @@ fn assert_lenient_rejects(input : String) -> Unit raise {
 }
 
 ///|
-test "parse_rfc2822_lenient reads everything the strict parser reads" {
+test "parse_rfc2822_lenient reads back what to_rfc2822 renders" {
+  for
+    case in [
+      (2003, 7, 1, 8, 52, 37, 2 * 3600),
+      (2015, 2, 18, 23, 16, 9, 0),
+      (2024, 3, 5, 9, 30, 0, -5 * 3600),
+      (1999, 12, 31, 23, 59, 59, 9 * 3600),
+    ] {
+    let (year, month, day, hour, minute, second, offset_secs) = case
+    let dt = @tz.DateTime::from_utc(
+      @core.NaiveDateTime::new(
+        @core.NaiveDate::from_ymd(year, month, day).unwrap(),
+        @core.NaiveTime::from_hms(hour, minute, second).unwrap(),
+      ),
+      @tz.FixedOffset::east(offset_secs).unwrap(),
+    )
+    assert_eq(@format.parse_rfc2822_lenient(@format.to_rfc2822(dt)), dt)
+  }
+}
+
+///|
+test "parse_rfc2822_lenient reads a conforming date the way the strict parser does" {
   for
     input in [
       "Tue, 20 Jan 2015 17:35:20 -0800", "Wed, 18 Feb 2015 23:16:09 +0000", "Tue, 1 Jul 2003 10:52:37 +0200",
@@ -52,16 +73,33 @@ test "parse_rfc2822_lenient reads everything the strict parser reads" {
 }
 
 ///|
+test "parse_rfc2822_lenient rejects a day of week that disagrees with the date, which the strict parser ignores" {
+  let input = "Mon, 20 Jan 2015 17:35:20 -0800"
+  @format.parse_rfc2822(input) |> ignore
+  assert_lenient_rejects(input)
+}
+
+///|
+test "parse_rfc2822_lenient rejects a long day name, which the strict parser reads" {
+  let input = "Tuesday, 20 Jan 2015 17:35:20 -0800"
+  @format.parse_rfc2822(input) |> ignore
+  assert_lenient_rejects(input)
+}
+
+///|
+test "parse_rfc2822_lenient accepts leading whitespace but not trailing whitespace" {
+  let expected = lenient_expected(2015, 1, 20, 17, 35, 20, -8)
+  assert_lenient_reads(" \t\r\n Tue, 20 Jan 2015 17:35:20 -0800", expected)
+  assert_lenient_reads("  20 Jan 2015 17:35:20 -0800", expected)
+  assert_lenient_rejects("Tue, 20 Jan 2015 17:35:20 -0800 ")
+}
+
+///|
 test "parse_rfc2822_lenient treats the day of week as optional" {
   assert_lenient_reads(
     "20 Jan 2015 17:35:20 -0800",
     lenient_expected(2015, 1, 20, 17, 35, 20, -8),
   )
-}
-
-///|
-test "parse_rfc2822_lenient rejects a day of week that does not match the date" {
-  assert_lenient_rejects("Mon, 20 Jan 2015 17:35:20 -0800")
 }
 
 ///|
