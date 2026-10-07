@@ -112,6 +112,7 @@ An immutable set of `Weekday` values. Every mutating-looking operation (`insert`
 | `WeekdaySet::all()` | `-> Self` | The set containing all seven weekdays |
 | `WeekdaySet::single(Weekday)` | `-> Self` | A set containing exactly one weekday |
 | `WeekdaySet::from_array(Array[Weekday])` | `-> Self` | A set containing exactly the given weekdays |
+| `WeekdaySet::from_iter(Iter[Weekday])` | `-> Self` | A set containing exactly the weekdays the iterator yields |
 | `single_day()` | `-> Weekday?` | The one member, if the set has exactly one; `None` otherwise |
 | `insert(Weekday)` | `-> Self` | The set with a weekday added |
 | `remove(Weekday)` | `-> Self` | The set with a weekday removed |
