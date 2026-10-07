@@ -98,3 +98,26 @@ test "FixedZone resolves its own name as an abbreviation and no other" {
   assert_eq(jst().offset_from_abbreviation("JST", reading()), Some(offset))
   assert_eq(jst().offset_from_abbreviation("KST", reading()), None)
 }
+
+///|
+test "FixedZone with an empty name resolves its offset text as an abbreviation" {
+  let offset = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let unnamed = @tz.FixedZone::new("", offset)
+  assert_eq(unnamed.offset_from_abbreviation("+09:00", reading()), Some(offset))
+  assert_eq(unnamed.offset_from_abbreviation("+10:00", reading()), None)
+}
+
+///|
+test "FixedZone resolves an empty abbreviation to nothing" {
+  let offset = @tz.FixedOffset::east(9 * 3600).unwrap()
+  assert_eq(
+    @tz.FixedZone::new("", offset).offset_from_abbreviation("", reading()),
+    None,
+  )
+  assert_eq(jst().offset_from_abbreviation("", reading()), None)
+}
+
+///|
+test "FixedZone with a name does not resolve its offset text as an abbreviation" {
+  assert_eq(jst().offset_from_abbreviation("+09:00", reading()), None)
+}

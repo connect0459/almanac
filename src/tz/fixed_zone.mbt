@@ -81,7 +81,7 @@ pub impl TimeZone for FixedZone with fn offset_from_abbreviation(
   abbreviation,
   _near,
 ) {
-  if abbreviation == self.name {
+  if abbreviation == self.display_name() {
     Some(self.offset)
   } else {
     None
