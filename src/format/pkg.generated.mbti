@@ -142,6 +142,19 @@ pub fn FormatError::to_repr(Self) -> @debug.Repr
 pub fn FormatError::to_string(Self) -> String
 pub impl Show for FormatError
 
+pub(all) suberror LocaleError {
+  InvalidMonthNames
+  InvalidWeekdayNames
+  InvalidAmPmNames
+  InvalidPattern(String)
+} derive(Eq, @debug.Debug)
+pub fn LocaleError::equal(Self, Self) -> Bool
+pub fn LocaleError::not_equal(Self, Self) -> Bool
+pub fn LocaleError::output(Self, &Logger) -> Unit
+pub fn LocaleError::to_repr(Self) -> @debug.Repr
+pub fn LocaleError::to_string(Self) -> String
+pub impl Show for LocaleError
+
 // Types and methods
 pub(all) enum Fixed {
   LongWeekdayName
@@ -182,6 +195,19 @@ pub(all) enum Item {
 pub fn Item::equal(Self, Self) -> Bool
 pub fn Item::not_equal(Self, Self) -> Bool
 pub fn Item::to_repr(Self) -> @debug.Repr
+
+pub struct Locale {
+  // private fields
+}
+pub fn Locale::am_pm(Self, Bool) -> String
+pub fn Locale::date_format(Self) -> String
+pub fn Locale::date_time_format(Self) -> String
+pub fn Locale::month_name(Self, @core.Month, short? : Bool) -> String
+pub fn Locale::new(long_months~ : Array[String], short_months~ : Array[String], long_weekdays~ : Array[String], short_weekdays~ : Array[String], am~ : String, pm~ : String, date_format~ : String, time_format~ : String, date_time_format~ : String, time_format_12h~ : String) -> Self raise LocaleError
+pub fn Locale::posix() -> Self
+pub fn Locale::time_format(Self) -> String
+pub fn Locale::time_format_12h(Self) -> String
+pub fn Locale::weekday_name(Self, @core.Weekday, short? : Bool) -> String
 
 pub(all) enum Numeric {
   Year
