@@ -169,6 +169,7 @@ Suffixes name where the zone comes from: `_tz` renders any `DateTime[Tz]` (`form
 | `to_rfc3339(DateTime[Tz])` *(Tz : TimeZone)* | `-> String` | Renders `YYYY-MM-DDTHH:MM:SS[.fraction](Z\|±HH:MM)`; a zero offset renders as `Z`, fractional seconds only when nonzero, with the fewest of 3, 6 or 9 digits that represent them, a leap second as `:60`. Total — never raises |
 | `to_rfc3339_opts(DateTime[Tz], SecondsFormat, use_z? : Bool)` *(Tz : TimeZone)* | `-> String` | Like `to_rfc3339`, with the fractional seconds chosen by `SecondsFormat` (`Secs` none, `Millis`/`Micros`/`Nanos` exactly 3/6/9 digits, truncated rather than rounded so the seconds never change, `Auto` the fewest of 3/6/9 that are exact) and, when the labelled `use_z` (default `true`) is `true`, a zero offset written `Z`, else `+00:00` (`use_z=false`); a non-zero offset is unaffected. `Auto` with the default is `to_rfc3339` |
 | `parse_rfc3339(String)` | `-> DateTime[FixedOffset] raise FormatError` | Strict RFC 3339 parsing (`T`/`t` and `Z`/`z` case-insensitive; a fractional-second field beyond 9 digits is truncated, not rejected); raises `InvalidRfc3339` on any mismatch |
+| `parse_iso8601(String)` | `-> Iso8601 raise FormatError` | Lenient ISO 8601 reader, separate from the strict `parse_rfc3339`: the date and time are joined by `T`, `t` or one space, the seconds may be left off (`09:30`), and the offset (`Z`/`z` or `±HH:MM`) may be absent. Returns `Zoned(DateTime[FixedOffset])`, `Local(NaiveDateTime)`, `DateOnly(NaiveDate)` or `TimeOnly(NaiveTime)` according to what the text carried; an offset on a bare date or time is rejected. Fractional seconds and a leap second `:60` follow `parse_rfc3339`; raises `InvalidIso8601` on any other input |
 
 ### RFC 2822 fast path
 
@@ -306,6 +307,7 @@ pub(all) enum Fixed {
 | `MissingField(Item)` | A `format_*` call is asked to render a specifier its input type can't supply (e.g. `%Z` via `format_date_time`) |
 | `ParseOnly(Item)` | A `format_*` call is given a specifier that can only be parsed (`%#z`); `tokenize` and the `parse_*` functions accept it, since the format string alone does not say which direction it serves |
 | `InvalidRfc3339` | `parse_rfc3339` fails to match the RFC 3339 grammar |
+| `InvalidIso8601` | `parse_iso8601` fails to match any accepted shape |
 | `InvalidRfc2822` | `to_rfc2822`'s year is outside `0..=9999`, or `parse_rfc2822` fails to match this package's (strict) RFC 2822 grammar |
 | `InvalidHttpDate` | `to_http_date`'s year is outside `0..=9999`, or `parse_http_date` fails to match one of the three HTTP date shapes, names a weekday that does not match the date, or names a zone other than `GMT` |
 | `InvalidDuration` | `parse_duration`'s input is malformed (no digits, missing or unknown unit, misplaced sign, stray characters) or its value is outside `TimeDelta`'s representable range |
