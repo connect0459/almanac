@@ -225,6 +225,41 @@ pub fn TimeDelta::nanoseconds(n : Int64) -> TimeDelta? {
 }
 
 ///|
+/// The duration made of the given labelled units, all defaulting to zero
+/// and each of either sign, or `None` if a component or the total does not
+/// fit in the representable range. `of(hours=1L, minutes=-90L)` is minus
+/// thirty minutes.
+pub fn TimeDelta::of(
+  weeks? : Int64 = 0L,
+  days? : Int64 = 0L,
+  hours? : Int64 = 0L,
+  minutes? : Int64 = 0L,
+  seconds? : Int64 = 0L,
+  milliseconds? : Int64 = 0L,
+  microseconds? : Int64 = 0L,
+  nanoseconds? : Int64 = 0L,
+) -> TimeDelta? {
+  let parts = [
+    TimeDelta::weeks(weeks),
+    TimeDelta::days(days),
+    TimeDelta::hours(hours),
+    TimeDelta::minutes(minutes),
+    TimeDelta::seconds(seconds),
+    TimeDelta::milliseconds(milliseconds),
+    TimeDelta::microseconds(microseconds),
+    TimeDelta::nanoseconds(nanoseconds),
+  ]
+  let deltas = []
+  for part in parts {
+    match part {
+      Some(delta) => deltas.push(delta)
+      None => return None
+    }
+  }
+  TimeDelta::checked_sum(deltas)
+}
+
+///|
 /// The duration of zero length; `Default::default()` returns it.
 pub fn TimeDelta::zero() -> TimeDelta {
   TimeDelta::{ seconds: 0L, nanoseconds: 0, }
@@ -255,6 +290,15 @@ pub fn TimeDelta::num_seconds(self : TimeDelta) -> Int64 {
   } else {
     self.seconds
   }
+}
+
+///|
+/// The seconds past the last whole-day boundary, in `0..=86399`: this
+/// duration floored to a whole second, modulo a day, so `-1s` and `-0.5s`
+/// both report `86399`. Together with the floored day count it recomposes
+/// the whole seconds.
+pub fn TimeDelta::seconds_of_day(self : TimeDelta) -> Int {
+  floor_mod64(self.seconds, 86400L).to_int()
 }
 
 ///|

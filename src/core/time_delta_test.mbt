@@ -1074,3 +1074,109 @@ test "panic the + operator aborts when the sum leaves the representable range" {
 test "panic the - operator aborts when the difference leaves the representable range" {
   ignore(@core.TimeDelta::min_value() - @core.TimeDelta::seconds(1L).unwrap())
 }
+
+///|
+test "seconds_of_day reports the seconds past the last whole day boundary" {
+  assert_eq(@core.TimeDelta::zero().seconds_of_day(), 0)
+  assert_eq(@core.TimeDelta::seconds(86399L).unwrap().seconds_of_day(), 86399)
+  assert_eq(@core.TimeDelta::seconds(86400L).unwrap().seconds_of_day(), 0)
+  assert_eq(@core.TimeDelta::seconds(90061L).unwrap().seconds_of_day(), 3661)
+}
+
+///|
+test "seconds_of_day of a negative duration counts forward from the previous day boundary" {
+  assert_eq(@core.TimeDelta::seconds(-1L).unwrap().seconds_of_day(), 86399)
+  assert_eq(@core.TimeDelta::seconds(-86400L).unwrap().seconds_of_day(), 0)
+  assert_eq(@core.TimeDelta::seconds(-90061L).unwrap().seconds_of_day(), 82739)
+}
+
+///|
+test "seconds_of_day floors a fractional duration to its whole second" {
+  assert_eq(@core.TimeDelta::milliseconds(1500L).unwrap().seconds_of_day(), 1)
+  assert_eq(
+    @core.TimeDelta::milliseconds(-500L).unwrap().seconds_of_day(),
+    86399,
+  )
+}
+
+///|
+test "seconds_of_day and floor days recompose the whole seconds of a duration" {
+  let delta = @core.TimeDelta::seconds(-200_000L).unwrap()
+  let days = (delta.num_seconds() - delta.seconds_of_day().to_int64()) / 86400L
+  assert_eq(days, -3L)
+  assert_eq(days * 86400L + delta.seconds_of_day().to_int64(), -200_000L)
+}
+
+///|
+test "seconds_of_day stays within a day at both extremes" {
+  let high = @core.TimeDelta::max_value().seconds_of_day()
+  let low = @core.TimeDelta::min_value().seconds_of_day()
+  assert_true(high >= 0 && high < 86400)
+  assert_true(low >= 0 && low < 86400)
+}
+
+///|
+test "of with no arguments is the zero duration" {
+  assert_eq(@core.TimeDelta::of(), Some(@core.TimeDelta::zero()))
+}
+
+///|
+test "of combines the labelled units into one duration" {
+  assert_eq(
+    @core.TimeDelta::of(hours=1L, minutes=30L),
+    @core.TimeDelta::seconds(5400L),
+  )
+  assert_eq(
+    @core.TimeDelta::of(
+      weeks=1L,
+      days=2L,
+      hours=3L,
+      minutes=4L,
+      seconds=5L,
+      milliseconds=6L,
+      microseconds=7L,
+      nanoseconds=8L,
+    ),
+    @core.TimeDelta::new(788_645L, 6_007_008),
+  )
+}
+
+///|
+test "of lets components of opposite sign cancel" {
+  assert_eq(
+    @core.TimeDelta::of(hours=1L, minutes=-90L),
+    @core.TimeDelta::seconds(-1800L),
+  )
+  assert_eq(
+    @core.TimeDelta::of(seconds=1L, milliseconds=-1500L),
+    @core.TimeDelta::milliseconds(-500L),
+  )
+}
+
+///|
+test "of is None when a component or the total leaves the representable range" {
+  assert_eq(@core.TimeDelta::of(weeks=9_223_372_036_854_775_807L), None)
+  assert_eq(
+    @core.TimeDelta::of(
+      seconds=@core.TimeDelta::max_value().num_seconds(),
+      nanoseconds=1L,
+    ),
+    None,
+  )
+  assert_eq(
+    @core.TimeDelta::of(days=@core.TimeDelta::max_value().num_days(), hours=24L),
+    None,
+  )
+}
+
+///|
+test "of is None when a single component is out of range even if the units cancel to a representable total" {
+  assert_eq(
+    @core.TimeDelta::of(
+      weeks=20_000_000_000L,
+      days=-100_000_000_000L,
+      hours=-960_000_000_000L,
+    ),
+    None,
+  )
+}
