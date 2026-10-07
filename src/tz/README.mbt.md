@@ -192,7 +192,7 @@ Naming rule: a name with `offset` (`DateTime::offset`, `offset_from_utc`, `offse
 
 ### `FixedZone`
 
-A named zone with a constant offset and no daylight saving. Unlike a bare `FixedOffset`, whose `zone_name` is its own offset text (`"+09:00"`), a `FixedZone`'s `zone_name` (and so `%Z`) is the name it was given. Two zones are equal only when both the name and the offset match, so `FixedOffset`'s own equality and rendering are unaffected.
+A named zone with a constant offset and no daylight saving. Unlike a bare `FixedOffset`, whose `zone_name` is its own offset text (`"+09:00"`), a `FixedZone`'s `zone_name` (and so `%Z`) is the name it was given, or the offset text when the name is empty. Two zones are equal only when both the name and the offset match, so `FixedOffset`'s own equality and rendering are unaffected.
 
 | Method | Signature | Description |
 | :--- | :--- | :--- |
@@ -200,7 +200,7 @@ A named zone with a constant offset and no daylight saving. Unlike a bare `Fixed
 | `name()` | `-> String` | The zone's name |
 | `offset()` | `-> FixedOffset` | The zone's constant offset |
 | `offset_from_utc(NaiveDateTime)` / `offset_from_local(NaiveDateTime)` | `-> FixedOffset` / `-> MappedLocalTime[FixedOffset]` | The constant offset; the local form is always `Single` |
-| `zone_name(NaiveDateTime)` | `-> String` | The zone's name |
+| `zone_name(NaiveDateTime)` | `-> String` | The zone's name, or the offset text (`"+09:00"`) when the name is empty |
 | `offset_from_abbreviation(String, NaiveDateTime)` | `-> FixedOffset?` | The offset when the abbreviation equals the zone's own name, else `None`, so `parse_date_time_in` can read a `%Z` name back |
 
 ### `DateTime[Tz]`

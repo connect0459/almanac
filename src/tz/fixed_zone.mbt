@@ -1,7 +1,8 @@
 ///|
 /// A named time zone with one constant offset (no daylight saving): the
 /// name is what `zone_name` (and so `%Z`) reports, in place of the offset text
-/// a bare `FixedOffset` falls back to.
+/// a bare `FixedOffset` falls back to. A zone with an empty name falls back to
+/// that same offset text.
 ///
 /// Two zones are equal only when both the name and the offset are equal.
 pub struct FixedZone {
@@ -24,7 +25,7 @@ pub extend FixedZone with @debug.Debug::{to_repr}
 ///|
 /// Renders as the zone's name, the same text as `zone_name`.
 pub impl Show for FixedZone with fn output(self, logger) {
-  logger.write_string(self.name)
+  logger.write_string(self.display_name())
 }
 
 ///|
@@ -38,9 +39,19 @@ pub fn FixedZone::new(name : String, offset : FixedOffset) -> FixedZone {
 
 ///|
 /// The name the zone was built with, e.g. `"JST"`: the identifier of this
-/// zone, which is also what `zone_name` reports at every instant.
+/// zone, which is also what `zone_name` reports at every instant. Unlike
+/// `zone_name`, an empty name is returned as is rather than as offset text.
 pub fn FixedZone::name(self : FixedZone) -> String {
   self.name
+}
+
+///|
+fn FixedZone::display_name(self : FixedZone) -> String {
+  if self.name == "" {
+    format_offset_colon(self.offset.local_minus_utc)
+  } else {
+    self.name
+  }
 }
 
 ///|
@@ -61,7 +72,7 @@ pub impl TimeZone for FixedZone with fn offset_from_local(self, _dt) {
 
 ///|
 pub impl TimeZone for FixedZone with fn zone_name(self, _dt) {
-  self.name
+  self.display_name()
 }
 
 ///|
