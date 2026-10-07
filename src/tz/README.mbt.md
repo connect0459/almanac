@@ -207,6 +207,30 @@ A named zone with a constant offset and no daylight saving. Unlike a bare `Fixed
 
 A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored directly; the local (wall-clock) representation is derived on demand.
 
+`DateTime[Tz]` implements `core`'s `Datelike` and `Timelike` over its local date and time, so a function bounded on either trait accepts it alongside the naive types.
+
+```mbt check
+///|
+fn[T : @core.Datelike + @core.Timelike] local_day_and_hour(
+  value : T,
+) -> (Int, Int) {
+  (@core.Datelike::day(value), @core.Timelike::hour(value))
+}
+
+///|
+test "a DateTime is read in its local time through the traits" {
+  let utc = @core.NaiveDateTime::new(
+    @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),
+    @core.NaiveTime::from_hms(20, 0, 0).unwrap(),
+  )
+  let tokyo = @tz.DateTime::from_utc(
+    utc,
+    @tz.FixedOffset::east(9 * 3600).unwrap(),
+  )
+  assert_eq(local_day_and_hour(tokyo), (16, 5))
+}
+```
+
 `Eq`, `Hash` and `Compare` all identify the UTC instant and ignore the zone value, so the same instant in different zones is equal, hashes alike and compares as `0`; compare the zones themselves (or `naive_local()`) when the wall-clock reading matters. `Utc`, `FixedOffset`, `Location` and `TransitionBounds` implement `Hash` too, so all of them can key a `Map`.
 
 | Method | Signature | Description |
