@@ -1,4 +1,19 @@
 ///|
+fn floor_div(a : Int, b : Int) -> Int {
+  let q = a / b
+  if a % b != 0 && (a < 0) != (b < 0) {
+    q - 1
+  } else {
+    q
+  }
+}
+
+///|
+fn floor_mod(a : Int, b : Int) -> Int {
+  a - floor_div(a, b) * b
+}
+
+///|
 fn pad_int(n : Int, width : Int) -> String {
   let sign = if n < 0 { "-" } else { "" }
   let magnitude = if n < 0 { -n } else { n }
@@ -160,7 +175,7 @@ fn numeric_value(
       }
     IsoYearMod100 =>
       match date {
-        Some(d) => (d.iso_week().year() % 100, 2)
+        Some(d) => (floor_mod(d.iso_week().year(), 100), 2)
         None => raise MissingField(item)
       }
     IsoWeekNumber =>
@@ -170,12 +185,12 @@ fn numeric_value(
       }
     Century =>
       match date {
-        Some(d) => (d.year() / 100, 2)
+        Some(d) => (floor_div(d.year(), 100), 2)
         None => raise MissingField(item)
       }
     YearMod100 =>
       match date {
-        Some(d) => (d.year() % 100, 2)
+        Some(d) => (floor_mod(d.year(), 100), 2)
         None => raise MissingField(item)
       }
     Quarter =>
@@ -480,7 +495,8 @@ fn render(
         }
       Numeric(IsoYearMod100) =>
         match date {
-          Some(d) => out.write_string(pad_int(d.iso_week().year() % 100, 2))
+          Some(d) =>
+            out.write_string(pad_int(floor_mod(d.iso_week().year(), 100), 2))
           None => raise MissingField(item)
         }
       Numeric(IsoWeekNumber) =>
@@ -490,12 +506,12 @@ fn render(
         }
       Numeric(Century) =>
         match date {
-          Some(d) => out.write_string(pad_int(d.year() / 100, 2))
+          Some(d) => out.write_string(pad_int(floor_div(d.year(), 100), 2))
           None => raise MissingField(item)
         }
       Numeric(YearMod100) =>
         match date {
-          Some(d) => out.write_string(pad_int(d.year() % 100, 2))
+          Some(d) => out.write_string(pad_int(floor_mod(d.year(), 100), 2))
           None => raise MissingField(item)
         }
       Numeric(Quarter) =>

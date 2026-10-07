@@ -105,6 +105,30 @@ test "format_date renders the century and year-without-century via %C and %y" {
 }
 
 ///|
+test "format_date renders a negative year's century and year-without-century with a floor split so %y stays within 00..99" {
+  for
+    case in [
+      (-1, "-01", "99"),
+      (-7, "-01", "93"),
+      (-99, "-01", "01"),
+      (-100, "-01", "00"),
+      (-101, "-02", "99"),
+    ] {
+    let (year, century, year_mod_100) = case
+    let date = @core.NaiveDate::from_ymd(year, 1, 1).unwrap()
+    assert_eq(@format.format_date(date, "%C"), century)
+    assert_eq(@format.format_date(date, "%y"), year_mod_100)
+  }
+}
+
+///|
+test "format_date renders a negative ISO week-date year's %g within 00..99" {
+  let date = @core.NaiveDate::from_ymd(-7, 6, 15).unwrap()
+  assert_eq(@format.format_date(date, "%G"), "-0007")
+  assert_eq(@format.format_date(date, "%g"), "93")
+}
+
+///|
 test "format_date renders the quarter via %q" {
   for
     case in [
