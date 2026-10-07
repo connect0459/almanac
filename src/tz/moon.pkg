@@ -5,6 +5,10 @@ import {
   "moonbitlang/core/env",
 }
 
+import {
+  "moonbitlang/core/bench",
+} for "wbtest"
+
 options(
   targets: {
     "local_native.mbt": [ "native" ],
