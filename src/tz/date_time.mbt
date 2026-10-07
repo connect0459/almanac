@@ -1083,10 +1083,12 @@ pub fn[Tz] DateTime::checked_sub_offset(
 ///|
 /// This datetime's underlying UTC instant truncated toward the Unix epoch
 /// to the nearest multiple of `granularity`, keeping the same time zone.
-/// Operates on the absolute UTC instant, not the offset-shifted local
-/// presentation: truncating to an hour granularity may still report a
-/// non-zero local minute, depending on the time zone's offset. See
-/// `@core.NaiveDateTime::truncate` for the conditions under which
+/// Multiples are counted from the Unix epoch instant, not from local
+/// midnight, so a multi-day granularity aligns to the epoch rather than to a
+/// local calendar boundary. Operates on the absolute UTC instant, not the
+/// offset-shifted local presentation: truncating to an hour granularity may
+/// still report a non-zero local minute, depending on the time zone's offset.
+/// See `@core.NaiveDateTime::truncate` for the conditions under which
 /// `granularity` is rejected.
 pub fn[Tz] DateTime::truncate(
   self : DateTime[Tz],
@@ -1100,9 +1102,10 @@ pub fn[Tz] DateTime::truncate(
 ///|
 /// This datetime's underlying UTC instant rounded to the nearest multiple
 /// of `granularity` since the Unix epoch, ties breaking away from the
-/// epoch, keeping the same time zone. Like `truncate`, it operates on the
-/// absolute UTC instant rather than the local presentation; to round to a
-/// local boundary, round `naive_local()` and use `DateTime::from_local`.
+/// epoch, keeping the same time zone. Like `truncate`, it counts multiples
+/// from the epoch instant and operates on the absolute UTC instant rather
+/// than the local presentation; to round to a local boundary, round
+/// `naive_local()` and use `DateTime::from_local`.
 pub fn[Tz] DateTime::round(
   self : DateTime[Tz],
   granularity : @core.TimeDelta,
@@ -1116,9 +1119,9 @@ pub fn[Tz] DateTime::round(
 /// This datetime's underlying UTC instant rounded up (toward positive
 /// infinity) to the nearest multiple of `granularity` since the Unix epoch:
 /// unchanged if already a multiple, otherwise the next one after it, keeping
-/// the same time zone. Like `truncate`, it operates on the absolute UTC
-/// instant rather than the local presentation. See
-/// `@core.NaiveDateTime::round_up` for the failure reasons.
+/// the same time zone. Like `truncate`, it counts multiples from the epoch
+/// instant and operates on the absolute UTC instant rather than the local
+/// presentation. See `@core.NaiveDateTime::round_up` for the failure reasons.
 pub fn[Tz] DateTime::round_up(
   self : DateTime[Tz],
   granularity : @core.TimeDelta,
