@@ -214,6 +214,16 @@ test "Parsed reports the offset and the zone name text that resolution alone can
 }
 
 ///|
+test "Parsed keeps an unknown zone abbreviation exactly as written" {
+  let parsed = @format.parse_items(
+    "2024-03-05 09:30:00 xyz",
+    @format.tokenize("%F %T %Z"),
+  )
+  assert_eq(parsed.zone_name(), Some("xyz"))
+  assert_eq(parsed.utc_offset(), None)
+}
+
+///|
 test "Parsed reports neither when the format read no offset and no zone name" {
   let plain = @format.parse_items(
     "2024-03-05 09:30:00",
