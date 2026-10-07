@@ -153,11 +153,11 @@ fn has_bit(bits : Int64, n : Int) -> Bool {
 
 ///|
 fn shorthand_expansion(text : String) -> String? {
-  match text {
-    "@yearly" => Some("0 0 1 1 *")
+  match text.to_lower() {
+    "@yearly" | "@annually" => Some("0 0 1 1 *")
     "@monthly" => Some("0 0 1 * *")
     "@weekly" => Some("0 0 * * 0")
-    "@daily" => Some("0 0 * * *")
+    "@daily" | "@midnight" => Some("0 0 * * *")
     "@hourly" => Some("0 * * * *")
     _ => None
   }
@@ -179,7 +179,8 @@ fn weekday_names() -> Array[String] {
 ///|
 /// Reads a cron expression: five fields (`minute hour day-of-month month
 /// day-of-week`), six with seconds in front, or one of the shorthands
-/// `@yearly`, `@monthly`, `@weekly`, `@daily` and `@hourly`.
+/// `@yearly` (`@annually`), `@monthly`, `@weekly`, `@daily` (`@midnight`) and
+/// `@hourly`, either case.
 ///
 /// Each field is a comma list of `*`, `n`, `a-b`, `*/n` or `a-b/n`. Month and
 /// weekday fields also take English names (`JAN`, `mon-fri`), either case.
