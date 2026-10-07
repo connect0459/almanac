@@ -113,8 +113,8 @@ fn parse_windowed_year(chars : Array[Char], pos : Int) -> (Int, Int)? {
 }
 
 ///|
-fn legacy_zone_offset_seconds(name : String) -> Int? {
-  match name.to_lower() {
+fn legacy_zone_offset_seconds(lower_name : String) -> Int? {
+  match lower_name {
     "gmt" | "ut" | "z" => Some(0)
     "edt" => Some(-4 * 3600)
     "est" | "cdt" => Some(-5 * 3600)
@@ -138,7 +138,7 @@ fn parse_obsolete_zone(chars : Array[Char], pos : Int) -> (Int, Int)? {
   } else {
     let name = StringBuilder()
     for i in pos..<end {
-      name.write_char(chars[i])
+      name.write_char(ascii_lower(chars[i]))
     }
     legacy_zone_offset_seconds(name.to_string()).map(secs => (secs, end))
   }
