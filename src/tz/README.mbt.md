@@ -322,19 +322,27 @@ The offset, DST flag, and abbreviation for one segment of a `Location`'s timelin
 
 `LocalTimeType` also implements `Eq`.
 
-### `Local` (native only)
+### `Local`
 
-The OS-configured local time zone, resolved from `$TZ` or, when unset, `/etc/localtime`. Only compiled for the `native` backend: resolving it requires file I/O that `js`/`wasm`/`wasm-gc` have no host-provided access to. The generated `.mbti` of the default target (`wasm`) therefore omits `Local`; its `native` interface (`Local::new`, `Local::now` and the `TimeZone` methods) is the one to review for a release. The one place the host environment is read is `Local::new`; the rule it applies to `$TZ` and `/etc/localtime` is internal and not public API.
+The host's configured local time zone, available on every backend. Where it comes from depends on the backend:
+
+| Backend | Source |
+| :--- | :--- |
+| `native` | `$TZ` or, when unset, `/etc/localtime` |
+| `js` | The zone name reported by the runtime's `Intl`, resolved as a `$TZ` value would be (in practice an IANA name); `$TZ` is not read by this library, so whether it is honored is up to the runtime; `None` if the name is not in the embedded tz database |
+| `wasm`, `wasm-gc` | `$TZ` alone; with `$TZ` unset there is nothing to fall back on, because these backends have no file access, so `Local::new()` is `None`; hosts that have no environment variables at all, such as a browser, therefore always give `None` |
+
+The one place the host environment is read is `Local::new`; the rule it applies to `$TZ` is internal and not public API.
 
 | Method | Signature | Description |
 | :--- | :--- | :--- |
-| `Local::new()` | `-> Self?` | Resolves the host's configured time zone; `None` if it could not be determined. Reads live OS state — not a pure function of its arguments. |
+| `Local::new()` | `-> Self?` | Resolves the host's configured time zone; `None` if it could not be determined. Reads live host state — not a pure function of its arguments. |
 | `Local::now()` | `-> DateTime[Local]?` | The current instant in the host's local zone, the counterpart of `Utc::now()`; `None` when `Local::new()` is `None`, that is, when the zone cannot be determined; the clock itself is read as in `Utc::now()` |
 | `offset_from_utc(NaiveDateTime)` | `-> FixedOffset` | Delegates to the resolved zone |
 | `offset_from_local(NaiveDateTime)` | `-> MappedLocalTime[FixedOffset]` | Delegates to the resolved zone |
 | `zone_name(NaiveDateTime)` | `-> String` | Delegates to the resolved zone |
 
-`Local` also implements `TimeZone`. One leading colon of `$TZ` is ignored (`":Asia/Tokyo"` is `"Asia/Tokyo"`). The remainder may be an empty string (UTC, so a lone `":"` is UTC too), the absolute path of a TZif file (`"/usr/share/zoneinfo/Asia/Tokyo"`), an IANA zone name, or a bare POSIX TZ rule such as `"JST-9"` or `"FOO5BAR4,M3.2.0,M11.1.0"`; an IANA name takes precedence when a string is both (e.g. `"EST5EDT"`). A path that cannot be read as TZif data makes `Local::new()` return `None` rather than falling back to UTC. Relative names are matched against the embedded tz database only, never against `/usr/share/zoneinfo`.
+`Local` also implements `TimeZone`. Where `$TZ` is read (`native`, `wasm`, `wasm-gc`), one leading colon of it is ignored (`":Asia/Tokyo"` is `"Asia/Tokyo"`). The remainder may be an empty string (UTC, so a lone `":"` is UTC too), the absolute path of a TZif file (`"/usr/share/zoneinfo/Asia/Tokyo"`), an IANA zone name, or a bare POSIX TZ rule such as `"JST-9"` or `"FOO5BAR4,M3.2.0,M11.1.0"`; an IANA name takes precedence when a string is both (e.g. `"EST5EDT"`). A path (read on `native` only) that cannot be read as TZif data makes `Local::new()` return `None` rather than falling back to UTC; on `wasm` and `wasm-gc` an absolute path is always `None`. Relative names are matched against the embedded tz database only, never against `/usr/share/zoneinfo`.
 
 ---
 

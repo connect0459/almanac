@@ -6,9 +6,10 @@ priv enum LocalKind {
 }
 
 ///|
-/// The OS-configured local time zone, resolved from `$TZ` or, when unset,
-/// `/etc/localtime`. Only available on `native`: resolving it requires file
-/// I/O that `js`/`wasm`/`wasm-gc` have no host-provided access to.
+/// The host's configured local time zone. On `native` it is resolved from
+/// `$TZ` or, when unset, `/etc/localtime`; on `js` from the runtime's
+/// `Intl` zone name; on `wasm` and `wasm-gc` from `$TZ` alone, since neither
+/// has host-provided file access.
 pub struct Local {
   priv kind : LocalKind
 }
@@ -114,4 +115,13 @@ pub extend Local with TimeZone::{
   is_dst,
   transition_bounds,
   offset_from_abbreviation,
+}
+
+///|
+/// The current instant expressed in the host's local time zone, or `None`
+/// if that zone could not be determined (see `Local::new`). The counterpart
+/// of `Utc::now`, and like it reads the host clock; the `None` is about the
+/// zone, not the clock.
+pub fn Local::now() -> DateTime[Local]? {
+  Local::new().map(zone => Utc::now().with_timezone(zone))
 }

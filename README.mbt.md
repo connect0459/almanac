@@ -12,7 +12,7 @@ A date and time library for MoonBit: calendar and clock values, durations, IANA 
 | :--- | :--- | :--- |
 | `connect0459/almanac` | `@almanac` | Re-exports of the everyday types: `Weekday`, `Month`, `NaiveDate`, `NaiveTime`, `NaiveDateTime`, `TimeDelta`, `TimeZone`, `Utc`, `FixedOffset`, `Location`, `DateTime`, `MappedLocalTime` |
 | `connect0459/almanac/core` | `@core` | Calendar and clock primitives with no time zone: `NaiveDate`, `NaiveTime`, `NaiveDateTime`, `TimeDelta`, `Weekday`, `WeekdaySet`, `Month`, `IsoWeek`, `NaiveWeek` |
-| `connect0459/almanac/tz` | `@tz` | Time zones: the `TimeZone` trait, `Utc`, `FixedOffset`, `FixedZone`, `Location` (embedded IANA tz database), `PosixTz`, `DateTime[Tz]`, `MappedLocalTime`, and `Local` on the `native` backend only |
+| `connect0459/almanac/tz` | `@tz` | Time zones: the `TimeZone` trait, `Utc`, `FixedOffset`, `FixedZone`, `Location` (embedded IANA tz database), `PosixTz`, `DateTime[Tz]`, `MappedLocalTime`, and `Local` (the host's zone) |
 | `connect0459/almanac/format` | `@format` | `strftime`-style formatting and parsing, RFC 3339, RFC 2822 and HTTP dates, plus the default-layout and duration parsers |
 | `connect0459/almanac/cron` | `@cron` | Cron expressions: `Cron::parse`, then `matches` and `next` over a zoned `DateTime[Tz]` |
 
@@ -58,7 +58,7 @@ A local reading can fall in a DST gap or fold, so constructors from local compon
 
 ## Compatibility
 
-- The library is tested on the `js`, `wasm`, `wasm-gc` and `native` backends. `Local`, the host's zone, exists on `native` only.
+- The library is tested on the `js`, `wasm`, `wasm-gc` and `native` backends. `Local`, the host's zone, is read from `$TZ` or `/etc/localtime` on `native`, from the runtime's `Intl` zone name on `js`, and from `$TZ` alone on `wasm` and `wasm-gc`.
 - The embedded tz database is a snapshot; regenerate it with `just gen-tzdata <zoneinfo dir>`.
 - While the major version is `0`, a minor release may contain breaking changes to the public API.
 
