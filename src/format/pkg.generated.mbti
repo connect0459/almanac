@@ -30,21 +30,21 @@ pub const TIME_ONLY : String = "%T"
 
 pub const UNIX_DATE : String = "%a %b %e %H:%M:%S %Z %Y"
 
-pub fn format_date(@core.NaiveDate, String) -> String raise FormatError
+pub fn format_date(@core.NaiveDate, String, locale? : Locale) -> String raise FormatError
 
-pub fn format_date_items(@core.NaiveDate, Array[Item]) -> String raise FormatError
+pub fn format_date_items(@core.NaiveDate, Array[Item], locale? : Locale) -> String raise FormatError
 
-pub fn format_date_time(@core.NaiveDateTime, String) -> String raise FormatError
+pub fn format_date_time(@core.NaiveDateTime, String, locale? : Locale) -> String raise FormatError
 
-pub fn format_date_time_items(@core.NaiveDateTime, Array[Item]) -> String raise FormatError
+pub fn format_date_time_items(@core.NaiveDateTime, Array[Item], locale? : Locale) -> String raise FormatError
 
-pub fn[Tz : @tz.TimeZone] format_date_time_tz(@tz.DateTime[Tz], String) -> String raise FormatError
+pub fn[Tz : @tz.TimeZone] format_date_time_tz(@tz.DateTime[Tz], String, locale? : Locale) -> String raise FormatError
 
-pub fn[Tz : @tz.TimeZone] format_date_time_tz_items(@tz.DateTime[Tz], Array[Item]) -> String raise FormatError
+pub fn[Tz : @tz.TimeZone] format_date_time_tz_items(@tz.DateTime[Tz], Array[Item], locale? : Locale) -> String raise FormatError
 
-pub fn format_time(@core.NaiveTime, String) -> String raise FormatError
+pub fn format_time(@core.NaiveTime, String, locale? : Locale) -> String raise FormatError
 
-pub fn format_time_items(@core.NaiveTime, Array[Item]) -> String raise FormatError
+pub fn format_time_items(@core.NaiveTime, Array[Item], locale? : Locale) -> String raise FormatError
 
 pub fn parse_date(String, String) -> @core.NaiveDate raise FormatError
 
