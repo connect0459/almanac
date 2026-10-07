@@ -64,10 +64,11 @@ fn[T] rfc2822_require(opt : T?) -> T raise FormatError {
 /// Parses an RFC 2822 date-and-time string (`"Tue, 1 Jul 2003 10:52:37
 /// +0200"`), bypassing the general token engine.
 ///
-/// Strict: this project supports only the exact shape `to_rfc2822` renders (day-of-week and
-/// seconds mandatory, single-space separators, a 4-digit year, a numeric
-/// `±HHMM` offset). `parse_rfc2822_lenient` reads RFC 2822's obsolete
-/// syntax as well.
+/// Strict: this project supports only the exact shape `to_rfc2822` renders
+/// (day-of-week and seconds mandatory, single-space separators, a 4-digit
+/// year, a numeric `±HHMM` offset). The day of week is not checked against
+/// the date. `parse_rfc2822_lenient` reads RFC 2822's obsolete syntax as
+/// well.
 pub fn parse_rfc2822(
   s : String,
 ) -> @tz.DateTime[@tz.FixedOffset] raise FormatError {

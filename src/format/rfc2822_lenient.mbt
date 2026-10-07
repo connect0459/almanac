@@ -181,13 +181,15 @@ fn skip_comments(chars : Array[Char], pos : Int) -> Int {
 ///|
 /// Parses an RFC 2822 date-and-time string including the "obsolete
 /// syntax" that `parse_rfc2822` rejects, as a separate, opt-in reader.
+/// Every date `to_rfc2822` renders reads back unchanged.
 ///
 /// Accepted beyond the strict shape:
 /// - the day of week may be omitted; when present it is written as a short
 ///   name directly followed by a comma and must match the date;
 /// - the seconds may be omitted and read as `00`;
-/// - any run of Unicode whitespace may stand for a single space, and may
-///   surround the `:` separators of the time;
+/// - any run of Unicode whitespace may stand for a single space, may
+///   precede the first field, and may surround the `:` separators of the
+///   time;
 /// - month, weekday and zone names are matched ignoring ASCII case;
 /// - a two-digit year below 50 reads as 20xx, from 50 as 19xx, and a
 ///   three-digit year as 1900 plus the year; a four-digit year is taken as
@@ -199,8 +201,11 @@ fn skip_comments(chars : Array[Char], pos : Int) -> Int {
 ///   follow the zone, separated by whitespace.
 ///
 /// Whitespace after the last field or comment is not accepted, and neither
-/// is a leap second (`:60`), as with `parse_rfc2822`. Raises
-/// `InvalidRfc2822` on any mismatch.
+/// is a leap second (`:60`), as with `parse_rfc2822`.
+///
+/// Not a superset of `parse_rfc2822`: a day of week that disagrees with the
+/// date, and a long day name such as `Tuesday`, are read by `parse_rfc2822`
+/// but rejected here. Raises `InvalidRfc2822` on any mismatch.
 pub fn parse_rfc2822_lenient(
   s : String,
 ) -> @tz.DateTime[@tz.FixedOffset] raise FormatError {
