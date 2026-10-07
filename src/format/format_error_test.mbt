@@ -30,6 +30,10 @@ test "FormatError renders a one-line human-readable message for each variant a r
     "invalid HTTP date",
   )
   assert_eq(
+    message_of(() => @format.parse_utc_time("nope") |> ignore),
+    "invalid ASN.1 time",
+  )
+  assert_eq(
     message_of(() => @format.parse_duration("nope") |> ignore),
     "invalid duration",
   )
