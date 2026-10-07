@@ -92,42 +92,6 @@ fn parse_rfc3339_date(
 }
 
 ///|
-/// Parses `HH:MM:SS` (`SS` up to `60`, for a leap second — the caller
-/// maps that to `NaiveTime`'s `second() == 59, nanosecond() >=
-/// 1_000_000_000` convention once it knows the fractional-second
-/// component).
-fn parse_rfc3339_time_of_day(
-  chars : Array[Char],
-  pos : Int,
-) -> (Int, Int, Int, Int)? {
-  match parse_fixed_digits(chars, pos, 2) {
-    None => None
-    Some((hour, p1)) =>
-      match expect_char(chars, p1, ':') {
-        None => None
-        Some(p2) =>
-          match parse_fixed_digits(chars, p2, 2) {
-            None => None
-            Some((minute, p3)) =>
-              match expect_char(chars, p3, ':') {
-                None => None
-                Some(p4) =>
-                  match parse_fixed_digits(chars, p4, 2) {
-                    None => None
-                    Some((second, p5)) =>
-                      if second <= 60 {
-                        Some((hour, minute, second, p5))
-                      } else {
-                        None
-                      }
-                  }
-              }
-          }
-      }
-  }
-}
-
-///|
 /// Parses an optional `.` followed by one or more digits, truncated to
 /// nanosecond (9-digit) precision. `Some((0, pos))` (no advance) if `pos`
 /// isn't a `.`; `None` if a `.` is present but no digit follows it.
@@ -181,6 +145,44 @@ fn parse_rfc3339_offset(chars : Array[Char], pos : Int) -> (Int, Int)? {
 }
 
 ///|
+/// Parses `HH:MM` and then `:SS[.fraction]` (`SS` up to `60`, a leap
+/// second, mapped to `NaiveTime`'s `second() == 59, nanosecond() >=
+/// 1_000_000_000` convention) into a `NaiveTime`. With `seconds_optional`,
+/// the whole `:SS[.fraction]` part may be absent; otherwise it is required.
+fn parse_time_of_day(
+  chars : Array[Char],
+  pos : Int,
+  seconds_optional~ : Bool,
+) -> (@core.NaiveTime, Int)? {
+  guard parse_fixed_digits(chars, pos, 2) is Some((hour, p1)) else { None }
+  guard expect_char(chars, p1, ':') is Some(p2) else { None }
+  guard parse_fixed_digits(chars, p2, 2) is Some((minute, p3)) else { None }
+  let (second, frac_nanos, end) = match expect_char(chars, p3, ':') {
+    None if seconds_optional => (0, 0, p3)
+    None => return None
+    Some(p4) => {
+      guard parse_fixed_digits(chars, p4, 2) is Some((second, p5)) else {
+        return None
+      }
+      guard second <= 60 else { return None }
+      guard parse_rfc3339_fraction(chars, p5) is Some((frac_nanos, p6)) else {
+        return None
+      }
+      (second, frac_nanos, p6)
+    }
+  }
+  let (clock_second, nano) = if second == 60 {
+    (59, frac_nanos + 1_000_000_000)
+  } else {
+    (second, frac_nanos)
+  }
+  match @core.NaiveTime::from_hms_nano(hour, minute, clock_second, nano) {
+    Some(time) => Some((time, end))
+    None => None
+  }
+}
+
+///|
 /// Parses an RFC 3339 date-time starting at `pos`, stopping wherever it
 /// ends (unlike `try_parse_rfc3339`, does not require consuming the rest
 /// of `chars`) — shared by `try_parse_rfc3339` and `%+`'s handling in the
@@ -189,39 +191,15 @@ fn parse_rfc3339_datetime(
   chars : Array[Char],
   pos : Int,
 ) -> (@core.NaiveDate, @core.NaiveTime, Int, Int)? {
-  match parse_rfc3339_date(chars, pos) {
-    None => None
-    Some((date, p1)) =>
-      match expect_char_ci(chars, p1, 'T', 't') {
-        None => None
-        Some(p2) =>
-          match parse_rfc3339_time_of_day(chars, p2) {
-            None => None
-            Some((hour, minute, second, p3)) =>
-              match parse_rfc3339_fraction(chars, p3) {
-                None => None
-                Some((frac_nanos, p4)) =>
-                  match parse_rfc3339_offset(chars, p4) {
-                    None => None
-                    Some((offset_secs, p5)) => {
-                      let (clock_second, nano) = if second == 60 {
-                        (59, frac_nanos + 1_000_000_000)
-                      } else {
-                        (second, frac_nanos)
-                      }
-                      match
-                        @core.NaiveTime::from_hms_nano(
-                          hour, minute, clock_second, nano,
-                        ) {
-                        None => None
-                        Some(time) => Some((date, time, offset_secs, p5))
-                      }
-                    }
-                  }
-              }
-          }
-      }
+  guard parse_rfc3339_date(chars, pos) is Some((date, p1)) else { return None }
+  guard expect_char_ci(chars, p1, 'T', 't') is Some(p2) else { return None }
+  guard parse_time_of_day(chars, p2, seconds_optional=false) is Some((time, p3)) else {
+    return None
   }
+  guard parse_rfc3339_offset(chars, p3) is Some((offset_secs, p4)) else {
+    return None
+  }
+  Some((date, time, offset_secs, p4))
 }
 
 ///|

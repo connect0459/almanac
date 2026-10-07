@@ -22,43 +22,17 @@ pub extend Iso8601 with Eq::{not_equal}
 pub extend Iso8601 with @debug.Debug::{to_repr}
 
 ///|
-fn parse_iso8601_time_of_day(
-  chars : Array[Char],
-  pos : Int,
-) -> (@core.NaiveTime, Int)? {
-  guard parse_fixed_digits(chars, pos, 2) is Some((hour, p1)) else { None }
-  guard expect_char(chars, p1, ':') is Some(p2) else { None }
-  guard parse_fixed_digits(chars, p2, 2) is Some((minute, p3)) else { None }
-  let (second, frac_nanos, end) = match expect_char(chars, p3, ':') {
-    None => (0, 0, p3)
-    Some(p4) => {
-      guard parse_fixed_digits(chars, p4, 2) is Some((second, p5)) else {
-        return None
-      }
-      guard second <= 60 else { return None }
-      guard parse_rfc3339_fraction(chars, p5) is Some((frac_nanos, p6)) else {
-        return None
-      }
-      (second, frac_nanos, p6)
-    }
-  }
-  let (clock_second, nano) = if second == 60 {
-    (59, frac_nanos + 1_000_000_000)
-  } else {
-    (second, frac_nanos)
-  }
-  match @core.NaiveTime::from_hms_nano(hour, minute, clock_second, nano) {
-    Some(time) => Some((time, end))
-    None => None
-  }
+fn is_time_only_shape(chars : Array[Char]) -> Bool {
+  chars.length() >= 3 && chars[2] == ':'
 }
 
 ///|
 fn try_parse_iso8601(s : String) -> Iso8601? {
   let chars = s.to_array()
   let len = chars.length()
-  if len >= 3 && chars[2] == ':' {
-    guard parse_iso8601_time_of_day(chars, 0) is Some((time, end)) else {
+  if is_time_only_shape(chars) {
+    guard parse_time_of_day(chars, 0, seconds_optional=true)
+      is Some((time, end)) else {
       return None
     }
     return if end == len { Some(TimeOnly(time)) } else { None }
@@ -69,7 +43,8 @@ fn try_parse_iso8601(s : String) -> Iso8601? {
   }
   let separated = chars[p1] == 'T' || chars[p1] == 't' || chars[p1] == ' '
   guard separated else { return None }
-  guard parse_iso8601_time_of_day(chars, p1 + 1) is Some((time, p2)) else {
+  guard parse_time_of_day(chars, p1 + 1, seconds_optional=true)
+    is Some((time, p2)) else {
     return None
   }
   let wall_clock = @core.NaiveDateTime::new(date, time)
