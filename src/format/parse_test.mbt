@@ -1357,6 +1357,18 @@ test "parse_date_time_in falls back to ordinary local resolution for an abbrevia
 }
 
 ///|
+test "parse_date_time_in places an unknown abbreviation's reading at the instant of the zone's own offset" {
+  let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let dt = @format.parse_date_time_in(
+      "2024-03-05 09:30:00 XXX", "%F %T %Z", tokyo,
+    )
+    .single()
+    .unwrap()
+  assert_eq(dt.naive_local(), local_reading(2024, 3, 5, 9, 30))
+  assert_eq(dt.naive_utc(), local_reading(2024, 3, 5, 0, 30))
+}
+
+///|
 test "parse_date_time_in resolves a POSIX rule's own abbreviations" {
   let rule = @tz.parse_posix_tz("FOO5BAR4,M3.2.0,M11.1.0").unwrap()
   let dt = @format.parse_date_time_in(
