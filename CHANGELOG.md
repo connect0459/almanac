@@ -27,6 +27,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- `parse_rfc2822_lenient`, an opt-in reader for RFC 2822's obsolete syntax (legacy zone names, optional day of week and seconds, folding whitespace, comments, and two- and three-digit years)
+
 ## [0.1.0] - 2026-10-05
 
 ### Added
