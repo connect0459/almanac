@@ -396,6 +396,7 @@ pub fn TimeDelta::num_minutes(Self) -> Int64
 pub fn TimeDelta::num_nanoseconds(Self) -> Int64?
 pub fn TimeDelta::num_seconds(Self) -> Int64
 pub fn TimeDelta::num_weeks(Self) -> Int64
+pub fn TimeDelta::of(weeks? : Int64, days? : Int64, hours? : Int64, minutes? : Int64, seconds? : Int64, milliseconds? : Int64, microseconds? : Int64, nanoseconds? : Int64) -> Self?
 pub fn TimeDelta::op_ge(Self, Self) -> Bool
 pub fn TimeDelta::op_gt(Self, Self) -> Bool
 pub fn TimeDelta::op_le(Self, Self) -> Bool
@@ -404,6 +405,7 @@ pub fn TimeDelta::output(Self, &Logger) -> Unit
 pub fn TimeDelta::round(Self, Self) -> Result[Self, RoundingError]
 pub fn TimeDelta::round_up(Self, Self) -> Result[Self, RoundingError]
 pub fn TimeDelta::seconds(Int64) -> Self?
+pub fn TimeDelta::seconds_of_day(Self) -> Int
 pub fn TimeDelta::sub(Self, Self) -> Self
 pub fn TimeDelta::subsec_microseconds(Self) -> Int
 pub fn TimeDelta::subsec_milliseconds(Self) -> Int
