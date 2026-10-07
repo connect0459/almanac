@@ -7,11 +7,13 @@ import {
 
 options(
   targets: {
-    "local.mbt": [ "native" ],
-    "local_wbtest.mbt": [ "native" ],
     "local_native.mbt": [ "native" ],
     "local_native_test.mbt": [ "native" ],
     "local_native_wbtest.mbt": [ "native" ],
+    "local_js.mbt": [ "js" ],
+    "local_js_test.mbt": [ "js" ],
+    "local_wasm.mbt": [ "wasm", "wasm-gc" ],
+    "local_wasm_test.mbt": [ "wasm", "wasm-gc" ],
   },
   "native-stub": [ "local_native_stub.c" ],
 )

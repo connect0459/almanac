@@ -176,6 +176,19 @@ pub fn FixedZone::zone_name(Self, @core.NaiveDateTime) -> String
 pub impl TimeZone for FixedZone
 pub impl Show for FixedZone
 
+pub struct Local {
+  // private fields
+}
+pub fn Local::is_dst(Self, @core.NaiveDateTime) -> Bool
+pub fn Local::new() -> Self?
+pub fn Local::now() -> DateTime[Self]?
+pub fn Local::offset_from_abbreviation(Self, String, @core.NaiveDateTime) -> FixedOffset?
+pub fn Local::offset_from_local(Self, @core.NaiveDateTime) -> MappedLocalTime[FixedOffset]
+pub fn Local::offset_from_utc(Self, @core.NaiveDateTime) -> FixedOffset
+pub fn Local::transition_bounds(Self, @core.NaiveDateTime) -> TransitionBounds
+pub fn Local::zone_name(Self, @core.NaiveDateTime) -> String
+pub impl TimeZone for Local
+
 pub struct LocalTimeType {
   // private fields
 } derive(Eq, Hash, @debug.Debug)
