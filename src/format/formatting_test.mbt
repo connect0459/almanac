@@ -608,6 +608,22 @@ test "format_date_time_tz renders %Z as a FixedZone's name rather than its offse
 }
 
 ///|
+test "format_date_time_tz renders %Z as the offset text for a FixedZone with an empty name" {
+  let zone = @tz.FixedZone::new("", @tz.FixedOffset::east(9 * 3600).unwrap())
+  let dt = @tz.DateTime::from_utc(
+    @core.NaiveDateTime::new(
+      @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),
+      @core.NaiveTime::from_hms(12, 0, 0).unwrap(),
+    ),
+    zone,
+  )
+  assert_eq(
+    @format.format_date_time_tz(dt, "%T %Z %z"),
+    "21:00:00 +09:00 +0900",
+  )
+}
+
+///|
 test "format_time renders the 24-hour clock space-padded via %k" {
   for case in [(0, " 0"), (9, " 9"), (10, "10"), (23, "23")] {
     let (hour, expected) = case
