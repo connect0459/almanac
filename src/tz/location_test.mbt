@@ -514,3 +514,37 @@ test "Location and TzifData compare structurally with a diagnostic representatio
   let tzif = @tz.parse_tzif(tzif_tokyo).unwrap()
   assert_eq(tzif, @tz.parse_tzif(tzif_tokyo).unwrap())
 }
+
+///|
+test "a pre-transition instant in PST8PDT is standard time although the first transition is to daylight time" {
+  let loc = @tz.Location::load("PST8PDT").unwrap()
+  let before = @core.NaiveDateTime::from_timestamp(-1_633_269_601L, 0).unwrap()
+  let after = @core.NaiveDateTime::from_timestamp(-1_633_269_600L, 0).unwrap()
+  assert_eq(loc.offset_from_utc(before), @tz.FixedOffset::east(-28800).unwrap())
+  assert_eq(loc.offset_from_utc(after), @tz.FixedOffset::east(-25200).unwrap())
+}
+
+///|
+test "a pre-transition instant in Pacific/Fakaofo uses the zone before its first transition, not the first standard type" {
+  let loc = @tz.Location::load("Pacific/Fakaofo").unwrap()
+  let before = @core.NaiveDateTime::from_timestamp(1_325_242_799L, 0).unwrap()
+  let after = @core.NaiveDateTime::from_timestamp(1_325_242_800L, 0).unwrap()
+  assert_eq(loc.offset_from_utc(before), @tz.FixedOffset::east(-39600).unwrap())
+  assert_eq(loc.offset_from_utc(after), @tz.FixedOffset::east(46800).unwrap())
+}
+
+///|
+test "a pre-transition instant uses the first local time type when no transition refers to it, even if it observes DST" {
+  let loc = @tz.Location::from_tzif_bytes(tzif_unused_first_dst_type).unwrap()
+  let dt = @core.NaiveDateTime::from_timestamp(0L, 0).unwrap()
+  assert_eq(loc.offset_from_utc(dt), @tz.FixedOffset::east(3600).unwrap())
+}
+
+///|
+test "a pre-transition instant uses the standard type closest before the first transition's DST type" {
+  let loc = @tz.Location::from_tzif_bytes(
+    tzif_first_transition_to_dst_after_standard_types,
+  ).unwrap()
+  let dt = @core.NaiveDateTime::from_timestamp(0L, 0).unwrap()
+  assert_eq(loc.offset_from_utc(dt), @tz.FixedOffset::east(2000).unwrap())
+}

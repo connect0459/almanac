@@ -116,19 +116,29 @@ pub fn Location::utc() -> Location {
 
 ///|
 /// The local time type in effect before this zone's first recorded
-/// transition (or for its entire timeline, if it has none): the first
-/// non-DST type, or the first type if every type observes DST (RFC
-/// 8536's rule for pre-first-transition instants).
+/// transition (or for its entire timeline, if it has none):
+///
+/// 1. the first type, if no transition refers to it;
+/// 2. otherwise, if the first transition is to a DST type, the nearest
+///    non-DST type before that type;
+/// 3. otherwise, the first non-DST type;
+/// 4. otherwise, the first type.
 fn Location::initial_type(self : Location) -> LocalTimeType {
   let types = self.tzif.local_time_types
-  for i = 0 {
-    if i >= types.length() {
-      break types[0]
+  let transition_types = self.tzif.transition_types
+  if !transition_types.contains(0) {
+    return types[0]
+  }
+  if types[transition_types[0]].is_dst() {
+    for i = transition_types[0] - 1; i >= 0; i = i - 1 {
+      if !types[i].is_dst() {
+        return types[i]
+      }
     }
-    if !types[i].is_dst() {
-      break types[i]
-    }
-    continue i + 1
+  }
+  match types.iter().find_first(t => !t.is_dst()) {
+    Some(t) => t
+    None => types[0]
   }
 }
 
