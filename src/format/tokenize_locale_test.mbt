@@ -108,3 +108,26 @@ test "a layout may use the locale's own names" {
     "火曜日 3月 5日 100%",
   )
 }
+
+///|
+test "format_date renders the month in %v through the locale" {
+  let japanese = LocaleSpec::japanese().build()
+  let date = @core.NaiveDate::from_ymd(2024, 3, 5).unwrap()
+  assert_eq(@format.format_date(date, "%v", locale=japanese), " 5-3月-2024")
+  assert_eq(@format.format_date(date, "%v"), " 5-Mar-2024")
+}
+
+///|
+test "parse_date reads the month in %v through the locale" {
+  let japanese = LocaleSpec::japanese().build()
+  assert_eq(
+    @format.parse_date(" 5-3月-2024", "%v", locale=japanese),
+    @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
+  )
+  assert_eq(
+    parse_error_of(() => {
+      @format.parse_date(" 5-Mar-2024", "%v", locale=japanese) |> ignore
+    }),
+    "input does not match the format",
+  )
+}
