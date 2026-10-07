@@ -104,6 +104,40 @@ pub fn Location::load(name : String) -> Location? {
 }
 
 ///|
+fn is_safe_zone_name(name : String) -> Bool {
+  name.length() > 0 &&
+  !name.contains("..") &&
+  !name.contains("\u0000") &&
+  !name.has_prefix("/") &&
+  !name.has_prefix("\\")
+}
+
+///|
+/// Loads `name` from `<dir>/<name>` for each of `dirs` in order, reading
+/// files through `read_file`, then from the embedded zones. A file that is
+/// not valid TZif is skipped. `None` if no source has a usable `name`,
+/// including any `name` that is empty, absolute, or contains `..` or NUL.
+fn Location::load_from_dirs(
+  name : String,
+  dirs : Array[String],
+  read_file : (String) -> Bytes?,
+) -> Location? {
+  if !is_safe_zone_name(name) {
+    return None
+  }
+  for dir in dirs {
+    let path = if dir.has_suffix("/") { dir + name } else { dir + "/" + name }
+    let found = read_file(path).bind(bytes => {
+      Location::from_tzif_bytes_named(name, bytes)
+    })
+    if found is Some(_) {
+      return found
+    }
+  }
+  Location::load(name)
+}
+
+///|
 /// The UTC zone as a `Location`, for APIs that take a `Location` rather than
 /// the separate `Utc` type: the embedded `"UTC"` zone, so `name()` is
 /// `Some("UTC")`. Equal to `Location::load("UTC")`.

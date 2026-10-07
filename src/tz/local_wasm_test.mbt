@@ -71,3 +71,10 @@ test "Local::now() is the current instant expressed in the TZ zone" {
     assert_eq(now.offset(), @tz.FixedOffset::east(9 * 3600).unwrap())
   })
 }
+
+///|
+test "Location::load_system resolves like Location::load" {
+  let loc = @tz.Location::load_system("Asia/Tokyo").unwrap()
+  assert_eq(loc.name(), Some("Asia/Tokyo"))
+  assert_true(@tz.Location::load_system("Not/A_Zone") is None)
+}

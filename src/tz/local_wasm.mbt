@@ -7,3 +7,10 @@
 pub fn Local::new() -> Local? {
   Local::resolve(@env.get_env_var("TZ"), _ => None)
 }
+
+///|
+/// Loads the embedded zone `name`, exactly like `Location::load`: this
+/// backend has no file access, so there is no system zoneinfo to consult.
+pub fn Location::load_system(name : String) -> Location? {
+  Location::load(name)
+}

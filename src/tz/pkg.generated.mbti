@@ -212,6 +212,7 @@ pub fn Location::hash(Self) -> Int
 pub fn Location::hash_combine(Self, Hasher) -> Unit
 pub fn Location::is_dst(Self, @core.NaiveDateTime) -> Bool
 pub fn Location::load(String) -> Self?
+pub fn Location::load_system(String) -> Self?
 pub fn Location::name(Self) -> String?
 pub fn Location::not_equal(Self, Self) -> Bool
 pub fn Location::offset_from_abbreviation(Self, String, @core.NaiveDateTime) -> FixedOffset?
