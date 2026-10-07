@@ -1,7 +1,18 @@
 ///|
-/// Reads `/etc/localtime`'s raw bytes, or `Bytes::default()` if it could
-/// not be read.
-extern "C" fn read_etc_localtime() -> Bytes = "almanac_read_etc_localtime"
+/// Reads the file at the NUL-terminated `path`'s raw bytes, or
+/// `Bytes::default()` if it could not be read.
+#borrow(path)
+extern "C" fn read_file_bytes(path : Bytes) -> Bytes = "almanac_read_file"
+
+///|
+fn read_host_file(path : String) -> Bytes? {
+  let bytes = read_file_bytes(@utf8.encode(path) + b"\x00")
+  if bytes.length() == 0 {
+    None
+  } else {
+    Some(bytes)
+  }
+}
 
 ///|
 /// The host's configured local time zone, or `None` if it could not be
@@ -9,7 +20,7 @@ extern "C" fn read_etc_localtime() -> Bytes = "almanac_read_etc_localtime"
 /// pure function of its arguments; the `$TZ` precedence rules it applies are
 /// described on `Local`.
 pub fn Local::new() -> Local? {
-  Local::resolve(@env.get_env_var("TZ"), Some(read_etc_localtime()))
+  Local::resolve(@env.get_env_var("TZ"), read_host_file)
 }
 
 ///|

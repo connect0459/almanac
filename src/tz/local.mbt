@@ -14,25 +14,37 @@ pub struct Local {
 }
 
 ///|
-/// Resolves `tz_env` (the `TZ` environment variable) and `localtime_bytes`
-/// (raw TZif bytes, e.g. from `/etc/localtime`) into a `Local`, following
-/// the same precedence as the POSIX `TZ` convention: an empty `TZ` means
-/// UTC, a non-empty `TZ` is looked up as an IANA zone name and, failing
-/// that, parsed as a bare POSIX rule (e.g. `JST-9`); `None` if it is
-/// neither, regardless of `localtime_bytes`. `localtime_bytes` is only
-/// consulted when `TZ` is unset entirely.
-fn Local::resolve(tz_env : String?, localtime_bytes : Bytes?) -> Local? {
+/// Resolves `tz_env` (the `TZ` environment variable) into a `Local`, reading
+/// files through `read_file` (a path to its raw bytes, `None` if unreadable).
+/// One leading `:` of `TZ` is ignored. Then an empty `TZ` (including a lone
+/// `:`) means UTC; a `TZ` starting with `/` is the path of a TZif file; any
+/// other value is looked up as an IANA zone name and, failing that, parsed as
+/// a bare POSIX rule (e.g. `JST-9`). `None` if the value is none of these or
+/// the file cannot be read as TZif. When `TZ` is unset entirely,
+/// `/etc/localtime` is read instead.
+fn Local::resolve(tz_env : String?, read_file : (String) -> Bytes?) -> Local? {
+  let from_file = path => {
+    read_file(path)
+    .bind(bytes => Location::from_tzif_bytes(bytes))
+    .map(loc => Local::{ kind: Iana(loc), })
+  }
   match tz_env {
-    Some("") => Some(Local::{ kind: Fixed(FixedOffset::east(0).unwrap()), })
-    Some(name) =>
-      match Location::load(name) {
-        Some(loc) => Some(Local::{ kind: Iana(loc), })
-        None => parse_posix_tz(name).map(p => Local::{ kind: Posix(p), })
+    None => from_file("/etc/localtime")
+    Some(value) => {
+      let name = match value {
+        [':', .. rest] => rest.to_owned()
+        _ => value
       }
-    None =>
-      localtime_bytes
-      .bind(bytes => Location::from_tzif_bytes(bytes))
-      .map(loc => Local::{ kind: Iana(loc), })
+      match name {
+        "" => Some(Local::{ kind: Fixed(FixedOffset::east(0).unwrap()), })
+        ['/', ..] => from_file(name)
+        _ =>
+          match Location::load(name) {
+            Some(loc) => Some(Local::{ kind: Iana(loc), })
+            None => parse_posix_tz(name).map(p => Local::{ kind: Posix(p), })
+          }
+      }
+    }
   }
 }
 
