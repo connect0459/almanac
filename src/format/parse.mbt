@@ -78,8 +78,9 @@ pub fn Parsed::zone_name(self : Parsed) -> String? {
 /// Returns a copy that reads `year` as the calendar year when the input named
 /// none, so a layout without a year (such as `STAMP`) can be resolved. A year
 /// the input did name (`%Y`, `%y`, `%C`, an ISO week year) or a `%s`
-/// timestamp is never overridden. The supplied year takes part in the usual
-/// checks: a leap day needs a leap year, and a weekday must match the date.
+/// timestamp is never overridden, and a partial year such as a lone `%C` is
+/// not completed. The supplied year takes part in the usual checks: a leap day
+/// needs a leap year, and a weekday must match the date.
 pub fn Parsed::with_default_year(self : Parsed, year : Int) -> Parsed {
   if self.year is None &&
     self.year_div_100 is None &&
