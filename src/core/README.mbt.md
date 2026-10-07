@@ -308,7 +308,7 @@ A time of day, precise to the nanosecond. Constructors are `Option`-returning. S
 
 ### `Datelike` / `Timelike`
 
-Read-only traits for code that should accept any value carrying a date or a time of day. `Datelike` is implemented by `NaiveDate`, `NaiveDateTime` and `DateTime[Tz]` (its local date); `Timelike` by `NaiveTime`, `NaiveDateTime` and `DateTime[Tz]` (its local time). Both are `pub(open)`, so a caller's own type can implement them too.
+Read-only traits for code that should accept any value carrying a date or a time of day. `Datelike` is implemented by `NaiveDate`, `NaiveDateTime` and `DateTime[Tz]` (its local date); `Timelike` by `NaiveTime`, `NaiveDateTime` and `DateTime[Tz]` (its local time). Both are `pub(open)`, so a caller's own type can implement them too by providing only the required methods. The required methods are a compatibility commitment: a method added to a trait later always has a default implementation, so adding one never breaks an existing implementation. Changing an existing method follows the module's normal versioning.
 
 | Trait | Required methods | Provided methods |
 | :--- | :--- | :--- |

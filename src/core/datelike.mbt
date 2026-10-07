@@ -3,9 +3,10 @@
 /// code can accept a `NaiveDate`, a `NaiveDateTime` or a `DateTime` alike.
 /// Implemented by `NaiveDate`, `NaiveDateTime` and `tz`'s `DateTime[Tz]`,
 /// which reports its local date. Only `year`, `month`, `day`, `ordinal` and
-/// `weekday` are required; the rest derive from them. The `with_*`
-/// modifiers are not part of the trait, because their return types differ
-/// per type.
+/// `weekday` are required; the rest derive from them. A method added later
+/// always has a default, so adding one never breaks an implementation. The
+/// `with_*` modifiers are not part of the trait, because their return types
+/// differ per type.
 pub(open) trait Datelike {
   fn year(Self) -> Int
   fn month(Self) -> Month
@@ -130,8 +131,9 @@ pub impl Datelike for NaiveDateTime with fn weekday(self) {
 /// code can accept a `NaiveTime`, a `NaiveDateTime` or a `DateTime` alike.
 /// Implemented by `NaiveTime`, `NaiveDateTime` and `tz`'s `DateTime[Tz]`,
 /// which reports its local time. Only `hour`, `minute`, `second` and
-/// `nanosecond` are required; the rest derive from them. `nanosecond` may
-/// reach `1_999_999_999` during a leap second.
+/// `nanosecond` are required; the rest derive from them. A method added later
+/// always has a default, so adding one never breaks an implementation.
+/// `nanosecond` may reach `1_999_999_999` during a leap second.
 pub(open) trait Timelike {
   fn hour(Self) -> Int
   fn minute(Self) -> Int
