@@ -79,6 +79,17 @@ pub fn WeekdaySet::from_array(days : Array[Weekday]) -> WeekdaySet {
 }
 
 ///|
+/// A set containing exactly the weekdays the iterator yields; repeated
+/// weekdays count once and the order is irrelevant.
+pub fn WeekdaySet::from_iter(days : Iter[Weekday]) -> WeekdaySet {
+  let mut bits = 0
+  for day in days {
+    bits = bits | bit_for(day)
+  }
+  { bits, }
+}
+
+///|
 /// `Some(day)` if the set contains exactly one weekday, `None` otherwise; the
 /// inverse of `WeekdaySet::single`.
 pub fn WeekdaySet::single_day(self : WeekdaySet) -> Weekday? {

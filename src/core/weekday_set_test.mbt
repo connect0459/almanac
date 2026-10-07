@@ -55,6 +55,39 @@ test "from_array of an empty array yields the empty set" {
 }
 
 ///|
+test "from_iter builds a set from the weekdays an iterator yields" {
+  let s = @core.WeekdaySet::from_iter([@core.Mon, @core.Wed, @core.Fri].iter())
+  assert_eq(s, @core.WeekdaySet::from_array([@core.Mon, @core.Wed, @core.Fri]))
+}
+
+///|
+test "from_iter of an empty iterator yields the empty set" {
+  assert_eq(
+    @core.WeekdaySet::from_iter(([] : Array[@core.Weekday]).iter()),
+    @core.WeekdaySet::empty(),
+  )
+}
+
+///|
+test "from_iter ignores repeated weekdays and the order they arrive in" {
+  let s = @core.WeekdaySet::from_iter(
+    [@core.Fri, @core.Mon, @core.Fri, @core.Mon].iter(),
+  )
+  assert_eq(s, @core.WeekdaySet::from_array([@core.Mon, @core.Fri]))
+}
+
+///|
+test "from_iter accepts a filtered iterator" {
+  let weekend = @core.WeekdaySet::all()
+    .iter()
+    .filter(day => day == @core.Sat || day == @core.Sun)
+  assert_eq(
+    @core.WeekdaySet::from_iter(weekend),
+    @core.WeekdaySet::from_array([@core.Sat, @core.Sun]),
+  )
+}
+
+///|
 test "single_day recognizes a set with exactly one member" {
   for
     day in [
