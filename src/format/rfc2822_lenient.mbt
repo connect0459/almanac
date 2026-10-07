@@ -203,9 +203,8 @@ fn skip_comments(chars : Array[Char], pos : Int) -> Int {
 /// Whitespace after the last field or comment is not accepted, and neither
 /// is a leap second (`:60`), as with `parse_rfc2822`.
 ///
-/// Not a superset of `parse_rfc2822`: a day of week that disagrees with the
-/// date, and a long day name such as `Tuesday`, are read by `parse_rfc2822`
-/// but rejected here. Raises `InvalidRfc2822` on any mismatch.
+/// A superset of `parse_rfc2822`: every string `parse_rfc2822` reads is read
+/// the same way here. Raises `InvalidRfc2822` on any mismatch.
 pub fn parse_rfc2822_lenient(
   s : String,
 ) -> @tz.DateTime[@tz.FixedOffset] raise FormatError {

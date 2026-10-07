@@ -73,16 +73,14 @@ test "parse_rfc2822_lenient reads a conforming date the way the strict parser do
 }
 
 ///|
-test "parse_rfc2822_lenient rejects a day of week that disagrees with the date, which the strict parser ignores" {
+test "parse_rfc2822_lenient rejects a day of week that disagrees with the date" {
   let input = "Mon, 20 Jan 2015 17:35:20 -0800"
-  @format.parse_rfc2822(input) |> ignore
   assert_lenient_rejects(input)
 }
 
 ///|
-test "parse_rfc2822_lenient rejects a long day name, which the strict parser reads" {
+test "parse_rfc2822_lenient rejects a long day name" {
   let input = "Tuesday, 20 Jan 2015 17:35:20 -0800"
-  @format.parse_rfc2822(input) |> ignore
   assert_lenient_rejects(input)
 }
 
@@ -300,5 +298,28 @@ test "parse_rfc2822_lenient rejects fields that are out of range" {
       "20 Jan 2015 17:35:90 -0800", "20 Jan 2015 17:35:20 +9900",
     ] {
     assert_lenient_rejects(bad)
+  }
+}
+
+///|
+test "parse_rfc2822_lenient reads every date that parse_rfc2822 reads, the same way" {
+  let months = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
+    "Dec",
+  ]
+  for month_index in 0..<12 {
+    for day in [1, 9, 10, 28] {
+      let date = @core.NaiveDate::from_ymd(2015, month_index + 1, day).unwrap()
+      let weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][date
+        .weekday()
+        .num_days_from_sunday()]
+      for zone in ["+0000", "-0000", "-0800", "+1400", "+0530"] {
+        let input = "\{weekday}, \{day} \{months[month_index]} 2015 17:35:20 \{zone}"
+        assert_eq(
+          @format.parse_rfc2822_lenient(input),
+          @format.parse_rfc2822(input),
+        )
+      }
+    }
   }
 }
