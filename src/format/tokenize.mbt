@@ -9,6 +9,7 @@ fn resolve_specifier(
   chars : Array[Char],
   pos : Int,
   n : Int,
+  locale : Locale,
 ) -> (Array[Item], Int) raise FormatError {
   match chars[pos] {
     'Y' => ([Numeric(Year)], pos + 1)
@@ -91,7 +92,11 @@ fn resolve_specifier(
         ],
         pos + 1,
       )
-    'D' | 'x' =>
+    'x' => (tokenize(locale.date_format(), locale~), pos + 1)
+    'X' => (tokenize(locale.time_format(), locale~), pos + 1)
+    'c' => (tokenize(locale.date_time_format(), locale~), pos + 1)
+    'r' => (tokenize(locale.time_format_12h(), locale~), pos + 1)
+    'D' =>
       (
         [
           Numeric(Month),
@@ -114,49 +119,6 @@ fn resolve_specifier(
         pos + 1,
       )
     'R' => ([Numeric(Hour), Literal(":"), Numeric(Minute)], pos + 1)
-    'X' =>
-      (
-        [
-          Numeric(Hour),
-          Literal(":"),
-          Numeric(Minute),
-          Literal(":"),
-          Numeric(Second),
-        ],
-        pos + 1,
-      )
-    'r' =>
-      (
-        [
-          Numeric(Hour12),
-          Literal(":"),
-          Numeric(Minute),
-          Literal(":"),
-          Numeric(Second),
-          Literal(" "),
-          Fixed(AmPmUpper),
-        ],
-        pos + 1,
-      )
-    'c' =>
-      (
-        [
-          Fixed(ShortWeekdayName),
-          Literal(" "),
-          Fixed(ShortMonthName),
-          Literal(" "),
-          Numeric(DayBlank),
-          Literal(" "),
-          Numeric(Hour),
-          Literal(":"),
-          Numeric(Minute),
-          Literal(":"),
-          Numeric(Second),
-          Literal(" "),
-          Numeric(Year),
-        ],
-        pos + 1,
-      )
     '+' => ([Rfc3339], pos + 1)
     '.' =>
       if pos + 1 < n && chars[pos + 1] == 'f' {
@@ -194,10 +156,21 @@ fn resolve_specifier(
 }
 
 ///|
+fn is_layout_specifier(c : Char) -> Bool {
+  c == 'x' || c == 'X' || c == 'c' || c == 'r'
+}
+
+///|
 /// Parses a `%`-specifier format string into a sequence of `Item`s,
 /// coalescing consecutive literal characters into a single `Literal` item
-/// and expanding `%F`/`%T` into their equivalent specifier sequences.
-pub fn tokenize(fmt : String) -> Array[Item] raise FormatError {
+/// and expanding `%F`/`%T`/`%D`/`%R`/`%v` into their equivalent specifier
+/// sequences. `%x`, `%X`, `%c` and `%r` expand to the layouts of `locale`
+/// (`Locale::posix()` by default); the names a specifier renders or parses
+/// come from the locale when the items are used, not here.
+pub fn tokenize(
+  fmt : String,
+  locale? : Locale = Locale::posix(),
+) -> Array[Item] raise FormatError {
   let chars = fmt.to_array()
   let n = chars.length()
   let items = []
@@ -234,7 +207,7 @@ pub fn tokenize(fmt : String) -> Array[Item] raise FormatError {
     }
     match pad_mode {
       None => {
-        let (resolved, next_pos) = resolve_specifier(chars, i + 1, n)
+        let (resolved, next_pos) = resolve_specifier(chars, i + 1, n, locale)
         flush_literal()
         for item in resolved {
           items.push(item)
@@ -245,8 +218,11 @@ pub fn tokenize(fmt : String) -> Array[Item] raise FormatError {
         if i + 2 >= n {
           raise TrailingPercent
         }
-        let (resolved, next_pos) = resolve_specifier(chars, i + 2, n)
+        let (resolved, next_pos) = resolve_specifier(chars, i + 2, n, locale)
         flush_literal()
+        if is_layout_specifier(chars[i + 2]) {
+          raise UnknownSpecifier(chars[i + 1])
+        }
         if resolved.length() == 1 {
           match resolved[0] {
             // The fractional-second family and %s have no fixed width to

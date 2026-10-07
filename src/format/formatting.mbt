@@ -637,7 +637,7 @@ pub fn format_date(
   fmt : String,
   locale? : Locale = Locale::posix(),
 ) -> String raise FormatError {
-  format_date_items(date, tokenize(fmt), locale~)
+  format_date_items(date, tokenize(fmt, locale~), locale~)
 }
 
 ///|
@@ -646,7 +646,7 @@ pub fn format_time(
   fmt : String,
   locale? : Locale = Locale::posix(),
 ) -> String raise FormatError {
-  format_time_items(time, tokenize(fmt), locale~)
+  format_time_items(time, tokenize(fmt, locale~), locale~)
 }
 
 ///|
@@ -655,7 +655,7 @@ pub fn format_date_time(
   fmt : String,
   locale? : Locale = Locale::posix(),
 ) -> String raise FormatError {
-  format_date_time_items(dt, tokenize(fmt), locale~)
+  format_date_time_items(dt, tokenize(fmt, locale~), locale~)
 }
 
 ///|
@@ -669,5 +669,5 @@ pub fn[Tz : @tz.TimeZone] format_date_time_tz(
   fmt : String,
   locale? : Locale = Locale::posix(),
 ) -> String raise FormatError {
-  format_date_time_tz_items(dt, tokenize(fmt), locale~)
+  format_date_time_tz_items(dt, tokenize(fmt, locale~), locale~)
 }
