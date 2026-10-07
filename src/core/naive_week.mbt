@@ -15,7 +15,19 @@
 pub struct NaiveWeek {
   priv date : NaiveDate
   priv start : Weekday
+}
+
+///|
+priv struct NaiveWeekDebugView {
+  first_day : Int64
 } derive(@debug.Debug)
+
+///|
+pub impl @debug.Debug for NaiveWeek with fn to_repr(self) {
+  @debug.Debug::to_repr(NaiveWeekDebugView::{
+    first_day: self.first_epoch_days(),
+  })
+}
 
 ///|
 fn NaiveWeek::first_epoch_days(self : NaiveWeek) -> Int64 {

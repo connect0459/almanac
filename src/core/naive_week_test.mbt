@@ -160,7 +160,7 @@ test "a week reaching before the first representable date has no checked first d
   let week = date.week(date.weekday().succ())
   assert_eq(week.checked_first_day(), None)
   assert_eq(week.checked_days(), None)
-  assert_eq(week.checked_last_day(), date.checked_add_days(0))
+  assert_eq(week.checked_last_day(), Some(date))
 }
 
 ///|
@@ -191,27 +191,50 @@ test "checked accessors agree with the total ones for an ordinary week" {
 }
 
 ///|
-test "a week reaching before the first representable date still equals itself and orders before the next week" {
+test "dates of the same week that reaches before the first representable date give equal weeks" {
   let date = week_min_date()
-  let start = date.weekday().succ()
-  let week = date.week(start)
-  let next = date.checked_add_days(1).unwrap().week(start)
-  assert_eq(week, date.week(start))
-  assert_eq(week.hash(), date.week(start).hash())
-  assert_true(week != next)
-  assert_true(week < next)
+  let start = date.weekday().succ().succ()
+  let a = date.week(start)
+  let b = date.checked_add_days(1).unwrap().week(start)
+  assert_eq(a.checked_first_day(), None)
+  assert_eq(a, b)
+  assert_eq(a.hash(), b.hash())
+  assert_eq(a.compare(b), 0)
+  assert_true(a < date.checked_add_days(7).unwrap().week(start))
 }
 
 ///|
-test "a week reaching past the last representable date still equals itself and orders after the previous week" {
+test "dates of the same week that reaches past the last representable date give equal weeks" {
   let date = week_max_date()
-  let start = date.weekday()
-  let week = date.week(start)
-  let previous = date.checked_sub_days(1).unwrap().week(start)
-  assert_eq(week, date.week(start))
-  assert_eq(week.hash(), date.week(start).hash())
-  assert_true(week != previous)
-  assert_true(previous < week)
+  let start = date.weekday().succ().succ()
+  let a = date.week(start)
+  let b = date.checked_sub_days(1).unwrap().week(start)
+  assert_eq(a.checked_last_day(), None)
+  assert_eq(a, b)
+  assert_eq(a.hash(), b.hash())
+  assert_eq(a.compare(b), 0)
+  assert_true(date.checked_sub_days(7).unwrap().week(start) < a)
+}
+
+///|
+test "debug output shows the first day alone, whichever date the week was built from" {
+  let monday = @core.NaiveDate::from_ymd(2024, 2, 26).unwrap()
+  let thursday = @core.NaiveDate::from_ymd(2024, 2, 29).unwrap()
+  assert_eq(
+    @debug.to_string(thursday.week(@core.Mon)),
+    @debug.to_string(monday.week(@core.Mon)),
+  )
+  inspect(
+    @debug.to_string(monday.week(@core.Mon)),
+    content="{ first_day: 19779 }",
+  )
+}
+
+///|
+test "debug output of a week reaching before the first representable date does not abort" {
+  let date = week_min_date()
+  let week = date.week(date.weekday().succ())
+  inspect(@debug.to_string(week), content="{ first_day: -2146764185 }")
 }
 
 ///|

@@ -317,7 +317,7 @@ pub impl Show for NaiveTime
 
 pub struct NaiveWeek {
   // private fields
-} derive(@debug.Debug)
+}
 pub fn NaiveWeek::checked_days(Self) -> Array[NaiveDate]?
 pub fn NaiveWeek::checked_first_day(Self) -> NaiveDate?
 pub fn NaiveWeek::checked_last_day(Self) -> NaiveDate?
@@ -337,6 +337,7 @@ pub fn NaiveWeek::to_repr(Self) -> @debug.Repr
 pub impl Compare for NaiveWeek
 pub impl Eq for NaiveWeek
 pub impl Hash for NaiveWeek
+pub impl @debug.Debug for NaiveWeek
 
 pub(all) enum RoundingError {
   InvalidGranularity
