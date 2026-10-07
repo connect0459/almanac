@@ -7,9 +7,10 @@ priv enum LocalKind {
 
 ///|
 /// The host's configured local time zone. On `native` it is resolved from
-/// `$TZ` or, when unset, `/etc/localtime`; on `js` from the runtime's
-/// `Intl` zone name; on `wasm` and `wasm-gc` from `$TZ` alone, since neither
-/// has host-provided file access.
+/// `$TZ` or, when unset, `/etc/localtime`, with zone names also looked up in
+/// the zoneinfo directories of `Location::load_system`; on `js` from the
+/// runtime's `Intl` zone name; on `wasm` and `wasm-gc` from `$TZ` alone, since
+/// neither has host-provided file access.
 pub struct Local {
   priv kind : LocalKind
 }
@@ -20,10 +21,15 @@ pub struct Local {
 /// One leading `:` of `TZ` is ignored. Then an empty `TZ` (including a lone
 /// `:`) means UTC; a `TZ` starting with `/` is the path of a TZif file; any
 /// other value is looked up as an IANA zone name and, failing that, parsed as
-/// a bare POSIX rule (e.g. `JST-9`). `None` if the value is none of these or
-/// the file cannot be read as TZif. When `TZ` is unset entirely,
+/// a bare POSIX rule (e.g. `JST-9`). A zone name is searched in
+/// `zoneinfo_dirs` before the embedded zones. `None` if the value is none of
+/// these or the file cannot be read as TZif. When `TZ` is unset entirely,
 /// `/etc/localtime` is read instead.
-fn Local::resolve(tz_env : String?, read_file : (String) -> Bytes?) -> Local? {
+fn Local::resolve(
+  tz_env : String?,
+  read_file : (String) -> Bytes?,
+  zoneinfo_dirs? : Array[String] = [],
+) -> Local? {
   let from_file = path => {
     read_file(path)
     .bind(bytes => Location::from_tzif_bytes(bytes))
@@ -40,7 +46,7 @@ fn Local::resolve(tz_env : String?, read_file : (String) -> Bytes?) -> Local? {
         "" => Some(Local::{ kind: Fixed(FixedOffset::east(0).unwrap()), })
         ['/', ..] => from_file(name)
         _ =>
-          match Location::load(name) {
+          match Location::load_from_dirs(name, zoneinfo_dirs, read_file) {
             Some(loc) => Some(Local::{ kind: Iana(loc), })
             None => parse_posix_tz(name).map(p => Local::{ kind: Posix(p), })
           }

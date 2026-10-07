@@ -19,3 +19,10 @@ test "Local::now() uses the same zone as Local::new()" {
   assert_eq(now.offset(), zone.offset_from_utc(now.naive_utc()))
   assert_eq(now.zone_name(), zone.zone_name(now.naive_utc()))
 }
+
+///|
+test "Location::load_system resolves like Location::load" {
+  let loc = @tz.Location::load_system("Asia/Tokyo").unwrap()
+  assert_eq(loc.name(), Some("Asia/Tokyo"))
+  assert_true(@tz.Location::load_system("Not/A_Zone") is None)
+}

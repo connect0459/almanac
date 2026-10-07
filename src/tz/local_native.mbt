@@ -20,5 +20,40 @@ fn read_host_file(path : String) -> Bytes? {
 /// pure function of its arguments; the `$TZ` precedence rules it applies are
 /// described on `Local`.
 pub fn Local::new() -> Local? {
-  Local::resolve(@env.get_env_var("TZ"), read_host_file)
+  Local::resolve(
+    @env.get_env_var("TZ"),
+    read_host_file,
+    zoneinfo_dirs=zoneinfo_dirs(@env.get_env_var("ZONEINFO")),
+  )
+}
+
+///|
+/// The directories searched for TZif files by name: the `ZONEINFO` directory
+/// when set and non-empty, then the standard system locations.
+fn zoneinfo_dirs(zoneinfo_env : String?) -> Array[String] {
+  let standard = [
+    "/usr/share/zoneinfo", "/usr/share/lib/zoneinfo", "/usr/lib/locale/TZ", "/etc/zoneinfo",
+  ]
+  match zoneinfo_env {
+    Some(dir) if dir != "" => [dir, ..standard]
+    _ => standard
+  }
+}
+
+///|
+/// Loads the zone `name` (e.g. `"Asia/Tokyo"`) from the first of these that
+/// has it: the directory named by `$ZONEINFO`, the system zoneinfo
+/// directories (`/usr/share/zoneinfo` and its peers), then the embedded
+/// database. This lets a host's tzdata newer than the embedded release take
+/// effect. `None` if no source has `name`, or `name` is empty, absolute, or
+/// contains `..`. Whether a file name matches regardless of case follows the
+/// host file system (e.g. `"asia/tokyo"` is found on macOS); the embedded
+/// database is always case-sensitive. Reads live OS state, so it is not a pure function of its
+/// arguments; `Location::load` is the embedded-only counterpart.
+pub fn Location::load_system(name : String) -> Location? {
+  Location::load_from_dirs(
+    name,
+    zoneinfo_dirs(@env.get_env_var("ZONEINFO")),
+    read_host_file,
+  )
 }
