@@ -71,11 +71,7 @@ pub fn WeekdaySet::single(day : Weekday) -> WeekdaySet {
 ///|
 /// A set containing exactly the given weekdays.
 pub fn WeekdaySet::from_array(days : Array[Weekday]) -> WeekdaySet {
-  let mut bits = 0
-  for day in days {
-    bits = bits | bit_for(day)
-  }
-  { bits, }
+  WeekdaySet::from_iter(days.iter())
 }
 
 ///|
