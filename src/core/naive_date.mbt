@@ -623,13 +623,11 @@ pub fn NaiveDate::checked_sub_years(
 
 ///|
 /// The calendar week containing this date, with weeks starting on `start`.
+///
+/// Total: a week that extends past the representable range can still be
+/// constructed (see `NaiveWeek`).
 pub fn NaiveDate::week(self : NaiveDate, start : Weekday) -> NaiveWeek {
-  let start_days = start.num_days_from_monday()
-  let ref_days = self.weekday().num_days_from_monday()
-  let offset = start_days -
-    ref_days -
-    (if start_days > ref_days { 7 } else { 0 })
-  NaiveWeek::{ first_day: self.add_days(offset), start, }
+  NaiveWeek::{ date: self, start, }
 }
 
 ///|

@@ -22,7 +22,7 @@ Calendar and clock primitives with no time zone awareness. Import `connect0459/a
 
 `NaiveDate` (`1970-01-01`), `NaiveTime` (midnight), `NaiveDateTime` (the Unix epoch), `TimeDelta` (zero) and `WeekdaySet` (empty) implement `Default`. Struct-valued constants are exposed as functions (`NaiveTime::midnight()`, `NaiveDateTime::unix_epoch()`, `TimeDelta::zero()`) because MoonBit's `const` is limited to primitive types.
 
-Every value type above (all but the two iterators) implements `Hash` consistently with its `Eq`, so values can be `Map` keys. `NaiveWeek` hashes by `first_day()` alone, matching its `Eq`: two weeks anchored on different dates of the same calendar week are equal and hash equally.
+Every value type above (all but the two iterators) implements `Hash` consistently with its `Eq`, so values can be `Map` keys. `NaiveWeek` hashes by its first day alone, matching its `Eq`: two weeks anchored on different dates of the same calendar week are equal and hash equally.
 
 ## Quick start
 
@@ -215,7 +215,7 @@ A proleptic Gregorian calendar date. Constructors are `Option`-returning: an inv
 | `checked_add_months(Int)` / `checked_sub_months(Int)` | `-> Self?` | As `add_months`/`sub_months`, but `None` if out of range |
 | `add_years(Int)` / `sub_years(Int)` | `-> Self` | Shift by whole years, clamping February 29 to February 28 in a non-leap year (same as `add_months(12 * years)`) |
 | `checked_add_years(Int)` / `checked_sub_years(Int)` | `-> Self?` | As `add_years`/`sub_years`, but `None` if out of range |
-| `week(Weekday)` | `-> NaiveWeek` | The calendar week containing this date, with weeks starting on the given weekday |
+| `week(Weekday)` | `-> NaiveWeek` | The calendar week containing this date, with weeks starting on the given weekday (total, even at the range edges) |
 | `years_since(Self)` | `-> Int?` | Full elapsed calendar years from `other` to `self` (a year counts once the month and day have both recurred); `None` if `self` is before `other` |
 | `quarter()` | `-> Int` | Calendar quarter, `1..=4` |
 | `iter_days()` | `-> NaiveDateDaysIterator` | Lazy, bounded, double-ended iterator over successive dates one day apart, starting from `self` |
@@ -239,13 +239,18 @@ Returned by `NaiveDate::iter_days`/`iter_weeks`. Both are lazy and double-ended:
 
 ### `NaiveWeek`
 
-The week containing a `NaiveDate`, under a configurable first day of the week (via `NaiveDate::week`). Distinct from `IsoWeek`, which is always Monday-based and tied to the ISO 8601 week-numbering year. Two `NaiveWeek`s are equal (and compare) by the calendar week they denote — `first_day()` alone — regardless of which date within it was used to construct them.
+The week containing a `NaiveDate`, under a configurable first day of the week (via `NaiveDate::week`). Distinct from `IsoWeek`, which is always Monday-based and tied to the ISO 8601 week-numbering year. Two `NaiveWeek`s are equal (and compare) by the calendar week they denote — their first day alone — regardless of which date within it was used to construct them.
 
 | Method | Signature | Description |
 | :--- | :--- | :--- |
-| `first_day()` | `-> NaiveDate` | The first day of the week |
-| `last_day()` | `-> NaiveDate` | The last day of the week, six days after `first_day()` |
-| `days()` | `-> Array[NaiveDate]` | All seven days of the week, from `first_day()` to `last_day()` |
+| `first_day()` | `-> NaiveDate` | The first day of the week; aborts if it falls before the representable range |
+| `last_day()` | `-> NaiveDate` | The last day of the week, six days after the first; aborts if it falls after the representable range |
+| `days()` | `-> Array[NaiveDate]` | All seven days of the week, from the first day to the last; aborts if any is out of range |
+| `checked_first_day()` | `-> NaiveDate?` | `first_day()`, or `None` if it is out of range |
+| `checked_last_day()` | `-> NaiveDate?` | `last_day()`, or `None` if it is out of range |
+| `checked_days()` | `-> Array[NaiveDate]?` | `days()`, or `None` if any day is out of range |
+
+`NaiveDate::week` is total: a week at either end of the representable range can still be constructed, compared and hashed, and only the accessors above can leave the range.
 
 `NaiveWeek` also implements `Eq` and `Compare` (`<`/`<=`/`>`/`>=` via `compare`).
 
