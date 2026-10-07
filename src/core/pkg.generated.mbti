@@ -154,6 +154,7 @@ pub fn NaiveDate::year(Self) -> Int
 pub fn NaiveDate::year_ce(Self) -> YearCe
 pub fn NaiveDate::years_since(Self, Self) -> Int?
 pub fn NaiveDate::ymd(Self) -> (Int, Month, Int)
+pub impl Datelike for NaiveDate
 pub impl Default for NaiveDate
 pub impl Show for NaiveDate
 
@@ -260,6 +261,8 @@ pub fn NaiveDateTime::year(Self) -> Int
 pub fn NaiveDateTime::year_ce(Self) -> YearCe
 pub fn NaiveDateTime::years_since(Self, Self) -> Int?
 pub fn NaiveDateTime::ymd(Self) -> (Int, Month, Int)
+pub impl Datelike for NaiveDateTime
+pub impl Timelike for NaiveDateTime
 pub impl Default for NaiveDateTime
 pub impl Show for NaiveDateTime
 
@@ -312,6 +315,7 @@ pub fn NaiveTime::with_nanosecond(Self, Int) -> Self?
 pub fn NaiveTime::with_second(Self, Int) -> Self?
 pub fn NaiveTime::wrapping_add_signed(Self, TimeDelta) -> Self
 pub fn NaiveTime::wrapping_sub_signed(Self, TimeDelta) -> Self
+pub impl Timelike for NaiveTime
 pub impl Default for NaiveTime
 pub impl Show for NaiveTime
 
@@ -505,3 +509,28 @@ pub fn YearCe::year(Self) -> Int
 // Type aliases
 
 // Traits
+pub(open) trait Datelike {
+  fn year(Self) -> Int
+  fn month(Self) -> Month
+  fn day(Self) -> Int
+  fn ordinal(Self) -> Int
+  fn weekday(Self) -> Weekday
+  fn month0(Self) -> Int = _
+  fn day0(Self) -> Int = _
+  fn ordinal0(Self) -> Int = _
+  fn quarter(Self) -> Int = _
+  fn year_ce(Self) -> YearCe = _
+  fn num_days_in_month(Self) -> Int = _
+  fn leap_year(Self) -> Bool = _
+  fn num_days_from_ce(Self) -> Int = _
+  fn iso_week(Self) -> IsoWeek = _
+}
+
+pub(open) trait Timelike {
+  fn hour(Self) -> Int
+  fn minute(Self) -> Int
+  fn second(Self) -> Int
+  fn nanosecond(Self) -> Int
+  fn hour12(Self) -> ClockHour12 = _
+  fn num_seconds_from_midnight(Self) -> Int = _
+}

@@ -172,8 +172,12 @@ pub fn NaiveDate::leap_year(self : NaiveDate) -> Bool {
 /// week, since the ISO week containing a year's first Thursday is always
 /// that year's week 1.
 pub fn NaiveDate::iso_week(self : NaiveDate) -> IsoWeek {
-  let thursday_offset = 4 - self.weekday().number_from_monday()
-  let thursday_days = self.days + thursday_offset
+  iso_week_of(self.days, self.weekday())
+}
+
+///|
+fn iso_week_of(days : Int, weekday : Weekday) -> IsoWeek {
+  let thursday_days = days + 4 - weekday.number_from_monday()
   let (thursday_year, _, _) = civil_from_days(thursday_days)
   let yday = thursday_days - days_from_civil(thursday_year, 1, 1) + 1
   IsoWeek::{ year: thursday_year, week: (yday - 1) / 7 + 1, }

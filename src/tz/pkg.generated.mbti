@@ -125,6 +125,8 @@ pub fn[Tz : TimeZone, Tz2] DateTime::years_since(Self[Tz], Self[Tz2]) -> Int?
 pub fn[Tz : TimeZone] DateTime::ymd(Self[Tz]) -> (Int, @core.Month, Int)
 pub fn[Tz : TimeZone] DateTime::zone_bounds(Self[Tz]) -> TransitionBounds
 pub fn[Tz : TimeZone] DateTime::zone_name(Self[Tz]) -> String
+pub impl[Tz : TimeZone] @core.Datelike for DateTime[Tz]
+pub impl[Tz : TimeZone] @core.Timelike for DateTime[Tz]
 pub impl[Tz] Compare for DateTime[Tz]
 pub impl Default for DateTime[Utc]
 pub impl[Tz] Eq for DateTime[Tz]
