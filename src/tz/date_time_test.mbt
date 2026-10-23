@@ -1636,3 +1636,132 @@ test "add_period with a negative period reports Absent when the wall clock lands
     .unwrap()
   assert_true(after.add_period(@core.Period::new(days=-1)) is @tz.Absent)
 }
+
+///|
+test "sub_period moves the local wall clock back in a fixed-offset zone and clamps to the month end" {
+  let fixed = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let dt = @tz.DateTime::from_ymd_hms(2024, 3, 31, 12, 30, 0, fixed)
+    .single()
+    .unwrap()
+  let moved = dt.sub_period(@core.Period::new(months=1)).single().unwrap()
+  assert_eq(
+    moved.naive_local(),
+    @core.NaiveDateTime::new(
+      @core.NaiveDate::from_ymd(2024, 2, 29).unwrap(),
+      @core.NaiveTime::from_hms(12, 30, 0).unwrap(),
+    ),
+  )
+  assert_eq(moved.offset(), fixed)
+}
+
+///|
+test "sub_period by a zero period returns the same instant" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let dt = @tz.DateTime::from_ymd_hms(2024, 6, 15, 12, 0, 0, ny)
+    .single()
+    .unwrap()
+  assert_eq(dt.sub_period(@core.Period::zero()).single().unwrap(), dt)
+}
+
+///|
+test "sub_period with a negative period moves the wall clock forward" {
+  let fixed = @tz.FixedOffset::east(0).unwrap()
+  let dt = @tz.DateTime::from_ymd_hms(2024, 1, 31, 8, 0, 0, fixed)
+    .single()
+    .unwrap()
+  let moved = dt.sub_period(@core.Period::new(days=-1)).single().unwrap()
+  assert_eq(moved.month(), @core.Month::Feb)
+  assert_eq(moved.day(), 1)
+  assert_eq(moved.hour(), 8)
+}
+
+///|
+test "sub_period of one day across a spring-forward keeps the wall clock (America/New_York)" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let after = @tz.DateTime::from_ymd_hms(2024, 3, 10, 12, 0, 0, ny)
+    .single()
+    .unwrap()
+  let moved = after.sub_period(@core.Period::new(days=1)).single().unwrap()
+  assert_eq(moved.day(), 9)
+  assert_eq(moved.hour(), 12)
+  assert_eq(
+    after.signed_duration_since(moved),
+    @core.TimeDelta::hours(23).unwrap(),
+  )
+}
+
+///|
+test "sub_period reports Absent when the wall clock lands in a spring-forward gap (America/New_York)" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let after = @tz.DateTime::from_ymd_hms(2024, 3, 11, 2, 30, 0, ny)
+    .single()
+    .unwrap()
+  assert_true(after.sub_period(@core.Period::new(days=1)) is @tz.Absent)
+}
+
+///|
+test "sub_period reports Ambiguous when the wall clock lands in a fall-back fold (America/New_York)" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let after = @tz.DateTime::from_ymd_hms(2024, 11, 4, 1, 30, 0, ny)
+    .single()
+    .unwrap()
+  let result = after.sub_period(@core.Period::new(days=1))
+  let earliest = result.earliest().unwrap()
+  let latest = result.latest().unwrap()
+  assert_eq(earliest.naive_local(), latest.naive_local())
+  assert_eq(earliest.day(), 3)
+  assert_eq(earliest.offset(), @tz.FixedOffset::east(-14400).unwrap())
+  assert_eq(latest.offset(), @tz.FixedOffset::east(-18000).unwrap())
+}
+
+///|
+test "sub_period reports Absent when the shifted date leaves the representable range" {
+  let fixed = @tz.FixedOffset::east(0).unwrap()
+  let dt = @tz.DateTime::from_ymd_hms(2024, 1, 1, 0, 0, 0, fixed)
+    .single()
+    .unwrap()
+  assert_true(dt.sub_period(@core.Period::new(years=2147483647)) is @tz.Absent)
+}
+
+///|
+test "sub_period subtracts a days component equal to the Int32 lower bound, which cannot be negated" {
+  let fixed = @tz.FixedOffset::east(0).unwrap()
+  let min = -2147483648
+  let start = @core.NaiveDate::from_epoch_days(-2_000_000_000).unwrap()
+  let dt = @tz.DateTime::from_local(
+      @core.NaiveDateTime::new(
+        start,
+        @core.NaiveTime::from_hms(6, 0, 0).unwrap(),
+      ),
+      fixed,
+    )
+    .single()
+    .unwrap()
+  let period = @core.Period::new(days=min)
+  assert_true(period.checked_neg() is None)
+  let moved = dt.sub_period(period).single().unwrap()
+  assert_eq(moved.naive_local().date().epoch_days(), 147_483_648)
+  assert_eq(moved.hour(), 6)
+}
+
+///|
+test "sub_period reports Absent for months and years components equal to the Int32 lower bound" {
+  let fixed = @tz.FixedOffset::east(0).unwrap()
+  let dt = @tz.DateTime::from_ymd_hms(2024, 1, 1, 0, 0, 0, fixed)
+    .single()
+    .unwrap()
+  let min = -2147483648
+  assert_true(dt.sub_period(@core.Period::new(months=min)) is @tz.Absent)
+  assert_true(dt.sub_period(@core.Period::new(years=min)) is @tz.Absent)
+}
+
+///|
+test "sub_period reverses add_period when the shift is exact" {
+  let fixed = @tz.FixedOffset::east(3600).unwrap()
+  let dt = @tz.DateTime::from_ymd_hms(2024, 5, 15, 6, 45, 0, fixed)
+    .single()
+    .unwrap()
+  let period = @core.Period::new(years=1, months=2, days=3)
+  let there = dt.add_period(period).single().unwrap()
+  assert_eq(there.sub_period(period).single().unwrap(), dt)
+}
