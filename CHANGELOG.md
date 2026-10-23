@@ -27,6 +27,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-23
+
+### Fixed
+
+#### MoonBit toolchain compatibility
+
+- Apply `moon fmt` as enforced by the current toolchain, which now writes `Int` type annotations as `Int32`; the change is spelling only and leaves behavior untouched
+
 ## [0.2.0] - 2026-10-07
 
 ### Added
@@ -105,6 +113,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
-[Unreleased]: <https://github.com/connect0459/almanac/compare/v0.2.0...HEAD>
+[Unreleased]: <https://github.com/connect0459/almanac/compare/v0.2.1...HEAD>
+[0.2.1]: <https://github.com/connect0459/almanac/compare/v0.2.0...v0.2.1>
 [0.2.0]: <https://github.com/connect0459/almanac/compare/v0.1.0...v0.2.0>
 [0.1.0]: <https://github.com/connect0459/almanac/releases/tag/v0.1.0>
