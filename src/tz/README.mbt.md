@@ -93,6 +93,12 @@ test {
 
 To regenerate from another compiled zoneinfo tree, such as one built with `zic` from a specific release, run `just gen-tzdata <zoneinfo dir>`; the release is read from the tree's `+VERSION` file.
 
+## Windows zone mapping
+
+The Windows zone key names that `Local` maps to IANA zones come from the territory `001` entries of the Unicode CLDR `windowsZones.xml`, compiled into `windows_zones_generated.mbt` (CLDR release `release-48-1`). A Windows zone added or renamed after that release has no entry until the table is regenerated.
+
+To refresh it, take `common/supplemental/windowsZones.xml` from a CLDR release and run `just gen-windows-zones <windowsZones.xml> <release>`; the release names the source in the header of the generated file. Every IANA name in the table must exist in the embedded tz database, which a test checks.
+
 ## API reference
 
 ### `TimeZone` trait

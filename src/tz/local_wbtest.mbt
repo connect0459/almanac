@@ -254,3 +254,48 @@ test "resolve is None when the file at an absolute path in TZ is not TZif data" 
   assert_true(Local::resolve(Some("/zones/bad"), files_reader(files)) is None)
   assert_true(Local::resolve(Some("/zones/empty"), files_reader(files)) is None)
 }
+
+///|
+test "resolve uses the Windows zone key name when TZ is unset, ignoring any localtime bytes" {
+  let resolved = Local::resolve(
+    None,
+    files_reader({ "/etc/localtime": embedded_tzif("America/New_York") }),
+    windows_zone_key=Some("Tokyo Standard Time"),
+  ).unwrap()
+  let instant = @core.NaiveDateTime::from_timestamp(1_718_452_800L, 0).unwrap()
+  assert_eq(resolved.offset_from_utc(instant).local_minus_utc(), 32400)
+}
+
+///|
+test "resolve is None, not UTC, when the Windows zone key name has no mapping" {
+  assert_true(
+    Local::resolve(
+      None,
+      files_reader({ "/etc/localtime": embedded_tzif("Asia/Tokyo") }),
+      windows_zone_key=Some("Atlantis Standard Time"),
+    )
+    is None,
+  )
+}
+
+///|
+test "resolve prefers TZ over the Windows zone key name" {
+  let resolved = Local::resolve(
+    Some("Asia/Kolkata"),
+    no_files,
+    windows_zone_key=Some("Tokyo Standard Time"),
+  ).unwrap()
+  let instant = @core.NaiveDateTime::from_timestamp(1_718_452_800L, 0).unwrap()
+  assert_eq(resolved.offset_from_utc(instant).local_minus_utc(), 19800)
+}
+
+///|
+test "resolve reads localtime when TZ is unset and no Windows zone key name is given" {
+  let resolved = Local::resolve(
+    None,
+    files_reader({ "/etc/localtime": embedded_tzif("Asia/Tokyo") }),
+    windows_zone_key=None,
+  ).unwrap()
+  let instant = @core.NaiveDateTime::from_timestamp(1_718_452_800L, 0).unwrap()
+  assert_eq(resolved.offset_from_utc(instant).local_minus_utc(), 32400)
+}

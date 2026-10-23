@@ -21,3 +21,9 @@ verify:
 gen-tzdata source_dir:
     python3 scripts/gen_tzdata.py --source-dir {{source_dir}} --output src/tz/tzdata_generated.mbt
     moon fmt
+
+# Regenerate src/tz/windows_zones_generated.mbt from CLDR's windowsZones.xml
+# (common/supplemental/windowsZones.xml of a CLDR release, e.g. `release-48-1`)
+gen-windows-zones source_xml release:
+    python3 scripts/gen_windows_zones.py --source {{source_xml}} --release {{release}} --output src/tz/windows_zones_generated.mbt
+    moon fmt
