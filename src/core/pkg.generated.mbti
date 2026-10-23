@@ -84,6 +84,7 @@ pub struct NaiveDate {
 pub fn NaiveDate::abs_diff_days(Self, Self) -> Int64
 pub fn NaiveDate::add_days(Self, Int32) -> Self
 pub fn NaiveDate::add_months(Self, Int32) -> Self
+pub fn NaiveDate::add_period(Self, Period) -> Self
 pub fn NaiveDate::add_signed(Self, TimeDelta) -> Self
 pub fn NaiveDate::add_years(Self, Int32) -> Self
 pub fn NaiveDate::and_hms(Self, Int32, Int32, Int32) -> NaiveDateTime?
@@ -93,11 +94,13 @@ pub fn NaiveDate::and_hms_nano(Self, Int32, Int32, Int32, Int32) -> NaiveDateTim
 pub fn NaiveDate::and_time(Self, NaiveTime) -> NaiveDateTime
 pub fn NaiveDate::checked_add_days(Self, Int32) -> Self?
 pub fn NaiveDate::checked_add_months(Self, Int32) -> Self?
+pub fn NaiveDate::checked_add_period(Self, Period) -> Self?
 pub fn NaiveDate::checked_add_signed(Self, TimeDelta) -> Self?
 pub fn NaiveDate::checked_add_years(Self, Int32) -> Self?
 pub fn NaiveDate::checked_pred(Self) -> Self?
 pub fn NaiveDate::checked_sub_days(Self, Int32) -> Self?
 pub fn NaiveDate::checked_sub_months(Self, Int32) -> Self?
+pub fn NaiveDate::checked_sub_period(Self, Period) -> Self?
 pub fn NaiveDate::checked_sub_signed(Self, TimeDelta) -> Self?
 pub fn NaiveDate::checked_sub_years(Self, Int32) -> Self?
 pub fn NaiveDate::checked_succ(Self) -> Self?
@@ -136,11 +139,13 @@ pub fn NaiveDate::quarter(Self) -> Int32
 pub fn NaiveDate::signed_duration_since(Self, Self) -> TimeDelta
 pub fn NaiveDate::sub_days(Self, Int32) -> Self
 pub fn NaiveDate::sub_months(Self, Int32) -> Self
+pub fn NaiveDate::sub_period(Self, Period) -> Self
 pub fn NaiveDate::sub_signed(Self, TimeDelta) -> Self
 pub fn NaiveDate::sub_years(Self, Int32) -> Self
 pub fn NaiveDate::succ(Self) -> Self
 pub fn NaiveDate::to_repr(Self) -> @debug.Repr
 pub fn NaiveDate::to_string(Self) -> String
+pub fn NaiveDate::until(Self, Self) -> Period
 pub fn NaiveDate::week(Self, Weekday) -> NaiveWeek
 pub fn NaiveDate::weekday(Self) -> Weekday
 pub fn NaiveDate::with_day(Self, Int32) -> Self?
@@ -172,16 +177,19 @@ pub struct NaiveDateTime {
 } derive(Compare, Eq, Hash, @debug.Debug)
 pub fn NaiveDateTime::add_days(Self, Int32) -> Self
 pub fn NaiveDateTime::add_months(Self, Int32) -> Self
+pub fn NaiveDateTime::add_period(Self, Period) -> Self
 pub fn NaiveDateTime::add_seconds(Self, Int64) -> Self
 pub fn NaiveDateTime::add_signed(Self, TimeDelta) -> Self
 pub fn NaiveDateTime::add_years(Self, Int32) -> Self
 pub fn NaiveDateTime::checked_add_days(Self, Int32) -> Self?
 pub fn NaiveDateTime::checked_add_months(Self, Int32) -> Self?
+pub fn NaiveDateTime::checked_add_period(Self, Period) -> Self?
 pub fn NaiveDateTime::checked_add_seconds(Self, Int64) -> Self?
 pub fn NaiveDateTime::checked_add_signed(Self, TimeDelta) -> Self?
 pub fn NaiveDateTime::checked_add_years(Self, Int32) -> Self?
 pub fn NaiveDateTime::checked_sub_days(Self, Int32) -> Self?
 pub fn NaiveDateTime::checked_sub_months(Self, Int32) -> Self?
+pub fn NaiveDateTime::checked_sub_period(Self, Period) -> Self?
 pub fn NaiveDateTime::checked_sub_seconds(Self, Int64) -> Self?
 pub fn NaiveDateTime::checked_sub_signed(Self, TimeDelta) -> Self?
 pub fn NaiveDateTime::checked_sub_years(Self, Int32) -> Self?
@@ -227,6 +235,7 @@ pub fn NaiveDateTime::second(Self) -> Int32
 pub fn NaiveDateTime::signed_duration_since(Self, Self) -> TimeDelta
 pub fn NaiveDateTime::sub_days(Self, Int32) -> Self
 pub fn NaiveDateTime::sub_months(Self, Int32) -> Self
+pub fn NaiveDateTime::sub_period(Self, Period) -> Self
 pub fn NaiveDateTime::sub_seconds(Self, Int64) -> Self
 pub fn NaiveDateTime::sub_signed(Self, TimeDelta) -> Self
 pub fn NaiveDateTime::sub_years(Self, Int32) -> Self
@@ -243,6 +252,7 @@ pub fn NaiveDateTime::to_string(Self) -> String
 pub fn NaiveDateTime::truncate(Self, TimeDelta) -> Result[Self, RoundingError]
 pub fn NaiveDateTime::truncate_subsecs(Self, Int32) -> Self
 pub fn NaiveDateTime::unix_epoch() -> Self
+pub fn NaiveDateTime::until(Self, Self) -> Period
 pub fn NaiveDateTime::weekday(Self) -> Weekday
 pub fn NaiveDateTime::with_date(Self, NaiveDate) -> Self
 pub fn NaiveDateTime::with_day(Self, Int32) -> Self?

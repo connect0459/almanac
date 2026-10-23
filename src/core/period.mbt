@@ -120,6 +120,20 @@ pub fn Period::checked_mul(self : Period, scalar : Int32) -> Period? {
 }
 
 ///|
+fn Period::total_months(self : Period) -> Int64 {
+  self.years.to_int64() * 12L + self.months.to_int64()
+}
+
+///|
+fn Period::from_months_and_days(months : Int64, days : Int64) -> Period {
+  Period::new(
+    years=(months / 12L).to_int(),
+    months=(months % 12L).to_int(),
+    days=days.to_int(),
+  )
+}
+
+///|
 fn combine_components(
   a : Period,
   b : Period,

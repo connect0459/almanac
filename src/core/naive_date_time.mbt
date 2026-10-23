@@ -678,6 +678,88 @@ pub fn NaiveDateTime::checked_sub_years(
 }
 
 ///|
+/// This datetime with its date moved forward by `period`, keeping the time of
+/// day unchanged. See `NaiveDate::add_period`.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_add_period` to get `None` instead.
+pub fn NaiveDateTime::add_period(
+  self : NaiveDateTime,
+  period : Period,
+) -> NaiveDateTime {
+  expect_in_range(self.checked_add_period(period), "NaiveDateTime::add_period")
+}
+
+///|
+/// Like `add_period`, but `None` if the resulting date falls outside
+/// `NaiveDate`'s representable range.
+pub fn NaiveDateTime::checked_add_period(
+  self : NaiveDateTime,
+  period : Period,
+) -> NaiveDateTime? {
+  self.date
+  .checked_add_period(period)
+  .map(date => NaiveDateTime::{ date, time: self.time, })
+}
+
+///|
+/// This datetime with its date moved back by `period`, keeping the time of
+/// day unchanged. See `NaiveDate::sub_period`.
+///
+/// Aborts if the result falls outside `NaiveDate`'s representable range; use
+/// `checked_sub_period` to get `None` instead.
+pub fn NaiveDateTime::sub_period(
+  self : NaiveDateTime,
+  period : Period,
+) -> NaiveDateTime {
+  expect_in_range(self.checked_sub_period(period), "NaiveDateTime::sub_period")
+}
+
+///|
+/// Like `sub_period`, but `None` if the resulting date falls outside
+/// `NaiveDate`'s representable range.
+pub fn NaiveDateTime::checked_sub_period(
+  self : NaiveDateTime,
+  period : Period,
+) -> NaiveDateTime? {
+  self.date
+  .checked_sub_period(period)
+  .map(date => NaiveDateTime::{ date, time: self.time, })
+}
+
+///|
+/// The period from this datetime to `other`.
+///
+/// For `self <= other` the months are the largest whole number `n` with
+/// `self.add_months(n) <= other`, split into years and months, and the days
+/// are the whole days left after that; a sub-day remainder is dropped. Every
+/// component is non-negative and `self.add_period(self.until(other))` is the
+/// latest datetime of that form not after `other`, which is `other` itself
+/// when both share a time of day. For `self > other` the result is the
+/// negation of `other.until(self)`.
+pub fn NaiveDateTime::until(
+  self : NaiveDateTime,
+  other : NaiveDateTime,
+) -> Period {
+  if self > other {
+    other.until(self).checked_neg().unwrap()
+  } else {
+    let mut months = self.date.calendar_months_to(other.date)
+    let fits = match self.date.checked_add_months64(months) {
+      Some(date) => NaiveDateTime::{ date, time: self.time, } <= other
+      None => false
+    }
+    if !fits {
+      months = months - 1L
+    }
+    let reached = self.date.checked_add_months64(months).unwrap()
+    let whole_days = (other.date.days - reached.days).to_int64()
+    let days = if other.time < self.time { whole_days - 1L } else { whole_days }
+    Period::from_months_and_days(months, days)
+  }
+}
+
+///|
 /// This datetime with its date moved back by `months`. See `add_months`.
 ///
 /// Aborts if the result falls outside `NaiveDate`'s representable range; use

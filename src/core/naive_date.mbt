@@ -569,6 +569,26 @@ pub fn NaiveDate::checked_sub_months(
 }
 
 ///|
+fn NaiveDate::calendar_months_to(self : NaiveDate, other : NaiveDate) -> Int64 {
+  let (self_year, self_month, _) = civil_from_days(self.days)
+  let (other_year, other_month, _) = civil_from_days(other.days)
+  (other_year - self_year).to_int64() * 12L +
+  (other_month - self_month).to_int64()
+}
+
+///|
+fn NaiveDate::reaches_within(
+  self : NaiveDate,
+  months : Int64,
+  limit : NaiveDate,
+) -> Bool {
+  match self.checked_add_months64(months) {
+    Some(date) => date <= limit
+    None => false
+  }
+}
+
+///|
 fn NaiveDate::checked_add_months64(
   self : NaiveDate,
   months : Int64,
@@ -636,6 +656,74 @@ pub fn NaiveDate::checked_sub_years(
   years : Int32,
 ) -> NaiveDate? {
   self.checked_add_months64(-years.to_int64() * 12L)
+}
+
+///|
+/// The date `period` after this one: its years and months are added first,
+/// clamping the day of month as `add_months` does, and its days are added to
+/// that result. Components may be negative.
+///
+/// Aborts if the result, or the intermediate date after the years and months
+/// and before the days, falls outside `NaiveDate`'s representable range; use
+/// `checked_add_period` to get `None` instead.
+pub fn NaiveDate::add_period(self : NaiveDate, period : Period) -> NaiveDate {
+  expect_in_range(self.checked_add_period(period), "NaiveDate::add_period")
+}
+
+///|
+/// Like `add_period`, but `None` instead of aborting.
+pub fn NaiveDate::checked_add_period(
+  self : NaiveDate,
+  period : Period,
+) -> NaiveDate? {
+  self
+  .checked_add_months64(period.total_months())
+  .bind(date => date.checked_add_days64(period.days.to_int64()))
+}
+
+///|
+/// The date `period` before this one: its years and months are subtracted
+/// first, then its days. See `add_period`.
+///
+/// Aborts if the result, or the intermediate date after the years and months
+/// and before the days, falls outside `NaiveDate`'s representable range; use
+/// `checked_sub_period` to get `None` instead.
+pub fn NaiveDate::sub_period(self : NaiveDate, period : Period) -> NaiveDate {
+  expect_in_range(self.checked_sub_period(period), "NaiveDate::sub_period")
+}
+
+///|
+/// Like `sub_period`, but `None` instead of aborting.
+pub fn NaiveDate::checked_sub_period(
+  self : NaiveDate,
+  period : Period,
+) -> NaiveDate? {
+  self
+  .checked_add_months64(-period.total_months())
+  .bind(date => date.checked_add_days64(-period.days.to_int64()))
+}
+
+///|
+/// The period from this date to `other`.
+///
+/// For `self <= other` the months are the largest whole number `n` with
+/// `self.add_months(n) <= other`, split into years and months, and the days
+/// are those left after `self.add_months(n)`; every component is
+/// non-negative and `self.add_period(self.until(other)) == other`. For
+/// `self > other` the result is the negation of `other.until(self)`; that
+/// direction does not round-trip, because month-end clamping makes
+/// `add_months` many-to-one.
+pub fn NaiveDate::until(self : NaiveDate, other : NaiveDate) -> Period {
+  if self > other {
+    other.until(self).checked_neg().unwrap()
+  } else {
+    let mut months = self.calendar_months_to(other)
+    if !self.reaches_within(months, other) {
+      months = months - 1L
+    }
+    let reached = self.checked_add_months64(months).unwrap()
+    Period::from_months_and_days(months, (other.days - reached.days).to_int64())
+  }
 }
 
 ///|
