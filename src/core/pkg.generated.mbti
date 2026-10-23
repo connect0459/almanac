@@ -343,6 +343,30 @@ pub impl Eq for NaiveWeek
 pub impl Hash for NaiveWeek
 pub impl @debug.Debug for NaiveWeek
 
+pub struct Period {
+  // private fields
+} derive(Eq, Hash, @debug.Debug)
+pub fn Period::checked_add(Self, Self) -> Self?
+pub fn Period::checked_mul(Self, Int32) -> Self?
+pub fn Period::checked_neg(Self) -> Self?
+pub fn Period::checked_sub(Self, Self) -> Self?
+pub fn Period::days(Self) -> Int32
+pub fn Period::default() -> Self
+pub fn Period::equal(Self, Self) -> Bool
+pub fn Period::hash(Self) -> Int32
+pub fn Period::hash_combine(Self, Hasher) -> Unit
+pub fn Period::is_zero(Self) -> Bool
+pub fn Period::months(Self) -> Int32
+pub fn Period::new(years? : Int32, months? : Int32, days? : Int32) -> Self
+pub fn Period::not_equal(Self, Self) -> Bool
+pub fn Period::output(Self, &Logger) -> Unit
+pub fn Period::to_repr(Self) -> @debug.Repr
+pub fn Period::to_string(Self) -> String
+pub fn Period::years(Self) -> Int32
+pub fn Period::zero() -> Self
+pub impl Default for Period
+pub impl Show for Period
+
 pub(all) enum RoundingError {
   InvalidGranularity
   MixedGranularity
