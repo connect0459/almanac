@@ -5,12 +5,12 @@ fn utc_instant(timestamp : Int64) -> @core.NaiveDateTime {
 
 ///|
 fn wall_clock_reading(
-  year : Int,
-  month : Int,
-  day : Int,
-  hour : Int,
-  minute : Int,
-  second : Int,
+  year : Int32,
+  month : Int32,
+  day : Int32,
+  hour : Int32,
+  minute : Int32,
+  second : Int32,
 ) -> @core.NaiveDateTime {
   @core.NaiveDateTime::new(
     @core.NaiveDate::from_ymd(year, month, day).unwrap(),
@@ -19,10 +19,13 @@ fn wall_clock_reading(
 }
 
 ///|
-let negative_dst_types : Array[(Int, Int, Int)] = [(3600, 0, 0), (0, 1, 4)]
+let negative_dst_types : Array[(Int32, Int32, Int32)] = [
+  (3600, 0, 0),
+  (0, 1, 4),
+]
 
 ///|
-let negative_dst_chars : Array[Int] = [
+let negative_dst_chars : Array[Int32] = [
   0x49, 0x53, 0x54, 0x00, 0x47, 0x4D, 0x54, 0x00,
 ]
 

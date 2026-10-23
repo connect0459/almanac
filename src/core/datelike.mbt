@@ -8,39 +8,39 @@
 /// `with_*` modifiers are not part of the trait, because their return types
 /// differ per type.
 pub(open) trait Datelike {
-  fn year(Self) -> Int
+  fn year(Self) -> Int32
   fn month(Self) -> Month
-  fn day(Self) -> Int
-  fn ordinal(Self) -> Int
+  fn day(Self) -> Int32
+  fn ordinal(Self) -> Int32
   fn weekday(Self) -> Weekday
-  fn month0(Self) -> Int = _
-  fn day0(Self) -> Int = _
-  fn ordinal0(Self) -> Int = _
-  fn quarter(Self) -> Int = _
+  fn month0(Self) -> Int32 = _
+  fn day0(Self) -> Int32 = _
+  fn ordinal0(Self) -> Int32 = _
+  fn quarter(Self) -> Int32 = _
   fn year_ce(Self) -> YearCe = _
-  fn num_days_in_month(Self) -> Int = _
+  fn num_days_in_month(Self) -> Int32 = _
   fn leap_year(Self) -> Bool = _
-  fn num_days_from_ce(Self) -> Int = _
+  fn num_days_from_ce(Self) -> Int32 = _
   fn iso_week(Self) -> IsoWeek = _
 }
 
 ///|
-impl Datelike with fn month0(self) -> Int {
+impl Datelike with fn month0(self) -> Int32 {
   self.month().number() - 1
 }
 
 ///|
-impl Datelike with fn day0(self) -> Int {
+impl Datelike with fn day0(self) -> Int32 {
   self.day() - 1
 }
 
 ///|
-impl Datelike with fn ordinal0(self) -> Int {
+impl Datelike with fn ordinal0(self) -> Int32 {
   self.ordinal() - 1
 }
 
 ///|
-impl Datelike with fn quarter(self) -> Int {
+impl Datelike with fn quarter(self) -> Int32 {
   (self.month().number() - 1) / 3 + 1
 }
 
@@ -55,7 +55,7 @@ impl Datelike with fn year_ce(self) -> YearCe {
 }
 
 ///|
-impl Datelike with fn num_days_in_month(self) -> Int {
+impl Datelike with fn num_days_in_month(self) -> Int32 {
   self.month().num_days(self.year())
 }
 
@@ -65,7 +65,7 @@ impl Datelike with fn leap_year(self) -> Bool {
 }
 
 ///|
-impl Datelike with fn num_days_from_ce(self) -> Int {
+impl Datelike with fn num_days_from_ce(self) -> Int32 {
   days_from_civil(self.year(), self.month().number(), self.day()) +
   CE_TO_EPOCH_DAYS.to_int()
 }
@@ -135,12 +135,12 @@ pub impl Datelike for NaiveDateTime with fn weekday(self) {
 /// always has a default, so adding one never breaks an implementation.
 /// `nanosecond` may reach `1_999_999_999` during a leap second.
 pub(open) trait Timelike {
-  fn hour(Self) -> Int
-  fn minute(Self) -> Int
-  fn second(Self) -> Int
-  fn nanosecond(Self) -> Int
+  fn hour(Self) -> Int32
+  fn minute(Self) -> Int32
+  fn second(Self) -> Int32
+  fn nanosecond(Self) -> Int32
   fn hour12(Self) -> ClockHour12 = _
-  fn num_seconds_from_midnight(Self) -> Int = _
+  fn num_seconds_from_midnight(Self) -> Int32 = _
 }
 
 ///|
@@ -151,7 +151,7 @@ impl Timelike with fn hour12(self) -> ClockHour12 {
 }
 
 ///|
-impl Timelike with fn num_seconds_from_midnight(self) -> Int {
+impl Timelike with fn num_seconds_from_midnight(self) -> Int32 {
   self.hour() * 3600 + self.minute() * 60 + self.second()
 }
 

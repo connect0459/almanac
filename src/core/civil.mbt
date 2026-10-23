@@ -6,14 +6,14 @@
 /// Closed-form algorithm (no lookup table), following Neri and Schneider,
 /// "Euclidean Affine Functions and Applications to Calendar Algorithms"
 /// (as also used by Howard Hinnant's `days_from_civil`).
-fn days_from_civil(year : Int, month : Int, day : Int) -> Int {
+fn days_from_civil(year : Int32, month : Int32, day : Int32) -> Int32 {
   days_from_civil64(year.to_int64(), month, day).to_int()
 }
 
 ///|
 /// `days_from_civil` with a 64-bit year and day count, so a caller checking a
 /// computed year against `NaiveDate`'s range never wraps on the way.
-fn days_from_civil64(year : Int64, month : Int, day : Int) -> Int64 {
+fn days_from_civil64(year : Int64, month : Int32, day : Int32) -> Int64 {
   let y = if month <= 2 { year - 1L } else { year }
   let era = (if y >= 0L { y } else { y - 399L }) / 400L
   let yoe = y - era * 400L
@@ -27,7 +27,7 @@ fn days_from_civil64(year : Int64, month : Int, day : Int) -> Int64 {
 /// Converts a day count relative to the Unix epoch (`1970-01-01` is day `0`)
 /// back into a proleptic Gregorian `(year, month, day)` triple. Inverse of
 /// `days_from_civil`.
-fn civil_from_days(days : Int) -> (Int, Int, Int) {
+fn civil_from_days(days : Int32) -> (Int32, Int32, Int32) {
   let z = days + 719468
   let era = (if z >= 0 { z } else { z - 146096 }) / 146097
   let doe = z - era * 146097

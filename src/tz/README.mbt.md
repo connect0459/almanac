@@ -213,7 +213,7 @@ A `NaiveDateTime` paired with a time zone `Tz`. The UTC instant is stored direct
 ///|
 fn[T : @core.Datelike + @core.Timelike] local_day_and_hour(
   value : T,
-) -> (Int, Int) {
+) -> (Int32, Int32) {
   (@core.Datelike::day(value), @core.Timelike::hour(value))
 }
 

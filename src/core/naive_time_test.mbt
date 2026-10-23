@@ -434,7 +434,7 @@ test "equal times hash equally and work as map keys" {
 test "a leap second and the following midnight-adjacent time are distinct map keys" {
   let leap = @core.NaiveTime::from_hms_nano(23, 59, 59, 1_500_000_000).unwrap()
   let regular = @core.NaiveTime::from_hms_nano(23, 59, 59, 500_000_000).unwrap()
-  let seen : Map[@core.NaiveTime, Int] = Map([])
+  let seen : Map[@core.NaiveTime, Int32] = Map([])
   seen[leap] = 1
   seen[regular] = 2
   assert_eq(seen.length(), 2)

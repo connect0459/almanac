@@ -52,7 +52,7 @@ pub fn Month::succ(self : Month) -> Month {
 ///|
 /// The month `n` months after `self` (before it, for a negative `n`),
 /// wrapping around the year in either direction.
-pub fn Month::add_months(self : Month, n : Int) -> Month {
+pub fn Month::add_months(self : Month, n : Int32) -> Month {
   let index = (self.number() - 1 + n % 12 + 12) % 12
   Month::from_number(index + 1).unwrap()
 }
@@ -78,7 +78,7 @@ pub fn Month::pred(self : Month) -> Month {
 
 ///|
 /// Month-of-year number counting from `Jan = 1`.
-pub fn Month::number(self : Month) -> Int {
+pub fn Month::number(self : Month) -> Int32 {
   match self {
     Jan => 1
     Feb => 2
@@ -142,7 +142,7 @@ pub fn Month::from_name(name : String) -> Month? {
 ///|
 /// The month for a 1-based month-of-year number, or `None` if `n` is
 /// outside `1..=12`.
-pub fn Month::from_number(n : Int) -> Month? {
+pub fn Month::from_number(n : Int32) -> Month? {
   match n {
     1 => Some(Jan)
     2 => Some(Feb)
@@ -165,7 +165,7 @@ pub fn Month::from_number(n : Int) -> Month? {
 /// `year`, accounting for leap years in `Feb`. A month alone does not know the
 /// year, hence the argument; see `NaiveDate::num_days_in_month` for the month
 /// of a date.
-pub fn Month::num_days(self : Month, year : Int) -> Int {
+pub fn Month::num_days(self : Month, year : Int32) -> Int32 {
   match self {
     Jan => 31
     Feb => if is_leap_year(year) { 29 } else { 28 }

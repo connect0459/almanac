@@ -7,10 +7,10 @@
 /// way, to decide whether wrapping it in `PaddedNumeric` is valid.
 fn resolve_specifier(
   chars : Array[Char],
-  pos : Int,
-  n : Int,
+  pos : Int32,
+  n : Int32,
   locale : Locale,
-) -> (Array[Item], Int) raise FormatError {
+) -> (Array[Item], Int32) raise FormatError {
   match chars[pos] {
     'Y' => ([Numeric(Year)], pos + 1)
     'm' => ([Numeric(Month)], pos + 1)
@@ -169,7 +169,7 @@ fn is_layout_specifier(c : Char) -> Bool {
 /// come from the locale when the items are used, not here.
 pub fn tokenize(
   fmt : String,
-  locale? : Locale = Locale::posix(),
+  locale~ : Locale = Locale::posix(),
 ) -> Array[Item] raise FormatError {
   let chars = fmt.to_array()
   let n = chars.length()

@@ -84,7 +84,7 @@ pub fn[Tz : @tz.TimeZone] Cron::matches(
 ///|
 fn Cron::first_time_from(
   self : Cron,
-  start : (Int, Int, Int),
+  start : (Int32, Int32, Int32),
 ) -> @core.NaiveTime? {
   let (start_hour, start_minute, start_second) = start
   for hour in start_hour..<=23 {
@@ -120,7 +120,7 @@ fn first_of_next_month(date : @core.NaiveDate) -> @core.NaiveDate? {
 fn Cron::next_wall_clock(
   self : Cron,
   from : @core.NaiveDateTime,
-  last_year : Int,
+  last_year : Int32,
 ) -> @core.NaiveDateTime? {
   let mut date = from.date()
   let mut start = from.time().hms()

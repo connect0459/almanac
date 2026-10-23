@@ -89,7 +89,7 @@ test "equal ISO weeks hash equally and work as map keys" {
   let next = @core.NaiveDate::from_ymd(2024, 1, 8).unwrap().iso_week()
   assert_eq(monday, sunday)
   assert_eq(monday.hash(), sunday.hash())
-  let seen : Map[@core.IsoWeek, Int] = Map([])
+  let seen : Map[@core.IsoWeek, Int32] = Map([])
   seen[monday] = 1
   seen[next] = 2
   assert_eq(seen.length(), 2)

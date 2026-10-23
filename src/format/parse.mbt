@@ -6,37 +6,37 @@
 /// with each other. Opaque: the same `Parsed` can be resolved several ways
 /// (`to_date`, `to_time`, ...) without re-parsing.
 pub struct Parsed {
-  priv year : Int?
-  priv month : Int?
-  priv day : Int?
-  priv ordinal : Int?
-  priv hour : Int?
-  priv minute : Int?
-  priv second : Int?
-  priv nanosecond : Int?
+  priv year : Int32?
+  priv month : Int32?
+  priv day : Int32?
+  priv ordinal : Int32?
+  priv hour : Int32?
+  priv minute : Int32?
+  priv second : Int32?
+  priv nanosecond : Int32?
   priv weekday : @core.Weekday?
-  priv offset_secs : Int?
+  priv offset_secs : Int32?
   /// `%I`/`%l`: the hour on a 12-hour clock (`1..=12`), reconciled with
   /// `is_pm` (and cross-checked against `hour`, if also present) by
   /// `resolve_hour`.
-  priv hour12 : Int?
+  priv hour12 : Int32?
   /// `%p`/`%P`: whether the 12-hour clock reading is PM.
   priv is_pm : Bool?
   /// `%C`: the calendar year divided by 100, reconciled with `year`
   /// and/or `year_mod_100` by `resolve_year`.
-  priv year_div_100 : Int?
+  priv year_div_100 : Int32?
   /// `%y`: the calendar year modulo 100. See `resolve_year`.
-  priv year_mod_100 : Int?
+  priv year_mod_100 : Int32?
   /// `%q`: cross-checked, like `ordinal`/`weekday`, against an
   /// already-determined date rather than used to construct one (a
   /// quarter alone doesn't determine a day).
-  priv quarter : Int?
+  priv quarter : Int32?
   /// `%U`: the Sunday-based week number, combined with `weekday` by
   /// `resolve_date_from_week` when no month/day/ordinal is present, or
   /// else cross-checked against the constructed date.
-  priv week_sunday : Int?
+  priv week_sunday : Int32?
   /// `%W`: the Monday-based week number. See `week_sunday`.
-  priv week_monday : Int?
+  priv week_monday : Int32?
   /// `%Z`: the zone name text as it appeared (never validated). Only
   /// `parse_date_time_in` consults it, to resolve an abbreviation through
   /// the target zone; every other entry point discards it.
@@ -44,11 +44,11 @@ pub struct Parsed {
   /// `%G`: the ISO week-based year, combined with `iso_week` and `weekday`
   /// by `resolve_date_from_iso_week`, or else cross-checked against the
   /// constructed date.
-  priv iso_year : Int?
+  priv iso_year : Int32?
   /// `%g`: the ISO week-based year modulo 100. See `resolve_iso_year`.
-  priv iso_year_mod_100 : Int?
+  priv iso_year_mod_100 : Int32?
   /// `%V`: the ISO week number. See `iso_year`.
-  priv iso_week : Int?
+  priv iso_week : Int32?
   /// `%s`: the Unix timestamp in whole seconds, naming a UTC instant.
   /// Only the date-time resolvers use it (see `resolve_at_timestamp`);
   /// `to_date`/`to_time` ignore it.
@@ -61,7 +61,7 @@ pub struct Parsed {
 /// `FixedOffset`'s range is reported here and rejected when resolved. Lets a
 /// caller choose between `to_date_time_fixed_offset` (an offset was read)
 /// and `to_date_time_in` (none was).
-pub fn Parsed::utc_offset(self : Parsed) -> Int? {
+pub fn Parsed::utc_offset(self : Parsed) -> Int32? {
   self.offset_secs
 }
 
@@ -81,7 +81,7 @@ pub fn Parsed::zone_name(self : Parsed) -> String? {
 /// timestamp is never overridden, and a partial year such as a lone `%C` is
 /// not completed. The supplied year takes part in the usual checks: a leap day
 /// needs a leap year, and a weekday must match the date.
-pub fn Parsed::with_default_year(self : Parsed, year : Int) -> Parsed {
+pub fn Parsed::with_default_year(self : Parsed, year : Int32) -> Parsed {
   if self.year is None &&
     self.year_div_100 is None &&
     self.year_mod_100 is None &&
@@ -115,7 +115,7 @@ fn[T : Eq] merge_field(existing : T?, value : T) -> T? raise FormatError {
 ///|
 /// Matches `literal` verbatim at `pos`, or `None` if it doesn't fit or
 /// doesn't match.
-fn match_literal(chars : Array[Char], pos : Int, literal : String) -> Int? {
+fn match_literal(chars : Array[Char], pos : Int32, literal : String) -> Int32? {
   let lit_chars = literal.to_array()
   let len = lit_chars.length()
   if pos + len > chars.length() {
@@ -134,7 +134,11 @@ fn match_literal(chars : Array[Char], pos : Int, literal : String) -> Int? {
 }
 
 ///|
-fn match_literal_ci(chars : Array[Char], pos : Int, literal : String) -> Int? {
+fn match_literal_ci(
+  chars : Array[Char],
+  pos : Int32,
+  literal : String,
+) -> Int32? {
   let lit_chars = literal.to_array()
   let len = lit_chars.length()
   if pos + len > chars.length() {
@@ -158,11 +162,11 @@ fn match_literal_ci(chars : Array[Char], pos : Int, literal : String) -> Int? {
 /// equally long matches wins.
 fn[T] match_longest(
   chars : Array[Char],
-  pos : Int,
+  pos : Int32,
   candidates : Array[(String, T)],
   fold_case~ : Bool,
-) -> (T, Int)? {
-  let mut best : (T, Int)? = None
+) -> (T, Int32)? {
+  let mut best : (T, Int32)? = None
   for candidate in candidates {
     let (name, value) = candidate
     let end = if fold_case {
@@ -183,14 +187,14 @@ fn[T] match_longest(
 }
 
 ///|
-let unsigned_year_max_digits : Int = 4
+let unsigned_year_max_digits : Int32 = 4
 
 ///|
 /// Parses the optionally-signed year field shared by `%Y` and `%G`. An
 /// explicit `-` or `+` is followed by any number of digits, since a year can
 /// exceed 4 digits when rendered; without a sign at most 4 digits are read,
 /// so a compact format such as `%Y%m%d` can split `20240305`.
-fn parse_year_digits(chars : Array[Char], pos : Int) -> (Int, Int)? {
+fn parse_year_digits(chars : Array[Char], pos : Int32) -> (Int32, Int32)? {
   let (sign, p0, signed) = if pos < chars.length() && chars[pos] == '-' {
     (-1, pos + 1, true)
   } else if pos < chars.length() && chars[pos] == '+' {
@@ -217,8 +221,8 @@ fn parse_year_digits(chars : Array[Char], pos : Int) -> (Int, Int)? {
 /// `Int64`), so it raises `FieldOutOfRange` rather than failing to match.
 fn parse_timestamp_digits(
   chars : Array[Char],
-  pos : Int,
-) -> (Int64, Int)? raise FormatError {
+  pos : Int32,
+) -> (Int64, Int32)? raise FormatError {
   let (sign, start) = if pos < chars.length() && chars[pos] == '-' {
     (-1L, pos + 1)
   } else if pos < chars.length() && chars[pos] == '+' {
@@ -251,7 +255,7 @@ fn parse_timestamp_digits(
 ///|
 /// Parses `%z`'s numeric offset (`±HHMM`, no colon — the strftime form,
 /// distinct from RFC 3339's colon-separated one).
-fn parse_offset_no_colon(chars : Array[Char], pos : Int) -> (Int, Int)? {
+fn parse_offset_no_colon(chars : Array[Char], pos : Int32) -> (Int32, Int32)? {
   if pos >= chars.length() {
     None
   } else if chars[pos] != '+' && chars[pos] != '-' {
@@ -277,7 +281,7 @@ fn parse_offset_no_colon(chars : Array[Char], pos : Int) -> (Int, Int)? {
 ///|
 /// Parses `%:z`'s `±HH:MM`, colon mandatory (exactly this project's own
 /// rendered shape; a missing or space colon is rejected).
-fn parse_offset_colon(chars : Array[Char], pos : Int) -> (Int, Int)? {
+fn parse_offset_colon(chars : Array[Char], pos : Int32) -> (Int32, Int32)? {
   if pos >= chars.length() {
     None
   } else if chars[pos] != '+' && chars[pos] != '-' {
@@ -306,7 +310,10 @@ fn parse_offset_colon(chars : Array[Char], pos : Int) -> (Int, Int)? {
 
 ///|
 /// Parses `%::z`'s `±HH:MM:SS`, seconds mandatory.
-fn parse_offset_double_colon(chars : Array[Char], pos : Int) -> (Int, Int)? {
+fn parse_offset_double_colon(
+  chars : Array[Char],
+  pos : Int32,
+) -> (Int32, Int32)? {
   if pos >= chars.length() {
     None
   } else if chars[pos] != '+' && chars[pos] != '-' {
@@ -350,7 +357,10 @@ fn parse_offset_double_colon(chars : Array[Char], pos : Int) -> (Int, Int)? {
 ///|
 /// Parses `%:::z`'s `±HH`, hours only — no minutes or seconds field at
 /// all (matching its own rendered shape).
-fn parse_offset_triple_colon(chars : Array[Char], pos : Int) -> (Int, Int)? {
+fn parse_offset_triple_colon(
+  chars : Array[Char],
+  pos : Int32,
+) -> (Int32, Int32)? {
   if pos >= chars.length() {
     None
   } else if chars[pos] != '+' && chars[pos] != '-' {
@@ -367,7 +377,7 @@ fn parse_offset_triple_colon(chars : Array[Char], pos : Int) -> (Int, Int)? {
 ///|
 /// Skips a run of zero or more `:`/space/tab characters (`%#z`'s
 /// permissive hour/minute separator).
-fn skip_offset_separator(chars : Array[Char], pos : Int) -> Int {
+fn skip_offset_separator(chars : Array[Char], pos : Int32) -> Int32 {
   for i = pos {
     if i < chars.length() &&
       (chars[i] == ':' || chars[i] == ' ' || chars[i] == '\t') {
@@ -383,7 +393,7 @@ fn skip_offset_separator(chars : Array[Char], pos : Int) -> Int {
 /// `-`, or U+2212 MINUS SIGN) plus 2-digit hours, then
 /// optionally (after any run of `:`/space/tab) 2-digit minutes — absent
 /// minutes default to `0`. No seconds field.
-fn parse_offset_permissive(chars : Array[Char], pos : Int) -> (Int, Int)? {
+fn parse_offset_permissive(chars : Array[Char], pos : Int32) -> (Int32, Int32)? {
   if pos < chars.length() && (chars[pos] == 'Z' || chars[pos] == 'z') {
     Some((0, pos + 1))
   } else if pos >= chars.length() ||
@@ -428,9 +438,9 @@ fn weekday_names() -> Array[(@core.Weekday, String, String)] {
 /// specifier requested it, since both resolve to the same `Weekday`).
 fn match_weekday_name(
   chars : Array[Char],
-  pos : Int,
+  pos : Int32,
   locale : Locale,
-) -> (@core.Weekday, Int)? {
+) -> (@core.Weekday, Int32)? {
   let candidates = []
   for
     weekday in [
@@ -451,10 +461,10 @@ fn match_weekday_name(
 ///|
 fn apply_weekday_specifier(
   chars : Array[Char],
-  pos : Int,
+  pos : Int32,
   parsed : Parsed,
   locale : Locale,
-) -> (Parsed, Int) raise FormatError {
+) -> (Parsed, Int32) raise FormatError {
   match match_weekday_name(chars, pos, locale) {
     None => raise InputMismatch
     Some((wd, p)) =>
@@ -485,9 +495,9 @@ fn month_names() -> Array[(@core.Month, String, String)] {
 /// at `pos` (whichever fits — mirrors `match_weekday_name`).
 fn match_month_name(
   chars : Array[Char],
-  pos : Int,
+  pos : Int32,
   locale : Locale,
-) -> (@core.Month, Int)? {
+) -> (@core.Month, Int32)? {
   let candidates = []
   for number in 1..<=12 {
     let month = @core.Month::from_number(number).unwrap()
@@ -503,10 +513,10 @@ fn match_month_name(
 /// like `"%B %d %Y"` has no other field that could supply the month.
 fn apply_month_name_specifier(
   chars : Array[Char],
-  pos : Int,
+  pos : Int32,
   parsed : Parsed,
   locale : Locale,
-) -> (Parsed, Int) raise FormatError {
+) -> (Parsed, Int32) raise FormatError {
   match match_month_name(chars, pos, locale) {
     None => raise InputMismatch
     Some((m, p)) =>
@@ -518,7 +528,11 @@ fn apply_month_name_specifier(
 /// Matches the locale's AM or PM name, ignoring ASCII case, at `pos`,
 /// regardless of whether the format used `%p` or `%P` to render it — the
 /// two specifiers differ only in rendered case, not in the value they carry.
-fn match_ampm(chars : Array[Char], pos : Int, locale : Locale) -> (Bool, Int)? {
+fn match_ampm(
+  chars : Array[Char],
+  pos : Int32,
+  locale : Locale,
+) -> (Bool, Int32)? {
   match_longest(
     chars,
     pos,
@@ -530,10 +544,10 @@ fn match_ampm(chars : Array[Char], pos : Int, locale : Locale) -> (Bool, Int)? {
 ///|
 fn apply_ampm_specifier(
   chars : Array[Char],
-  pos : Int,
+  pos : Int32,
   parsed : Parsed,
   locale : Locale,
-) -> (Parsed, Int) raise FormatError {
+) -> (Parsed, Int32) raise FormatError {
   match match_ampm(chars, pos, locale) {
     None => raise InputMismatch
     Some((is_pm, p)) =>
@@ -546,9 +560,9 @@ fn apply_ampm_specifier(
 /// a numeric field, the inverse of rendering it without padding.
 fn parse_up_to_digits(
   chars : Array[Char],
-  pos : Int,
-  width : Int,
-) -> (Int, Int)? {
+  pos : Int32,
+  width : Int32,
+) -> (Int32, Int32)? {
   let end = for i = pos {
     if i < chars.length() && i - pos < width && is_ascii_digit(chars[i]) {
       continue i + 1
@@ -578,11 +592,11 @@ fn parse_up_to_digits(
 /// ever widens what a field accepts.
 fn read_digits(
   chars : Array[Char],
-  pos : Int,
-  width : Int,
+  pos : Int32,
+  width : Int32,
   pad : PadMode?,
   blank_default : Bool,
-) -> (Int, Int)? {
+) -> (Int32, Int32)? {
   match pad {
     Some(NoPad) => parse_up_to_digits(chars, pos, width)
     Some(SpacePad) if width > 1 =>
@@ -601,9 +615,9 @@ fn read_digits(
 /// `%I`) or a leading space followed by one digit.
 fn parse_blank_or_zero_padded_digits(
   chars : Array[Char],
-  pos : Int,
-  width : Int,
-) -> (Int, Int)? {
+  pos : Int32,
+  width : Int32,
+) -> (Int32, Int32)? {
   if pos < chars.length() && chars[pos] == ' ' {
     parse_fixed_digits(chars, pos + 1, width - 1)
   } else {
@@ -627,11 +641,11 @@ fn item_needs_input(item : Item) -> Bool {
 /// digits, scaled by `nanos_per_unit` into the nanosecond field.
 fn apply_dot_fraction(
   chars : Array[Char],
-  pos : Int,
+  pos : Int32,
   parsed : Parsed,
-  digits : Int,
-  nanos_per_unit : Int,
-) -> (Parsed, Int) raise FormatError {
+  digits : Int32,
+  nanos_per_unit : Int32,
+) -> (Parsed, Int32) raise FormatError {
   match expect_char(chars, pos, '.') {
     None => raise InputMismatch
     Some(after_dot) =>
@@ -657,7 +671,7 @@ fn merge_date_time_offset(
   parsed : Parsed,
   date : @core.NaiveDate,
   time : @core.NaiveTime,
-  offset_secs : Int,
+  offset_secs : Int32,
 ) -> Parsed raise FormatError {
   let seconds = time.second() + time.nanosecond() / 1_000_000_000
   let nanos = time.nanosecond() % 1_000_000_000
@@ -684,10 +698,10 @@ fn apply_item(
   item : Item,
   parsed : Parsed,
   chars : Array[Char],
-  pos : Int,
+  pos : Int32,
   pad : PadMode?,
   locale : Locale,
-) -> (Parsed, Int) raise FormatError {
+) -> (Parsed, Int32) raise FormatError {
   if pos >= chars.length() && item_needs_input(item) {
     raise InputTooShort
   }
@@ -988,7 +1002,7 @@ fn apply_item(
 pub fn parse_items(
   input : String,
   items : Array[Item],
-  locale? : Locale = Locale::posix(),
+  locale~ : Locale = Locale::posix(),
 ) -> Parsed raise FormatError {
   let (parsed, rest) = parse_items_and_remainder(input, items, locale~)
   if rest != "" {
@@ -1004,7 +1018,7 @@ pub fn parse_items(
 pub fn parse_items_and_remainder(
   input : String,
   items : Array[Item],
-  locale? : Locale = Locale::posix(),
+  locale~ : Locale = Locale::posix(),
 ) -> (Parsed, String) raise FormatError {
   let chars = input.to_array()
   let (parsed, pos) = for i = 0, parsed = Parsed::new(), pos = 0 {
@@ -1039,7 +1053,7 @@ pub fn parse_items_and_remainder(
 /// interpreted via the conventional two-digit-year pivot (`< 70` -> 20xx,
 /// `>= 70` -> 19xx). `None` when
 /// none of the three fields is present at all.
-fn resolve_year(parsed : Parsed) -> Int? raise FormatError {
+fn resolve_year(parsed : Parsed) -> Int32? raise FormatError {
   match (parsed.year, parsed.year_div_100, parsed.year_mod_100) {
     (Some(y), None, None) => Some(y)
     (Some(y), q, r) => {
@@ -1067,7 +1081,11 @@ fn resolve_year(parsed : Parsed) -> Int? raise FormatError {
 /// `wday_x` (see `week_number`, this function's inverse). Not
 /// range-checked against `year`'s actual length — `resolve_date_from_week`
 /// delegates that to `NaiveDate::from_yo`.
-fn week_based_yday(first_day_wday_x : Int, week : Int, wday_x : Int) -> Int {
+fn week_based_yday(
+  first_day_wday_x : Int32,
+  week : Int32,
+  wday_x : Int32,
+) -> Int32 {
   let first_anchor_yday = (7 - first_day_wday_x) % 7 + 1
   first_anchor_yday + (week - 1) * 7 + wday_x
 }
@@ -1079,7 +1097,7 @@ fn week_based_yday(first_day_wday_x : Int, week : Int, wday_x : Int) -> Int {
 /// here (a quarter alone never determines a day, so it's cross-checked
 /// against the finished date instead, like `ordinal`/`weekday`).
 fn resolve_date_from_week(
-  year : Int,
+  year : Int32,
   parsed : Parsed,
 ) -> @core.NaiveDate raise FormatError {
   let weekday = match parsed.weekday {
@@ -1120,7 +1138,7 @@ fn resolve_date_from_week(
 /// (`iso_year_mod_100`), cross-checking both when both are present. A lone
 /// `%g` uses the same two-digit-year pivot as `resolve_year`. `None` when
 /// neither field is present.
-fn resolve_iso_year(parsed : Parsed) -> Int? raise FormatError {
+fn resolve_iso_year(parsed : Parsed) -> Int32? raise FormatError {
   match (parsed.iso_year, parsed.iso_year_mod_100) {
     (None, None) => None
     (Some(y), None) => Some(y)
@@ -1139,8 +1157,8 @@ fn resolve_iso_year(parsed : Parsed) -> Int? raise FormatError {
 /// and a weekday (`%A`/`%a`/`%w`/`%u`). Used by `resolve_date` only when no
 /// month/day/ordinal was given at all.
 fn resolve_date_from_iso_week(
-  iso_year : Int,
-  iso_week : Int,
+  iso_year : Int32,
+  iso_week : Int32,
   parsed : Parsed,
 ) -> @core.NaiveDate raise FormatError {
   let weekday = match parsed.weekday {
@@ -1154,7 +1172,7 @@ fn resolve_date_from_iso_week(
 }
 
 ///|
-fn require_year(year : Int?) -> Int raise FormatError {
+fn require_year(year : Int32?) -> Int32 raise FormatError {
   match year {
     None => raise IncompleteFields
     Some(y) => y
@@ -1236,7 +1254,7 @@ fn resolve_date(parsed : Parsed) -> @core.NaiveDate raise FormatError {
 /// disagreement-raises philosophy, applied across specifiers rather than
 /// within one). `hour12` alone (no am/pm marker) or `is_pm` alone (no
 /// 12-hour value) is incomplete: neither determines an hour by itself.
-fn resolve_hour(parsed : Parsed) -> Int raise FormatError {
+fn resolve_hour(parsed : Parsed) -> Int32 raise FormatError {
   let from_12h = match (parsed.hour12, parsed.is_pm) {
     (None, None) => None
     (Some(hour12), Some(is_pm)) => {
@@ -1360,7 +1378,7 @@ fn timestamp_instant(
 fn resolve_at_timestamp(
   parsed : Parsed,
   ts : Int64,
-  offset_secs : Int,
+  offset_secs : Int32,
 ) -> @core.NaiveDateTime raise FormatError {
   let instant = timestamp_instant(parsed, ts)
   let wall_clock = match instant.checked_add_seconds(offset_secs.to_int64()) {
@@ -1451,7 +1469,7 @@ pub fn[Tz : @tz.TimeZone] Parsed::to_date_time_in(
 pub fn parse_date(
   input : String,
   fmt : String,
-  locale? : Locale = Locale::posix(),
+  locale~ : Locale = Locale::posix(),
 ) -> @core.NaiveDate raise FormatError {
   parse_items(input, tokenize(fmt, locale~), locale~).to_date()
 }
@@ -1463,7 +1481,7 @@ pub fn parse_date(
 pub fn parse_date_and_remainder(
   input : String,
   fmt : String,
-  locale? : Locale = Locale::posix(),
+  locale~ : Locale = Locale::posix(),
 ) -> (@core.NaiveDate, String) raise FormatError {
   let (parsed, rest) = parse_items_and_remainder(
     input,
@@ -1479,7 +1497,7 @@ pub fn parse_date_and_remainder(
 pub fn parse_time(
   input : String,
   fmt : String,
-  locale? : Locale = Locale::posix(),
+  locale~ : Locale = Locale::posix(),
 ) -> @core.NaiveTime raise FormatError {
   parse_items(input, tokenize(fmt, locale~), locale~).to_time()
 }
@@ -1490,7 +1508,7 @@ pub fn parse_time(
 pub fn parse_time_and_remainder(
   input : String,
   fmt : String,
-  locale? : Locale = Locale::posix(),
+  locale~ : Locale = Locale::posix(),
 ) -> (@core.NaiveTime, String) raise FormatError {
   let (parsed, rest) = parse_items_and_remainder(
     input,
@@ -1505,7 +1523,7 @@ pub fn parse_time_and_remainder(
 pub fn parse_date_time(
   input : String,
   fmt : String,
-  locale? : Locale = Locale::posix(),
+  locale~ : Locale = Locale::posix(),
 ) -> @core.NaiveDateTime raise FormatError {
   parse_items(input, tokenize(fmt, locale~), locale~).to_date_time()
 }
@@ -1516,7 +1534,7 @@ pub fn parse_date_time(
 pub fn parse_date_time_and_remainder(
   input : String,
   fmt : String,
-  locale? : Locale = Locale::posix(),
+  locale~ : Locale = Locale::posix(),
 ) -> (@core.NaiveDateTime, String) raise FormatError {
   let (parsed, rest) = parse_items_and_remainder(
     input,
@@ -1533,7 +1551,7 @@ pub fn parse_date_time_and_remainder(
 pub fn parse_date_time_fixed_offset(
   input : String,
   fmt : String,
-  locale? : Locale = Locale::posix(),
+  locale~ : Locale = Locale::posix(),
 ) -> @tz.DateTime[@tz.FixedOffset] raise FormatError {
   parse_items(input, tokenize(fmt, locale~), locale~).to_date_time_fixed_offset()
 }
@@ -1544,7 +1562,7 @@ pub fn parse_date_time_fixed_offset(
 pub fn parse_date_time_fixed_offset_and_remainder(
   input : String,
   fmt : String,
-  locale? : Locale = Locale::posix(),
+  locale~ : Locale = Locale::posix(),
 ) -> (@tz.DateTime[@tz.FixedOffset], String) raise FormatError {
   let (parsed, rest) = parse_items_and_remainder(
     input,
@@ -1572,7 +1590,7 @@ pub fn[Tz : @tz.TimeZone] parse_date_time_in(
   input : String,
   fmt : String,
   tz : Tz,
-  locale? : Locale = Locale::posix(),
+  locale~ : Locale = Locale::posix(),
 ) -> @tz.MappedLocalTime[@tz.DateTime[Tz]] raise FormatError {
   parse_items(input, tokenize(fmt, locale~), locale~).to_date_time_in(tz)
 }
@@ -1584,7 +1602,7 @@ pub fn[Tz : @tz.TimeZone] parse_date_time_in_and_remainder(
   input : String,
   fmt : String,
   tz : Tz,
-  locale? : Locale = Locale::posix(),
+  locale~ : Locale = Locale::posix(),
 ) -> (@tz.MappedLocalTime[@tz.DateTime[Tz]], String) raise FormatError {
   let (parsed, rest) = parse_items_and_remainder(
     input,

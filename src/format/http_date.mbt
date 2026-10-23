@@ -41,9 +41,9 @@ fn[T] http_require(opt : T?) -> T raise FormatError {
 ///|
 fn match_weekday_form(
   chars : Array[Char],
-  pos : Int,
+  pos : Int32,
   long_form : Bool,
-) -> (@core.Weekday, Int)? {
+) -> (@core.Weekday, Int32)? {
   for entry in weekday_names() {
     let (wd, long_name, short_name) = entry
     match
@@ -56,7 +56,7 @@ fn match_weekday_form(
 }
 
 ///|
-fn match_month_short(chars : Array[Char], pos : Int) -> (Int, Int)? {
+fn match_month_short(chars : Array[Char], pos : Int32) -> (Int32, Int32)? {
   for entry in month_names() {
     let (m, _, short_name) = entry
     match match_literal(chars, pos, short_name) {
@@ -68,7 +68,7 @@ fn match_month_short(chars : Array[Char], pos : Int) -> (Int, Int)? {
 }
 
 ///|
-fn parse_space_padded_day(chars : Array[Char], pos : Int) -> (Int, Int)? {
+fn parse_space_padded_day(chars : Array[Char], pos : Int32) -> (Int32, Int32)? {
   match expect_char(chars, pos, ' ') {
     Some(p) =>
       if p < chars.length() && is_ascii_digit(chars[p]) {
@@ -81,7 +81,7 @@ fn parse_space_padded_day(chars : Array[Char], pos : Int) -> (Int, Int)? {
 }
 
 ///|
-fn resolve_two_digit_year(yy : Int, reference_year : Int?) -> Int {
+fn resolve_two_digit_year(yy : Int32, reference_year : Int32?) -> Int32 {
   match reference_year {
     None => yy + (if yy < 70 { 2000 } else { 1900 })
     Some(reference) => {
@@ -98,8 +98,8 @@ fn resolve_two_digit_year(yy : Int, reference_year : Int?) -> Int {
 ///|
 fn parse_clock(
   chars : Array[Char],
-  pos : Int,
-) -> (Int, Int, Int, Int) raise FormatError {
+  pos : Int32,
+) -> (Int32, Int32, Int32, Int32) raise FormatError {
   let (hour, p1) = http_require(parse_fixed_digits(chars, pos, 2))
   let p2 = http_require(expect_char(chars, p1, ':'))
   let (minute, p3) = http_require(parse_fixed_digits(chars, p2, 2))
@@ -109,7 +109,7 @@ fn parse_clock(
 }
 
 ///|
-fn parse_http_gmt(chars : Array[Char], pos : Int) -> Int? {
+fn parse_http_gmt(chars : Array[Char], pos : Int32) -> Int32? {
   match match_literal(chars, pos, "GMT") {
     Some(p) => if p == chars.length() { Some(p) } else { None }
     None => None
@@ -119,7 +119,7 @@ fn parse_http_gmt(chars : Array[Char], pos : Int) -> Int? {
 ///|
 fn parse_imf_fixdate(
   chars : Array[Char],
-) -> (@core.Weekday, Int, Int, Int, Int, Int, Int) raise FormatError {
+) -> (@core.Weekday, Int32, Int32, Int32, Int32, Int32, Int32) raise FormatError {
   let (wd, p1) = http_require(match_weekday_form(chars, 0, false))
   let p2 = http_require(expect_char(chars, p1, ','))
   let p3 = http_require(expect_char(chars, p2, ' '))
@@ -138,8 +138,8 @@ fn parse_imf_fixdate(
 ///|
 fn parse_rfc850(
   chars : Array[Char],
-  reference_year : Int?,
-) -> (@core.Weekday, Int, Int, Int, Int, Int, Int) raise FormatError {
+  reference_year : Int32?,
+) -> (@core.Weekday, Int32, Int32, Int32, Int32, Int32, Int32) raise FormatError {
   let (wd, p1) = http_require(match_weekday_form(chars, 0, true))
   let p2 = http_require(expect_char(chars, p1, ','))
   let p3 = http_require(expect_char(chars, p2, ' '))
@@ -159,7 +159,7 @@ fn parse_rfc850(
 ///|
 fn parse_asctime(
   chars : Array[Char],
-) -> (@core.Weekday, Int, Int, Int, Int, Int, Int) raise FormatError {
+) -> (@core.Weekday, Int32, Int32, Int32, Int32, Int32, Int32) raise FormatError {
   let (wd, p1) = http_require(match_weekday_form(chars, 0, false))
   let p2 = http_require(expect_char(chars, p1, ' '))
   let (month, p3) = http_require(match_month_short(chars, p2))
@@ -196,7 +196,7 @@ fn parse_asctime(
 /// Raises `InvalidHttpDate` for anything else.
 pub fn parse_http_date(
   s : String,
-  reference_year? : Int,
+  reference_year? : Int32,
 ) -> @tz.DateTime[@tz.Utc] raise FormatError {
   let chars = s.to_array()
   let short_weekday_then = match match_weekday_form(chars, 0, false) {

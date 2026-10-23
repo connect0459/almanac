@@ -21,7 +21,7 @@ pub fn[Tz : @tz.TimeZone] to_rfc2822(
 fn render_rfc2822(
   date : @core.NaiveDate,
   time : @core.NaiveTime,
-  offset_secs : Int,
+  offset_secs : Int32,
 ) -> String raise FormatError {
   let year = date.year()
   if year < 0 || year > 9999 {
@@ -50,7 +50,7 @@ fn render_rfc2822(
 /// which — unlike this project's other fixed-width numeric fields — has
 /// no leading zero when rendered, though a leading zero is still
 /// accepted on parse).
-fn parse_one_or_two_digits(chars : Array[Char], pos : Int) -> (Int, Int)? {
+fn parse_one_or_two_digits(chars : Array[Char], pos : Int32) -> (Int32, Int32)? {
   if pos >= chars.length() || !is_ascii_digit(chars[pos]) {
     None
   } else if pos + 1 < chars.length() && is_ascii_digit(chars[pos + 1]) {
@@ -74,8 +74,8 @@ fn[T] rfc2822_require(opt : T?) -> T raise FormatError {
 ///|
 fn match_short_weekday_name(
   chars : Array[Char],
-  pos : Int,
-) -> (@core.Weekday, Int)? {
+  pos : Int32,
+) -> (@core.Weekday, Int32)? {
   for entry in weekday_names() {
     let (wd, _, short_name) = entry
     match match_literal(chars, pos, short_name) {
@@ -89,8 +89,8 @@ fn match_short_weekday_name(
 ///|
 fn match_short_month_name(
   chars : Array[Char],
-  pos : Int,
-) -> (@core.Month, Int)? {
+  pos : Int32,
+) -> (@core.Month, Int32)? {
   for entry in month_names() {
     let (m, _, short_name) = entry
     match match_literal(chars, pos, short_name) {

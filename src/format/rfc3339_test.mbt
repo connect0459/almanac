@@ -213,7 +213,7 @@ test "parse_rfc3339 accepts the extreme offsets of +23:59 and -23:59" {
 ///|
 fn opts_instant(
   nanos : Int64,
-  offset_secs : Int,
+  offset_secs : Int32,
 ) -> @tz.DateTime[@tz.FixedOffset] {
   let base = @core.NaiveDateTime::new(
     @core.NaiveDate::from_ymd(2024, 3, 5).unwrap(),
@@ -320,7 +320,7 @@ test "to_rfc3339_opts renders a leap second as :60 with the requested fraction" 
 }
 
 ///|
-fn utc_at_year(year : Int) -> @tz.DateTime[@tz.Utc] {
+fn utc_at_year(year : Int32) -> @tz.DateTime[@tz.Utc] {
   @tz.DateTime::from_utc(
     @core.NaiveDateTime::from_ymd_hms(year, 1, 2, 3, 4, 5).unwrap(),
     @tz.Utc::new(),

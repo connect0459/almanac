@@ -1,11 +1,11 @@
 ///|
 fn asn1_utc(
-  year : Int,
-  month : Int,
-  day : Int,
-  hour : Int,
-  minute : Int,
-  second : Int,
+  year : Int32,
+  month : Int32,
+  day : Int32,
+  hour : Int32,
+  minute : Int32,
+  second : Int32,
 ) -> @tz.DateTime[@tz.Utc] {
   @tz.DateTime::from_utc(
     @core.NaiveDateTime::new(

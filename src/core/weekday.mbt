@@ -50,7 +50,7 @@ pub impl Show for Weekday with fn output(self, logger) {
 pub extend Weekday with Show::{to_string, output}
 
 ///|
-fn Weekday::index(self : Weekday) -> Int {
+fn Weekday::index(self : Weekday) -> Int32 {
   match self {
     Mon => 0
     Tue => 1
@@ -65,7 +65,7 @@ fn Weekday::index(self : Weekday) -> Int {
 ///|
 /// The weekday `n` days after `self` (before it, for a negative `n`),
 /// wrapping around the week in either direction.
-pub fn Weekday::add_days(self : Weekday, n : Int) -> Weekday {
+pub fn Weekday::add_days(self : Weekday, n : Int32) -> Weekday {
   let index = (self.index() + n % 7 + 7) % 7
   Weekday::from_num_days_from_monday(index).unwrap()
 }
@@ -100,46 +100,46 @@ pub fn Weekday::pred(self : Weekday) -> Weekday {
 
 ///|
 /// Day-of-week number counting from `Mon = 0`.
-pub fn Weekday::num_days_from_monday(self : Weekday) -> Int {
+pub fn Weekday::num_days_from_monday(self : Weekday) -> Int32 {
   self.index()
 }
 
 ///|
 /// Day-of-week number counting from `Sun = 0`.
-pub fn Weekday::num_days_from_sunday(self : Weekday) -> Int {
+pub fn Weekday::num_days_from_sunday(self : Weekday) -> Int32 {
   (self.index() + 1) % 7
 }
 
 ///|
 /// ISO 8601 day-of-week number, counting from `Mon = 1`.
-pub fn Weekday::number_from_monday(self : Weekday) -> Int {
+pub fn Weekday::number_from_monday(self : Weekday) -> Int32 {
   self.num_days_from_monday() + 1
 }
 
 ///|
 /// Day-of-week number counting from `Sun = 1`.
-pub fn Weekday::number_from_sunday(self : Weekday) -> Int {
+pub fn Weekday::number_from_sunday(self : Weekday) -> Int32 {
   self.num_days_from_sunday() + 1
 }
 
 ///|
 /// The `Weekday` whose `number_from_monday()` is `n` (ISO 8601 numbering:
 /// `1` = `Mon`, `7` = `Sun`), or `None` if `n` is outside `1..=7`.
-pub fn Weekday::from_number_from_monday(n : Int) -> Weekday? {
+pub fn Weekday::from_number_from_monday(n : Int32) -> Weekday? {
   Weekday::from_num_days_from_monday(n - 1)
 }
 
 ///|
 /// The `Weekday` whose `number_from_sunday()` is `n` (`1` = `Sun`,
 /// `7` = `Sat`), or `None` if `n` is outside `1..=7`.
-pub fn Weekday::from_number_from_sunday(n : Int) -> Weekday? {
+pub fn Weekday::from_number_from_sunday(n : Int32) -> Weekday? {
   Weekday::from_num_days_from_sunday(n - 1)
 }
 
 ///|
 /// The `Weekday` whose `num_days_from_monday()` is `n` (`0` = `Mon`), or
 /// `None` if `n` is outside `0..=6`.
-pub fn Weekday::from_num_days_from_monday(n : Int) -> Weekday? {
+pub fn Weekday::from_num_days_from_monday(n : Int32) -> Weekday? {
   match n {
     0 => Some(Mon)
     1 => Some(Tue)
@@ -155,10 +155,10 @@ pub fn Weekday::from_num_days_from_monday(n : Int) -> Weekday? {
 ///|
 /// The `Weekday` whose `num_days_from_sunday()` is `n` (`0` = `Sun`), or
 /// `None` if `n` is outside `0..=6`.
-pub fn Weekday::from_num_days_from_sunday(n : Int) -> Weekday? {
+pub fn Weekday::from_num_days_from_sunday(n : Int32) -> Weekday? {
   match n {
     0 => Some(Sun)
-    1..=6 => Weekday::from_num_days_from_monday(n - 1)
+    1..<=6 => Weekday::from_num_days_from_monday(n - 1)
     _ => None
   }
 }
@@ -182,7 +182,7 @@ pub fn Weekday::from_name(name : String) -> Weekday? {
 ///|
 /// The number of days elapsed since `other`, wrapping forward through the
 /// week (always in `0..=6`).
-pub fn Weekday::days_since(self : Weekday, other : Weekday) -> Int {
+pub fn Weekday::days_since(self : Weekday, other : Weekday) -> Int32 {
   (self.index() - other.index() + 7) % 7
 }
 
@@ -194,7 +194,7 @@ fn weekday_from_days64(days : Int64) -> Weekday {
 ///|
 /// The weekday of the given day count relative to the Unix epoch
 /// (`1970-01-01`, day `0`, was a `Thu`).
-fn weekday_from_days(days : Int) -> Weekday {
+fn weekday_from_days(days : Int32) -> Weekday {
   match floor_mod(days + 3, 7) {
     0 => Mon
     1 => Tue

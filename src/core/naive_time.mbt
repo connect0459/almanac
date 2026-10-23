@@ -6,8 +6,8 @@
 /// `0..=999_999_999`, but may reach `1_999_999_999` to represent a leap
 /// second at `second() == 59` (see `nanosecond`).
 pub struct NaiveTime {
-  priv secs : Int
-  priv frac : Int
+  priv secs : Int32
+  priv frac : Int32
 } derive(Eq, Compare, Hash, @debug.Debug)
 
 ///|
@@ -81,10 +81,10 @@ pub extend NaiveTime with Show::{to_string, output}
 /// `0..=59`, or `nanosecond` is outside `0..=1_999_999_999`. A `nanosecond`
 /// of `1_000_000_000` or above represents a leap second (see `nanosecond`).
 pub fn NaiveTime::from_hms_nano(
-  hour : Int,
-  min : Int,
-  sec : Int,
-  nano : Int,
+  hour : Int32,
+  min : Int32,
+  sec : Int32,
+  nano : Int32,
 ) -> NaiveTime? {
   if hour < 0 || hour > 23 {
     None
@@ -103,7 +103,11 @@ pub fn NaiveTime::from_hms_nano(
 /// Constructs the time for a given `hour`/`minute`/`second`, or `None` if
 /// any component is outside its valid range. See `from_hms_nano` for the
 /// exact ranges.
-pub fn NaiveTime::from_hms(hour : Int, min : Int, sec : Int) -> NaiveTime? {
+pub fn NaiveTime::from_hms(
+  hour : Int32,
+  min : Int32,
+  sec : Int32,
+) -> NaiveTime? {
   NaiveTime::from_hms_nano(hour, min, sec, 0)
 }
 
@@ -112,10 +116,10 @@ pub fn NaiveTime::from_hms(hour : Int, min : Int, sec : Int) -> NaiveTime? {
 /// millisecond component, or `None` if any component is outside its valid
 /// range (`milli` outside `0..=1999`; see `from_hms_nano`).
 pub fn NaiveTime::from_hms_milli(
-  hour : Int,
-  min : Int,
-  sec : Int,
-  milli : Int,
+  hour : Int32,
+  min : Int32,
+  sec : Int32,
+  milli : Int32,
 ) -> NaiveTime? {
   NaiveTime::from_hms_nano(hour, min, sec, milli * 1_000_000)
 }
@@ -125,10 +129,10 @@ pub fn NaiveTime::from_hms_milli(
 /// microsecond component, or `None` if any component is outside its valid
 /// range (`micro` outside `0..=1_999_999`; see `from_hms_nano`).
 pub fn NaiveTime::from_hms_micro(
-  hour : Int,
-  min : Int,
-  sec : Int,
-  micro : Int,
+  hour : Int32,
+  min : Int32,
+  sec : Int32,
+  micro : Int32,
 ) -> NaiveTime? {
   NaiveTime::from_hms_nano(hour, min, sec, micro * 1000)
 }
@@ -138,8 +142,8 @@ pub fn NaiveTime::from_hms_micro(
 /// nanosecond component, or `None` if `secs` is outside `0..=86399` or
 /// `nano` is outside `0..=1_999_999_999`.
 pub fn NaiveTime::from_num_seconds_from_midnight(
-  secs : Int,
-  nano : Int,
+  secs : Int32,
+  nano : Int32,
 ) -> NaiveTime? {
   if secs < 0 || secs > 86399 {
     None
@@ -152,34 +156,34 @@ pub fn NaiveTime::from_num_seconds_from_midnight(
 
 ///|
 /// The hour of the day, `0..=23`.
-pub fn NaiveTime::hour(self : NaiveTime) -> Int {
+pub fn NaiveTime::hour(self : NaiveTime) -> Int32 {
   self.secs / 3600
 }
 
 ///|
 /// The minute of the hour, `0..=59`.
-pub fn NaiveTime::minute(self : NaiveTime) -> Int {
+pub fn NaiveTime::minute(self : NaiveTime) -> Int32 {
   self.secs / 60 % 60
 }
 
 ///|
 /// The second of the minute, `0..=59`. Never reports `60` for a leap
 /// second; use `nanosecond` to detect one.
-pub fn NaiveTime::second(self : NaiveTime) -> Int {
+pub fn NaiveTime::second(self : NaiveTime) -> Int32 {
   self.secs % 60
 }
 
 ///|
 /// The hour, minute, and second together, as `hour`, `minute`, and `second`
 /// report them.
-pub fn NaiveTime::hms(self : NaiveTime) -> (Int, Int, Int) {
+pub fn NaiveTime::hms(self : NaiveTime) -> (Int32, Int32, Int32) {
   (self.hour(), self.minute(), self.second())
 }
 
 ///|
 /// The number of nanoseconds in one unit of the `digits`-th fractional
 /// digit, for `digits` in `0..=9`. Aborts for any other `digits`.
-fn subsec_granularity_nanos(digits : Int, operation : String) -> Int {
+fn subsec_granularity_nanos(digits : Int32, operation : String) -> Int32 {
   if digits < 0 || digits > 9 {
     abort(operation + ": digits must be in 0..=9")
   }
@@ -213,7 +217,10 @@ fn NaiveTime::fold_leap_second(self : NaiveTime) -> NaiveTime {
 /// the result is not a leap second.
 ///
 /// Aborts if `digits` is outside `0..=9`.
-pub fn NaiveTime::truncate_subsecs(self : NaiveTime, digits : Int) -> NaiveTime {
+pub fn NaiveTime::truncate_subsecs(
+  self : NaiveTime,
+  digits : Int32,
+) -> NaiveTime {
   let granularity = subsec_granularity_nanos(
     digits, "NaiveTime::truncate_subsecs",
   )
@@ -235,7 +242,7 @@ pub fn NaiveTime::truncate_subsecs(self : NaiveTime, digits : Int) -> NaiveTime 
 /// the result is not a leap second.
 ///
 /// Aborts if `digits` is outside `0..=9`.
-pub fn NaiveTime::round_subsecs(self : NaiveTime, digits : Int) -> NaiveTime {
+pub fn NaiveTime::round_subsecs(self : NaiveTime, digits : Int32) -> NaiveTime {
   let granularity = subsec_granularity_nanos(digits, "NaiveTime::round_subsecs")
   if self.frac % granularity == 0 {
     return self
@@ -260,14 +267,14 @@ pub fn NaiveTime::round_subsecs(self : NaiveTime, digits : Int) -> NaiveTime {
 /// `1_000_000_000` or above indicates this time represents a leap second
 /// (displayed as `second() + 1`, i.e. `:60`), with the leap second's own
 /// fractional part equal to `nanosecond() - 1_000_000_000`.
-pub fn NaiveTime::nanosecond(self : NaiveTime) -> Int {
+pub fn NaiveTime::nanosecond(self : NaiveTime) -> Int32 {
   self.frac
 }
 
 ///|
 /// The count of seconds since midnight, `0..=86399`. Does not account for a
 /// leap second's extra elapsed second; use `nanosecond` for that.
-pub fn NaiveTime::num_seconds_from_midnight(self : NaiveTime) -> Int {
+pub fn NaiveTime::num_seconds_from_midnight(self : NaiveTime) -> Int32 {
   self.secs
 }
 
@@ -365,7 +372,7 @@ pub fn NaiveTime::wrapping_sub_signed(
 ///|
 /// Same minute, second, and nanosecond, with the hour changed to `hour`, or
 /// `None` if `hour` is outside `0..=23`.
-pub fn NaiveTime::with_hour(self : NaiveTime, hour : Int) -> NaiveTime? {
+pub fn NaiveTime::with_hour(self : NaiveTime, hour : Int32) -> NaiveTime? {
   if hour < 0 || hour > 23 {
     None
   } else {
@@ -376,7 +383,7 @@ pub fn NaiveTime::with_hour(self : NaiveTime, hour : Int) -> NaiveTime? {
 ///|
 /// Same hour, second, and nanosecond, with the minute changed to `min`, or
 /// `None` if `min` is outside `0..=59`.
-pub fn NaiveTime::with_minute(self : NaiveTime, min : Int) -> NaiveTime? {
+pub fn NaiveTime::with_minute(self : NaiveTime, min : Int32) -> NaiveTime? {
   if min < 0 || min > 59 {
     None
   } else {
@@ -391,7 +398,7 @@ pub fn NaiveTime::with_minute(self : NaiveTime, min : Int) -> NaiveTime? {
 /// Same hour, minute, and nanosecond, with the second changed to `sec`, or
 /// `None` if `sec` is outside `0..=59`. As with `second`, this never
 /// represents a leap second itself; use `with_nanosecond` for that.
-pub fn NaiveTime::with_second(self : NaiveTime, sec : Int) -> NaiveTime? {
+pub fn NaiveTime::with_second(self : NaiveTime, sec : Int32) -> NaiveTime? {
   if sec < 0 || sec > 59 {
     None
   } else {
@@ -403,7 +410,7 @@ pub fn NaiveTime::with_second(self : NaiveTime, sec : Int) -> NaiveTime? {
 /// Same hour, minute, and second, with the nanosecond component changed to
 /// `nano`, or `None` if `nano` is outside `0..=1_999_999_999`. See
 /// `nanosecond` for how a value `>= 1_000_000_000` represents a leap second.
-pub fn NaiveTime::with_nanosecond(self : NaiveTime, nano : Int) -> NaiveTime? {
+pub fn NaiveTime::with_nanosecond(self : NaiveTime, nano : Int32) -> NaiveTime? {
   if nano < 0 || nano >= 2_000_000_000 {
     None
   } else {

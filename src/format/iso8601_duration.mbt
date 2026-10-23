@@ -1,8 +1,8 @@
 ///|
 fn iso_duration_scan_number(
   chars : Array[Char],
-  start : Int,
-) -> (Int64, Int64, Bool, Int) raise FormatError {
+  start : Int32,
+) -> (Int64, Int64, Bool, Int32) raise FormatError {
   let len = chars.length()
   let mut pos = start
   let mut whole = 0L

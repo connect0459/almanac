@@ -1,5 +1,5 @@
 ///|
-fn pad_zero(value : Int, width : Int) -> String {
+fn pad_zero(value : Int32, width : Int32) -> String {
   let digits = value.to_string()
   if digits.length() >= width {
     digits
@@ -12,7 +12,7 @@ fn pad_zero(value : Int, width : Int) -> String {
 /// A year as `YYYY` for `0..=9999`, otherwise with an explicit sign and at
 /// least four digits (`-0001`, `+10000`), as ISO 8601 requires for years
 /// outside that range.
-fn year_text(year : Int) -> String {
+fn year_text(year : Int32) -> String {
   if year >= 0 && year <= 9999 {
     pad_zero(year, 4)
   } else if year < 0 {

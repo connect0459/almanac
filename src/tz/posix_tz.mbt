@@ -4,13 +4,13 @@
 priv enum RuleDate {
   /// `Jn`: the `n`-th day of the year, `1..=365`. February 29 is never
   /// counted, even in a leap year.
-  JulianNoLeap(Int)
+  JulianNoLeap(Int32)
   /// `n`: the `n`-th day of the year, `0..=365`, 0-based. February 29 is
   /// counted in a leap year.
-  JulianWithLeap(Int)
+  JulianWithLeap(Int32)
   /// `Mm.w.d`: the `w`-th occurrence of weekday `d` (`0` = Sunday) in
   /// month `m` (`w = 5` means "the last occurrence").
-  MonthWeekDay(Int, Int, Int)
+  MonthWeekDay(Int32, Int32, Int32)
 } derive(Eq, Hash, @debug.Debug)
 
 ///|
@@ -20,11 +20,11 @@ priv struct DstRule {
   start : RuleDate
   /// Seconds after local midnight of `start`'s date, in standard time
   /// (the time in effect immediately before this transition).
-  start_time : Int
+  start_time : Int32
   end : RuleDate
   /// Seconds after local midnight of `end`'s date, in daylight time (the
   /// time in effect immediately before this transition).
-  end_time : Int
+  end_time : Int32
 } derive(Eq, Hash, @debug.Debug)
 
 ///|
@@ -32,9 +32,9 @@ priv struct DstRule {
 /// `TZ` environment variable), used to extrapolate offsets for instants
 /// past a TZif file's last recorded transition.
 pub struct PosixTz {
-  priv std_offset : Int
+  priv std_offset : Int32
   priv std_name : String
-  priv dst_offset : Int?
+  priv dst_offset : Int32?
   priv dst_name : String?
   priv rule : DstRule?
 } derive(Eq, Hash, @debug.Debug)
@@ -62,7 +62,7 @@ fn is_ascii_digit(c : Char) -> Bool {
 }
 
 ///|
-fn parse_name(chars : Array[Char], pos : Int) -> (String, Int)? {
+fn parse_name(chars : Array[Char], pos : Int32) -> (String, Int32)? {
   if pos < chars.length() && chars[pos] == '<' {
     for i = pos + 1 {
       if i >= chars.length() {
@@ -89,10 +89,10 @@ fn parse_name(chars : Array[Char], pos : Int) -> (String, Int)? {
 ///|
 fn parse_uint(
   chars : Array[Char],
-  pos : Int,
-  min : Int,
-  max : Int,
-) -> (Int, Int)? {
+  pos : Int32,
+  min : Int32,
+  max : Int32,
+) -> (Int32, Int32)? {
   for i = pos, acc = 0 {
     if i < chars.length() && is_ascii_digit(chars[i]) {
       let next = acc * 10 + (chars[i].to_int() - '0'.to_int())
@@ -111,11 +111,11 @@ fn parse_uint(
 ///|
 /// The largest hour count accepted in an offset or rule time (`24 * 7`, the
 /// tzdata extension of POSIX's `0..=24`).
-const MAX_OFFSET_HOURS : Int = 168
+const MAX_OFFSET_HOURS : Int32 = 168
 
 ///|
 /// Parses a POSIX offset/time field: `[+-]hh[:mm[:ss]]`, seconds.
-fn parse_offset_seconds(chars : Array[Char], pos : Int) -> (Int, Int)? {
+fn parse_offset_seconds(chars : Array[Char], pos : Int32) -> (Int32, Int32)? {
   let (sign, p) = if pos < chars.length() && chars[pos] == '-' {
     (-1, pos + 1)
   } else if pos < chars.length() && chars[pos] == '+' {
@@ -148,7 +148,7 @@ fn parse_offset_seconds(chars : Array[Char], pos : Int) -> (Int, Int)? {
 }
 
 ///|
-fn parse_rule_date(chars : Array[Char], pos : Int) -> (RuleDate, Int)? {
+fn parse_rule_date(chars : Array[Char], pos : Int32) -> (RuleDate, Int32)? {
   if pos >= chars.length() {
     None
   } else if chars[pos] == 'J' {
@@ -188,10 +188,10 @@ fn parse_rule_date(chars : Array[Char], pos : Int) -> (RuleDate, Int)? {
 ///|
 /// The default transition time of day, `02:00:00`, used when a rule omits
 /// an explicit `/time`.
-const DEFAULT_RULE_TIME : Int = 7200
+const DEFAULT_RULE_TIME : Int32 = 7200
 
 ///|
-fn parse_rule(chars : Array[Char], pos : Int) -> (DstRule, Int)? {
+fn parse_rule(chars : Array[Char], pos : Int32) -> (DstRule, Int32)? {
   match parse_rule_date(chars, pos) {
     None => None
     Some((start, p1)) => {
@@ -289,7 +289,7 @@ pub fn parse_posix_tz(s : String) -> PosixTz? {
 ///|
 /// The date the given rule falls on in `year`, or `None` if that date is
 /// outside `NaiveDate`'s representable range.
-fn date_for_rule(date : RuleDate, year : Int) -> @core.NaiveDate? {
+fn date_for_rule(date : RuleDate, year : Int32) -> @core.NaiveDate? {
   match date {
     JulianNoLeap(n) => {
       let ordinal = if @core.is_leap_year(year) && n > 59 { n + 1 } else { n }
@@ -325,7 +325,7 @@ fn date_for_rule(date : RuleDate, year : Int) -> @core.NaiveDate? {
 /// The Unix instant for `date` at local midnight, plus `time_seconds`
 /// (which may be negative or exceed a day, per POSIX's permissive time
 /// field).
-fn local_clock_value(date : @core.NaiveDate, time_seconds : Int) -> Int64 {
+fn local_clock_value(date : @core.NaiveDate, time_seconds : Int32) -> Int64 {
   let midnight = @core.NaiveDateTime::new(
     date,
     @core.NaiveTime::from_hms(0, 0, 0).unwrap(),
@@ -339,9 +339,9 @@ fn local_clock_value(date : @core.NaiveDate, time_seconds : Int) -> Int64 {
 /// representable range.
 fn compute_transitions(
   rule : DstRule,
-  std_offset : Int,
-  dst_offset : Int,
-  year : Int,
+  std_offset : Int32,
+  dst_offset : Int32,
+  year : Int32,
 ) -> (Int64, Int64)? {
   date_for_rule(rule.start, year).bind(start_date => {
     date_for_rule(rule.end, year).map(end_date => {

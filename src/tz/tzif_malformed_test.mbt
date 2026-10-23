@@ -1,5 +1,5 @@
 ///|
-fn be32(value : Int) -> Array[Byte] {
+fn be32(value : Int32) -> Array[Byte] {
   [
     ((value >> 24) & 0xFF).to_byte(),
     ((value >> 16) & 0xFF).to_byte(),
@@ -13,10 +13,10 @@ fn be32(value : Int) -> Array[Byte] {
 /// `(utc_offset, is_dst, designation_index)`, and `chars` is the raw
 /// designation block.
 fn tzif_v1_build(
-  transitions : Array[Int],
-  transition_types : Array[Int],
-  types : Array[(Int, Int, Int)],
-  chars : Array[Int],
+  transitions : Array[Int32],
+  transition_types : Array[Int32],
+  types : Array[(Int32, Int32, Int32)],
+  chars : Array[Int32],
 ) -> Bytes {
   let out : Array[Byte] = [b'T', b'Z', b'i', b'f']
   for _ in 0..<16 {
@@ -44,10 +44,10 @@ fn tzif_v1_build(
 }
 
 ///|
-let standard_types : Array[(Int, Int, Int)] = [(0, 0, 0), (3600, 1, 2)]
+let standard_types : Array[(Int32, Int32, Int32)] = [(0, 0, 0), (3600, 1, 2)]
 
 ///|
-let standard_chars : Array[Int] = [0x41, 0, 0x42, 0]
+let standard_chars : Array[Int32] = [0x41, 0, 0x42, 0]
 
 ///|
 test "a well-formed hand-built TZif buffer parses, so the malformed cases below differ only in the defect" {

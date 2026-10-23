@@ -70,12 +70,12 @@ fn ascii_lower_string(s : String) -> String {
 fn names_are_distinct(
   long : Array[String],
   short : Array[String],
-  count : Int,
+  count : Int32,
 ) -> Bool {
   if long.length() != count || short.length() != count {
     return false
   }
-  let seen : Map[String, Int] = Map([])
+  let seen : Map[String, Int32] = Map([])
   for form in [long, short] {
     for i, name in form {
       if name == "" {
@@ -210,7 +210,7 @@ pub fn Locale::posix() -> Locale {
 pub fn Locale::month_name(
   self : Locale,
   month : @core.Month,
-  short? : Bool = false,
+  short~ : Bool = false,
 ) -> String {
   let names = if short { self.short_months } else { self.long_months }
   names[month.number() - 1]
@@ -221,7 +221,7 @@ pub fn Locale::month_name(
 pub fn Locale::weekday_name(
   self : Locale,
   weekday : @core.Weekday,
-  short? : Bool = false,
+  short~ : Bool = false,
 ) -> String {
   let names = if short { self.short_weekdays } else { self.long_weekdays }
   names[weekday.days_since(@core.Mon)]

@@ -17,12 +17,12 @@ fn stamp_parsed(text : String) -> @format.Parsed raise @format.FormatError {
 
 ///|
 fn naive_dt(
-  year : Int,
-  month : Int,
-  day : Int,
-  hour : Int,
-  minute : Int,
-  second : Int,
+  year : Int32,
+  month : Int32,
+  day : Int32,
+  hour : Int32,
+  minute : Int32,
+  second : Int32,
 ) -> @core.NaiveDateTime {
   @core.NaiveDateTime::new(
     @core.NaiveDate::from_ymd(year, month, day).unwrap(),

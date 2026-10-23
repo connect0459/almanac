@@ -62,7 +62,7 @@ pub fn NaiveDateTime::new(date : NaiveDate, time : NaiveTime) -> NaiveDateTime {
 /// leap second; see `NaiveTime::nanosecond`).
 pub fn NaiveDateTime::from_timestamp(
   secs : Int64,
-  nanos : Int,
+  nanos : Int32,
 ) -> NaiveDateTime? {
   let days = floor_div64(secs, 86400L)
   let secs_of_day = floor_mod64(secs, 86400L).to_int()
@@ -120,19 +120,19 @@ pub fn NaiveDateTime::time(self : NaiveDateTime) -> NaiveTime {
 
 ///|
 /// The year, month, and day of month together.
-pub fn NaiveDateTime::ymd(self : NaiveDateTime) -> (Int, Month, Int) {
+pub fn NaiveDateTime::ymd(self : NaiveDateTime) -> (Int32, Month, Int32) {
   self.date.ymd()
 }
 
 ///|
 /// The hour, minute, and second together.
-pub fn NaiveDateTime::hms(self : NaiveDateTime) -> (Int, Int, Int) {
+pub fn NaiveDateTime::hms(self : NaiveDateTime) -> (Int32, Int32, Int32) {
   self.time.hms()
 }
 
 ///|
 /// The calendar year.
-pub fn NaiveDateTime::year(self : NaiveDateTime) -> Int {
+pub fn NaiveDateTime::year(self : NaiveDateTime) -> Int32 {
   self.date.year()
 }
 
@@ -144,13 +144,13 @@ pub fn NaiveDateTime::month(self : NaiveDateTime) -> Month {
 
 ///|
 /// The day of the month, `1..=31`.
-pub fn NaiveDateTime::day(self : NaiveDateTime) -> Int {
+pub fn NaiveDateTime::day(self : NaiveDateTime) -> Int32 {
   self.date.day()
 }
 
 ///|
 /// The day of the year, `1..=366`.
-pub fn NaiveDateTime::ordinal(self : NaiveDateTime) -> Int {
+pub fn NaiveDateTime::ordinal(self : NaiveDateTime) -> Int32 {
   self.date.ordinal()
 }
 
@@ -189,12 +189,12 @@ pub fn NaiveDateTime::with_date(
 /// `None` if any component is out of range (see `NaiveDate::from_ymd` and
 /// `NaiveTime::from_hms`).
 pub fn NaiveDateTime::from_ymd_hms(
-  year : Int,
-  month : Int,
-  day : Int,
-  hour : Int,
-  min : Int,
-  sec : Int,
+  year : Int32,
+  month : Int32,
+  day : Int32,
+  hour : Int32,
+  min : Int32,
+  sec : Int32,
 ) -> NaiveDateTime? {
   NaiveDate::from_ymd(year, month, day).bind(date => {
     date.and_hms(hour, min, sec)
@@ -208,7 +208,7 @@ pub fn NaiveDateTime::from_ymd_hms(
 pub fn NaiveDateTime::years_since(
   self : NaiveDateTime,
   base : NaiveDateTime,
-) -> Int? {
+) -> Int32? {
   self.date.years_since(base.date)
 }
 
@@ -220,26 +220,26 @@ pub fn NaiveDateTime::leap_year(self : NaiveDateTime) -> Bool {
 
 ///|
 /// The hour, `0..=23`.
-pub fn NaiveDateTime::hour(self : NaiveDateTime) -> Int {
+pub fn NaiveDateTime::hour(self : NaiveDateTime) -> Int32 {
   self.time.hour()
 }
 
 ///|
 /// The minute, `0..=59`.
-pub fn NaiveDateTime::minute(self : NaiveDateTime) -> Int {
+pub fn NaiveDateTime::minute(self : NaiveDateTime) -> Int32 {
   self.time.minute()
 }
 
 ///|
 /// The second, `0..=59` (never `60`; see `nanosecond` for leap seconds).
-pub fn NaiveDateTime::second(self : NaiveDateTime) -> Int {
+pub fn NaiveDateTime::second(self : NaiveDateTime) -> Int32 {
   self.time.second()
 }
 
 ///|
 /// The nanosecond within the second, `0..=1_999_999_999` (a value at or above
 /// `1_000_000_000` represents a leap second).
-pub fn NaiveDateTime::nanosecond(self : NaiveDateTime) -> Int {
+pub fn NaiveDateTime::nanosecond(self : NaiveDateTime) -> Int32 {
   self.time.nanosecond()
 }
 
@@ -248,7 +248,7 @@ pub fn NaiveDateTime::nanosecond(self : NaiveDateTime) -> Int {
 /// date. The time of day is unchanged. See `NaiveDate::with_year`.
 pub fn NaiveDateTime::with_year(
   self : NaiveDateTime,
-  year : Int,
+  year : Int32,
 ) -> NaiveDateTime? {
   self.date
   .with_year(year)
@@ -260,7 +260,7 @@ pub fn NaiveDateTime::with_year(
 /// date. The time of day is unchanged. See `NaiveDate::with_month`.
 pub fn NaiveDateTime::with_month(
   self : NaiveDateTime,
-  month : Int,
+  month : Int32,
 ) -> NaiveDateTime? {
   self.date
   .with_month(month)
@@ -272,7 +272,7 @@ pub fn NaiveDateTime::with_month(
 /// date. The time of day is unchanged. See `NaiveDate::with_day`.
 pub fn NaiveDateTime::with_day(
   self : NaiveDateTime,
-  day : Int,
+  day : Int32,
 ) -> NaiveDateTime? {
   self.date.with_day(day).map(date => NaiveDateTime::{ date, time: self.time, })
 }
@@ -282,7 +282,7 @@ pub fn NaiveDateTime::with_day(
 /// date. The time of day is unchanged. See `NaiveDate::with_ordinal`.
 pub fn NaiveDateTime::with_ordinal(
   self : NaiveDateTime,
-  ordinal : Int,
+  ordinal : Int32,
 ) -> NaiveDateTime? {
   self.date
   .with_ordinal(ordinal)
@@ -291,25 +291,25 @@ pub fn NaiveDateTime::with_ordinal(
 
 ///|
 /// The month of the year, counting from `0`. See `NaiveDate::month0`.
-pub fn NaiveDateTime::month0(self : NaiveDateTime) -> Int {
+pub fn NaiveDateTime::month0(self : NaiveDateTime) -> Int32 {
   self.date.month0()
 }
 
 ///|
 /// The day of the month, counting from `0`. See `NaiveDate::day0`.
-pub fn NaiveDateTime::day0(self : NaiveDateTime) -> Int {
+pub fn NaiveDateTime::day0(self : NaiveDateTime) -> Int32 {
   self.date.day0()
 }
 
 ///|
 /// The day of the year, counting from `0`. See `NaiveDate::ordinal0`.
-pub fn NaiveDateTime::ordinal0(self : NaiveDateTime) -> Int {
+pub fn NaiveDateTime::ordinal0(self : NaiveDateTime) -> Int32 {
   self.date.ordinal0()
 }
 
 ///|
 /// The quarter of the year, `1..=4`. See `NaiveDate::quarter`.
-pub fn NaiveDateTime::quarter(self : NaiveDateTime) -> Int {
+pub fn NaiveDateTime::quarter(self : NaiveDateTime) -> Int32 {
   self.date.quarter()
 }
 
@@ -323,14 +323,14 @@ pub fn NaiveDateTime::year_ce(self : NaiveDateTime) -> YearCe {
 ///|
 /// The number of days since the start of the Common Era, counting
 /// `0001-01-01` as day `1`. See `NaiveDate::num_days_from_ce`.
-pub fn NaiveDateTime::num_days_from_ce(self : NaiveDateTime) -> Int {
+pub fn NaiveDateTime::num_days_from_ce(self : NaiveDateTime) -> Int32 {
   self.date.num_days_from_ce()
 }
 
 ///|
 /// The number of days in this datetime's month. See
 /// `NaiveDate::num_days_in_month`.
-pub fn NaiveDateTime::num_days_in_month(self : NaiveDateTime) -> Int {
+pub fn NaiveDateTime::num_days_in_month(self : NaiveDateTime) -> Int32 {
   self.date.num_days_in_month()
 }
 
@@ -344,7 +344,7 @@ pub fn NaiveDateTime::hour12(self : NaiveDateTime) -> ClockHour12 {
 ///|
 /// The number of seconds since midnight. See
 /// `NaiveTime::num_seconds_from_midnight`.
-pub fn NaiveDateTime::num_seconds_from_midnight(self : NaiveDateTime) -> Int {
+pub fn NaiveDateTime::num_seconds_from_midnight(self : NaiveDateTime) -> Int32 {
   self.time.num_seconds_from_midnight()
 }
 
@@ -353,7 +353,7 @@ pub fn NaiveDateTime::num_seconds_from_midnight(self : NaiveDateTime) -> Int {
 /// unchanged.
 pub fn NaiveDateTime::with_month0(
   self : NaiveDateTime,
-  month0 : Int,
+  month0 : Int32,
 ) -> NaiveDateTime? {
   self.date
   .with_month0(month0)
@@ -365,7 +365,7 @@ pub fn NaiveDateTime::with_month0(
 /// day is unchanged.
 pub fn NaiveDateTime::with_day0(
   self : NaiveDateTime,
-  day0 : Int,
+  day0 : Int32,
 ) -> NaiveDateTime? {
   self.date
   .with_day0(day0)
@@ -377,7 +377,7 @@ pub fn NaiveDateTime::with_day0(
 /// day is unchanged.
 pub fn NaiveDateTime::with_ordinal0(
   self : NaiveDateTime,
-  ordinal0 : Int,
+  ordinal0 : Int32,
 ) -> NaiveDateTime? {
   self.date
   .with_ordinal0(ordinal0)
@@ -390,7 +390,7 @@ pub fn NaiveDateTime::with_ordinal0(
 /// unchanged. See `NaiveTime::with_hour`.
 pub fn NaiveDateTime::with_hour(
   self : NaiveDateTime,
-  hour : Int,
+  hour : Int32,
 ) -> NaiveDateTime? {
   self.time
   .with_hour(hour)
@@ -403,7 +403,7 @@ pub fn NaiveDateTime::with_hour(
 /// unchanged. See `NaiveTime::with_minute`.
 pub fn NaiveDateTime::with_minute(
   self : NaiveDateTime,
-  minute : Int,
+  minute : Int32,
 ) -> NaiveDateTime? {
   self.time
   .with_minute(minute)
@@ -416,7 +416,7 @@ pub fn NaiveDateTime::with_minute(
 /// unchanged. See `NaiveTime::with_second`.
 pub fn NaiveDateTime::with_second(
   self : NaiveDateTime,
-  second : Int,
+  second : Int32,
 ) -> NaiveDateTime? {
   self.time
   .with_second(second)
@@ -429,7 +429,7 @@ pub fn NaiveDateTime::with_second(
 /// unchanged. See `NaiveTime::with_nanosecond`.
 pub fn NaiveDateTime::with_nanosecond(
   self : NaiveDateTime,
-  nanosecond : Int,
+  nanosecond : Int32,
 ) -> NaiveDateTime? {
   self.time
   .with_nanosecond(nanosecond)
@@ -449,21 +449,21 @@ pub fn NaiveDateTime::timestamp(self : NaiveDateTime) -> Int64 {
 ///|
 /// The nanosecond component of this instant, `0..=1_999_999_999` (see
 /// `NaiveTime::nanosecond` for the leap-second convention).
-pub fn NaiveDateTime::timestamp_subsec_nanos(self : NaiveDateTime) -> Int {
+pub fn NaiveDateTime::timestamp_subsec_nanos(self : NaiveDateTime) -> Int32 {
   self.time.nanosecond()
 }
 
 ///|
 /// The nanosecond component of this instant, expressed in whole
 /// milliseconds.
-pub fn NaiveDateTime::timestamp_subsec_millis(self : NaiveDateTime) -> Int {
+pub fn NaiveDateTime::timestamp_subsec_millis(self : NaiveDateTime) -> Int32 {
   self.timestamp_subsec_nanos() / 1_000_000
 }
 
 ///|
 /// The nanosecond component of this instant, expressed in whole
 /// microseconds.
-pub fn NaiveDateTime::timestamp_subsec_micros(self : NaiveDateTime) -> Int {
+pub fn NaiveDateTime::timestamp_subsec_micros(self : NaiveDateTime) -> Int32 {
   self.timestamp_subsec_nanos() / 1000
 }
 
@@ -610,7 +610,7 @@ pub fn NaiveDateTime::checked_sub_seconds(
 /// `checked_add_months` to get `None` instead.
 pub fn NaiveDateTime::add_months(
   self : NaiveDateTime,
-  months : Int,
+  months : Int32,
 ) -> NaiveDateTime {
   expect_in_range(self.checked_add_months(months), "NaiveDateTime::add_months")
 }
@@ -620,7 +620,7 @@ pub fn NaiveDateTime::add_months(
 /// `NaiveDate`'s representable range.
 pub fn NaiveDateTime::checked_add_months(
   self : NaiveDateTime,
-  months : Int,
+  months : Int32,
 ) -> NaiveDateTime? {
   self.date
   .checked_add_months(months)
@@ -636,7 +636,7 @@ pub fn NaiveDateTime::checked_add_months(
 /// `checked_add_years` to get `None` instead.
 pub fn NaiveDateTime::add_years(
   self : NaiveDateTime,
-  years : Int,
+  years : Int32,
 ) -> NaiveDateTime {
   expect_in_range(self.checked_add_years(years), "NaiveDateTime::add_years")
 }
@@ -646,7 +646,7 @@ pub fn NaiveDateTime::add_years(
 /// `NaiveDate`'s representable range.
 pub fn NaiveDateTime::checked_add_years(
   self : NaiveDateTime,
-  years : Int,
+  years : Int32,
 ) -> NaiveDateTime? {
   self.date
   .checked_add_years(years)
@@ -660,7 +660,7 @@ pub fn NaiveDateTime::checked_add_years(
 /// `checked_sub_years` to get `None` instead.
 pub fn NaiveDateTime::sub_years(
   self : NaiveDateTime,
-  years : Int,
+  years : Int32,
 ) -> NaiveDateTime {
   expect_in_range(self.checked_sub_years(years), "NaiveDateTime::sub_years")
 }
@@ -670,7 +670,7 @@ pub fn NaiveDateTime::sub_years(
 /// `NaiveDate`'s representable range.
 pub fn NaiveDateTime::checked_sub_years(
   self : NaiveDateTime,
-  years : Int,
+  years : Int32,
 ) -> NaiveDateTime? {
   self.date
   .checked_sub_years(years)
@@ -684,7 +684,7 @@ pub fn NaiveDateTime::checked_sub_years(
 /// `checked_sub_months` to get `None` instead.
 pub fn NaiveDateTime::sub_months(
   self : NaiveDateTime,
-  months : Int,
+  months : Int32,
 ) -> NaiveDateTime {
   expect_in_range(self.checked_sub_months(months), "NaiveDateTime::sub_months")
 }
@@ -694,7 +694,7 @@ pub fn NaiveDateTime::sub_months(
 /// `NaiveDate`'s representable range.
 pub fn NaiveDateTime::checked_sub_months(
   self : NaiveDateTime,
-  months : Int,
+  months : Int32,
 ) -> NaiveDateTime? {
   self.date
   .checked_sub_months(months)
@@ -709,7 +709,7 @@ pub fn NaiveDateTime::checked_sub_months(
 /// `checked_add_days` to get `None` instead.
 pub fn NaiveDateTime::add_days(
   self : NaiveDateTime,
-  days : Int,
+  days : Int32,
 ) -> NaiveDateTime {
   expect_in_range(self.checked_add_days(days), "NaiveDateTime::add_days")
 }
@@ -719,7 +719,7 @@ pub fn NaiveDateTime::add_days(
 /// `NaiveDate`'s representable range.
 pub fn NaiveDateTime::checked_add_days(
   self : NaiveDateTime,
-  days : Int,
+  days : Int32,
 ) -> NaiveDateTime? {
   self.date
   .checked_add_days(days)
@@ -733,7 +733,7 @@ pub fn NaiveDateTime::checked_add_days(
 /// `checked_sub_days` to get `None` instead.
 pub fn NaiveDateTime::sub_days(
   self : NaiveDateTime,
-  days : Int,
+  days : Int32,
 ) -> NaiveDateTime {
   expect_in_range(self.checked_sub_days(days), "NaiveDateTime::sub_days")
 }
@@ -743,7 +743,7 @@ pub fn NaiveDateTime::sub_days(
 /// `NaiveDate`'s representable range.
 pub fn NaiveDateTime::checked_sub_days(
   self : NaiveDateTime,
-  days : Int,
+  days : Int32,
 ) -> NaiveDateTime? {
   self.date
   .checked_sub_days(days)
@@ -837,7 +837,7 @@ pub fn NaiveDateTime::round_up(
 /// Aborts if `digits` is outside `0..=9`.
 pub fn NaiveDateTime::truncate_subsecs(
   self : NaiveDateTime,
-  digits : Int,
+  digits : Int32,
 ) -> NaiveDateTime {
   let nanos = subsec_granularity_nanos(
     digits, "NaiveDateTime::truncate_subsecs",
@@ -859,7 +859,7 @@ pub fn NaiveDateTime::truncate_subsecs(
 /// Aborts if `digits` is outside `0..=9`.
 pub fn NaiveDateTime::round_subsecs(
   self : NaiveDateTime,
-  digits : Int,
+  digits : Int32,
 ) -> Result[NaiveDateTime, RoundingError] {
   let nanos = subsec_granularity_nanos(digits, "NaiveDateTime::round_subsecs")
   if self.time.nanosecond() % nanos == 0 {

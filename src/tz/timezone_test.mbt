@@ -57,11 +57,11 @@ test "map transforms every offset carried by the result" {
 
 ///|
 fn naive_at(
-  y : Int,
-  mo : Int,
-  d : Int,
-  h : Int,
-  mi : Int,
+  y : Int32,
+  mo : Int32,
+  d : Int32,
+  h : Int32,
+  mi : Int32,
 ) -> @core.NaiveDateTime {
   @core.NaiveDateTime::new(
     @core.NaiveDate::from_ymd(y, mo, d).unwrap(),
@@ -163,19 +163,19 @@ test "offset_from_abbreviation is None for zones that carry no abbreviation of t
 
 ///|
 test "unwrap returns the value of an unambiguous local time" {
-  let mapped : @tz.MappedLocalTime[Int] = @tz.Single(7)
+  let mapped : @tz.MappedLocalTime[Int32] = @tz.Single(7)
   assert_eq(mapped.unwrap(), 7)
 }
 
 ///|
 test "panic unwrap aborts on a local time that occurs twice" {
-  let mapped : @tz.MappedLocalTime[Int] = @tz.Ambiguous(1, 2)
+  let mapped : @tz.MappedLocalTime[Int32] = @tz.Ambiguous(1, 2)
   ignore(mapped.unwrap())
 }
 
 ///|
 test "panic unwrap aborts on a local time that never occurs" {
-  let mapped : @tz.MappedLocalTime[Int] = @tz.Absent
+  let mapped : @tz.MappedLocalTime[Int32] = @tz.Absent
   ignore(mapped.unwrap())
 }
 

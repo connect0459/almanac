@@ -4,7 +4,7 @@
 /// Internally represented as a day count relative to the Unix epoch
 /// (`1970-01-01` is day `0`).
 pub struct NaiveDate {
-  priv days : Int
+  priv days : Int32
 } derive(Eq, Compare, Hash, @debug.Debug)
 
 ///|
@@ -52,7 +52,11 @@ pub extend NaiveDate with Show::{to_string, output}
 /// or `None` if `month` is outside `1..=12`, `day` is outside the range of
 /// days in that month, or the date falls outside `NaiveDate`'s representable
 /// range.
-pub fn NaiveDate::from_ymd(year : Int, month : Int, day : Int) -> NaiveDate? {
+pub fn NaiveDate::from_ymd(
+  year : Int32,
+  month : Int32,
+  day : Int32,
+) -> NaiveDate? {
   match Month::from_number(month) {
     None => None
     Some(m) =>
@@ -70,7 +74,7 @@ pub fn NaiveDate::from_ymd(year : Int, month : Int, day : Int) -> NaiveDate? {
 /// Constructs the date for a given `year` and 1-based day-of-year `ordinal`,
 /// or `None` if `ordinal` is outside `1..=365` (`1..=366` in a leap year) or
 /// the date falls outside `NaiveDate`'s representable range.
-pub fn NaiveDate::from_yo(year : Int, ordinal : Int) -> NaiveDate? {
+pub fn NaiveDate::from_yo(year : Int32, ordinal : Int32) -> NaiveDate? {
   let days_in_year = if is_leap_year(year) { 366 } else { 365 }
   if ordinal >= 1 && ordinal <= days_in_year {
     NaiveDate::from_epoch_days64(
@@ -84,7 +88,7 @@ pub fn NaiveDate::from_yo(year : Int, ordinal : Int) -> NaiveDate? {
 ///|
 /// The number of ISO 8601 weeks (52 or 53) in the given ISO week-numbering
 /// `year`.
-fn nisoweeks(year : Int) -> Int {
+fn nisoweeks(year : Int32) -> Int32 {
   let jan1_weekday = weekday_from_days64(
     days_from_civil64(year.to_int64(), 1, 1),
   )
@@ -102,8 +106,8 @@ fn nisoweeks(year : Int) -> Int {
 /// resulting date's calendar year may differ from `year` (a week near a year
 /// boundary can belong to the adjoining calendar year).
 pub fn NaiveDate::from_isoywd(
-  year : Int,
-  week : Int,
+  year : Int32,
+  week : Int32,
   weekday : Weekday,
 ) -> NaiveDate? {
   if week < 1 || week > nisoweeks(year) {
@@ -120,7 +124,7 @@ pub fn NaiveDate::from_isoywd(
 
 ///|
 /// The proleptic Gregorian calendar year.
-pub fn NaiveDate::year(self : NaiveDate) -> Int {
+pub fn NaiveDate::year(self : NaiveDate) -> Int32 {
   let (year, _, _) = civil_from_days(self.days)
   year
 }
@@ -136,20 +140,20 @@ pub fn NaiveDate::month(self : NaiveDate) -> Month {
 ///|
 /// The year, month, and day of month together. The month is a `Month`, so
 /// pass `month.number()` to `from_ymd` to rebuild the date.
-pub fn NaiveDate::ymd(self : NaiveDate) -> (Int, Month, Int) {
+pub fn NaiveDate::ymd(self : NaiveDate) -> (Int32, Month, Int32) {
   (self.year(), self.month(), self.day())
 }
 
 ///|
 /// The day of the month.
-pub fn NaiveDate::day(self : NaiveDate) -> Int {
+pub fn NaiveDate::day(self : NaiveDate) -> Int32 {
   let (_, _, day) = civil_from_days(self.days)
   day
 }
 
 ///|
 /// The 1-based day of the year.
-pub fn NaiveDate::ordinal(self : NaiveDate) -> Int {
+pub fn NaiveDate::ordinal(self : NaiveDate) -> Int32 {
   let (year, _, _) = civil_from_days(self.days)
   self.days - days_from_civil(year, 1, 1) + 1
 }
@@ -176,7 +180,7 @@ pub fn NaiveDate::iso_week(self : NaiveDate) -> IsoWeek {
 }
 
 ///|
-fn iso_week_of(days : Int, weekday : Weekday) -> IsoWeek {
+fn iso_week_of(days : Int32, weekday : Weekday) -> IsoWeek {
   let thursday_days = days + 4 - weekday.number_from_monday()
   let (thursday_year, _, _) = civil_from_days(thursday_days)
   let yday = thursday_days - days_from_civil(thursday_year, 1, 1) + 1
@@ -187,7 +191,7 @@ fn iso_week_of(days : Int, weekday : Weekday) -> IsoWeek {
 /// The date with the year replaced by `year`, or `None` if the current
 /// month and day do not exist in `year` (e.g. moving February 29 into a
 /// year that is not a leap year).
-pub fn NaiveDate::with_year(self : NaiveDate, year : Int) -> NaiveDate? {
+pub fn NaiveDate::with_year(self : NaiveDate, year : Int32) -> NaiveDate? {
   let (_, month, day) = civil_from_days(self.days)
   NaiveDate::from_ymd(year, month, day)
 }
@@ -195,7 +199,7 @@ pub fn NaiveDate::with_year(self : NaiveDate, year : Int) -> NaiveDate? {
 ///|
 /// The date with the month replaced by `month`, or `None` if `month` is
 /// outside `1..=12` or the current day does not exist in that month.
-pub fn NaiveDate::with_month(self : NaiveDate, month : Int) -> NaiveDate? {
+pub fn NaiveDate::with_month(self : NaiveDate, month : Int32) -> NaiveDate? {
   let (year, _, day) = civil_from_days(self.days)
   NaiveDate::from_ymd(year, month, day)
 }
@@ -203,7 +207,7 @@ pub fn NaiveDate::with_month(self : NaiveDate, month : Int) -> NaiveDate? {
 ///|
 /// The date with the day-of-month replaced by `day`, or `None` if `day` is
 /// outside the current month's length.
-pub fn NaiveDate::with_day(self : NaiveDate, day : Int) -> NaiveDate? {
+pub fn NaiveDate::with_day(self : NaiveDate, day : Int32) -> NaiveDate? {
   let (year, month, _) = civil_from_days(self.days)
   NaiveDate::from_ymd(year, month, day)
 }
@@ -211,26 +215,26 @@ pub fn NaiveDate::with_day(self : NaiveDate, day : Int) -> NaiveDate? {
 ///|
 /// The date with the day-of-year replaced by `ordinal`, or `None` if
 /// `ordinal` is outside `1..=365` (`1..=366` in a leap year).
-pub fn NaiveDate::with_ordinal(self : NaiveDate, ordinal : Int) -> NaiveDate? {
+pub fn NaiveDate::with_ordinal(self : NaiveDate, ordinal : Int32) -> NaiveDate? {
   let (year, _, _) = civil_from_days(self.days)
   NaiveDate::from_yo(year, ordinal)
 }
 
 ///|
 /// The month of the year, counting from `0` (`Jan` is `0`, `Dec` is `11`).
-pub fn NaiveDate::month0(self : NaiveDate) -> Int {
+pub fn NaiveDate::month0(self : NaiveDate) -> Int32 {
   self.month().number() - 1
 }
 
 ///|
 /// The day of the month, counting from `0` (`0..=30`).
-pub fn NaiveDate::day0(self : NaiveDate) -> Int {
+pub fn NaiveDate::day0(self : NaiveDate) -> Int32 {
   self.day() - 1
 }
 
 ///|
 /// The day of the year, counting from `0` (`0..=365`).
-pub fn NaiveDate::ordinal0(self : NaiveDate) -> Int {
+pub fn NaiveDate::ordinal0(self : NaiveDate) -> Int32 {
   self.ordinal() - 1
 }
 
@@ -251,7 +255,7 @@ pub fn NaiveDate::year_ce(self : NaiveDate) -> YearCe {
 ///|
 /// The number of days in this date's month, accounting for leap years; see
 /// `Month::num_days` for a month and a year given separately.
-pub fn NaiveDate::num_days_in_month(self : NaiveDate) -> Int {
+pub fn NaiveDate::num_days_in_month(self : NaiveDate) -> Int32 {
   self.month().num_days(self.year())
 }
 
@@ -271,19 +275,22 @@ pub fn NaiveDate::abs_diff_days(self : NaiveDate, other : NaiveDate) -> Int64 {
 
 ///|
 /// Like `with_month`, but taking a `0`-based month (`0..=11`).
-pub fn NaiveDate::with_month0(self : NaiveDate, month0 : Int) -> NaiveDate? {
+pub fn NaiveDate::with_month0(self : NaiveDate, month0 : Int32) -> NaiveDate? {
   self.with_month(month0 + 1)
 }
 
 ///|
 /// Like `with_day`, but taking a `0`-based day of the month.
-pub fn NaiveDate::with_day0(self : NaiveDate, day0 : Int) -> NaiveDate? {
+pub fn NaiveDate::with_day0(self : NaiveDate, day0 : Int32) -> NaiveDate? {
   self.with_day(day0 + 1)
 }
 
 ///|
 /// Like `with_ordinal`, but taking a `0`-based day of the year.
-pub fn NaiveDate::with_ordinal0(self : NaiveDate, ordinal0 : Int) -> NaiveDate? {
+pub fn NaiveDate::with_ordinal0(
+  self : NaiveDate,
+  ordinal0 : Int32,
+) -> NaiveDate? {
   self.with_ordinal(ordinal0 + 1)
 }
 
@@ -311,28 +318,28 @@ fn NaiveDate::from_epoch_days64(days : Int64) -> NaiveDate? {
 ///|
 /// The number of days since the Unix epoch (`1970-01-01` is day `0`;
 /// earlier dates are negative).
-pub fn NaiveDate::epoch_days(self : NaiveDate) -> Int {
+pub fn NaiveDate::epoch_days(self : NaiveDate) -> Int32 {
   self.days
 }
 
 ///|
 /// The date `days` days after the Unix epoch (`1970-01-01` is day `0`), or
 /// `None` if `days` falls outside `NaiveDate`'s representable range.
-pub fn NaiveDate::from_epoch_days(days : Int) -> NaiveDate? {
+pub fn NaiveDate::from_epoch_days(days : Int32) -> NaiveDate? {
   NaiveDate::from_epoch_days64(days.to_int64())
 }
 
 ///|
 /// The number of days since the start of the Common Era, counting
 /// `0001-01-01` as day `1` (so `0000-12-31` is day `0`).
-pub fn NaiveDate::num_days_from_ce(self : NaiveDate) -> Int {
+pub fn NaiveDate::num_days_from_ce(self : NaiveDate) -> Int32 {
   self.days + CE_TO_EPOCH_DAYS.to_int()
 }
 
 ///|
 /// The date whose `num_days_from_ce()` is `days`, or `None` if `days`
 /// falls outside `NaiveDate`'s representable range.
-pub fn NaiveDate::from_num_days_from_ce(days : Int) -> NaiveDate? {
+pub fn NaiveDate::from_num_days_from_ce(days : Int32) -> NaiveDate? {
   NaiveDate::from_epoch_days64(days.to_int64() - CE_TO_EPOCH_DAYS)
 }
 
@@ -349,9 +356,9 @@ pub fn NaiveDate::and_time(self : NaiveDate, time : NaiveTime) -> NaiveDateTime 
 /// component is out of range (see `NaiveTime::from_hms`).
 pub fn NaiveDate::and_hms(
   self : NaiveDate,
-  hour : Int,
-  min : Int,
-  sec : Int,
+  hour : Int32,
+  min : Int32,
+  sec : Int32,
 ) -> NaiveDateTime? {
   NaiveTime::from_hms(hour, min, sec).map(time => self.and_time(time))
 }
@@ -362,10 +369,10 @@ pub fn NaiveDate::and_hms(
 /// `NaiveTime::from_hms_milli`).
 pub fn NaiveDate::and_hms_milli(
   self : NaiveDate,
-  hour : Int,
-  min : Int,
-  sec : Int,
-  milli : Int,
+  hour : Int32,
+  min : Int32,
+  sec : Int32,
+  milli : Int32,
 ) -> NaiveDateTime? {
   NaiveTime::from_hms_milli(hour, min, sec, milli).map(time => {
     self.and_time(time)
@@ -378,10 +385,10 @@ pub fn NaiveDate::and_hms_milli(
 /// `NaiveTime::from_hms_micro`).
 pub fn NaiveDate::and_hms_micro(
   self : NaiveDate,
-  hour : Int,
-  min : Int,
-  sec : Int,
-  micro : Int,
+  hour : Int32,
+  min : Int32,
+  sec : Int32,
+  micro : Int32,
 ) -> NaiveDateTime? {
   NaiveTime::from_hms_micro(hour, min, sec, micro).map(time => {
     self.and_time(time)
@@ -394,10 +401,10 @@ pub fn NaiveDate::and_hms_micro(
 /// `NaiveTime::from_hms_nano`).
 pub fn NaiveDate::and_hms_nano(
   self : NaiveDate,
-  hour : Int,
-  min : Int,
-  sec : Int,
-  nano : Int,
+  hour : Int32,
+  min : Int32,
+  sec : Int32,
+  nano : Int32,
 ) -> NaiveDateTime? {
   NaiveTime::from_hms_nano(hour, min, sec, nano).map(time => self.and_time(time))
 }
@@ -471,7 +478,7 @@ pub fn NaiveDate::pred(self : NaiveDate) -> NaiveDate {
 ///
 /// Aborts if the result falls outside `NaiveDate`'s representable range; use
 /// `checked_add_days` to get `None` instead.
-pub fn NaiveDate::add_days(self : NaiveDate, days : Int) -> NaiveDate {
+pub fn NaiveDate::add_days(self : NaiveDate, days : Int32) -> NaiveDate {
   expect_in_range(self.checked_add_days(days), "NaiveDate::add_days")
 }
 
@@ -479,7 +486,10 @@ pub fn NaiveDate::add_days(self : NaiveDate, days : Int) -> NaiveDate {
 /// The date `days` days after this one (or before it, if `days` is
 /// negative), or `None` if the result falls outside `NaiveDate`'s
 /// representable range.
-pub fn NaiveDate::checked_add_days(self : NaiveDate, days : Int) -> NaiveDate? {
+pub fn NaiveDate::checked_add_days(
+  self : NaiveDate,
+  days : Int32,
+) -> NaiveDate? {
   self.checked_add_days64(days.to_int64())
 }
 
@@ -487,7 +497,10 @@ pub fn NaiveDate::checked_add_days(self : NaiveDate, days : Int) -> NaiveDate? {
 /// The date `days` days before this one (or after it, if `days` is
 /// negative), or `None` if the result falls outside `NaiveDate`'s
 /// representable range.
-pub fn NaiveDate::checked_sub_days(self : NaiveDate, days : Int) -> NaiveDate? {
+pub fn NaiveDate::checked_sub_days(
+  self : NaiveDate,
+  days : Int32,
+) -> NaiveDate? {
   self.checked_add_days64(-days.to_int64())
 }
 
@@ -516,7 +529,7 @@ pub fn NaiveDate::checked_pred(self : NaiveDate) -> NaiveDate? {
 ///
 /// Aborts if the result falls outside `NaiveDate`'s representable range; use
 /// `checked_sub_days` to get `None` instead.
-pub fn NaiveDate::sub_days(self : NaiveDate, days : Int) -> NaiveDate {
+pub fn NaiveDate::sub_days(self : NaiveDate, days : Int32) -> NaiveDate {
   expect_in_range(self.checked_sub_days(days), "NaiveDate::sub_days")
 }
 
@@ -528,7 +541,7 @@ pub fn NaiveDate::sub_days(self : NaiveDate, days : Int) -> NaiveDate {
 ///
 /// Aborts if the result falls outside `NaiveDate`'s representable range; use
 /// `checked_add_months` to get `None` instead.
-pub fn NaiveDate::add_months(self : NaiveDate, months : Int) -> NaiveDate {
+pub fn NaiveDate::add_months(self : NaiveDate, months : Int32) -> NaiveDate {
   expect_in_range(self.checked_add_months(months), "NaiveDate::add_months")
 }
 
@@ -539,7 +552,7 @@ pub fn NaiveDate::add_months(self : NaiveDate, months : Int) -> NaiveDate {
 /// rule.
 pub fn NaiveDate::checked_add_months(
   self : NaiveDate,
-  months : Int,
+  months : Int32,
 ) -> NaiveDate? {
   self.checked_add_months64(months.to_int64())
 }
@@ -550,7 +563,7 @@ pub fn NaiveDate::checked_add_months(
 /// representable range.
 pub fn NaiveDate::checked_sub_months(
   self : NaiveDate,
-  months : Int,
+  months : Int32,
 ) -> NaiveDate? {
   self.checked_add_months64(-months.to_int64())
 }
@@ -579,7 +592,7 @@ fn NaiveDate::checked_add_months64(
 ///
 /// Aborts if the result falls outside `NaiveDate`'s representable range; use
 /// `checked_sub_months` to get `None` instead.
-pub fn NaiveDate::sub_months(self : NaiveDate, months : Int) -> NaiveDate {
+pub fn NaiveDate::sub_months(self : NaiveDate, months : Int32) -> NaiveDate {
   expect_in_range(self.checked_sub_months(months), "NaiveDate::sub_months")
 }
 
@@ -591,7 +604,7 @@ pub fn NaiveDate::sub_months(self : NaiveDate, months : Int) -> NaiveDate {
 ///
 /// Aborts if the result falls outside `NaiveDate`'s representable range; use
 /// `checked_add_years` to get `None` instead.
-pub fn NaiveDate::add_years(self : NaiveDate, years : Int) -> NaiveDate {
+pub fn NaiveDate::add_years(self : NaiveDate, years : Int32) -> NaiveDate {
   expect_in_range(self.checked_add_years(years), "NaiveDate::add_years")
 }
 
@@ -601,7 +614,7 @@ pub fn NaiveDate::add_years(self : NaiveDate, years : Int) -> NaiveDate {
 ///
 /// Aborts if the result falls outside `NaiveDate`'s representable range; use
 /// `checked_sub_years` to get `None` instead.
-pub fn NaiveDate::sub_years(self : NaiveDate, years : Int) -> NaiveDate {
+pub fn NaiveDate::sub_years(self : NaiveDate, years : Int32) -> NaiveDate {
   expect_in_range(self.checked_sub_years(years), "NaiveDate::sub_years")
 }
 
@@ -610,7 +623,7 @@ pub fn NaiveDate::sub_years(self : NaiveDate, years : Int) -> NaiveDate {
 /// outside `NaiveDate`'s representable range. See `add_years`.
 pub fn NaiveDate::checked_add_years(
   self : NaiveDate,
-  years : Int,
+  years : Int32,
 ) -> NaiveDate? {
   self.checked_add_months64(years.to_int64() * 12L)
 }
@@ -620,7 +633,7 @@ pub fn NaiveDate::checked_add_years(
 /// outside `NaiveDate`'s representable range. See `add_years`.
 pub fn NaiveDate::checked_sub_years(
   self : NaiveDate,
-  years : Int,
+  years : Int32,
 ) -> NaiveDate? {
   self.checked_add_months64(-years.to_int64() * 12L)
 }
@@ -639,7 +652,7 @@ pub fn NaiveDate::week(self : NaiveDate, start : Weekday) -> NaiveWeek {
 /// someone born on `base` turns this many years old on `self`), or `None`
 /// if `self` is before `base`. A year only counts once `self`'s month and
 /// day have both reached (or passed) `base`'s.
-pub fn NaiveDate::years_since(self : NaiveDate, base : NaiveDate) -> Int? {
+pub fn NaiveDate::years_since(self : NaiveDate, base : NaiveDate) -> Int32? {
   let mut years = self.year() - base.year()
   if self.month().number() < base.month().number() ||
     (self.month() == base.month() && self.day() < base.day()) {
@@ -659,10 +672,10 @@ pub fn NaiveDate::years_since(self : NaiveDate, base : NaiveDate) -> Int? {
 /// invalid, or that occurrence doesn't exist in the month (e.g. a 5th
 /// Monday in a month that only has four).
 pub fn NaiveDate::from_weekday_of_month(
-  year : Int,
-  month : Int,
+  year : Int32,
+  month : Int32,
   weekday : Weekday,
-  n : Int,
+  n : Int32,
 ) -> NaiveDate? {
   if n <= 0 {
     None
@@ -685,7 +698,7 @@ pub fn NaiveDate::from_weekday_of_month(
 
 ///|
 /// The calendar quarter, `1..=4`.
-pub fn NaiveDate::quarter(self : NaiveDate) -> Int {
+pub fn NaiveDate::quarter(self : NaiveDate) -> Int32 {
   (self.month().number() - 1) / 3 + 1
 }
 

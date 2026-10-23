@@ -1,10 +1,10 @@
 ///|
-fn ce_pair(year : @core.YearCe) -> (Bool, Int) {
+fn ce_pair(year : @core.YearCe) -> (Bool, Int32) {
   (year.is_ce(), year.year())
 }
 
 ///|
-fn clock_pair(hour : @core.ClockHour12) -> (Bool, Int) {
+fn clock_pair(hour : @core.ClockHour12) -> (Bool, Int32) {
   (hour.is_pm(), hour.hour())
 }
 
@@ -466,9 +466,9 @@ test "DateTime time-of-day accessors report the local time, not the UTC time" {
 ///|
 fn assert_tokyo_reading(
   actual : @tz.MappedLocalTime[@tz.DateTime[@tz.FixedOffset]],
-  ymd : (Int, Int, Int),
-  hms : (Int, Int, Int),
-  nanos : Int,
+  ymd : (Int32, Int32, Int32),
+  hms : (Int32, Int32, Int32),
+  nanos : Int32,
 ) -> Unit raise {
   let tokyo = @tz.FixedOffset::east(9 * 3600).unwrap()
   let (y, mo, d) = ymd
@@ -864,7 +864,7 @@ test "equal Utc and FixedOffset values hash equally and can key a Map" {
   let b = @tz.FixedOffset::east(9 * 3600).unwrap()
   assert_eq(a.hash(), b.hash())
   assert_true(a.hash() != @tz.FixedOffset::east(0).unwrap().hash())
-  let seen : Map[@tz.FixedOffset, Int] = Map([])
+  let seen : Map[@tz.FixedOffset, Int32] = Map([])
   seen[a] = 1
   assert_eq(seen.get(b), Some(1))
 }
@@ -883,7 +883,7 @@ test "DateTime hashing agrees with its Eq and can key a Map" {
     a.hash(),
     @tz.DateTime::from_timestamp(1_000L, 0, utc).unwrap().hash(),
   )
-  let seen : Map[@tz.DateTime[@tz.FixedOffset], Int] = Map([])
+  let seen : Map[@tz.DateTime[@tz.FixedOffset], Int32] = Map([])
   seen[a] = 1
   assert_eq(seen.get(b), Some(1))
 }
@@ -1086,7 +1086,7 @@ test "round_up reports the same failure reasons as NaiveDateTime::round_up" {
 }
 
 ///|
-fn utc_datetime(h : Int, mi : Int) -> @tz.DateTime[@tz.Utc] {
+fn utc_datetime(h : Int32, mi : Int32) -> @tz.DateTime[@tz.Utc] {
   @tz.DateTime::from_utc(
     @core.NaiveDateTime::new(
       @core.NaiveDate::from_ymd(2024, 6, 15).unwrap(),
@@ -1246,11 +1246,11 @@ test "checked DateTime arithmetic returns None before the first representable in
 
 ///|
 fn local_reading(
-  y : Int,
-  mo : Int,
-  d : Int,
-  h : Int,
-  mi : Int,
+  y : Int32,
+  mo : Int32,
+  d : Int32,
+  h : Int32,
+  mi : Int32,
 ) -> @core.NaiveDateTime {
   @core.NaiveDateTime::new(
     @core.NaiveDate::from_ymd(y, mo, d).unwrap(),
@@ -1392,11 +1392,11 @@ test "DateTime ymd, hms and leap_year read the local reading" {
 ///|
 fn local_dt(
   zone : @tz.Location,
-  y : Int,
-  mo : Int,
-  d : Int,
-  h : Int,
-  mi : Int,
+  y : Int32,
+  mo : Int32,
+  d : Int32,
+  h : Int32,
+  mi : Int32,
 ) -> @tz.DateTime[@tz.Location] {
   @tz.DateTime::from_ymd_hms(y, mo, d, h, mi, 0, zone).earliest().unwrap()
 }

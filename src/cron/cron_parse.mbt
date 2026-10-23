@@ -35,7 +35,7 @@ fn split_whitespace(text : String) -> Array[String] {
 }
 
 ///|
-fn parse_number(text : String) -> Int? {
+fn parse_number(text : String) -> Int32? {
   if text.length() == 0 || text.length() > 4 {
     return None
   }
@@ -50,7 +50,11 @@ fn parse_number(text : String) -> Int? {
 }
 
 ///|
-fn parse_value(text : String, names : Array[String], names_start : Int) -> Int? {
+fn parse_value(
+  text : String,
+  names : Array[String],
+  names_start : Int32,
+) -> Int32? {
   match parse_number(text) {
     Some(n) => Some(n)
     None => {
@@ -68,10 +72,10 @@ fn parse_value(text : String, names : Array[String], names_start : Int) -> Int? 
 ///|
 priv struct FieldSpec {
   field : CronField
-  min : Int
-  max : Int
+  min : Int32
+  max : Int32
   names : Array[String]
-  names_start : Int
+  names_start : Int32
   allows_question : Bool
 }
 
@@ -79,7 +83,7 @@ priv struct FieldSpec {
 fn FieldSpec::parse_item(
   self : FieldSpec,
   item : String,
-) -> (Int, Int, Int) raise CronError {
+) -> (Int32, Int32, Int32) raise CronError {
   let invalid = InvalidField(self.field)
   let slash = split_on(item, '/')
   let (range_text, step) = match slash {
@@ -138,7 +142,7 @@ fn FieldSpec::parse(
 }
 
 ///|
-fn all_bits(min : Int, max : Int) -> Int64 {
+fn all_bits(min : Int32, max : Int32) -> Int64 {
   let mut bits = 0L
   for v in min..<=max {
     bits = bits | (1L << v)
@@ -147,7 +151,7 @@ fn all_bits(min : Int, max : Int) -> Int64 {
 }
 
 ///|
-fn has_bit(bits : Int64, n : Int) -> Bool {
+fn has_bit(bits : Int64, n : Int32) -> Bool {
   ((bits >> n) & 1L) != 0L
 }
 
