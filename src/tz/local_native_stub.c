@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 
 #ifdef _WIN32
+#include <wchar.h>
 #include <windows.h>
 #endif
 
@@ -47,14 +48,15 @@ moonbit_bytes_t almanac_windows_zone_key_name(void) {
   if (GetDynamicTimeZoneInformation(&info) == TIME_ZONE_ID_INVALID) {
     return moonbit_make_bytes(0, 0);
   }
-  int size = WideCharToMultiByte(CP_UTF8, 0, info.TimeZoneKeyName, -1, NULL, 0,
-                                 NULL, NULL);
-  if (size <= 1) {
+  int wide_length = (int)wcslen(info.TimeZoneKeyName);
+  int size = WideCharToMultiByte(CP_UTF8, 0, info.TimeZoneKeyName, wide_length,
+                                 NULL, 0, NULL, NULL);
+  if (size <= 0) {
     return moonbit_make_bytes(0, 0);
   }
-  moonbit_bytes_t buf = moonbit_make_bytes_raw(size - 1);
-  if (WideCharToMultiByte(CP_UTF8, 0, info.TimeZoneKeyName, -1, (char *)buf,
-                          size - 1, NULL, NULL) == 0) {
+  moonbit_bytes_t buf = moonbit_make_bytes_raw(size);
+  if (WideCharToMultiByte(CP_UTF8, 0, info.TimeZoneKeyName, wide_length,
+                          (char *)buf, size, NULL, NULL) == 0) {
     return moonbit_make_bytes(0, 0);
   }
   return buf;
