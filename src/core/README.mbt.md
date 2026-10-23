@@ -16,12 +16,13 @@ Calendar and clock primitives with no time zone awareness. Import `connect0459/a
 | `WeekdaySetIterator` | Double-ended iterator over a `WeekdaySet`'s members in cyclic weekday order from a chosen start, from `WeekdaySet::iter_from` |
 | `NaiveTime` | A time of day, precise to the nanosecond, with leap-second support |
 | `TimeDelta` | A signed duration, precise to the nanosecond |
+| `Period` | A calendar period of years, months and days, kept unnormalized; no fixed length |
 | `NaiveDateTime` | A `NaiveDate` and `NaiveTime` combined into one zone-less instant |
 | `Datelike` / `Timelike` | Traits over the calendar-date and time-of-day accessors, so one generic function reads a `NaiveDate`, `NaiveTime`, `NaiveDateTime` or `tz`'s `DateTime[Tz]` alike |
 | `YearCe` / `ClockHour12` | Named results of `year_ce()` and `hour12()`: `is_ce()`/`year()` and `is_pm()`/`hour()`, so the meaning of each part is in its name rather than its position in a tuple |
 | `RoundingError` | Why a `round`/`round_up`/`truncate` call failed: `InvalidGranularity` (zero or negative), `MixedGranularity` (a whole-second part combined with a sub-second remainder, e.g. 1.5 seconds), or `OutOfRange` (the result would leave the type's representable range) |
 
-`NaiveDate` (`1970-01-01`), `NaiveTime` (midnight), `NaiveDateTime` (the Unix epoch), `TimeDelta` (zero) and `WeekdaySet` (empty) implement `Default`. Struct-valued constants are exposed as functions (`NaiveTime::midnight()`, `NaiveDateTime::unix_epoch()`, `TimeDelta::zero()`) because MoonBit's `const` is limited to primitive types.
+`NaiveDate` (`1970-01-01`), `NaiveTime` (midnight), `NaiveDateTime` (the Unix epoch), `TimeDelta` (zero), `Period` (zero) and `WeekdaySet` (empty) implement `Default`. Struct-valued constants are exposed as functions (`NaiveTime::midnight()`, `NaiveDateTime::unix_epoch()`, `TimeDelta::zero()`, `Period::zero()`) because MoonBit's `const` is limited to primitive types.
 
 Every value type above (all but the two iterators) implements `Hash` consistently with its `Eq`, so values can be `Map` keys. `NaiveWeek` hashes by its first day alone, matching its `Eq`: two weeks anchored on different dates of the same calendar week are equal and hash equally.
 
@@ -402,6 +403,37 @@ A signed duration, precise to the nanosecond. Constructors and checked arithmeti
 | `round_up(TimeDelta)` | `-> Result[Self, RoundingError]` | Round up (toward positive infinity) to a multiple of a granularity: unchanged if already a multiple, otherwise the next one above (for a negative duration that is toward zero, equal to `truncate`); `Err` with the same reasons as `round` |
 
 `TimeDelta` also implements `Eq`, `Compare` (`<`/`<=`/`>`/`>=` via `compare`) and `Show`. `Show` renders compactly: a leading `-` for a negative value, then hours/minutes/seconds (`1h2m3.5s`) with hours as the largest unit (never days) and trailing fractional zeros trimmed; units between the largest and the seconds are kept even when zero (`1h0m0s`); a duration under one second uses `ns`/`us`/`ms` (`1.5ms`); zero is `0s`. `format`'s `parse_duration` reads this form back.
+
+---
+
+### `Period`
+
+A calendar period of years, months and days. It has no fixed length, so it never converts to or from `TimeDelta`. Components are kept as given and carry independent signs: `Period::new(months=14)` and `Period::new(years=1, months=2)` are distinct values. Arithmetic is checked: each operation returns `None` if any component overflows `Int32`.
+
+| Method | Signature | Description |
+| :--- | :--- | :--- |
+| `Period::new(years?, months?, days?)` | `-> Self` | Build from components; omitted components are zero |
+| `Period::zero()` | `-> Self` | The zero period; also `Default::default()` |
+| `years()` / `months()` / `days()` | `-> Int32` | The components as given |
+| `is_zero()` | `-> Bool` | Whether every component is zero |
+| `checked_neg()` | `-> Self?` | Negate every component; `None` if a component is `Int32::min_value` |
+| `checked_add(Period)` | `-> Self?` | Component-wise sum |
+| `checked_sub(Period)` | `-> Self?` | Component-wise difference |
+| `checked_mul(Int32)` | `-> Self?` | Scale every component |
+
+```mbt check
+///|
+test {
+  let period = @core.Period::new(years=1, months=2, days=3)
+  assert_eq(period.to_string(), "P1Y2M3D")
+  assert_eq(
+    period.checked_mul(2),
+    Some(@core.Period::new(years=2, months=4, days=6)),
+  )
+}
+```
+
+`Period` implements `Eq`, `Hash`, `Default` and `Show`, but not `Compare`: whether one month is shorter than 30 days depends on the date. `Show` renders in the ISO 8601 date-based duration style (`P1Y2M3D`), omitting zero components; the zero period is `P0D`. A negative component keeps its own `-` (`P-1Y3D`): that per-component sign is an extension beyond ISO 8601, and `parse_iso8601_duration` does not read the output back. `Add`, `Sub` and `Neg` are not implemented, so that no operation can abort on overflow; use the `checked_*` methods.
 
 ---
 
