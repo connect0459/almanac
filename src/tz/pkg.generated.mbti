@@ -20,6 +20,7 @@ pub struct DateTime[Tz] {
 pub fn[Tz : TimeZone] DateTime::add_days(Self[Tz], Int32) -> Self[Tz]
 pub fn[Tz : TimeZone] DateTime::add_months(Self[Tz], Int32) -> Self[Tz]
 pub fn[Tz] DateTime::add_offset(Self[Tz], FixedOffset) -> Self[Tz]
+pub fn[Tz : TimeZone] DateTime::add_period(Self[Tz], @core.Period) -> MappedLocalTime[Self[Tz]]
 pub fn[Tz] DateTime::add_seconds(Self[Tz], Int64) -> Self[Tz]
 pub fn[Tz] DateTime::add_signed(Self[Tz], @core.TimeDelta) -> Self[Tz]
 pub fn[Tz : TimeZone] DateTime::add_years(Self[Tz], Int32) -> Self[Tz]
