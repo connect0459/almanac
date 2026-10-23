@@ -1516,3 +1516,123 @@ test "from_ymd_hms reports Absent for a year outside NaiveDate's range" {
     is Absent,
   )
 }
+
+///|
+test "add_period moves the local wall clock in a fixed-offset zone and keeps the time of day" {
+  let fixed = @tz.FixedOffset::east(9 * 3600).unwrap()
+  let dt = @tz.DateTime::from_ymd_hms(2024, 1, 31, 12, 30, 0, fixed)
+    .single()
+    .unwrap()
+  let moved = dt
+    .add_period(@core.Period::new(months=1, days=1))
+    .single()
+    .unwrap()
+  assert_eq(
+    moved.naive_local(),
+    @core.NaiveDateTime::new(
+      @core.NaiveDate::from_ymd(2024, 3, 1).unwrap(),
+      @core.NaiveTime::from_hms(12, 30, 0).unwrap(),
+    ),
+  )
+  assert_eq(moved.offset(), fixed)
+}
+
+///|
+test "add_period by a zero period returns the same instant" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let dt = @tz.DateTime::from_ymd_hms(2024, 6, 15, 12, 0, 0, ny)
+    .single()
+    .unwrap()
+  assert_eq(dt.add_period(@core.Period::zero()).single().unwrap(), dt)
+}
+
+///|
+test "add_period of one day across a spring-forward keeps the wall clock, unlike adding 24 hours (America/New_York)" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let before = @tz.DateTime::from_ymd_hms(2024, 3, 9, 12, 0, 0, ny)
+    .single()
+    .unwrap()
+  let by_period = before.add_period(@core.Period::new(days=1)).single().unwrap()
+  assert_eq(by_period.hour(), 12)
+  assert_eq(by_period.day(), 10)
+  assert_eq(
+    by_period.signed_duration_since(before),
+    @core.TimeDelta::hours(23).unwrap(),
+  )
+  let by_delta = before.add_signed(@core.TimeDelta::hours(24).unwrap())
+  assert_eq(by_delta.hour(), 13)
+}
+
+///|
+test "add_period reports Absent when the wall clock lands in a spring-forward gap (America/New_York)" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let before = @tz.DateTime::from_ymd_hms(2024, 3, 9, 2, 30, 0, ny)
+    .single()
+    .unwrap()
+  assert_true(before.add_period(@core.Period::new(days=1)) is @tz.Absent)
+}
+
+///|
+test "add_period reports Ambiguous when the wall clock lands in a fall-back fold (America/New_York)" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let before = @tz.DateTime::from_ymd_hms(2024, 11, 2, 1, 30, 0, ny)
+    .single()
+    .unwrap()
+  let result = before.add_period(@core.Period::new(days=1))
+  let earliest = result.earliest().unwrap()
+  let latest = result.latest().unwrap()
+  assert_eq(earliest.naive_local(), latest.naive_local())
+  assert_eq(earliest.day(), 3)
+  assert_eq(earliest.offset(), @tz.FixedOffset::east(-14400).unwrap())
+  assert_eq(latest.offset(), @tz.FixedOffset::east(-18000).unwrap())
+  assert_eq(earliest.compare_instant(latest), -1)
+}
+
+///|
+test "add_period reports Absent when the shifted date leaves the representable range" {
+  let fixed = @tz.FixedOffset::east(0).unwrap()
+  let dt = @tz.DateTime::from_ymd_hms(2024, 1, 1, 0, 0, 0, fixed)
+    .single()
+    .unwrap()
+  assert_true(dt.add_period(@core.Period::new(years=2147483647)) is @tz.Absent)
+}
+
+///|
+test "add_period reports Absent when the shifted date passes the last representable date" {
+  let fixed = @tz.FixedOffset::east(0).unwrap()
+  let last = @core.NaiveDate::from_epoch_days(2_146_764_179).unwrap()
+  let dt = @tz.DateTime::from_local(
+      @core.NaiveDateTime::new(
+        last,
+        @core.NaiveTime::from_hms(0, 0, 0).unwrap(),
+      ),
+      fixed,
+    )
+    .single()
+    .unwrap()
+  assert_true(dt.add_period(@core.Period::new(days=1)) is @tz.Absent)
+}
+
+///|
+test "add_period with a negative period moves the wall clock back and keeps the time of day across a spring-forward (America/New_York)" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let after = @tz.DateTime::from_ymd_hms(2024, 3, 10, 12, 0, 0, ny)
+    .single()
+    .unwrap()
+  let by_period = after.add_period(@core.Period::new(days=-1)).single().unwrap()
+  assert_eq(by_period.day(), 9)
+  assert_eq(by_period.hour(), 12)
+  assert_eq(
+    after.signed_duration_since(by_period),
+    @core.TimeDelta::hours(23).unwrap(),
+  )
+}
+
+///|
+test "add_period with a negative period reports Absent when the wall clock lands in a spring-forward gap (America/New_York)" {
+  let ny = @tz.Location::from_tzif_bytes(tzif_new_york).unwrap()
+  let after = @tz.DateTime::from_ymd_hms(2024, 3, 11, 2, 30, 0, ny)
+    .single()
+    .unwrap()
+  assert_true(after.add_period(@core.Period::new(days=-1)) is @tz.Absent)
+}

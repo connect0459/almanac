@@ -391,6 +391,27 @@ pub fn[Tz : TimeZone] DateTime::with_year(
 }
 
 ///|
+/// This datetime with its local date shifted by `period` (see
+/// `@core.NaiveDateTime::add_period`; a negative component moves it back), keeping the local time of day and
+/// re-resolving the wall-clock reading through the time zone: `Absent` for a
+/// reading inside a DST gap or a date outside `NaiveDate`'s representable
+/// range, and `Ambiguous` inside a DST fold.
+///
+/// This moves the wall clock, not the instant: `add_period(Period::new(days=1))`
+/// across a DST transition keeps the time of day while the elapsed time is
+/// 23 or 25 hours. Adding a `@core.TimeDelta` with `add_signed` moves the
+/// instant instead, so the time of day shifts by the transition.
+pub fn[Tz : TimeZone] DateTime::add_period(
+  self : DateTime[Tz],
+  period : @core.Period,
+) -> MappedLocalTime[DateTime[Tz]] {
+  match self.naive_local().checked_add_period(period) {
+    None => Absent
+    Some(naive) => DateTime::from_local(naive, self.tz)
+  }
+}
+
+///|
 /// This datetime with the local month (`1..=12`) replaced, keeping the rest of the local
 /// wall-clock reading and re-resolving it through the time zone: `Absent`
 /// for a value that does not form a valid local reading (see
