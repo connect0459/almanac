@@ -412,6 +412,28 @@ pub fn[Tz : TimeZone] DateTime::add_period(
 }
 
 ///|
+/// This datetime with its local date shifted back by `period` (see
+/// `@core.NaiveDateTime::checked_sub_period`; a negative component moves it
+/// forward), keeping the local time of day and re-resolving the wall-clock
+/// reading through the time zone: `Absent` for a reading inside a DST gap or a
+/// date outside `NaiveDate`'s representable range, and `Ambiguous` inside a DST
+/// fold.
+///
+/// Unlike `add_period` with a negated period, a component equal to the `Int32`
+/// lower bound does not abort: it has no negation, but it is subtracted like
+/// any other component, and the result is `Absent` when it leaves `NaiveDate`'s
+/// representable range.
+pub fn[Tz : TimeZone] DateTime::sub_period(
+  self : DateTime[Tz],
+  period : @core.Period,
+) -> MappedLocalTime[DateTime[Tz]] {
+  match self.naive_local().checked_sub_period(period) {
+    None => Absent
+    Some(naive) => DateTime::from_local(naive, self.tz)
+  }
+}
+
+///|
 /// This datetime with the local month (`1..=12`) replaced, keeping the rest of the local
 /// wall-clock reading and re-resolving it through the time zone: `Absent`
 /// for a value that does not form a valid local reading (see

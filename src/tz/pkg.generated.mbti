@@ -87,6 +87,7 @@ pub fn[Tz, Tz2] DateTime::signed_duration_since(Self[Tz], Self[Tz2]) -> @core.Ti
 pub fn[Tz : TimeZone] DateTime::sub_days(Self[Tz], Int32) -> Self[Tz]
 pub fn[Tz : TimeZone] DateTime::sub_months(Self[Tz], Int32) -> Self[Tz]
 pub fn[Tz] DateTime::sub_offset(Self[Tz], FixedOffset) -> Self[Tz]
+pub fn[Tz : TimeZone] DateTime::sub_period(Self[Tz], @core.Period) -> MappedLocalTime[Self[Tz]]
 pub fn[Tz] DateTime::sub_seconds(Self[Tz], Int64) -> Self[Tz]
 pub fn[Tz] DateTime::sub_signed(Self[Tz], @core.TimeDelta) -> Self[Tz]
 pub fn[Tz : TimeZone] DateTime::sub_years(Self[Tz], Int32) -> Self[Tz]
