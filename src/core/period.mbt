@@ -32,8 +32,7 @@ pub extend Period with Default::{default}
 /// Renders the period in the ISO 8601 date-based duration style (`P1Y2M3D`),
 /// omitting zero components. The zero period is `P0D`. A negative component
 /// keeps its own leading `-` (`P-1Y3D`); that per-component sign is an
-/// extension beyond ISO 8601, and `parse_iso8601_duration` does not read
-/// this output back.
+/// extension beyond ISO 8601, which `parse_iso8601_period` reads back.
 pub impl Show for Period with fn output(self, logger) {
   if self.is_zero() {
     logger.write_string("P0D")
