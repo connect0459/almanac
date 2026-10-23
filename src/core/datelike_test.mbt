@@ -1,17 +1,17 @@
 ///|
 struct DateFacts {
-  year : Int
+  year : Int32
   month : @core.Month
-  month0 : Int
-  day : Int
-  day0 : Int
-  ordinal : Int
-  ordinal0 : Int
+  month0 : Int32
+  day : Int32
+  day0 : Int32
+  ordinal : Int32
+  ordinal0 : Int32
   weekday : @core.Weekday
-  quarter : Int
+  quarter : Int32
   year_ce : @core.YearCe
-  num_days_from_ce : Int
-  num_days_in_month : Int
+  num_days_from_ce : Int32
+  num_days_in_month : Int32
   leap_year : Bool
   iso_week : @core.IsoWeek
 } derive(Eq, Debug)
@@ -38,12 +38,12 @@ fn[T : @core.Datelike] date_facts(value : T) -> DateFacts {
 
 ///|
 struct TimeFacts {
-  hour : Int
+  hour : Int32
   hour12 : @core.ClockHour12
-  minute : Int
-  second : Int
-  nanosecond : Int
-  num_seconds_from_midnight : Int
+  minute : Int32
+  second : Int32
+  nanosecond : Int32
+  num_seconds_from_midnight : Int32
 } derive(Eq, Debug)
 
 ///|
@@ -59,7 +59,7 @@ fn[T : @core.Timelike] time_facts(value : T) -> TimeFacts {
 }
 
 ///|
-let sample_dates : Array[(Int, Int, Int)] = [
+let sample_dates : Array[(Int32, Int32, Int32)] = [
   (2024, 2, 29),
   (2023, 12, 31),
   (2021, 1, 3),
@@ -78,7 +78,7 @@ let sample_dates : Array[(Int, Int, Int)] = [
 ]
 
 ///|
-let sample_times : Array[(Int, Int, Int, Int)] = [
+let sample_times : Array[(Int32, Int32, Int32, Int32)] = [
   (0, 0, 0, 0),
   (9, 30, 15, 123_456_789),
   (12, 0, 0, 0),

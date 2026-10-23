@@ -7,7 +7,7 @@
 /// Sets have no total order: the bit layout is a representation detail and
 /// the meaningful relation is `is_subset`.
 pub struct WeekdaySet {
-  priv bits : Int
+  priv bits : Int32
 } derive(Eq, Hash, @debug.Debug)
 
 ///|
@@ -46,7 +46,7 @@ pub extend WeekdaySet with @debug.Debug::{to_repr}
 let all_weekdays : Array[Weekday] = [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
 
 ///|
-fn bit_for(day : Weekday) -> Int {
+fn bit_for(day : Weekday) -> Int32 {
   1 << day.index()
 }
 
@@ -189,7 +189,7 @@ pub fn WeekdaySet::is_empty(self : WeekdaySet) -> Bool {
 
 ///|
 /// The number of weekdays in the set.
-pub fn WeekdaySet::length(self : WeekdaySet) -> Int {
+pub fn WeekdaySet::length(self : WeekdaySet) -> Int32 {
   let mut count = 0
   for day in all_weekdays {
     if self.contains(day) {

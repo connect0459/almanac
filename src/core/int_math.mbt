@@ -1,7 +1,7 @@
 ///|
 /// Floor division: rounds toward negative infinity, unlike `Int`'s built-in
 /// `/` which truncates toward zero.
-fn floor_div(a : Int, b : Int) -> Int {
+fn floor_div(a : Int32, b : Int32) -> Int32 {
   let q = a / b
   if a % b != 0 && (a < 0) != (b < 0) {
     q - 1
@@ -13,7 +13,7 @@ fn floor_div(a : Int, b : Int) -> Int {
 ///|
 /// Floor modulo: the result always has the same sign as `b` (or is zero),
 /// unlike `Int`'s built-in `%` which has the same sign as `a`.
-fn floor_mod(a : Int, b : Int) -> Int {
+fn floor_mod(a : Int32, b : Int32) -> Int32 {
   a - floor_div(a, b) * b
 }
 

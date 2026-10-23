@@ -93,7 +93,7 @@ test "weeks with the same first day hash equally regardless of the anchor date a
   let next_week = @core.NaiveDate::from_ymd(2024, 1, 9).unwrap().week(@core.Mon)
   assert_eq(from_wednesday, from_friday)
   assert_eq(from_wednesday.hash(), from_friday.hash())
-  let seen : Map[@core.NaiveWeek, Int] = Map([])
+  let seen : Map[@core.NaiveWeek, Int32] = Map([])
   seen[from_wednesday] = 1
   seen[next_week] = 2
   assert_eq(seen.length(), 2)

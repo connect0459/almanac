@@ -1,5 +1,7 @@
 ///|
-fn[T : @core.Datelike] ymd_facts(value : T) -> (Int, Int, Int, Int, Int, Bool) {
+fn[T : @core.Datelike] ymd_facts(
+  value : T,
+) -> (Int32, Int32, Int32, Int32, Int32, Bool) {
   (
     value.year(),
     value.month().number(),
@@ -11,7 +13,9 @@ fn[T : @core.Datelike] ymd_facts(value : T) -> (Int, Int, Int, Int, Int, Bool) {
 }
 
 ///|
-fn[T : @core.Timelike] hms_facts(value : T) -> (Int, Int, Int, Int, Int) {
+fn[T : @core.Timelike] hms_facts(
+  value : T,
+) -> (Int32, Int32, Int32, Int32, Int32) {
   (
     value.hour(),
     value.minute(),

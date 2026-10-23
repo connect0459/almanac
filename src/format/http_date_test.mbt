@@ -1,11 +1,11 @@
 ///|
 fn http_utc(
-  year : Int,
-  month : Int,
-  day : Int,
-  hour : Int,
-  minute : Int,
-  second : Int,
+  year : Int32,
+  month : Int32,
+  day : Int32,
+  hour : Int32,
+  minute : Int32,
+  second : Int32,
 ) -> @tz.DateTime[@tz.Utc] {
   @tz.DateTime::from_utc(
     @core.NaiveDateTime::new(
@@ -19,7 +19,7 @@ fn http_utc(
 ///|
 fn assert_invalid_http_date(
   input : String,
-  reference_year? : Int,
+  reference_year? : Int32,
 ) -> Unit raise {
   try @format.parse_http_date(input, reference_year?) |> ignore catch {
     @format.InvalidHttpDate => ()

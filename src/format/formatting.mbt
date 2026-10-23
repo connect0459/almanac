@@ -1,5 +1,5 @@
 ///|
-fn floor_div(a : Int, b : Int) -> Int {
+fn floor_div(a : Int32, b : Int32) -> Int32 {
   let q = a / b
   if a % b != 0 && (a < 0) != (b < 0) {
     q - 1
@@ -9,12 +9,12 @@ fn floor_div(a : Int, b : Int) -> Int {
 }
 
 ///|
-fn floor_mod(a : Int, b : Int) -> Int {
+fn floor_mod(a : Int32, b : Int32) -> Int32 {
   a - floor_div(a, b) * b
 }
 
 ///|
-fn pad_int(n : Int, width : Int) -> String {
+fn pad_int(n : Int32, width : Int32) -> String {
   let sign = if n < 0 { "-" } else { "" }
   let magnitude = if n < 0 { -n } else { n }
   let digits = magnitude.to_string()
@@ -30,7 +30,7 @@ fn pad_int(n : Int, width : Int) -> String {
 /// Renders a calendar or ISO year as `%Y`/`%G` do: zero-padded to `width`
 /// digits after a `-` for a negative year, and with an explicit `+` beyond
 /// `9999`, as ISO 8601 requires for a year past four digits.
-fn year_text(year : Int, width : Int) -> String {
+fn year_text(year : Int32, width : Int32) -> String {
   if year > 9999 {
     "+" + pad_int(year, width)
   } else {
@@ -52,7 +52,7 @@ fn month_short_name(m : @core.Month) -> String {
 /// Space-pads a non-negative integer to `width` characters (strftime's
 /// `%l`, unlike `pad_int`'s zero-padding). `hour12()`'s values (`1..=12`)
 /// never need a sign.
-fn pad_int_blank(n : Int, width : Int) -> String {
+fn pad_int_blank(n : Int32, width : Int32) -> String {
   let digits = n.to_string()
   let spaces = width - digits.length()
   if spaces <= 0 {
@@ -69,7 +69,7 @@ fn pad_int_blank(n : Int, width : Int) -> String {
 /// `Weekday::num_days_from_sunday()`/`num_days_from_monday()`, matching
 /// `%U`'s Sunday start or `%W`'s Monday start respectively): days before
 /// the year's first such start day fall in week `0`.
-fn week_number(yday : Int, wday_x : Int) -> Int {
+fn week_number(yday : Int32, wday_x : Int32) -> Int32 {
   (yday - 1 - wday_x + 7) / 7
 }
 
@@ -89,7 +89,7 @@ fn numeric_value(
   date : @core.NaiveDate?,
   time : @core.NaiveTime?,
   item : Item,
-) -> (Int, Int) raise FormatError {
+) -> (Int32, Int32) raise FormatError {
   match kind {
     Year =>
       match date {
@@ -216,7 +216,11 @@ fn numeric_value(
 }
 
 ///|
-fn render_padded(value : Int, default_width : Int, mode : PadMode) -> String {
+fn render_padded(
+  value : Int32,
+  default_width : Int32,
+  mode : PadMode,
+) -> String {
   match mode {
     NoPad => value.to_string()
     ZeroPad => pad_int(value, default_width)
@@ -228,7 +232,7 @@ fn render_padded(value : Int, default_width : Int, mode : PadMode) -> String {
 /// Renders a signed offset (in seconds) as strftime's `%z`: a sign
 /// followed by a zero-padded `HHMM`, with no colon and no sub-minute
 /// seconds component.
-fn format_offset_no_colon(secs : Int) -> String {
+fn format_offset_no_colon(secs : Int32) -> String {
   let sign = if secs < 0 { "-" } else { "+" }
   let magnitude = if secs < 0 { -secs } else { secs }
   let hours = magnitude / 3600
@@ -240,7 +244,7 @@ fn format_offset_no_colon(secs : Int) -> String {
 /// Renders `%::z`'s `±HH:MM:SS`, always including seconds (unlike
 /// `FixedOffset::zone_name`, in `tz`, which only extends past minutes when
 /// they're nonzero).
-fn format_offset_colon_seconds(secs : Int) -> String {
+fn format_offset_colon_seconds(secs : Int32) -> String {
   let sign = if secs < 0 { "-" } else { "+" }
   let magnitude = if secs < 0 { -secs } else { secs }
   let hours = magnitude / 3600
@@ -257,7 +261,7 @@ fn format_offset_colon_seconds(secs : Int) -> String {
 ///|
 /// Renders `%:::z`'s `±HH`: minutes and seconds are dropped entirely, not
 /// just omitted when zero.
-fn format_offset_hours_only(secs : Int) -> String {
+fn format_offset_hours_only(secs : Int32) -> String {
   let sign = if secs < 0 { "-" } else { "+" }
   let magnitude = if secs < 0 { -secs } else { secs }
   sign + pad_int(magnitude / 3600, 2)
@@ -268,7 +272,7 @@ fn render(
   items : Array[Item],
   date : @core.NaiveDate?,
   time : @core.NaiveTime?,
-  tz_info : (Int, String)?,
+  tz_info : (Int32, String)?,
   timestamp : Int64?,
   locale : Locale,
 ) -> String raise FormatError {
@@ -557,7 +561,7 @@ fn render(
 pub fn format_date_items(
   date : @core.NaiveDate,
   items : Array[Item],
-  locale? : Locale = Locale::posix(),
+  locale~ : Locale = Locale::posix(),
 ) -> String raise FormatError {
   render(items, Some(date), None, None, None, locale)
 }
@@ -567,7 +571,7 @@ pub fn format_date_items(
 pub fn format_time_items(
   time : @core.NaiveTime,
   items : Array[Item],
-  locale? : Locale = Locale::posix(),
+  locale~ : Locale = Locale::posix(),
 ) -> String raise FormatError {
   render(items, None, Some(time), None, None, locale)
 }
@@ -577,7 +581,7 @@ pub fn format_time_items(
 pub fn format_date_time_items(
   dt : @core.NaiveDateTime,
   items : Array[Item],
-  locale? : Locale = Locale::posix(),
+  locale~ : Locale = Locale::posix(),
 ) -> String raise FormatError {
   render(
     items,
@@ -595,7 +599,7 @@ pub fn format_date_time_items(
 pub fn[Tz : @tz.TimeZone] format_date_time_tz_items(
   dt : @tz.DateTime[Tz],
   items : Array[Item],
-  locale? : Locale = Locale::posix(),
+  locale~ : Locale = Locale::posix(),
 ) -> String raise FormatError {
   let wall_clock = dt.naive_local()
   let name = dt.timezone().zone_name(dt.naive_utc())
@@ -614,7 +618,7 @@ pub fn[Tz : @tz.TimeZone] format_date_time_tz_items(
 pub fn format_date(
   date : @core.NaiveDate,
   fmt : String,
-  locale? : Locale = Locale::posix(),
+  locale~ : Locale = Locale::posix(),
 ) -> String raise FormatError {
   format_date_items(date, tokenize(fmt, locale~), locale~)
 }
@@ -623,7 +627,7 @@ pub fn format_date(
 pub fn format_time(
   time : @core.NaiveTime,
   fmt : String,
-  locale? : Locale = Locale::posix(),
+  locale~ : Locale = Locale::posix(),
 ) -> String raise FormatError {
   format_time_items(time, tokenize(fmt, locale~), locale~)
 }
@@ -632,7 +636,7 @@ pub fn format_time(
 pub fn format_date_time(
   dt : @core.NaiveDateTime,
   fmt : String,
-  locale? : Locale = Locale::posix(),
+  locale~ : Locale = Locale::posix(),
 ) -> String raise FormatError {
   format_date_time_items(dt, tokenize(fmt, locale~), locale~)
 }
@@ -646,7 +650,7 @@ pub fn format_date_time(
 pub fn[Tz : @tz.TimeZone] format_date_time_tz(
   dt : @tz.DateTime[Tz],
   fmt : String,
-  locale? : Locale = Locale::posix(),
+  locale~ : Locale = Locale::posix(),
 ) -> String raise FormatError {
   format_date_time_tz_items(dt, tokenize(fmt, locale~), locale~)
 }

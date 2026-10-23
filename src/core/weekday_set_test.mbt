@@ -261,7 +261,7 @@ test "equal weekday sets hash equally and work as map keys" {
   let b = @core.WeekdaySet::single(@core.Fri).insert(@core.Mon)
   assert_eq(a, b)
   assert_eq(a.hash(), b.hash())
-  let seen : Map[@core.WeekdaySet, Int] = Map([])
+  let seen : Map[@core.WeekdaySet, Int32] = Map([])
   seen[a] = 1
   seen[@core.WeekdaySet::empty()] = 2
   assert_eq(seen.length(), 2)

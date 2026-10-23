@@ -15,9 +15,9 @@ fn is_ascii_letter(c : Char) -> Bool {
 ///|
 fn match_name_ignoring_case(
   chars : Array[Char],
-  pos : Int,
+  pos : Int32,
   name : String,
-) -> Int? {
+) -> Int32? {
   let name_chars = name.to_array()
   let len = name_chars.length()
   if pos + len > chars.length() {
@@ -36,7 +36,7 @@ fn match_name_ignoring_case(
 }
 
 ///|
-fn skip_whitespace(chars : Array[Char], pos : Int) -> Int {
+fn skip_whitespace(chars : Array[Char], pos : Int32) -> Int32 {
   for i = pos {
     if i >= chars.length() || !chars[i].is_whitespace() {
       break i
@@ -46,7 +46,7 @@ fn skip_whitespace(chars : Array[Char], pos : Int) -> Int {
 }
 
 ///|
-fn require_whitespace(chars : Array[Char], pos : Int) -> Int? {
+fn require_whitespace(chars : Array[Char], pos : Int32) -> Int32? {
   let end = skip_whitespace(chars, pos)
   if end == pos {
     None
@@ -58,8 +58,8 @@ fn require_whitespace(chars : Array[Char], pos : Int) -> Int? {
 ///|
 fn match_short_weekday_ignoring_case(
   chars : Array[Char],
-  pos : Int,
-) -> (@core.Weekday, Int)? {
+  pos : Int32,
+) -> (@core.Weekday, Int32)? {
   for entry in weekday_names() {
     let (wd, _, short_name) = entry
     match match_name_ignoring_case(chars, pos, short_name) {
@@ -73,8 +73,8 @@ fn match_short_weekday_ignoring_case(
 ///|
 fn match_short_month_ignoring_case(
   chars : Array[Char],
-  pos : Int,
-) -> (@core.Month, Int)? {
+  pos : Int32,
+) -> (@core.Month, Int32)? {
   for entry in month_names() {
     let (m, _, short_name) = entry
     match match_name_ignoring_case(chars, pos, short_name) {
@@ -86,7 +86,7 @@ fn match_short_month_ignoring_case(
 }
 
 ///|
-fn parse_windowed_year(chars : Array[Char], pos : Int) -> (Int, Int)? {
+fn parse_windowed_year(chars : Array[Char], pos : Int32) -> (Int32, Int32)? {
   let end = for i = pos {
     if i >= chars.length() || !is_ascii_digit(chars[i]) {
       break i
@@ -113,7 +113,7 @@ fn parse_windowed_year(chars : Array[Char], pos : Int) -> (Int, Int)? {
 }
 
 ///|
-fn legacy_zone_offset_seconds(lower_name : String) -> Int? {
+fn legacy_zone_offset_seconds(lower_name : String) -> Int32? {
   match lower_name {
     "gmt" | "ut" | "z" => Some(0)
     "edt" => Some(-4 * 3600)
@@ -126,7 +126,7 @@ fn legacy_zone_offset_seconds(lower_name : String) -> Int? {
 }
 
 ///|
-fn parse_obsolete_zone(chars : Array[Char], pos : Int) -> (Int, Int)? {
+fn parse_obsolete_zone(chars : Array[Char], pos : Int32) -> (Int32, Int32)? {
   let end = for i = pos {
     if i >= chars.length() || !is_ascii_letter(chars[i]) {
       break i
@@ -145,7 +145,7 @@ fn parse_obsolete_zone(chars : Array[Char], pos : Int) -> (Int, Int)? {
 }
 
 ///|
-fn skip_comment(chars : Array[Char], pos : Int) -> Int? {
+fn skip_comment(chars : Array[Char], pos : Int32) -> Int32? {
   let start = skip_whitespace(chars, pos)
   if start >= chars.length() || chars[start] != '(' {
     return None
@@ -169,7 +169,7 @@ fn skip_comment(chars : Array[Char], pos : Int) -> Int? {
 }
 
 ///|
-fn skip_comments(chars : Array[Char], pos : Int) -> Int {
+fn skip_comments(chars : Array[Char], pos : Int32) -> Int32 {
   for p = pos {
     match skip_comment(chars, p) {
       Some(next) => continue next
@@ -227,8 +227,8 @@ pub fn parse_rfc2822_lenient(
 /// `InvalidRfc2822` on any mismatch.
 fn scan_rfc2822_lenient(
   chars : Array[Char],
-  pos : Int,
-) -> (@core.NaiveDate, @core.NaiveTime, Int, Int) raise FormatError {
+  pos : Int32,
+) -> (@core.NaiveDate, @core.NaiveTime, Int32, Int32) raise FormatError {
   let p0 = skip_whitespace(chars, pos)
   let (weekday, p1) = match match_short_weekday_ignoring_case(chars, p0) {
     Some((wd, after_name)) =>

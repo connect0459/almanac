@@ -1,10 +1,10 @@
 ///|
-fn ce_pair(year : @core.YearCe) -> (Bool, Int) {
+fn ce_pair(year : @core.YearCe) -> (Bool, Int32) {
   (year.is_ce(), year.year())
 }
 
 ///|
-fn clock_pair(hour : @core.ClockHour12) -> (Bool, Int) {
+fn clock_pair(hour : @core.ClockHour12) -> (Bool, Int32) {
   (hour.is_pm(), hour.hour())
 }
 

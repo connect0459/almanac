@@ -21,7 +21,7 @@ const MIN_SECS : Int64 = -9_223_372_036_854_774L
 /// entirely by the seconds component.
 pub struct TimeDelta {
   priv seconds : Int64
-  priv nanoseconds : Int
+  priv nanoseconds : Int32
 } derive(Eq, Compare, Hash, @debug.Debug)
 
 ///|
@@ -82,7 +82,7 @@ pub impl Show for TimeDelta with fn output(self, logger) {
 pub extend TimeDelta with Show::{to_string, output}
 
 ///|
-fn write_subsecond(nanos : Int, logger : &Logger) -> Unit {
+fn write_subsecond(nanos : Int32, logger : &Logger) -> Unit {
   if nanos == 0 {
     logger.write_string("0s")
   } else if nanos < 1_000 {
@@ -99,7 +99,7 @@ fn write_subsecond(nanos : Int, logger : &Logger) -> Unit {
 }
 
 ///|
-fn write_fraction(value : Int, width : Int, logger : &Logger) -> Unit {
+fn write_fraction(value : Int32, width : Int32, logger : &Logger) -> Unit {
   if value != 0 {
     let mut digits = value.to_string()
     while digits.length() < width {
@@ -145,7 +145,7 @@ fn from_secs_nanos(secs : Int64, nanos : Int64) -> TimeDelta? {
 /// `seconds`, so `new(-1L, 500_000_000)` is minus half a second. Returns
 /// `None` if `nanoseconds` is outside that range or the result does not
 /// fit in the representable range.
-pub fn TimeDelta::new(seconds : Int64, nanoseconds : Int) -> TimeDelta? {
+pub fn TimeDelta::new(seconds : Int64, nanoseconds : Int32) -> TimeDelta? {
   if nanoseconds < 0 || nanoseconds >= 1_000_000_000 {
     None
   } else {
@@ -230,14 +230,14 @@ pub fn TimeDelta::nanoseconds(n : Int64) -> TimeDelta? {
 /// fit in the representable range. `of(hours=1L, minutes=-90L)` is minus
 /// thirty minutes.
 pub fn TimeDelta::of(
-  weeks? : Int64 = 0L,
-  days? : Int64 = 0L,
-  hours? : Int64 = 0L,
-  minutes? : Int64 = 0L,
-  seconds? : Int64 = 0L,
-  milliseconds? : Int64 = 0L,
-  microseconds? : Int64 = 0L,
-  nanoseconds? : Int64 = 0L,
+  weeks~ : Int64 = 0L,
+  days~ : Int64 = 0L,
+  hours~ : Int64 = 0L,
+  minutes~ : Int64 = 0L,
+  seconds~ : Int64 = 0L,
+  milliseconds~ : Int64 = 0L,
+  microseconds~ : Int64 = 0L,
+  nanoseconds~ : Int64 = 0L,
 ) -> TimeDelta? {
   let parts = [
     TimeDelta::weeks(weeks),
@@ -297,7 +297,7 @@ pub fn TimeDelta::num_seconds(self : TimeDelta) -> Int64 {
 /// duration floored to a whole second, modulo a day, so `-1s` and `-0.5s`
 /// both report `86399`. Together with the floored day count it recomposes
 /// the whole seconds.
-pub fn TimeDelta::seconds_of_day(self : TimeDelta) -> Int {
+pub fn TimeDelta::seconds_of_day(self : TimeDelta) -> Int32 {
   floor_mod64(self.seconds, 86400L).to_int()
 }
 
@@ -307,7 +307,7 @@ pub fn TimeDelta::seconds_of_day(self : TimeDelta) -> Int {
 /// this duration's total nanosecond count. Carries the same sign as the
 /// overall duration, so it may be negative even though the internal
 /// representation's nanosecond component is always non-negative.
-pub fn TimeDelta::subsec_nanoseconds(self : TimeDelta) -> Int {
+pub fn TimeDelta::subsec_nanoseconds(self : TimeDelta) -> Int32 {
   if self.seconds < 0L && self.nanoseconds > 0 {
     self.nanoseconds - 1_000_000_000
   } else {
@@ -318,14 +318,14 @@ pub fn TimeDelta::subsec_nanoseconds(self : TimeDelta) -> Int {
 ///|
 /// The `subsec_nanoseconds` remainder expressed in whole milliseconds,
 /// truncated toward zero.
-pub fn TimeDelta::subsec_milliseconds(self : TimeDelta) -> Int {
+pub fn TimeDelta::subsec_milliseconds(self : TimeDelta) -> Int32 {
   self.subsec_nanoseconds() / 1_000_000
 }
 
 ///|
 /// The `subsec_nanoseconds` remainder expressed in whole microseconds,
 /// truncated toward zero.
-pub fn TimeDelta::subsec_microseconds(self : TimeDelta) -> Int {
+pub fn TimeDelta::subsec_microseconds(self : TimeDelta) -> Int32 {
   self.subsec_nanoseconds() / 1_000
 }
 
@@ -466,7 +466,7 @@ pub fn TimeDelta::sub(self : TimeDelta, other : TimeDelta) -> TimeDelta {
 ///
 /// Aborts if it overflows the representable range; use `checked_mul` to get
 /// `None` instead.
-pub fn TimeDelta::mul(self : TimeDelta, scalar : Int) -> TimeDelta {
+pub fn TimeDelta::mul(self : TimeDelta, scalar : Int32) -> TimeDelta {
   expect_in_range(self.checked_mul(scalar), "TimeDelta::mul")
 }
 
@@ -474,7 +474,7 @@ pub fn TimeDelta::mul(self : TimeDelta, scalar : Int) -> TimeDelta {
 /// This duration divided by the integer `scalar`, truncated toward zero.
 ///
 /// Aborts if `scalar` is zero; use `checked_div` to get `None` instead.
-pub fn TimeDelta::div(self : TimeDelta, scalar : Int) -> TimeDelta {
+pub fn TimeDelta::div(self : TimeDelta, scalar : Int32) -> TimeDelta {
   if scalar == 0 {
     abort("TimeDelta::div: division by zero")
   }
@@ -547,7 +547,7 @@ pub fn TimeDelta::checked_sub(
 /// (`Int64`-overflowing) guard: `nanoseconds` is always below one second,
 /// so `nanoseconds * scalar` stays well within `Int64` for any `Int`
 /// `scalar`.
-pub fn TimeDelta::checked_mul(self : TimeDelta, scalar : Int) -> TimeDelta? {
+pub fn TimeDelta::checked_mul(self : TimeDelta, scalar : Int32) -> TimeDelta? {
   let scalar64 = scalar.to_int64()
   match checked_mul64(self.seconds, scalar64) {
     None => None
@@ -558,7 +558,7 @@ pub fn TimeDelta::checked_mul(self : TimeDelta, scalar : Int) -> TimeDelta? {
 ///|
 /// This duration divided by the integer `scalar`, truncated toward zero, or
 /// `None` if `scalar` is zero.
-pub fn TimeDelta::checked_div(self : TimeDelta, scalar : Int) -> TimeDelta? {
+pub fn TimeDelta::checked_div(self : TimeDelta, scalar : Int32) -> TimeDelta? {
   if scalar == 0 {
     None
   } else {
@@ -629,7 +629,7 @@ pub fn TimeDelta::is_zero(self : TimeDelta) -> Bool {
 /// `num_nanoseconds`, which is already `Option`-returning for exactly this
 /// reason).
 priv enum Granularity {
-  SubSecond(Int)
+  SubSecond(Int32)
   WholeSeconds(Int64)
 }
 
@@ -740,7 +740,7 @@ fn double_magnitude(mag : TimeDelta) -> TimeDelta {
 ///|
 /// Lexicographic comparison of two non-negative `TimeDelta` magnitudes:
 /// negative if `a < b`, positive if `a > b`, zero if equal.
-fn compare_magnitude(a : TimeDelta, b : TimeDelta) -> Int {
+fn compare_magnitude(a : TimeDelta, b : TimeDelta) -> Int32 {
   if a.seconds != b.seconds {
     if a.seconds < b.seconds {
       -1

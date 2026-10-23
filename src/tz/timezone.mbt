@@ -99,8 +99,8 @@ pub fn[T, U] MappedLocalTime::map(
 fn resolve_transition(
   local_ts : Int64,
   transition_utc : Int64,
-  offset_before : Int,
-  offset_after : Int,
+  offset_before : Int32,
+  offset_after : Int32,
 ) -> MappedLocalTime[FixedOffset]? {
   let local_start = transition_utc + offset_before.to_int64()
   let local_end = transition_utc + offset_after.to_int64()

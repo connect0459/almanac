@@ -20,7 +20,7 @@ pub extend WeekdaySetIterator with @debug.Debug::{to_repr}
 ///|
 fn WeekdaySetIterator::day_at(
   self : WeekdaySetIterator,
-  offset : Int,
+  offset : Int32,
 ) -> Weekday {
   Weekday::from_num_days_from_monday(
     (self.start.num_days_from_monday() + offset) % 7,
@@ -57,7 +57,7 @@ pub fn WeekdaySetIterator::next_back(self : WeekdaySetIterator) -> Weekday? {
 
 ///|
 /// The number of members remaining to be yielded.
-pub fn WeekdaySetIterator::length(self : WeekdaySetIterator) -> Int {
+pub fn WeekdaySetIterator::length(self : WeekdaySetIterator) -> Int32 {
   self.remaining.length()
 }
 
@@ -89,7 +89,7 @@ pub fn WeekdaySet::iter_from(
 /// `iter_from` for a double-ended iterator.
 pub fn WeekdaySet::iter(
   self : WeekdaySet,
-  start? : Weekday = Mon,
+  start~ : Weekday = Mon,
 ) -> Iter[Weekday] {
   self.iter_from(start).iter()
 }

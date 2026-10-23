@@ -1219,11 +1219,11 @@ test "parse_date reports IncompleteFields when ISO week fields lack a year, a we
 
 ///|
 fn local_reading(
-  y : Int,
-  mo : Int,
-  d : Int,
-  h : Int,
-  mi : Int,
+  y : Int32,
+  mo : Int32,
+  d : Int32,
+  h : Int32,
+  mi : Int32,
 ) -> @core.NaiveDateTime {
   @core.NaiveDateTime::new(
     @core.NaiveDate::from_ymd(y, mo, d).unwrap(),

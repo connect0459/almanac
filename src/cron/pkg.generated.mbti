@@ -24,7 +24,7 @@ pub struct Cron {
   // private fields
 } derive(Eq, Hash, @debug.Debug)
 pub fn Cron::equal(Self, Self) -> Bool
-pub fn Cron::hash(Self) -> Int
+pub fn Cron::hash(Self) -> Int32
 pub fn Cron::hash_combine(Self, Hasher) -> Unit
 pub fn[Tz : @tz.TimeZone] Cron::matches(Self, @tz.DateTime[Tz]) -> Bool
 pub fn[Tz : @tz.TimeZone] Cron::next(Self, @tz.DateTime[Tz]) -> @tz.DateTime[Tz]?

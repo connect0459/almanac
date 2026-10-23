@@ -7,7 +7,7 @@ fn[T] asn1_require(opt : T?) -> T raise FormatError {
 }
 
 ///|
-fn[Tz] asn1_year_and_tail(dt : @tz.DateTime[Tz]) -> (Int, String) {
+fn[Tz] asn1_year_and_tail(dt : @tz.DateTime[Tz]) -> (Int32, String) {
   let utc = dt.naive_utc()
   let date = utc.date()
   let time = utc.time()
@@ -26,7 +26,7 @@ fn[Tz] asn1_year_and_tail(dt : @tz.DateTime[Tz]) -> (Int, String) {
 ///|
 fn asn1_parse_fields(
   s : String,
-  year_width : Int,
+  year_width : Int32,
 ) -> @core.NaiveDateTime raise FormatError {
   let chars = s.to_array()
   let (year, p1) = asn1_require(parse_fixed_digits(chars, 0, year_width))

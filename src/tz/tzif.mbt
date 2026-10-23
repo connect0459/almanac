@@ -2,7 +2,7 @@
 /// One local time type entry from a TZif file: a UTC offset, whether it
 /// observes daylight saving, and its abbreviation (e.g. `"EST"`, `"EDT"`).
 pub struct LocalTimeType {
-  priv utc_offset : Int
+  priv utc_offset : Int32
   priv is_dst : Bool
   priv abbreviation : String
 } derive(Eq, Hash, @debug.Debug)
@@ -25,7 +25,7 @@ pub extend LocalTimeType with @debug.Debug::{to_repr}
 /// `FixedOffset` can hold; so every `LocalTimeType` has an offset the
 /// time-zone lookups can report.
 pub fn LocalTimeType::new(
-  utc_offset : Int,
+  utc_offset : Int32,
   is_dst : Bool,
   abbreviation : String,
 ) -> LocalTimeType? {
@@ -39,7 +39,7 @@ pub fn LocalTimeType::new(
 ///|
 /// The signed number of seconds added to UTC to obtain local time under
 /// this local time type.
-pub fn LocalTimeType::utc_offset(self : LocalTimeType) -> Int {
+pub fn LocalTimeType::utc_offset(self : LocalTimeType) -> Int32 {
   self.utc_offset
 }
 
@@ -65,9 +65,9 @@ pub fn LocalTimeType::abbreviation(self : LocalTimeType) -> String {
 /// recorded transition.
 pub struct TzifData {
   priv transitions : Array[Int64]
-  priv transition_types : Array[Int]
+  priv transition_types : Array[Int32]
   priv local_time_types : Array[LocalTimeType]
-  priv leap_seconds : Array[(Int64, Int)]
+  priv leap_seconds : Array[(Int64, Int32)]
   priv posix_tz : PosixTz?
 } derive(Eq, Hash, @debug.Debug)
 
@@ -93,7 +93,7 @@ pub fn TzifData::transitions(self : TzifData) -> Array[Int64] {
 ///|
 /// A copy of the transition types array; changing it does not affect
 /// this value.
-pub fn TzifData::transition_types(self : TzifData) -> Array[Int] {
+pub fn TzifData::transition_types(self : TzifData) -> Array[Int32] {
   self.transition_types.copy()
 }
 
@@ -107,7 +107,7 @@ pub fn TzifData::local_time_types(self : TzifData) -> Array[LocalTimeType] {
 ///|
 /// Leap-second records `(transition, correction)`, parsed for fidelity but
 /// not applied to civil-time arithmetic. Returns a copy.
-pub fn TzifData::leap_seconds(self : TzifData) -> Array[(Int64, Int)] {
+pub fn TzifData::leap_seconds(self : TzifData) -> Array[(Int64, Int32)] {
   self.leap_seconds.copy()
 }
 
@@ -120,7 +120,7 @@ pub fn TzifData::posix_tz(self : TzifData) -> PosixTz? {
 }
 
 ///|
-fn read_i32_be(data : Bytes, offset : Int) -> Int {
+fn read_i32_be(data : Bytes, offset : Int32) -> Int32 {
   (data.at(offset).to_int() << 24) |
   (data.at(offset + 1).to_int() << 16) |
   (data.at(offset + 2).to_int() << 8) |
@@ -128,7 +128,7 @@ fn read_i32_be(data : Bytes, offset : Int) -> Int {
 }
 
 ///|
-fn read_i64_be(data : Bytes, offset : Int) -> Int64 {
+fn read_i64_be(data : Bytes, offset : Int32) -> Int64 {
   (data.at(offset).to_int64() << 56) |
   (data.at(offset + 1).to_int64() << 48) |
   (data.at(offset + 2).to_int64() << 40) |
@@ -142,7 +142,7 @@ fn read_i64_be(data : Bytes, offset : Int) -> Int64 {
 ///|
 /// The length of the NUL-terminated string starting at `offset`, or `None`
 /// if no NUL occurs before `limit`.
-fn cstring_length_within(data : Bytes, offset : Int, limit : Int) -> Int? {
+fn cstring_length_within(data : Bytes, offset : Int32, limit : Int32) -> Int32? {
   for i = offset {
     if i >= limit {
       break None
@@ -160,15 +160,19 @@ fn cstring_length_within(data : Bytes, offset : Int, limit : Int) -> Int? {
 /// block, `8` for the version-2-and-later block that follows it).
 priv struct RawBlock {
   transitions : Array[Int64]
-  transition_types : Array[Int]
+  transition_types : Array[Int32]
   local_time_types : Array[LocalTimeType]
-  leap_seconds : Array[(Int64, Int)]
+  leap_seconds : Array[(Int64, Int32)]
   /// The offset in `data` immediately following this block.
-  next_offset : Int
+  next_offset : Int32
 }
 
 ///|
-fn parse_block(data : Bytes, header_offset : Int, time_size : Int) -> RawBlock? {
+fn parse_block(
+  data : Bytes,
+  header_offset : Int32,
+  time_size : Int32,
+) -> RawBlock? {
   if data.length() < header_offset + 44 {
     return None
   }
@@ -320,7 +324,7 @@ pub fn parse_tzif(data : Bytes) -> TzifData? {
 ///|
 /// Parses the `\n`-delimited POSIX TZ string footer starting at `offset`,
 /// or `None` if it is malformed.
-fn parse_posix_footer(data : Bytes, offset : Int) -> String? {
+fn parse_posix_footer(data : Bytes, offset : Int32) -> String? {
   if data.length() < offset + 2 || data.at(offset).to_int() != b'\n'.to_int() {
     None
   } else {
@@ -335,7 +339,7 @@ fn parse_posix_footer(data : Bytes, offset : Int) -> String? {
 
 ///|
 /// The number of bytes from `offset` up to (not including) the next `\n`.
-fn cstring_length_until_newline(data : Bytes, offset : Int) -> Int {
+fn cstring_length_until_newline(data : Bytes, offset : Int32) -> Int32 {
   for i = offset {
     if i >= data.length() || data.at(i) == b'\n' {
       break i - offset

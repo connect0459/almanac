@@ -638,7 +638,7 @@ test "equal datetimes hash equally and work as map keys" {
     .add_days(1)
   assert_eq(a, b)
   assert_eq(a.hash(), b.hash())
-  let seen : Map[@core.NaiveDateTime, Int] = Map([])
+  let seen : Map[@core.NaiveDateTime, Int32] = Map([])
   seen[a] = 1
   seen[a.add_days(1)] = 2
   assert_eq(seen.length(), 2)

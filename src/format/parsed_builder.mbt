@@ -1,5 +1,9 @@
 ///|
-fn check_range(value : Int, low : Int, high : Int) -> Unit raise FormatError {
+fn check_range(
+  value : Int32,
+  low : Int32,
+  high : Int32,
+) -> Unit raise FormatError {
   if value < low || value > high {
     raise FieldOutOfRange
   }
@@ -40,7 +44,10 @@ pub fn Parsed::new() -> Parsed {
 ///|
 /// Returns a copy that reads `year` as the calendar year (`%Y`). Raises
 /// `InconsistentFields` if a different year was already set.
-pub fn Parsed::set_year(self : Parsed, year : Int) -> Parsed raise FormatError {
+pub fn Parsed::set_year(
+  self : Parsed,
+  year : Int32,
+) -> Parsed raise FormatError {
   { ..self, year: merge_field(self.year, year), }
 }
 
@@ -49,7 +56,7 @@ pub fn Parsed::set_year(self : Parsed, year : Int) -> Parsed raise FormatError {
 /// (`%C`). Raises `FieldOutOfRange` if it is negative.
 pub fn Parsed::set_year_div_100(
   self : Parsed,
-  century : Int,
+  century : Int32,
 ) -> Parsed raise FormatError {
   if century < 0 {
     raise FieldOutOfRange
@@ -62,7 +69,7 @@ pub fn Parsed::set_year_div_100(
 /// Raises `FieldOutOfRange` outside `0..=99`.
 pub fn Parsed::set_year_mod_100(
   self : Parsed,
-  value : Int,
+  value : Int32,
 ) -> Parsed raise FormatError {
   check_range(value, 0, 99)
   { ..self, year_mod_100: merge_field(self.year_mod_100, value), }
@@ -72,7 +79,7 @@ pub fn Parsed::set_year_mod_100(
 /// Returns a copy that reads `year` as the ISO week-based year (`%G`).
 pub fn Parsed::set_iso_year(
   self : Parsed,
-  year : Int,
+  year : Int32,
 ) -> Parsed raise FormatError {
   { ..self, iso_year: merge_field(self.iso_year, year), }
 }
@@ -82,7 +89,7 @@ pub fn Parsed::set_iso_year(
 /// (`%g`). Raises `FieldOutOfRange` outside `0..=99`.
 pub fn Parsed::set_iso_year_mod_100(
   self : Parsed,
-  value : Int,
+  value : Int32,
 ) -> Parsed raise FormatError {
   check_range(value, 0, 99)
   { ..self, iso_year_mod_100: merge_field(self.iso_year_mod_100, value), }
@@ -93,7 +100,7 @@ pub fn Parsed::set_iso_year_mod_100(
 /// `FieldOutOfRange` outside `1..=53`.
 pub fn Parsed::set_iso_week(
   self : Parsed,
-  week : Int,
+  week : Int32,
 ) -> Parsed raise FormatError {
   check_range(week, 1, 53)
   { ..self, iso_week: merge_field(self.iso_week, week), }
@@ -105,7 +112,7 @@ pub fn Parsed::set_iso_week(
 /// `FieldOutOfRange` outside `1..=4`.
 pub fn Parsed::set_quarter(
   self : Parsed,
-  quarter : Int,
+  quarter : Int32,
 ) -> Parsed raise FormatError {
   check_range(quarter, 1, 4)
   { ..self, quarter: merge_field(self.quarter, quarter), }
@@ -116,7 +123,7 @@ pub fn Parsed::set_quarter(
 /// `FieldOutOfRange` outside `1..=12`.
 pub fn Parsed::set_month(
   self : Parsed,
-  month : Int,
+  month : Int32,
 ) -> Parsed raise FormatError {
   check_range(month, 1, 12)
   { ..self, month: merge_field(self.month, month), }
@@ -127,7 +134,7 @@ pub fn Parsed::set_month(
 /// Raises `FieldOutOfRange` outside `0..=53`.
 pub fn Parsed::set_week_from_sunday(
   self : Parsed,
-  week : Int,
+  week : Int32,
 ) -> Parsed raise FormatError {
   check_range(week, 0, 53)
   { ..self, week_sunday: merge_field(self.week_sunday, week), }
@@ -138,7 +145,7 @@ pub fn Parsed::set_week_from_sunday(
 /// Raises `FieldOutOfRange` outside `0..=53`.
 pub fn Parsed::set_week_from_monday(
   self : Parsed,
-  week : Int,
+  week : Int32,
 ) -> Parsed raise FormatError {
   check_range(week, 0, 53)
   { ..self, week_monday: merge_field(self.week_monday, week), }
@@ -159,7 +166,7 @@ pub fn Parsed::set_weekday(
 /// `FieldOutOfRange` outside `1..=366`.
 pub fn Parsed::set_ordinal(
   self : Parsed,
-  ordinal : Int,
+  ordinal : Int32,
 ) -> Parsed raise FormatError {
   check_range(ordinal, 1, 366)
   { ..self, ordinal: merge_field(self.ordinal, ordinal), }
@@ -168,7 +175,7 @@ pub fn Parsed::set_ordinal(
 ///|
 /// Returns a copy that reads `day` as the day of the month (`%d`). Raises
 /// `FieldOutOfRange` outside `1..=31`.
-pub fn Parsed::set_day(self : Parsed, day : Int) -> Parsed raise FormatError {
+pub fn Parsed::set_day(self : Parsed, day : Int32) -> Parsed raise FormatError {
   check_range(day, 1, 31)
   { ..self, day: merge_field(self.day, day), }
 }
@@ -185,7 +192,7 @@ pub fn Parsed::set_pm(self : Parsed, is_pm : Bool) -> Parsed raise FormatError {
 /// Raises `FieldOutOfRange` outside `1..=12`.
 pub fn Parsed::set_hour12(
   self : Parsed,
-  hour : Int,
+  hour : Int32,
 ) -> Parsed raise FormatError {
   check_range(hour, 1, 12)
   { ..self, hour12: merge_field(self.hour12, hour), }
@@ -194,7 +201,10 @@ pub fn Parsed::set_hour12(
 ///|
 /// Returns a copy that reads `hour` as the hour on a 24-hour clock (`%H`).
 /// Raises `FieldOutOfRange` outside `0..=23`.
-pub fn Parsed::set_hour(self : Parsed, hour : Int) -> Parsed raise FormatError {
+pub fn Parsed::set_hour(
+  self : Parsed,
+  hour : Int32,
+) -> Parsed raise FormatError {
   check_range(hour, 0, 23)
   { ..self, hour: merge_field(self.hour, hour), }
 }
@@ -204,7 +214,7 @@ pub fn Parsed::set_hour(self : Parsed, hour : Int) -> Parsed raise FormatError {
 /// Raises `FieldOutOfRange` outside `0..=59`.
 pub fn Parsed::set_minute(
   self : Parsed,
-  minute : Int,
+  minute : Int32,
 ) -> Parsed raise FormatError {
   check_range(minute, 0, 59)
   { ..self, minute: merge_field(self.minute, minute), }
@@ -215,7 +225,7 @@ pub fn Parsed::set_minute(
 /// `60` stands for a leap second. Raises `FieldOutOfRange` outside `0..=60`.
 pub fn Parsed::set_second(
   self : Parsed,
-  second : Int,
+  second : Int32,
 ) -> Parsed raise FormatError {
   check_range(second, 0, 60)
   { ..self, second: merge_field(self.second, second), }
@@ -226,7 +236,7 @@ pub fn Parsed::set_second(
 /// nanoseconds. Raises `FieldOutOfRange` outside `0..=999_999_999`.
 pub fn Parsed::set_nanosecond(
   self : Parsed,
-  nanosecond : Int,
+  nanosecond : Int32,
 ) -> Parsed raise FormatError {
   check_range(nanosecond, 0, 999_999_999)
   { ..self, nanosecond: merge_field(self.nanosecond, nanosecond), }
@@ -248,7 +258,7 @@ pub fn Parsed::set_timestamp(
 /// range a `FixedOffset` can hold.
 pub fn Parsed::set_offset(
   self : Parsed,
-  seconds : Int,
+  seconds : Int32,
 ) -> Parsed raise FormatError {
   check_range(seconds, -86399, 86399)
   { ..self, offset_secs: merge_field(self.offset_secs, seconds), }

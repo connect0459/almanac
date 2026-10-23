@@ -10,9 +10,9 @@ fn be64(value : Int64) -> Array[Byte] {
 ///|
 fn tzif_v2_build(
   transitions : Array[Int64],
-  transition_types : Array[Int],
-  types : Array[(Int, Int, Int)],
-  chars : Array[Int],
+  transition_types : Array[Int32],
+  types : Array[(Int32, Int32, Int32)],
+  chars : Array[Int32],
   footer : String,
 ) -> Bytes {
   let out : Array[Byte] = [b'T', b'Z', b'i', b'f', b'2']
@@ -77,10 +77,10 @@ fn exercise(loc : @tz.Location) -> Unit {
 }
 
 ///|
-let probe_types : Array[(Int, Int, Int)] = [(0, 0, 0), (3600, 1, 2)]
+let probe_types : Array[(Int32, Int32, Int32)] = [(0, 0, 0), (3600, 1, 2)]
 
 ///|
-let probe_chars : Array[Int] = [0x41, 0, 0x42, 0]
+let probe_chars : Array[Int32] = [0x41, 0, 0x42, 0]
 
 ///|
 test "a transition at Int64 max leaves every Location query total" {

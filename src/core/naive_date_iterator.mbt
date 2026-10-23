@@ -7,7 +7,7 @@
 /// `Int::max_value() - 719_468`, around the year 5,879,610) — a round,
 /// well-precedented number is easier to reason about and document than
 /// that exact margin.
-const ITER_BOUND_DAYS : Int = 100_000_000
+const ITER_BOUND_DAYS : Int32 = 100_000_000
 
 ///|
 /// A lazy, bounded, double-ended iterator over successive dates, stepping
@@ -56,7 +56,7 @@ pub fn NaiveDateDaysIterator::next_back(
 
 ///|
 /// The number of dates remaining to be yielded.
-pub fn NaiveDateDaysIterator::length(self : NaiveDateDaysIterator) -> Int {
+pub fn NaiveDateDaysIterator::length(self : NaiveDateDaysIterator) -> Int32 {
   if self.value.days > self.end.days {
     0
   } else {
@@ -126,7 +126,7 @@ pub fn NaiveDateWeeksIterator::next_back(
 
 ///|
 /// The number of weekly steps remaining to be yielded.
-pub fn NaiveDateWeeksIterator::length(self : NaiveDateWeeksIterator) -> Int {
+pub fn NaiveDateWeeksIterator::length(self : NaiveDateWeeksIterator) -> Int32 {
   if self.value.days > self.end.days {
     0
   } else {

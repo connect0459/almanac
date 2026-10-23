@@ -4,7 +4,7 @@ fn is_ascii_digit(c : Char) -> Bool {
 }
 
 ///|
-fn pow10(n : Int) -> Int {
+fn pow10(n : Int32) -> Int32 {
   for i = 0, acc = 1 {
     if i >= n {
       break acc
@@ -14,7 +14,7 @@ fn pow10(n : Int) -> Int {
 }
 
 ///|
-fn digit_value(c : Char) -> Int {
+fn digit_value(c : Char) -> Int32 {
   c.to_int() - '0'.to_int()
 }
 
@@ -23,9 +23,9 @@ fn digit_value(c : Char) -> Int {
 /// digits remain from `pos`.
 fn parse_fixed_digits(
   chars : Array[Char],
-  pos : Int,
-  width : Int,
-) -> (Int, Int)? {
+  pos : Int32,
+  width : Int32,
+) -> (Int32, Int32)? {
   for i = pos, acc = 0 {
     if i >= pos + width {
       break Some((acc, i))
@@ -38,7 +38,7 @@ fn parse_fixed_digits(
 }
 
 ///|
-fn expect_char(chars : Array[Char], pos : Int, c : Char) -> Int? {
+fn expect_char(chars : Array[Char], pos : Int32, c : Char) -> Int32? {
   if pos < chars.length() && chars[pos] == c {
     Some(pos + 1)
   } else {
@@ -49,10 +49,10 @@ fn expect_char(chars : Array[Char], pos : Int, c : Char) -> Int? {
 ///|
 fn expect_char_ci(
   chars : Array[Char],
-  pos : Int,
+  pos : Int32,
   upper : Char,
   lower : Char,
-) -> Int? {
+) -> Int32? {
   if pos < chars.length() && (chars[pos] == upper || chars[pos] == lower) {
     Some(pos + 1)
   } else {
@@ -63,8 +63,8 @@ fn expect_char_ci(
 ///|
 fn parse_rfc3339_date(
   chars : Array[Char],
-  pos : Int,
-) -> (@core.NaiveDate, Int)? {
+  pos : Int32,
+) -> (@core.NaiveDate, Int32)? {
   match parse_fixed_digits(chars, pos, 4) {
     None => None
     Some((year, p1)) =>
@@ -95,7 +95,7 @@ fn parse_rfc3339_date(
 /// Parses an optional `.` followed by one or more digits, truncated to
 /// nanosecond (9-digit) precision. `Some((0, pos))` (no advance) if `pos`
 /// isn't a `.`; `None` if a `.` is present but no digit follows it.
-fn parse_rfc3339_fraction(chars : Array[Char], pos : Int) -> (Int, Int)? {
+fn parse_rfc3339_fraction(chars : Array[Char], pos : Int32) -> (Int32, Int32)? {
   if pos >= chars.length() || chars[pos] != '.' {
     Some((0, pos))
   } else {
@@ -115,7 +115,7 @@ fn parse_rfc3339_fraction(chars : Array[Char], pos : Int) -> (Int, Int)? {
 
 ///|
 /// Parses `Z`/`z` (offset zero) or a signed `HH:MM` offset.
-fn parse_rfc3339_offset(chars : Array[Char], pos : Int) -> (Int, Int)? {
+fn parse_rfc3339_offset(chars : Array[Char], pos : Int32) -> (Int32, Int32)? {
   if pos >= chars.length() {
     None
   } else if chars[pos] == 'Z' || chars[pos] == 'z' {
@@ -151,9 +151,9 @@ fn parse_rfc3339_offset(chars : Array[Char], pos : Int) -> (Int, Int)? {
 /// the whole `:SS[.fraction]` part may be absent; otherwise it is required.
 fn parse_time_of_day(
   chars : Array[Char],
-  pos : Int,
+  pos : Int32,
   seconds_optional~ : Bool,
-) -> (@core.NaiveTime, Int)? {
+) -> (@core.NaiveTime, Int32)? {
   guard parse_fixed_digits(chars, pos, 2) is Some((hour, p1)) else { None }
   guard expect_char(chars, p1, ':') is Some(p2) else { None }
   guard parse_fixed_digits(chars, p2, 2) is Some((minute, p3)) else { None }
@@ -189,8 +189,8 @@ fn parse_time_of_day(
 /// general token engine (`apply_item`, in `parse.mbt`).
 fn parse_rfc3339_datetime(
   chars : Array[Char],
-  pos : Int,
-) -> (@core.NaiveDate, @core.NaiveTime, Int, Int)? {
+  pos : Int32,
+) -> (@core.NaiveDate, @core.NaiveTime, Int32, Int32)? {
   guard parse_rfc3339_date(chars, pos) is Some((date, p1)) else { return None }
   guard expect_char_ci(chars, p1, 'T', 't') is Some(p2) else { return None }
   guard parse_time_of_day(chars, p2, seconds_optional=false) is Some((time, p3)) else {
@@ -245,7 +245,7 @@ pub fn parse_rfc3339(
 }
 
 ///|
-fn format_offset_colon(secs : Int) -> String {
+fn format_offset_colon(secs : Int32) -> String {
   let sign = if secs < 0 { "-" } else { "+" }
   let magnitude = if secs < 0 { -secs } else { secs }
   let hours = magnitude / 3600
@@ -257,7 +257,7 @@ fn format_offset_colon(secs : Int) -> String {
 /// Renders a nanosecond component (`0..=999_999_999`) as `.` followed by the
 /// fewest of 3, 6 or 9 digits that represent it exactly, or `""` when it is
 /// zero.
-fn format_fraction_auto(nanos : Int) -> String {
+fn format_fraction_auto(nanos : Int32) -> String {
   if nanos == 0 {
     ""
   } else if nanos % 1_000_000 == 0 {
@@ -295,7 +295,7 @@ pub extend SecondsFormat with Eq::{not_equal}
 pub extend SecondsFormat with @debug.Debug::{to_repr}
 
 ///|
-fn format_fraction_for(nanos : Int, secform : SecondsFormat) -> String {
+fn format_fraction_for(nanos : Int32, secform : SecondsFormat) -> String {
   match secform {
     Secs => ""
     Millis => "." + pad_int(nanos / 1_000_000, 3)
@@ -317,7 +317,7 @@ fn format_fraction_for(nanos : Int, secform : SecondsFormat) -> String {
 fn render_rfc3339_opts(
   date : @core.NaiveDate,
   time : @core.NaiveTime,
-  offset_secs : Int,
+  offset_secs : Int32,
   secform : SecondsFormat,
   use_z : Bool,
 ) -> String {
@@ -346,7 +346,7 @@ fn render_rfc3339_opts(
 ///|
 /// The year as four digits, or with an explicit sign beyond `0..=9999`
 /// (`+10000`, `-0044`), the ISO 8601 expanded representation.
-fn rfc3339_year(year : Int) -> String {
+fn rfc3339_year(year : Int32) -> String {
   if year > 9999 {
     "+" + pad_int(year, 4)
   } else {
@@ -360,7 +360,7 @@ fn rfc3339_year(year : Int) -> String {
 fn render_rfc3339(
   date : @core.NaiveDate,
   time : @core.NaiveTime,
-  offset_secs : Int,
+  offset_secs : Int32,
 ) -> String {
   render_rfc3339_opts(date, time, offset_secs, Auto, true)
 }
@@ -389,7 +389,7 @@ pub fn[Tz : @tz.TimeZone] to_rfc3339(dt : @tz.DateTime[Tz]) -> String {
 pub fn[Tz : @tz.TimeZone] to_rfc3339_opts(
   dt : @tz.DateTime[Tz],
   secform : SecondsFormat,
-  use_z? : Bool = true,
+  use_z~ : Bool = true,
 ) -> String {
   let wall_clock = dt.naive_local()
   render_rfc3339_opts(

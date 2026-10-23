@@ -613,7 +613,7 @@ test "equal durations hash equally and work as map keys" {
   let b = @core.TimeDelta::new(1L, 500_000_000).unwrap()
   assert_eq(a, b)
   assert_eq(a.hash(), b.hash())
-  let seen : Map[@core.TimeDelta, Int] = Map([])
+  let seen : Map[@core.TimeDelta, Int32] = Map([])
   seen[a] = 1
   seen[@core.TimeDelta::milliseconds(-1_500L).unwrap()] = 2
   assert_eq(seen.length(), 2)

@@ -218,7 +218,7 @@ fn Location::initial_type(self : Location) -> LocalTimeType {
 /// The index into `local_time_types` (via `transition_types`) in effect
 /// at `target`, or `None` if `target` is before this zone's first
 /// recorded transition, or it has none (use `initial_type` instead).
-fn Location::segment_at(self : Location, target : Int64) -> Int? {
+fn Location::segment_at(self : Location, target : Int64) -> Int32? {
   let transitions = self.tzif.transitions
   if transitions.is_empty() {
     None
@@ -271,7 +271,7 @@ fn Location::past_last_transition(self : Location, target : Int64) -> Bool {
 }
 
 ///|
-fn Location::type_at_segment(self : Location, segment : Int) -> LocalTimeType {
+fn Location::type_at_segment(self : Location, segment : Int32) -> LocalTimeType {
   self.tzif.local_time_types[self.tzif.transition_types[segment]]
 }
 
@@ -407,9 +407,9 @@ pub impl TimeZone for Location with fn zone_name(self, utc) {
 /// `local_ts` actually resolves through.
 fn Location::candidate_offset(
   self : Location,
-  segment : Int,
+  segment : Int32,
   local_ts : Int64,
-) -> Int? {
+) -> Int32? {
   let transitions = self.tzif.transitions
   let n = transitions.length()
   if segment < 0 || segment >= n {

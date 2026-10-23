@@ -71,7 +71,7 @@ pub impl[Tz] Compare for DateTime[Tz] with fn compare(self, other) {
 pub fn[Tz, Tz2] DateTime::compare_instant(
   self : DateTime[Tz],
   other : DateTime[Tz2],
-) -> Int {
+) -> Int32 {
   self.datetime.compare(other.datetime)
 }
 
@@ -175,12 +175,12 @@ pub fn[Tz : TimeZone] DateTime::from_local_lenient(
 /// `Absent` for an invalid date or time-of-day, in addition to the usual
 /// DST-gap case — see `from_local`.
 pub fn[Tz : TimeZone] DateTime::from_ymd_hms(
-  year : Int,
-  month : Int,
-  day : Int,
-  hour : Int,
-  min : Int,
-  sec : Int,
+  year : Int32,
+  month : Int32,
+  day : Int32,
+  hour : Int32,
+  min : Int32,
+  sec : Int32,
   tz : Tz,
 ) -> MappedLocalTime[DateTime[Tz]] {
   match @core.NaiveDate::from_ymd(year, month, day) {
@@ -202,7 +202,7 @@ pub fn[Tz : TimeZone] DateTime::from_ymd_hms(
 /// `@core.NaiveDateTime::from_timestamp`.
 pub fn[Tz] DateTime::from_timestamp(
   secs : Int64,
-  nanos : Int,
+  nanos : Int32,
   tz : Tz,
 ) -> DateTime[Tz]? {
   @core.NaiveDateTime::from_timestamp(secs, nanos).map(utc => {
@@ -316,7 +316,7 @@ pub fn[Tz : TimeZone] DateTime::time(self : DateTime[Tz]) -> @core.NaiveTime {
 
 ///|
 /// The local calendar year (proleptic Gregorian, year 0 being 1 BCE).
-pub fn[Tz : TimeZone] DateTime::year(self : DateTime[Tz]) -> Int {
+pub fn[Tz : TimeZone] DateTime::year(self : DateTime[Tz]) -> Int32 {
   self.naive_local().year()
 }
 
@@ -328,13 +328,13 @@ pub fn[Tz : TimeZone] DateTime::month(self : DateTime[Tz]) -> @core.Month {
 
 ///|
 /// The local day of the month, `1..=31`.
-pub fn[Tz : TimeZone] DateTime::day(self : DateTime[Tz]) -> Int {
+pub fn[Tz : TimeZone] DateTime::day(self : DateTime[Tz]) -> Int32 {
   self.naive_local().day()
 }
 
 ///|
 /// The local day of the year, `1..=366`.
-pub fn[Tz : TimeZone] DateTime::ordinal(self : DateTime[Tz]) -> Int {
+pub fn[Tz : TimeZone] DateTime::ordinal(self : DateTime[Tz]) -> Int32 {
   self.naive_local().ordinal()
 }
 
@@ -352,25 +352,25 @@ pub fn[Tz : TimeZone] DateTime::iso_week(self : DateTime[Tz]) -> @core.IsoWeek {
 
 ///|
 /// The local hour, `0..=23`.
-pub fn[Tz : TimeZone] DateTime::hour(self : DateTime[Tz]) -> Int {
+pub fn[Tz : TimeZone] DateTime::hour(self : DateTime[Tz]) -> Int32 {
   self.naive_local().hour()
 }
 
 ///|
 /// The local minute, `0..=59`.
-pub fn[Tz : TimeZone] DateTime::minute(self : DateTime[Tz]) -> Int {
+pub fn[Tz : TimeZone] DateTime::minute(self : DateTime[Tz]) -> Int32 {
   self.naive_local().minute()
 }
 
 ///|
 /// The local second, `0..=59`; a leap second reports `59` with `nanosecond()` at or above `1_000_000_000`.
-pub fn[Tz : TimeZone] DateTime::second(self : DateTime[Tz]) -> Int {
+pub fn[Tz : TimeZone] DateTime::second(self : DateTime[Tz]) -> Int32 {
   self.naive_local().second()
 }
 
 ///|
 /// The local nanosecond within the second, `0..=1_999_999_999`.
-pub fn[Tz : TimeZone] DateTime::nanosecond(self : DateTime[Tz]) -> Int {
+pub fn[Tz : TimeZone] DateTime::nanosecond(self : DateTime[Tz]) -> Int32 {
   self.naive_local().nanosecond()
 }
 
@@ -382,7 +382,7 @@ pub fn[Tz : TimeZone] DateTime::nanosecond(self : DateTime[Tz]) -> Int {
 /// `Ambiguous` inside a DST fold.
 pub fn[Tz : TimeZone] DateTime::with_year(
   self : DateTime[Tz],
-  year : Int,
+  year : Int32,
 ) -> MappedLocalTime[DateTime[Tz]] {
   match self.naive_local().with_year(year) {
     None => Absent
@@ -398,7 +398,7 @@ pub fn[Tz : TimeZone] DateTime::with_year(
 /// `Ambiguous` inside a DST fold.
 pub fn[Tz : TimeZone] DateTime::with_month(
   self : DateTime[Tz],
-  month : Int,
+  month : Int32,
 ) -> MappedLocalTime[DateTime[Tz]] {
   match self.naive_local().with_month(month) {
     None => Absent
@@ -414,7 +414,7 @@ pub fn[Tz : TimeZone] DateTime::with_month(
 /// `Ambiguous` inside a DST fold.
 pub fn[Tz : TimeZone] DateTime::with_day(
   self : DateTime[Tz],
-  day : Int,
+  day : Int32,
 ) -> MappedLocalTime[DateTime[Tz]] {
   match self.naive_local().with_day(day) {
     None => Absent
@@ -430,7 +430,7 @@ pub fn[Tz : TimeZone] DateTime::with_day(
 /// `Ambiguous` inside a DST fold.
 pub fn[Tz : TimeZone] DateTime::with_ordinal(
   self : DateTime[Tz],
-  ordinal : Int,
+  ordinal : Int32,
 ) -> MappedLocalTime[DateTime[Tz]] {
   match self.naive_local().with_ordinal(ordinal) {
     None => Absent
@@ -446,7 +446,7 @@ pub fn[Tz : TimeZone] DateTime::with_ordinal(
 /// `Ambiguous` inside a DST fold.
 pub fn[Tz : TimeZone] DateTime::with_hour(
   self : DateTime[Tz],
-  hour : Int,
+  hour : Int32,
 ) -> MappedLocalTime[DateTime[Tz]] {
   match self.naive_local().with_hour(hour) {
     None => Absent
@@ -462,7 +462,7 @@ pub fn[Tz : TimeZone] DateTime::with_hour(
 /// `Ambiguous` inside a DST fold.
 pub fn[Tz : TimeZone] DateTime::with_minute(
   self : DateTime[Tz],
-  minute : Int,
+  minute : Int32,
 ) -> MappedLocalTime[DateTime[Tz]] {
   match self.naive_local().with_minute(minute) {
     None => Absent
@@ -478,7 +478,7 @@ pub fn[Tz : TimeZone] DateTime::with_minute(
 /// `Ambiguous` inside a DST fold.
 pub fn[Tz : TimeZone] DateTime::with_second(
   self : DateTime[Tz],
-  second : Int,
+  second : Int32,
 ) -> MappedLocalTime[DateTime[Tz]] {
   match self.naive_local().with_second(second) {
     None => Absent
@@ -494,7 +494,7 @@ pub fn[Tz : TimeZone] DateTime::with_second(
 /// `Ambiguous` inside a DST fold.
 pub fn[Tz : TimeZone] DateTime::with_nanosecond(
   self : DateTime[Tz],
-  nanosecond : Int,
+  nanosecond : Int32,
 ) -> MappedLocalTime[DateTime[Tz]] {
   match self.naive_local().with_nanosecond(nanosecond) {
     None => Absent
@@ -504,25 +504,25 @@ pub fn[Tz : TimeZone] DateTime::with_nanosecond(
 
 ///|
 /// The local month, counting from `0`.
-pub fn[Tz : TimeZone] DateTime::month0(self : DateTime[Tz]) -> Int {
+pub fn[Tz : TimeZone] DateTime::month0(self : DateTime[Tz]) -> Int32 {
   self.naive_local().month0()
 }
 
 ///|
 /// The local day of the month, counting from `0`.
-pub fn[Tz : TimeZone] DateTime::day0(self : DateTime[Tz]) -> Int {
+pub fn[Tz : TimeZone] DateTime::day0(self : DateTime[Tz]) -> Int32 {
   self.naive_local().day0()
 }
 
 ///|
 /// The local day of the year, counting from `0`.
-pub fn[Tz : TimeZone] DateTime::ordinal0(self : DateTime[Tz]) -> Int {
+pub fn[Tz : TimeZone] DateTime::ordinal0(self : DateTime[Tz]) -> Int32 {
   self.naive_local().ordinal0()
 }
 
 ///|
 /// The local quarter of the year, `1..=4`.
-pub fn[Tz : TimeZone] DateTime::quarter(self : DateTime[Tz]) -> Int {
+pub fn[Tz : TimeZone] DateTime::quarter(self : DateTime[Tz]) -> Int32 {
   self.naive_local().quarter()
 }
 
@@ -530,13 +530,15 @@ pub fn[Tz : TimeZone] DateTime::quarter(self : DateTime[Tz]) -> Int {
 /// The local year, month, and day of month together.
 pub fn[Tz : TimeZone] DateTime::ymd(
   self : DateTime[Tz],
-) -> (Int, @core.Month, Int) {
+) -> (Int32, @core.Month, Int32) {
   self.naive_local().ymd()
 }
 
 ///|
 /// The local hour, minute, and second together.
-pub fn[Tz : TimeZone] DateTime::hms(self : DateTime[Tz]) -> (Int, Int, Int) {
+pub fn[Tz : TimeZone] DateTime::hms(
+  self : DateTime[Tz],
+) -> (Int32, Int32, Int32) {
   self.naive_local().hms()
 }
 
@@ -554,13 +556,13 @@ pub fn[Tz : TimeZone] DateTime::year_ce(self : DateTime[Tz]) -> @core.YearCe {
 
 ///|
 /// The number of days from the start of the Common Era to the local date, counting `0001-01-01` as day `1`.
-pub fn[Tz : TimeZone] DateTime::num_days_from_ce(self : DateTime[Tz]) -> Int {
+pub fn[Tz : TimeZone] DateTime::num_days_from_ce(self : DateTime[Tz]) -> Int32 {
   self.naive_local().num_days_from_ce()
 }
 
 ///|
 /// The number of days in the local month.
-pub fn[Tz : TimeZone] DateTime::num_days_in_month(self : DateTime[Tz]) -> Int {
+pub fn[Tz : TimeZone] DateTime::num_days_in_month(self : DateTime[Tz]) -> Int32 {
   self.naive_local().num_days_in_month()
 }
 
@@ -576,7 +578,7 @@ pub fn[Tz : TimeZone] DateTime::hour12(
 /// The number of seconds since local midnight.
 pub fn[Tz : TimeZone] DateTime::num_seconds_from_midnight(
   self : DateTime[Tz],
-) -> Int {
+) -> Int32 {
   self.naive_local().num_seconds_from_midnight()
 }
 
@@ -584,7 +586,7 @@ pub fn[Tz : TimeZone] DateTime::num_seconds_from_midnight(
 /// Like `with_month`, but taking the local month counting from `0`.
 pub fn[Tz : TimeZone] DateTime::with_month0(
   self : DateTime[Tz],
-  month0 : Int,
+  month0 : Int32,
 ) -> MappedLocalTime[DateTime[Tz]] {
   match self.naive_local().with_month0(month0) {
     None => Absent
@@ -596,7 +598,7 @@ pub fn[Tz : TimeZone] DateTime::with_month0(
 /// Like `with_day`, but taking the local day of the month counting from `0`.
 pub fn[Tz : TimeZone] DateTime::with_day0(
   self : DateTime[Tz],
-  day0 : Int,
+  day0 : Int32,
 ) -> MappedLocalTime[DateTime[Tz]] {
   match self.naive_local().with_day0(day0) {
     None => Absent
@@ -608,7 +610,7 @@ pub fn[Tz : TimeZone] DateTime::with_day0(
 /// Like `with_ordinal`, but taking the local day of the year counting from `0`.
 pub fn[Tz : TimeZone] DateTime::with_ordinal0(
   self : DateTime[Tz],
-  ordinal0 : Int,
+  ordinal0 : Int32,
 ) -> MappedLocalTime[DateTime[Tz]] {
   match self.naive_local().with_ordinal0(ordinal0) {
     None => Absent
@@ -642,19 +644,19 @@ pub fn[Tz] DateTime::timestamp_nanos(self : DateTime[Tz]) -> Int64? {
 
 ///|
 /// The nanosecond component of the instant within its second. Independent of the time zone.
-pub fn[Tz] DateTime::timestamp_subsec_nanos(self : DateTime[Tz]) -> Int {
+pub fn[Tz] DateTime::timestamp_subsec_nanos(self : DateTime[Tz]) -> Int32 {
   self.datetime.timestamp_subsec_nanos()
 }
 
 ///|
 /// The millisecond component of the instant within its second. Independent of the time zone.
-pub fn[Tz] DateTime::timestamp_subsec_millis(self : DateTime[Tz]) -> Int {
+pub fn[Tz] DateTime::timestamp_subsec_millis(self : DateTime[Tz]) -> Int32 {
   self.datetime.timestamp_subsec_millis()
 }
 
 ///|
 /// The microsecond component of the instant within its second. Independent of the time zone.
-pub fn[Tz] DateTime::timestamp_subsec_micros(self : DateTime[Tz]) -> Int {
+pub fn[Tz] DateTime::timestamp_subsec_micros(self : DateTime[Tz]) -> Int32 {
   self.datetime.timestamp_subsec_micros()
 }
 
@@ -688,7 +690,7 @@ pub fn[Tz : TimeZone] DateTime::with_date(
 pub fn[Tz : TimeZone, Tz2] DateTime::years_since(
   self : DateTime[Tz],
   base : DateTime[Tz2],
-) -> Int? {
+) -> Int32? {
   self.date().years_since(base.with_timezone(self.tz).date())
 }
 
@@ -779,7 +781,7 @@ fn[Tz : TimeZone] DateTime::local_step(
 /// `checked_add_months` to get `None` instead.
 pub fn[Tz : TimeZone] DateTime::add_months(
   self : DateTime[Tz],
-  months : Int,
+  months : Int32,
 ) -> DateTime[Tz] {
   expect_some(self.checked_add_months(months), "DateTime::add_months")
 }
@@ -792,7 +794,7 @@ pub fn[Tz : TimeZone] DateTime::add_months(
 /// `checked_sub_months` to get `None` instead.
 pub fn[Tz : TimeZone] DateTime::sub_months(
   self : DateTime[Tz],
-  months : Int,
+  months : Int32,
 ) -> DateTime[Tz] {
   expect_some(self.checked_sub_months(months), "DateTime::sub_months")
 }
@@ -807,7 +809,7 @@ pub fn[Tz : TimeZone] DateTime::sub_months(
 /// `checked_add_years` to get `None` instead.
 pub fn[Tz : TimeZone] DateTime::add_years(
   self : DateTime[Tz],
-  years : Int,
+  years : Int32,
 ) -> DateTime[Tz] {
   expect_some(self.checked_add_years(years), "DateTime::add_years")
 }
@@ -819,7 +821,7 @@ pub fn[Tz : TimeZone] DateTime::add_years(
 /// `checked_sub_years` to get `None` instead.
 pub fn[Tz : TimeZone] DateTime::sub_years(
   self : DateTime[Tz],
-  years : Int,
+  years : Int32,
 ) -> DateTime[Tz] {
   expect_some(self.checked_sub_years(years), "DateTime::sub_years")
 }
@@ -834,7 +836,7 @@ pub fn[Tz : TimeZone] DateTime::sub_years(
 /// `checked_add_days` to get `None` instead.
 pub fn[Tz : TimeZone] DateTime::add_days(
   self : DateTime[Tz],
-  days : Int,
+  days : Int32,
 ) -> DateTime[Tz] {
   expect_some(self.checked_add_days(days), "DateTime::add_days")
 }
@@ -846,7 +848,7 @@ pub fn[Tz : TimeZone] DateTime::add_days(
 /// `checked_sub_days` to get `None` instead.
 pub fn[Tz : TimeZone] DateTime::sub_days(
   self : DateTime[Tz],
-  days : Int,
+  days : Int32,
 ) -> DateTime[Tz] {
   expect_some(self.checked_sub_days(days), "DateTime::sub_days")
 }
@@ -856,7 +858,7 @@ pub fn[Tz : TimeZone] DateTime::sub_days(
 /// representable range.
 pub fn[Tz : TimeZone] DateTime::checked_add_months(
   self : DateTime[Tz],
-  months : Int,
+  months : Int32,
 ) -> DateTime[Tz]? {
   self.local_step(reading => reading.checked_add_months(months))
 }
@@ -866,7 +868,7 @@ pub fn[Tz : TimeZone] DateTime::checked_add_months(
 /// representable range.
 pub fn[Tz : TimeZone] DateTime::checked_sub_months(
   self : DateTime[Tz],
-  months : Int,
+  months : Int32,
 ) -> DateTime[Tz]? {
   self.local_step(reading => reading.checked_sub_months(months))
 }
@@ -876,7 +878,7 @@ pub fn[Tz : TimeZone] DateTime::checked_sub_months(
 /// representable range.
 pub fn[Tz : TimeZone] DateTime::checked_add_years(
   self : DateTime[Tz],
-  years : Int,
+  years : Int32,
 ) -> DateTime[Tz]? {
   self.local_step(reading => reading.checked_add_years(years))
 }
@@ -886,7 +888,7 @@ pub fn[Tz : TimeZone] DateTime::checked_add_years(
 /// representable range.
 pub fn[Tz : TimeZone] DateTime::checked_sub_years(
   self : DateTime[Tz],
-  years : Int,
+  years : Int32,
 ) -> DateTime[Tz]? {
   self.local_step(reading => reading.checked_sub_years(years))
 }
@@ -896,7 +898,7 @@ pub fn[Tz : TimeZone] DateTime::checked_sub_years(
 /// representable range.
 pub fn[Tz : TimeZone] DateTime::checked_add_days(
   self : DateTime[Tz],
-  days : Int,
+  days : Int32,
 ) -> DateTime[Tz]? {
   self.local_step(reading => reading.checked_add_days(days))
 }
@@ -906,7 +908,7 @@ pub fn[Tz : TimeZone] DateTime::checked_add_days(
 /// representable range.
 pub fn[Tz : TimeZone] DateTime::checked_sub_days(
   self : DateTime[Tz],
-  days : Int,
+  days : Int32,
 ) -> DateTime[Tz]? {
   self.local_step(reading => reading.checked_sub_days(days))
 }
@@ -1138,7 +1140,7 @@ pub fn[Tz] DateTime::round_up(
 /// `0..=9`.
 pub fn[Tz] DateTime::truncate_subsecs(
   self : DateTime[Tz],
-  digits : Int,
+  digits : Int32,
 ) -> DateTime[Tz] {
   DateTime::{ datetime: self.datetime.truncate_subsecs(digits), tz: self.tz, }
 }
@@ -1150,7 +1152,7 @@ pub fn[Tz] DateTime::truncate_subsecs(
 /// `0..=9`.
 pub fn[Tz] DateTime::round_subsecs(
   self : DateTime[Tz],
-  digits : Int,
+  digits : Int32,
 ) -> Result[DateTime[Tz], @core.RoundingError] {
   self.datetime
   .round_subsecs(digits)

@@ -28,7 +28,7 @@ pub struct Local {
 fn Local::resolve(
   tz_env : String?,
   read_file : (String) -> Bytes?,
-  zoneinfo_dirs? : Array[String] = [],
+  zoneinfo_dirs~ : Array[String] = [],
 ) -> Local? {
   let from_file = path => {
     read_file(path)

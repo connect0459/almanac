@@ -6,7 +6,7 @@ import {
 }
 
 // Values
-pub fn is_leap_year(Int) -> Bool
+pub fn is_leap_year(Int32) -> Bool
 
 // Errors
 
@@ -15,9 +15,9 @@ pub struct ClockHour12 {
   // private fields
 } derive(Eq, Hash, @debug.Debug)
 pub fn ClockHour12::equal(Self, Self) -> Bool
-pub fn ClockHour12::hash(Self) -> Int
+pub fn ClockHour12::hash(Self) -> Int32
 pub fn ClockHour12::hash_combine(Self, Hasher) -> Unit
-pub fn ClockHour12::hour(Self) -> Int
+pub fn ClockHour12::hour(Self) -> Int32
 pub fn ClockHour12::is_pm(Self) -> Bool
 pub fn ClockHour12::not_equal(Self, Self) -> Bool
 pub fn ClockHour12::to_repr(Self) -> @debug.Repr
@@ -25,9 +25,9 @@ pub fn ClockHour12::to_repr(Self) -> @debug.Repr
 pub struct IsoWeek {
   // private fields
 } derive(Compare, Eq, Hash, @debug.Debug)
-pub fn IsoWeek::compare(Self, Self) -> Int
+pub fn IsoWeek::compare(Self, Self) -> Int32
 pub fn IsoWeek::equal(Self, Self) -> Bool
-pub fn IsoWeek::hash(Self) -> Int
+pub fn IsoWeek::hash(Self) -> Int32
 pub fn IsoWeek::hash_combine(Self, Hasher) -> Unit
 pub fn IsoWeek::not_equal(Self, Self) -> Bool
 pub fn IsoWeek::op_ge(Self, Self) -> Bool
@@ -37,9 +37,9 @@ pub fn IsoWeek::op_lt(Self, Self) -> Bool
 pub fn IsoWeek::output(Self, &Logger) -> Unit
 pub fn IsoWeek::to_repr(Self) -> @debug.Repr
 pub fn IsoWeek::to_string(Self) -> String
-pub fn IsoWeek::week(Self) -> Int
-pub fn IsoWeek::week0(Self) -> Int
-pub fn IsoWeek::year(Self) -> Int
+pub fn IsoWeek::week(Self) -> Int32
+pub fn IsoWeek::week0(Self) -> Int32
+pub fn IsoWeek::year(Self) -> Int32
 pub impl Show for IsoWeek
 
 pub(all) enum Month {
@@ -56,17 +56,17 @@ pub(all) enum Month {
   Nov
   Dec
 } derive(Compare, Eq, Hash, @debug.Debug)
-pub fn Month::add_months(Self, Int) -> Self
-pub fn Month::compare(Self, Self) -> Int
+pub fn Month::add_months(Self, Int32) -> Self
+pub fn Month::compare(Self, Self) -> Int32
 pub fn Month::equal(Self, Self) -> Bool
 pub fn Month::from_name(String) -> Self?
-pub fn Month::from_number(Int) -> Self?
-pub fn Month::hash(Self) -> Int
+pub fn Month::from_number(Int32) -> Self?
+pub fn Month::hash(Self) -> Int32
 pub fn Month::hash_combine(Self, Hasher) -> Unit
 pub fn Month::name(Self) -> String
 pub fn Month::not_equal(Self, Self) -> Bool
-pub fn Month::num_days(Self, Int) -> Int
-pub fn Month::number(Self) -> Int
+pub fn Month::num_days(Self, Int32) -> Int32
+pub fn Month::number(Self) -> Int32
 pub fn Month::op_ge(Self, Self) -> Bool
 pub fn Month::op_gt(Self, Self) -> Bool
 pub fn Month::op_le(Self, Self) -> Bool
@@ -82,78 +82,78 @@ pub struct NaiveDate {
   // private fields
 } derive(Compare, Eq, Hash, @debug.Debug)
 pub fn NaiveDate::abs_diff_days(Self, Self) -> Int64
-pub fn NaiveDate::add_days(Self, Int) -> Self
-pub fn NaiveDate::add_months(Self, Int) -> Self
+pub fn NaiveDate::add_days(Self, Int32) -> Self
+pub fn NaiveDate::add_months(Self, Int32) -> Self
 pub fn NaiveDate::add_signed(Self, TimeDelta) -> Self
-pub fn NaiveDate::add_years(Self, Int) -> Self
-pub fn NaiveDate::and_hms(Self, Int, Int, Int) -> NaiveDateTime?
-pub fn NaiveDate::and_hms_micro(Self, Int, Int, Int, Int) -> NaiveDateTime?
-pub fn NaiveDate::and_hms_milli(Self, Int, Int, Int, Int) -> NaiveDateTime?
-pub fn NaiveDate::and_hms_nano(Self, Int, Int, Int, Int) -> NaiveDateTime?
+pub fn NaiveDate::add_years(Self, Int32) -> Self
+pub fn NaiveDate::and_hms(Self, Int32, Int32, Int32) -> NaiveDateTime?
+pub fn NaiveDate::and_hms_micro(Self, Int32, Int32, Int32, Int32) -> NaiveDateTime?
+pub fn NaiveDate::and_hms_milli(Self, Int32, Int32, Int32, Int32) -> NaiveDateTime?
+pub fn NaiveDate::and_hms_nano(Self, Int32, Int32, Int32, Int32) -> NaiveDateTime?
 pub fn NaiveDate::and_time(Self, NaiveTime) -> NaiveDateTime
-pub fn NaiveDate::checked_add_days(Self, Int) -> Self?
-pub fn NaiveDate::checked_add_months(Self, Int) -> Self?
+pub fn NaiveDate::checked_add_days(Self, Int32) -> Self?
+pub fn NaiveDate::checked_add_months(Self, Int32) -> Self?
 pub fn NaiveDate::checked_add_signed(Self, TimeDelta) -> Self?
-pub fn NaiveDate::checked_add_years(Self, Int) -> Self?
+pub fn NaiveDate::checked_add_years(Self, Int32) -> Self?
 pub fn NaiveDate::checked_pred(Self) -> Self?
-pub fn NaiveDate::checked_sub_days(Self, Int) -> Self?
-pub fn NaiveDate::checked_sub_months(Self, Int) -> Self?
+pub fn NaiveDate::checked_sub_days(Self, Int32) -> Self?
+pub fn NaiveDate::checked_sub_months(Self, Int32) -> Self?
 pub fn NaiveDate::checked_sub_signed(Self, TimeDelta) -> Self?
-pub fn NaiveDate::checked_sub_years(Self, Int) -> Self?
+pub fn NaiveDate::checked_sub_years(Self, Int32) -> Self?
 pub fn NaiveDate::checked_succ(Self) -> Self?
-pub fn NaiveDate::compare(Self, Self) -> Int
-pub fn NaiveDate::day(Self) -> Int
-pub fn NaiveDate::day0(Self) -> Int
+pub fn NaiveDate::compare(Self, Self) -> Int32
+pub fn NaiveDate::day(Self) -> Int32
+pub fn NaiveDate::day0(Self) -> Int32
 pub fn NaiveDate::default() -> Self
-pub fn NaiveDate::epoch_days(Self) -> Int
+pub fn NaiveDate::epoch_days(Self) -> Int32
 pub fn NaiveDate::equal(Self, Self) -> Bool
-pub fn NaiveDate::from_epoch_days(Int) -> Self?
-pub fn NaiveDate::from_isoywd(Int, Int, Weekday) -> Self?
-pub fn NaiveDate::from_num_days_from_ce(Int) -> Self?
-pub fn NaiveDate::from_weekday_of_month(Int, Int, Weekday, Int) -> Self?
-pub fn NaiveDate::from_ymd(Int, Int, Int) -> Self?
-pub fn NaiveDate::from_yo(Int, Int) -> Self?
-pub fn NaiveDate::hash(Self) -> Int
+pub fn NaiveDate::from_epoch_days(Int32) -> Self?
+pub fn NaiveDate::from_isoywd(Int32, Int32, Weekday) -> Self?
+pub fn NaiveDate::from_num_days_from_ce(Int32) -> Self?
+pub fn NaiveDate::from_weekday_of_month(Int32, Int32, Weekday, Int32) -> Self?
+pub fn NaiveDate::from_ymd(Int32, Int32, Int32) -> Self?
+pub fn NaiveDate::from_yo(Int32, Int32) -> Self?
+pub fn NaiveDate::hash(Self) -> Int32
 pub fn NaiveDate::hash_combine(Self, Hasher) -> Unit
 pub fn NaiveDate::iso_week(Self) -> IsoWeek
 pub fn NaiveDate::iter_days(Self) -> NaiveDateDaysIterator
 pub fn NaiveDate::iter_weeks(Self) -> NaiveDateWeeksIterator
 pub fn NaiveDate::leap_year(Self) -> Bool
 pub fn NaiveDate::month(Self) -> Month
-pub fn NaiveDate::month0(Self) -> Int
+pub fn NaiveDate::month0(Self) -> Int32
 pub fn NaiveDate::not_equal(Self, Self) -> Bool
-pub fn NaiveDate::num_days_from_ce(Self) -> Int
-pub fn NaiveDate::num_days_in_month(Self) -> Int
+pub fn NaiveDate::num_days_from_ce(Self) -> Int32
+pub fn NaiveDate::num_days_in_month(Self) -> Int32
 pub fn NaiveDate::op_ge(Self, Self) -> Bool
 pub fn NaiveDate::op_gt(Self, Self) -> Bool
 pub fn NaiveDate::op_le(Self, Self) -> Bool
 pub fn NaiveDate::op_lt(Self, Self) -> Bool
-pub fn NaiveDate::ordinal(Self) -> Int
-pub fn NaiveDate::ordinal0(Self) -> Int
+pub fn NaiveDate::ordinal(Self) -> Int32
+pub fn NaiveDate::ordinal0(Self) -> Int32
 pub fn NaiveDate::output(Self, &Logger) -> Unit
 pub fn NaiveDate::pred(Self) -> Self
-pub fn NaiveDate::quarter(Self) -> Int
+pub fn NaiveDate::quarter(Self) -> Int32
 pub fn NaiveDate::signed_duration_since(Self, Self) -> TimeDelta
-pub fn NaiveDate::sub_days(Self, Int) -> Self
-pub fn NaiveDate::sub_months(Self, Int) -> Self
+pub fn NaiveDate::sub_days(Self, Int32) -> Self
+pub fn NaiveDate::sub_months(Self, Int32) -> Self
 pub fn NaiveDate::sub_signed(Self, TimeDelta) -> Self
-pub fn NaiveDate::sub_years(Self, Int) -> Self
+pub fn NaiveDate::sub_years(Self, Int32) -> Self
 pub fn NaiveDate::succ(Self) -> Self
 pub fn NaiveDate::to_repr(Self) -> @debug.Repr
 pub fn NaiveDate::to_string(Self) -> String
 pub fn NaiveDate::week(Self, Weekday) -> NaiveWeek
 pub fn NaiveDate::weekday(Self) -> Weekday
-pub fn NaiveDate::with_day(Self, Int) -> Self?
-pub fn NaiveDate::with_day0(Self, Int) -> Self?
-pub fn NaiveDate::with_month(Self, Int) -> Self?
-pub fn NaiveDate::with_month0(Self, Int) -> Self?
-pub fn NaiveDate::with_ordinal(Self, Int) -> Self?
-pub fn NaiveDate::with_ordinal0(Self, Int) -> Self?
-pub fn NaiveDate::with_year(Self, Int) -> Self?
-pub fn NaiveDate::year(Self) -> Int
+pub fn NaiveDate::with_day(Self, Int32) -> Self?
+pub fn NaiveDate::with_day0(Self, Int32) -> Self?
+pub fn NaiveDate::with_month(Self, Int32) -> Self?
+pub fn NaiveDate::with_month0(Self, Int32) -> Self?
+pub fn NaiveDate::with_ordinal(Self, Int32) -> Self?
+pub fn NaiveDate::with_ordinal0(Self, Int32) -> Self?
+pub fn NaiveDate::with_year(Self, Int32) -> Self?
+pub fn NaiveDate::year(Self) -> Int32
 pub fn NaiveDate::year_ce(Self) -> YearCe
-pub fn NaiveDate::years_since(Self, Self) -> Int?
-pub fn NaiveDate::ymd(Self) -> (Int, Month, Int)
+pub fn NaiveDate::years_since(Self, Self) -> Int32?
+pub fn NaiveDate::ymd(Self) -> (Int32, Month, Int32)
 pub impl Datelike for NaiveDate
 pub impl Default for NaiveDate
 pub impl Show for NaiveDate
@@ -162,7 +162,7 @@ pub struct NaiveDateDaysIterator {
   // private fields
 } derive(@debug.Debug)
 pub fn NaiveDateDaysIterator::iter(Self) -> Iter[NaiveDate]
-pub fn NaiveDateDaysIterator::length(Self) -> Int
+pub fn NaiveDateDaysIterator::length(Self) -> Int32
 pub fn NaiveDateDaysIterator::next(Self) -> NaiveDate?
 pub fn NaiveDateDaysIterator::next_back(Self) -> NaiveDate?
 pub fn NaiveDateDaysIterator::to_repr(Self) -> @debug.Repr
@@ -170,97 +170,97 @@ pub fn NaiveDateDaysIterator::to_repr(Self) -> @debug.Repr
 pub struct NaiveDateTime {
   // private fields
 } derive(Compare, Eq, Hash, @debug.Debug)
-pub fn NaiveDateTime::add_days(Self, Int) -> Self
-pub fn NaiveDateTime::add_months(Self, Int) -> Self
+pub fn NaiveDateTime::add_days(Self, Int32) -> Self
+pub fn NaiveDateTime::add_months(Self, Int32) -> Self
 pub fn NaiveDateTime::add_seconds(Self, Int64) -> Self
 pub fn NaiveDateTime::add_signed(Self, TimeDelta) -> Self
-pub fn NaiveDateTime::add_years(Self, Int) -> Self
-pub fn NaiveDateTime::checked_add_days(Self, Int) -> Self?
-pub fn NaiveDateTime::checked_add_months(Self, Int) -> Self?
+pub fn NaiveDateTime::add_years(Self, Int32) -> Self
+pub fn NaiveDateTime::checked_add_days(Self, Int32) -> Self?
+pub fn NaiveDateTime::checked_add_months(Self, Int32) -> Self?
 pub fn NaiveDateTime::checked_add_seconds(Self, Int64) -> Self?
 pub fn NaiveDateTime::checked_add_signed(Self, TimeDelta) -> Self?
-pub fn NaiveDateTime::checked_add_years(Self, Int) -> Self?
-pub fn NaiveDateTime::checked_sub_days(Self, Int) -> Self?
-pub fn NaiveDateTime::checked_sub_months(Self, Int) -> Self?
+pub fn NaiveDateTime::checked_add_years(Self, Int32) -> Self?
+pub fn NaiveDateTime::checked_sub_days(Self, Int32) -> Self?
+pub fn NaiveDateTime::checked_sub_months(Self, Int32) -> Self?
 pub fn NaiveDateTime::checked_sub_seconds(Self, Int64) -> Self?
 pub fn NaiveDateTime::checked_sub_signed(Self, TimeDelta) -> Self?
-pub fn NaiveDateTime::checked_sub_years(Self, Int) -> Self?
-pub fn NaiveDateTime::compare(Self, Self) -> Int
+pub fn NaiveDateTime::checked_sub_years(Self, Int32) -> Self?
+pub fn NaiveDateTime::compare(Self, Self) -> Int32
 pub fn NaiveDateTime::date(Self) -> NaiveDate
-pub fn NaiveDateTime::day(Self) -> Int
-pub fn NaiveDateTime::day0(Self) -> Int
+pub fn NaiveDateTime::day(Self) -> Int32
+pub fn NaiveDateTime::day0(Self) -> Int32
 pub fn NaiveDateTime::default() -> Self
 pub fn NaiveDateTime::equal(Self, Self) -> Bool
-pub fn NaiveDateTime::from_timestamp(Int64, Int) -> Self?
+pub fn NaiveDateTime::from_timestamp(Int64, Int32) -> Self?
 pub fn NaiveDateTime::from_timestamp_micros(Int64) -> Self?
 pub fn NaiveDateTime::from_timestamp_millis(Int64) -> Self?
 pub fn NaiveDateTime::from_timestamp_nanos(Int64) -> Self?
-pub fn NaiveDateTime::from_ymd_hms(Int, Int, Int, Int, Int, Int) -> Self?
-pub fn NaiveDateTime::hash(Self) -> Int
+pub fn NaiveDateTime::from_ymd_hms(Int32, Int32, Int32, Int32, Int32, Int32) -> Self?
+pub fn NaiveDateTime::hash(Self) -> Int32
 pub fn NaiveDateTime::hash_combine(Self, Hasher) -> Unit
-pub fn NaiveDateTime::hms(Self) -> (Int, Int, Int)
-pub fn NaiveDateTime::hour(Self) -> Int
+pub fn NaiveDateTime::hms(Self) -> (Int32, Int32, Int32)
+pub fn NaiveDateTime::hour(Self) -> Int32
 pub fn NaiveDateTime::hour12(Self) -> ClockHour12
 pub fn NaiveDateTime::iso_week(Self) -> IsoWeek
 pub fn NaiveDateTime::leap_year(Self) -> Bool
-pub fn NaiveDateTime::minute(Self) -> Int
+pub fn NaiveDateTime::minute(Self) -> Int32
 pub fn NaiveDateTime::month(Self) -> Month
-pub fn NaiveDateTime::month0(Self) -> Int
-pub fn NaiveDateTime::nanosecond(Self) -> Int
+pub fn NaiveDateTime::month0(Self) -> Int32
+pub fn NaiveDateTime::nanosecond(Self) -> Int32
 pub fn NaiveDateTime::new(NaiveDate, NaiveTime) -> Self
 pub fn NaiveDateTime::not_equal(Self, Self) -> Bool
-pub fn NaiveDateTime::num_days_from_ce(Self) -> Int
-pub fn NaiveDateTime::num_days_in_month(Self) -> Int
-pub fn NaiveDateTime::num_seconds_from_midnight(Self) -> Int
+pub fn NaiveDateTime::num_days_from_ce(Self) -> Int32
+pub fn NaiveDateTime::num_days_in_month(Self) -> Int32
+pub fn NaiveDateTime::num_seconds_from_midnight(Self) -> Int32
 pub fn NaiveDateTime::op_ge(Self, Self) -> Bool
 pub fn NaiveDateTime::op_gt(Self, Self) -> Bool
 pub fn NaiveDateTime::op_le(Self, Self) -> Bool
 pub fn NaiveDateTime::op_lt(Self, Self) -> Bool
-pub fn NaiveDateTime::ordinal(Self) -> Int
-pub fn NaiveDateTime::ordinal0(Self) -> Int
+pub fn NaiveDateTime::ordinal(Self) -> Int32
+pub fn NaiveDateTime::ordinal0(Self) -> Int32
 pub fn NaiveDateTime::output(Self, &Logger) -> Unit
-pub fn NaiveDateTime::quarter(Self) -> Int
+pub fn NaiveDateTime::quarter(Self) -> Int32
 pub fn NaiveDateTime::round(Self, TimeDelta) -> Result[Self, RoundingError]
-pub fn NaiveDateTime::round_subsecs(Self, Int) -> Result[Self, RoundingError]
+pub fn NaiveDateTime::round_subsecs(Self, Int32) -> Result[Self, RoundingError]
 pub fn NaiveDateTime::round_up(Self, TimeDelta) -> Result[Self, RoundingError]
-pub fn NaiveDateTime::second(Self) -> Int
+pub fn NaiveDateTime::second(Self) -> Int32
 pub fn NaiveDateTime::signed_duration_since(Self, Self) -> TimeDelta
-pub fn NaiveDateTime::sub_days(Self, Int) -> Self
-pub fn NaiveDateTime::sub_months(Self, Int) -> Self
+pub fn NaiveDateTime::sub_days(Self, Int32) -> Self
+pub fn NaiveDateTime::sub_months(Self, Int32) -> Self
 pub fn NaiveDateTime::sub_seconds(Self, Int64) -> Self
 pub fn NaiveDateTime::sub_signed(Self, TimeDelta) -> Self
-pub fn NaiveDateTime::sub_years(Self, Int) -> Self
+pub fn NaiveDateTime::sub_years(Self, Int32) -> Self
 pub fn NaiveDateTime::time(Self) -> NaiveTime
 pub fn NaiveDateTime::timestamp(Self) -> Int64
 pub fn NaiveDateTime::timestamp_micros(Self) -> Int64?
 pub fn NaiveDateTime::timestamp_millis(Self) -> Int64
 pub fn NaiveDateTime::timestamp_nanos(Self) -> Int64?
-pub fn NaiveDateTime::timestamp_subsec_micros(Self) -> Int
-pub fn NaiveDateTime::timestamp_subsec_millis(Self) -> Int
-pub fn NaiveDateTime::timestamp_subsec_nanos(Self) -> Int
+pub fn NaiveDateTime::timestamp_subsec_micros(Self) -> Int32
+pub fn NaiveDateTime::timestamp_subsec_millis(Self) -> Int32
+pub fn NaiveDateTime::timestamp_subsec_nanos(Self) -> Int32
 pub fn NaiveDateTime::to_repr(Self) -> @debug.Repr
 pub fn NaiveDateTime::to_string(Self) -> String
 pub fn NaiveDateTime::truncate(Self, TimeDelta) -> Result[Self, RoundingError]
-pub fn NaiveDateTime::truncate_subsecs(Self, Int) -> Self
+pub fn NaiveDateTime::truncate_subsecs(Self, Int32) -> Self
 pub fn NaiveDateTime::unix_epoch() -> Self
 pub fn NaiveDateTime::weekday(Self) -> Weekday
 pub fn NaiveDateTime::with_date(Self, NaiveDate) -> Self
-pub fn NaiveDateTime::with_day(Self, Int) -> Self?
-pub fn NaiveDateTime::with_day0(Self, Int) -> Self?
-pub fn NaiveDateTime::with_hour(Self, Int) -> Self?
-pub fn NaiveDateTime::with_minute(Self, Int) -> Self?
-pub fn NaiveDateTime::with_month(Self, Int) -> Self?
-pub fn NaiveDateTime::with_month0(Self, Int) -> Self?
-pub fn NaiveDateTime::with_nanosecond(Self, Int) -> Self?
-pub fn NaiveDateTime::with_ordinal(Self, Int) -> Self?
-pub fn NaiveDateTime::with_ordinal0(Self, Int) -> Self?
-pub fn NaiveDateTime::with_second(Self, Int) -> Self?
+pub fn NaiveDateTime::with_day(Self, Int32) -> Self?
+pub fn NaiveDateTime::with_day0(Self, Int32) -> Self?
+pub fn NaiveDateTime::with_hour(Self, Int32) -> Self?
+pub fn NaiveDateTime::with_minute(Self, Int32) -> Self?
+pub fn NaiveDateTime::with_month(Self, Int32) -> Self?
+pub fn NaiveDateTime::with_month0(Self, Int32) -> Self?
+pub fn NaiveDateTime::with_nanosecond(Self, Int32) -> Self?
+pub fn NaiveDateTime::with_ordinal(Self, Int32) -> Self?
+pub fn NaiveDateTime::with_ordinal0(Self, Int32) -> Self?
+pub fn NaiveDateTime::with_second(Self, Int32) -> Self?
 pub fn NaiveDateTime::with_time(Self, NaiveTime) -> Self
-pub fn NaiveDateTime::with_year(Self, Int) -> Self?
-pub fn NaiveDateTime::year(Self) -> Int
+pub fn NaiveDateTime::with_year(Self, Int32) -> Self?
+pub fn NaiveDateTime::year(Self) -> Int32
 pub fn NaiveDateTime::year_ce(Self) -> YearCe
-pub fn NaiveDateTime::years_since(Self, Self) -> Int?
-pub fn NaiveDateTime::ymd(Self) -> (Int, Month, Int)
+pub fn NaiveDateTime::years_since(Self, Self) -> Int32?
+pub fn NaiveDateTime::ymd(Self) -> (Int32, Month, Int32)
 pub impl Datelike for NaiveDateTime
 pub impl Timelike for NaiveDateTime
 pub impl Default for NaiveDateTime
@@ -270,7 +270,7 @@ pub struct NaiveDateWeeksIterator {
   // private fields
 } derive(@debug.Debug)
 pub fn NaiveDateWeeksIterator::iter(Self) -> Iter[NaiveDate]
-pub fn NaiveDateWeeksIterator::length(Self) -> Int
+pub fn NaiveDateWeeksIterator::length(Self) -> Int32
 pub fn NaiveDateWeeksIterator::next(Self) -> NaiveDate?
 pub fn NaiveDateWeeksIterator::next_back(Self) -> NaiveDate?
 pub fn NaiveDateWeeksIterator::to_repr(Self) -> @debug.Repr
@@ -278,24 +278,24 @@ pub fn NaiveDateWeeksIterator::to_repr(Self) -> @debug.Repr
 pub struct NaiveTime {
   // private fields
 } derive(Compare, Eq, Hash, @debug.Debug)
-pub fn NaiveTime::compare(Self, Self) -> Int
+pub fn NaiveTime::compare(Self, Self) -> Int32
 pub fn NaiveTime::default() -> Self
 pub fn NaiveTime::equal(Self, Self) -> Bool
-pub fn NaiveTime::from_hms(Int, Int, Int) -> Self?
-pub fn NaiveTime::from_hms_micro(Int, Int, Int, Int) -> Self?
-pub fn NaiveTime::from_hms_milli(Int, Int, Int, Int) -> Self?
-pub fn NaiveTime::from_hms_nano(Int, Int, Int, Int) -> Self?
-pub fn NaiveTime::from_num_seconds_from_midnight(Int, Int) -> Self?
-pub fn NaiveTime::hash(Self) -> Int
+pub fn NaiveTime::from_hms(Int32, Int32, Int32) -> Self?
+pub fn NaiveTime::from_hms_micro(Int32, Int32, Int32, Int32) -> Self?
+pub fn NaiveTime::from_hms_milli(Int32, Int32, Int32, Int32) -> Self?
+pub fn NaiveTime::from_hms_nano(Int32, Int32, Int32, Int32) -> Self?
+pub fn NaiveTime::from_num_seconds_from_midnight(Int32, Int32) -> Self?
+pub fn NaiveTime::hash(Self) -> Int32
 pub fn NaiveTime::hash_combine(Self, Hasher) -> Unit
-pub fn NaiveTime::hms(Self) -> (Int, Int, Int)
-pub fn NaiveTime::hour(Self) -> Int
+pub fn NaiveTime::hms(Self) -> (Int32, Int32, Int32)
+pub fn NaiveTime::hour(Self) -> Int32
 pub fn NaiveTime::hour12(Self) -> ClockHour12
 pub fn NaiveTime::midnight() -> Self
-pub fn NaiveTime::minute(Self) -> Int
-pub fn NaiveTime::nanosecond(Self) -> Int
+pub fn NaiveTime::minute(Self) -> Int32
+pub fn NaiveTime::nanosecond(Self) -> Int32
 pub fn NaiveTime::not_equal(Self, Self) -> Bool
-pub fn NaiveTime::num_seconds_from_midnight(Self) -> Int
+pub fn NaiveTime::num_seconds_from_midnight(Self) -> Int32
 pub fn NaiveTime::op_ge(Self, Self) -> Bool
 pub fn NaiveTime::op_gt(Self, Self) -> Bool
 pub fn NaiveTime::op_le(Self, Self) -> Bool
@@ -303,16 +303,16 @@ pub fn NaiveTime::op_lt(Self, Self) -> Bool
 pub fn NaiveTime::output(Self, &Logger) -> Unit
 pub fn NaiveTime::overflowing_add_signed(Self, TimeDelta) -> (Self, Int64)
 pub fn NaiveTime::overflowing_sub_signed(Self, TimeDelta) -> (Self, Int64)
-pub fn NaiveTime::round_subsecs(Self, Int) -> Self
-pub fn NaiveTime::second(Self) -> Int
+pub fn NaiveTime::round_subsecs(Self, Int32) -> Self
+pub fn NaiveTime::second(Self) -> Int32
 pub fn NaiveTime::signed_duration_since(Self, Self) -> TimeDelta
 pub fn NaiveTime::to_repr(Self) -> @debug.Repr
 pub fn NaiveTime::to_string(Self) -> String
-pub fn NaiveTime::truncate_subsecs(Self, Int) -> Self
-pub fn NaiveTime::with_hour(Self, Int) -> Self?
-pub fn NaiveTime::with_minute(Self, Int) -> Self?
-pub fn NaiveTime::with_nanosecond(Self, Int) -> Self?
-pub fn NaiveTime::with_second(Self, Int) -> Self?
+pub fn NaiveTime::truncate_subsecs(Self, Int32) -> Self
+pub fn NaiveTime::with_hour(Self, Int32) -> Self?
+pub fn NaiveTime::with_minute(Self, Int32) -> Self?
+pub fn NaiveTime::with_nanosecond(Self, Int32) -> Self?
+pub fn NaiveTime::with_second(Self, Int32) -> Self?
 pub fn NaiveTime::wrapping_add_signed(Self, TimeDelta) -> Self
 pub fn NaiveTime::wrapping_sub_signed(Self, TimeDelta) -> Self
 pub impl Timelike for NaiveTime
@@ -325,11 +325,11 @@ pub struct NaiveWeek {
 pub fn NaiveWeek::checked_days(Self) -> Array[NaiveDate]?
 pub fn NaiveWeek::checked_first_day(Self) -> NaiveDate?
 pub fn NaiveWeek::checked_last_day(Self) -> NaiveDate?
-pub fn NaiveWeek::compare(Self, Self) -> Int
+pub fn NaiveWeek::compare(Self, Self) -> Int32
 pub fn NaiveWeek::days(Self) -> Array[NaiveDate]
 pub fn NaiveWeek::equal(Self, Self) -> Bool
 pub fn NaiveWeek::first_day(Self) -> NaiveDate
-pub fn NaiveWeek::hash(Self) -> Int
+pub fn NaiveWeek::hash(Self) -> Int32
 pub fn NaiveWeek::hash_combine(Self, Hasher) -> Unit
 pub fn NaiveWeek::last_day(Self) -> NaiveDate
 pub fn NaiveWeek::not_equal(Self, Self) -> Bool
@@ -364,17 +364,17 @@ pub fn TimeDelta::as_hours_double(Self) -> Double
 pub fn TimeDelta::as_minutes_double(Self) -> Double
 pub fn TimeDelta::as_seconds_double(Self) -> Double
 pub fn TimeDelta::checked_add(Self, Self) -> Self?
-pub fn TimeDelta::checked_div(Self, Int) -> Self?
-pub fn TimeDelta::checked_mul(Self, Int) -> Self?
+pub fn TimeDelta::checked_div(Self, Int32) -> Self?
+pub fn TimeDelta::checked_mul(Self, Int32) -> Self?
 pub fn TimeDelta::checked_sub(Self, Self) -> Self?
 pub fn TimeDelta::checked_sum(Array[Self]) -> Self?
-pub fn TimeDelta::compare(Self, Self) -> Int
+pub fn TimeDelta::compare(Self, Self) -> Int32
 pub fn TimeDelta::days(Int64) -> Self?
 pub fn TimeDelta::default() -> Self
-pub fn TimeDelta::div(Self, Int) -> Self
+pub fn TimeDelta::div(Self, Int32) -> Self
 pub fn TimeDelta::equal(Self, Self) -> Bool
 pub fn TimeDelta::from_seconds_double(Double) -> Self?
-pub fn TimeDelta::hash(Self) -> Int
+pub fn TimeDelta::hash(Self) -> Int32
 pub fn TimeDelta::hash_combine(Self, Hasher) -> Unit
 pub fn TimeDelta::hours(Int64) -> Self?
 pub fn TimeDelta::is_zero(Self) -> Bool
@@ -383,10 +383,10 @@ pub fn TimeDelta::microseconds(Int64) -> Self?
 pub fn TimeDelta::milliseconds(Int64) -> Self?
 pub fn TimeDelta::min_value() -> Self
 pub fn TimeDelta::minutes(Int64) -> Self?
-pub fn TimeDelta::mul(Self, Int) -> Self
+pub fn TimeDelta::mul(Self, Int32) -> Self
 pub fn TimeDelta::nanoseconds(Int64) -> Self?
 pub fn TimeDelta::neg(Self) -> Self
-pub fn TimeDelta::new(Int64, Int) -> Self?
+pub fn TimeDelta::new(Int64, Int32) -> Self?
 pub fn TimeDelta::not_equal(Self, Self) -> Bool
 pub fn TimeDelta::num_days(Self) -> Int64
 pub fn TimeDelta::num_hours(Self) -> Int64
@@ -405,11 +405,11 @@ pub fn TimeDelta::output(Self, &Logger) -> Unit
 pub fn TimeDelta::round(Self, Self) -> Result[Self, RoundingError]
 pub fn TimeDelta::round_up(Self, Self) -> Result[Self, RoundingError]
 pub fn TimeDelta::seconds(Int64) -> Self?
-pub fn TimeDelta::seconds_of_day(Self) -> Int
+pub fn TimeDelta::seconds_of_day(Self) -> Int32
 pub fn TimeDelta::sub(Self, Self) -> Self
-pub fn TimeDelta::subsec_microseconds(Self) -> Int
-pub fn TimeDelta::subsec_milliseconds(Self) -> Int
-pub fn TimeDelta::subsec_nanoseconds(Self) -> Int
+pub fn TimeDelta::subsec_microseconds(Self) -> Int32
+pub fn TimeDelta::subsec_milliseconds(Self) -> Int32
+pub fn TimeDelta::subsec_nanoseconds(Self) -> Int32
 pub fn TimeDelta::sum(Array[Self]) -> Self
 pub fn TimeDelta::to_repr(Self) -> @debug.Repr
 pub fn TimeDelta::to_string(Self) -> String
@@ -431,22 +431,22 @@ pub(all) enum Weekday {
   Sat
   Sun
 } derive(Eq, Hash, @debug.Debug)
-pub fn Weekday::add_days(Self, Int) -> Self
-pub fn Weekday::days_since(Self, Self) -> Int
+pub fn Weekday::add_days(Self, Int32) -> Self
+pub fn Weekday::days_since(Self, Self) -> Int32
 pub fn Weekday::equal(Self, Self) -> Bool
 pub fn Weekday::from_name(String) -> Self?
-pub fn Weekday::from_num_days_from_monday(Int) -> Self?
-pub fn Weekday::from_num_days_from_sunday(Int) -> Self?
-pub fn Weekday::from_number_from_monday(Int) -> Self?
-pub fn Weekday::from_number_from_sunday(Int) -> Self?
-pub fn Weekday::hash(Self) -> Int
+pub fn Weekday::from_num_days_from_monday(Int32) -> Self?
+pub fn Weekday::from_num_days_from_sunday(Int32) -> Self?
+pub fn Weekday::from_number_from_monday(Int32) -> Self?
+pub fn Weekday::from_number_from_sunday(Int32) -> Self?
+pub fn Weekday::hash(Self) -> Int32
 pub fn Weekday::hash_combine(Self, Hasher) -> Unit
 pub fn Weekday::name(Self) -> String
 pub fn Weekday::not_equal(Self, Self) -> Bool
-pub fn Weekday::num_days_from_monday(Self) -> Int
-pub fn Weekday::num_days_from_sunday(Self) -> Int
-pub fn Weekday::number_from_monday(Self) -> Int
-pub fn Weekday::number_from_sunday(Self) -> Int
+pub fn Weekday::num_days_from_monday(Self) -> Int32
+pub fn Weekday::num_days_from_sunday(Self) -> Int32
+pub fn Weekday::number_from_monday(Self) -> Int32
+pub fn Weekday::number_from_sunday(Self) -> Int32
 pub fn Weekday::output(Self, &Logger) -> Unit
 pub fn Weekday::pred(Self) -> Self
 pub fn Weekday::succ(Self) -> Self
@@ -466,7 +466,7 @@ pub fn WeekdaySet::equal(Self, Self) -> Bool
 pub fn WeekdaySet::first(Self) -> Weekday?
 pub fn WeekdaySet::from_array(Array[Weekday]) -> Self
 pub fn WeekdaySet::from_iter(Iter[Weekday]) -> Self
-pub fn WeekdaySet::hash(Self) -> Int
+pub fn WeekdaySet::hash(Self) -> Int32
 pub fn WeekdaySet::hash_combine(Self, Hasher) -> Unit
 pub fn WeekdaySet::insert(Self, Weekday) -> Self
 pub fn WeekdaySet::intersection(Self, Self) -> Self
@@ -475,7 +475,7 @@ pub fn WeekdaySet::is_subset(Self, Self) -> Bool
 pub fn WeekdaySet::iter(Self, start? : Weekday) -> Iter[Weekday]
 pub fn WeekdaySet::iter_from(Self, Weekday) -> WeekdaySetIterator
 pub fn WeekdaySet::last(Self) -> Weekday?
-pub fn WeekdaySet::length(Self) -> Int
+pub fn WeekdaySet::length(Self) -> Int32
 pub fn WeekdaySet::not_equal(Self, Self) -> Bool
 pub fn WeekdaySet::output(Self, &Logger) -> Unit
 pub fn WeekdaySet::remove(Self, Weekday) -> Self
@@ -493,7 +493,7 @@ pub struct WeekdaySetIterator {
   // private fields
 } derive(@debug.Debug)
 pub fn WeekdaySetIterator::iter(Self) -> Iter[Weekday]
-pub fn WeekdaySetIterator::length(Self) -> Int
+pub fn WeekdaySetIterator::length(Self) -> Int32
 pub fn WeekdaySetIterator::next(Self) -> Weekday?
 pub fn WeekdaySetIterator::next_back(Self) -> Weekday?
 pub fn WeekdaySetIterator::to_repr(Self) -> @debug.Repr
@@ -502,38 +502,38 @@ pub struct YearCe {
   // private fields
 } derive(Eq, Hash, @debug.Debug)
 pub fn YearCe::equal(Self, Self) -> Bool
-pub fn YearCe::hash(Self) -> Int
+pub fn YearCe::hash(Self) -> Int32
 pub fn YearCe::hash_combine(Self, Hasher) -> Unit
 pub fn YearCe::is_ce(Self) -> Bool
 pub fn YearCe::not_equal(Self, Self) -> Bool
 pub fn YearCe::to_repr(Self) -> @debug.Repr
-pub fn YearCe::year(Self) -> Int
+pub fn YearCe::year(Self) -> Int32
 
 // Type aliases
 
 // Traits
 pub(open) trait Datelike {
-  fn year(Self) -> Int
+  fn year(Self) -> Int32
   fn month(Self) -> Month
-  fn day(Self) -> Int
-  fn ordinal(Self) -> Int
+  fn day(Self) -> Int32
+  fn ordinal(Self) -> Int32
   fn weekday(Self) -> Weekday
-  fn month0(Self) -> Int = _
-  fn day0(Self) -> Int = _
-  fn ordinal0(Self) -> Int = _
-  fn quarter(Self) -> Int = _
+  fn month0(Self) -> Int32 = _
+  fn day0(Self) -> Int32 = _
+  fn ordinal0(Self) -> Int32 = _
+  fn quarter(Self) -> Int32 = _
   fn year_ce(Self) -> YearCe = _
-  fn num_days_in_month(Self) -> Int = _
+  fn num_days_in_month(Self) -> Int32 = _
   fn leap_year(Self) -> Bool = _
-  fn num_days_from_ce(Self) -> Int = _
+  fn num_days_from_ce(Self) -> Int32 = _
   fn iso_week(Self) -> IsoWeek = _
 }
 
 pub(open) trait Timelike {
-  fn hour(Self) -> Int
-  fn minute(Self) -> Int
-  fn second(Self) -> Int
-  fn nanosecond(Self) -> Int
+  fn hour(Self) -> Int32
+  fn minute(Self) -> Int32
+  fn second(Self) -> Int32
+  fn nanosecond(Self) -> Int32
   fn hour12(Self) -> ClockHour12 = _
-  fn num_seconds_from_midnight(Self) -> Int = _
+  fn num_seconds_from_midnight(Self) -> Int32 = _
 }

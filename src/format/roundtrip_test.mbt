@@ -50,7 +50,7 @@ fn random_offset(rng : Rng) -> @tz.FixedOffset {
 }
 
 ///|
-let samples : Int = 2000
+let samples : Int32 = 2000
 
 ///|
 test "parse_date_default reads back the Show of every sampled date, including years beyond 0..=9999 and negative ones" {

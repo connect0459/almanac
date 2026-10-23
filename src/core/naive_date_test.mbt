@@ -960,7 +960,7 @@ test "equal dates hash equally and work as map keys" {
   let b = @core.NaiveDate::from_ymd(2024, 1, 31).unwrap().add_days(29)
   assert_eq(a, b)
   assert_eq(a.hash(), b.hash())
-  let counts : Map[@core.NaiveDate, Int] = Map([])
+  let counts : Map[@core.NaiveDate, Int32] = Map([])
   counts[a] = 1
   counts[b] = counts.get(b).unwrap() + 1
   counts[@core.NaiveDate::from_ymd(2024, 3, 1).unwrap()] = 5

@@ -33,7 +33,11 @@ test "from_local_lenient falls back to the offset at the reading itself for a zo
 }
 
 ///|
-fn utc_reading(day : Int, hour : Int, minute : Int) -> @core.NaiveDateTime {
+fn utc_reading(
+  day : Int32,
+  hour : Int32,
+  minute : Int32,
+) -> @core.NaiveDateTime {
   @core.NaiveDateTime::new(
     @core.NaiveDate::from_ymd(2024, 1, day).unwrap(),
     @core.NaiveTime::from_hms(hour, minute, 0).unwrap(),

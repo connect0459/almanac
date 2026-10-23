@@ -4,7 +4,7 @@
 /// that era, so year `0` is `1` BCE. See `NaiveDate::year_ce`.
 pub struct YearCe {
   priv is_ce : Bool
-  priv year : Int
+  priv year : Int32
 } derive(Eq, Hash, @debug.Debug)
 
 ///|
@@ -24,7 +24,7 @@ pub fn YearCe::is_ce(self : YearCe) -> Bool {
 
 ///|
 /// The positive year number within its era.
-pub fn YearCe::year(self : YearCe) -> Int {
+pub fn YearCe::year(self : YearCe) -> Int32 {
   self.year
 }
 
@@ -33,7 +33,7 @@ pub fn YearCe::year(self : YearCe) -> Int {
 /// `1..=12`, where midnight and noon read `12`. See `NaiveTime::hour12`.
 pub struct ClockHour12 {
   priv is_pm : Bool
-  priv hour : Int
+  priv hour : Int32
 } derive(Eq, Hash, @debug.Debug)
 
 ///|
@@ -54,6 +54,6 @@ pub fn ClockHour12::is_pm(self : ClockHour12) -> Bool {
 
 ///|
 /// The hour on the 12-hour clock, `1..=12`.
-pub fn ClockHour12::hour(self : ClockHour12) -> Int {
+pub fn ClockHour12::hour(self : ClockHour12) -> Int32 {
   self.hour
 }

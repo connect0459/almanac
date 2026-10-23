@@ -1,12 +1,12 @@
 ///|
 fn lenient_expected(
-  year : Int,
-  month : Int,
-  day : Int,
-  hour : Int,
-  minute : Int,
-  second : Int,
-  offset_hours : Int,
+  year : Int32,
+  month : Int32,
+  day : Int32,
+  hour : Int32,
+  minute : Int32,
+  second : Int32,
+  offset_hours : Int32,
 ) -> @tz.DateTime[@tz.FixedOffset] {
   let offset = @tz.FixedOffset::east(offset_hours * 3600).unwrap()
   let local_reading = @core.NaiveDateTime::new(

@@ -1,11 +1,11 @@
 ///|
 fn utc_at(
-  year : Int,
-  month : Int,
-  day : Int,
-  hour : Int,
-  minute : Int,
-  second : Int,
+  year : Int32,
+  month : Int32,
+  day : Int32,
+  hour : Int32,
+  minute : Int32,
+  second : Int32,
 ) -> @tz.DateTime[@tz.Utc] {
   @tz.DateTime::from_utc(
     @core.NaiveDateTime::new(
@@ -23,12 +23,12 @@ fn new_york() -> @tz.Location {
 
 ///|
 fn new_york_at(
-  year : Int,
-  month : Int,
-  day : Int,
-  hour : Int,
-  minute : Int,
-  second : Int,
+  year : Int32,
+  month : Int32,
+  day : Int32,
+  hour : Int32,
+  minute : Int32,
+  second : Int32,
 ) -> @tz.DateTime[@tz.Location] {
   @tz.DateTime::from_local(
     @core.NaiveDateTime::new(
@@ -43,12 +43,12 @@ fn new_york_at(
 
 ///|
 fn new_york_utc(
-  year : Int,
-  month : Int,
-  day : Int,
-  hour : Int,
-  minute : Int,
-  second : Int,
+  year : Int32,
+  month : Int32,
+  day : Int32,
+  hour : Int32,
+  minute : Int32,
+  second : Int32,
 ) -> @tz.DateTime[@tz.Location] {
   utc_at(year, month, day, hour, minute, second).with_timezone(new_york())
 }
