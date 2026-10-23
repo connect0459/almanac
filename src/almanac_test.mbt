@@ -23,3 +23,18 @@ test "the root package re-exports the zone types so a zoned datetime needs no ot
   )
   assert_true(resolved.single() is Some(_))
 }
+
+///|
+test "a calendar period built through the root package shifts a date by months" {
+  let date = @almanac.NaiveDate::from_ymd(2024, 1, 31).unwrap()
+  let period = @almanac.Period::new(months=1)
+  assert_eq(date.add_period(period).to_string(), "2024-02-29")
+}
+
+///|
+test "the difference between two dates can be received as a root package period" {
+  let start = @almanac.NaiveDate::from_ymd(2024, 1, 15).unwrap()
+  let end = @almanac.NaiveDate::from_ymd(2024, 3, 20).unwrap()
+  let gap : @almanac.Period = start.until(end)
+  assert_eq(start.add_period(gap), end)
+}

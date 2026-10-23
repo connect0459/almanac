@@ -6,6 +6,7 @@ pub using @core {
   type NaiveTime,
   type NaiveDateTime,
   type TimeDelta,
+  type Period,
 }
 
 ///|
