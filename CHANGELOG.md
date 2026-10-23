@@ -27,6 +27,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-24
+
+### Added
+
+#### Calendar and clock values (`connect0459/almanac/core`)
+
+- `Period`, a calendar difference of years, months and days whose components keep their own signs, with checked arithmetic, `Eq`, `Hash`, `Default` and a `Show` output in the ISO 8601 style such as `P1Y2M3D`; it has no `Compare`, because the length of a month depends on the date it is applied to
+- `NaiveDate` and `NaiveDateTime` gain `add_period`, `sub_period`, their `checked_*` forms and `until`, which returns the `Period` between two values
+
+#### Time zones (`connect0459/almanac/tz`)
+
+- `DateTime::add_period` and `DateTime::sub_period`, which shift the local wall clock and report a DST gap or fold as `MappedLocalTime`
+- `Local` on Windows native targets, resolved from the Windows time zone key name through a generated table of the CLDR `windowsZones.xml`; `$TZ` keeps precedence, and a name without a mapping gives `None` rather than UTC
+
+#### Formatting and parsing (`connect0459/almanac/format`)
+
+- ISO 8601 date-based durations of `Period` through `parse_iso8601_period` and `to_iso8601_period`; the reader also accepts the per-component sign that `Period`'s `Show` writes
+
+#### Root package (`connect0459/almanac`)
+
+- `Period` is re-exported, so `@almanac.Period::new(months=1)` works without importing `core`
+
 ## [0.2.1] - 2026-10-23
 
 ### Fixed
@@ -113,7 +135,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
-[Unreleased]: <https://github.com/connect0459/almanac/compare/v0.2.1...HEAD>
+[Unreleased]: <https://github.com/connect0459/almanac/compare/v0.3.0...HEAD>
+[0.3.0]: <https://github.com/connect0459/almanac/compare/v0.2.1...v0.3.0>
 [0.2.1]: <https://github.com/connect0459/almanac/compare/v0.2.0...v0.2.1>
 [0.2.0]: <https://github.com/connect0459/almanac/compare/v0.1.0...v0.2.0>
 [0.1.0]: <https://github.com/connect0459/almanac/releases/tag/v0.1.0>
