@@ -58,7 +58,7 @@ A local reading can fall in a DST gap or fold, so constructors from local compon
 
 ## Compatibility
 
-- The library is tested on the `js`, `wasm`, `wasm-gc` and `native` backends. `Local`, the host's zone, is read from `$TZ` or `/etc/localtime` on `native`, from the runtime's `Intl` zone name on `js`, and from `$TZ` alone on `wasm` and `wasm-gc`.
+- The library is tested on the `js`, `wasm`, `wasm-gc` and `native` backends. `Local`, the host's zone, is read from `$TZ` or `/etc/localtime` on `native` (on Windows, from the system zone's key name when `$TZ` is unset), from the runtime's `Intl` zone name on `js`, and from `$TZ` alone on `wasm` and `wasm-gc`.
 - The embedded tz database is a snapshot; regenerate it with `just gen-tzdata <zoneinfo dir>`.
 - While the major version is `0`, a minor release may contain breaking changes to the public API.
 
