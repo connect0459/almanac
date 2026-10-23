@@ -71,8 +71,22 @@ jobs:
   test:
     needs: changes
     if: needs.changes.outputs.code == 'true' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: all
+          - os: macos-latest
+            target: native
+          - os: windows-latest
+            target: native
     steps:
+      - name: Keep line endings as committed
+        shell: bash
+        run: git config --global core.autocrlf false
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -87,9 +101,9 @@ jobs:
         shell: bash
         run: moon update
 
-      - name: Test all targets
+      - name: Test ${{ matrix.target }} targets
         shell: bash
-        run: moon test --target all
+        run: moon test --target ${{ matrix.target }}
 
   # Single point of truth for branch protection
   gate:
