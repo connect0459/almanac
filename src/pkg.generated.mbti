@@ -29,6 +29,8 @@ pub using @core {type NaiveDateTime}
 
 pub using @core {type NaiveTime}
 
+pub using @core {type Period}
+
 pub using @core {type TimeDelta}
 
 pub using @tz {type Utc}

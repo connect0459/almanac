@@ -12,7 +12,7 @@ A thin entry point over the packages below. Importing this package alone gives t
 
 ## Re-exported types
 
-`Weekday`, `Month`, `NaiveDate`, `NaiveTime`, `NaiveDateTime` and `TimeDelta` (from `core`), and `TimeZone`, `Utc`, `FixedOffset`, `Location`, `DateTime` and `MappedLocalTime` (from `tz`). They are aliases of the original types, so a value from `@almanac` is interchangeable with the same type from `@core` or `@tz`. Functions such as `format_date_time` and `parse_rfc3339` are not re-exported; import `connect0459/almanac/format` for them.
+`Weekday`, `Month`, `NaiveDate`, `NaiveTime`, `NaiveDateTime`, `TimeDelta` and `Period` (from `core`), and `TimeZone`, `Utc`, `FixedOffset`, `Location`, `DateTime` and `MappedLocalTime` (from `tz`). They are aliases of the original types, so a value from `@almanac` is interchangeable with the same type from `@core` or `@tz`. Functions such as `format_date_time` and `parse_rfc3339` are not re-exported; import `connect0459/almanac/format` for them.
 
 ## Quick start
 
