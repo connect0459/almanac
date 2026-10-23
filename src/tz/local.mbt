@@ -8,7 +8,10 @@ priv enum LocalKind {
 ///|
 /// The host's configured local time zone. On `native` it is resolved from
 /// `$TZ` or, when unset, `/etc/localtime`, with zone names also looked up in
-/// the zoneinfo directories of `Location::load_system`; on `js` from the
+/// the zoneinfo directories of `Location::load_system`; on Windows, when `$TZ`
+/// is unset, from the system zone's key name mapped to the IANA zone of the
+/// embedded database (OS-level daylight-saving customizations are not
+/// followed, and a name without a mapping gives `None`); on `js` from the
 /// runtime's `Intl` zone name; on `wasm` and `wasm-gc` from `$TZ` alone, since
 /// neither has host-provided file access.
 pub struct Local {
@@ -23,12 +26,15 @@ pub struct Local {
 /// other value is looked up as an IANA zone name and, failing that, parsed as
 /// a bare POSIX rule (e.g. `JST-9`). A zone name is searched in
 /// `zoneinfo_dirs` before the embedded zones. `None` if the value is none of
-/// these or the file cannot be read as TZif. When `TZ` is unset entirely,
-/// `/etc/localtime` is read instead.
+/// these or the file cannot be read as TZif. When `TZ` is unset entirely
+/// and `windows_zone_key` is given, that Windows zone key name is mapped to
+/// its IANA zone, giving `None` if it has no mapping (never UTC). When both
+/// are absent, `/etc/localtime` is read instead.
 fn Local::resolve(
   tz_env : String?,
   read_file : (String) -> Bytes?,
   zoneinfo_dirs~ : Array[String] = [],
+  windows_zone_key~ : String? = None,
 ) -> Local? {
   let from_file = path => {
     read_file(path)
@@ -36,7 +42,11 @@ fn Local::resolve(
     .map(loc => Local::{ kind: Iana(loc), })
   }
   match tz_env {
-    None => from_file("/etc/localtime")
+    None =>
+      match windows_zone_key {
+        Some(key) => Local::from_windows_zone(key)
+        None => from_file("/etc/localtime")
+      }
     Some(value) => {
       let name = match value {
         [':', .. rest] => rest.to_owned()

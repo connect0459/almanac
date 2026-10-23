@@ -35,3 +35,22 @@ test "zoneinfo_dirs always includes the system zoneinfo directory" {
 test "zoneinfo_dirs ignores an empty ZONEINFO" {
   assert_eq(zoneinfo_dirs(Some("")), zoneinfo_dirs(None))
 }
+
+///|
+test "host_windows_zone_key is None off Windows" {
+  if @env.get_env_var("OS") != Some("Windows_NT") {
+    assert_true(host_windows_zone_key() is None)
+  }
+}
+
+///|
+test "host_windows_zone_key on Windows names a zone the embedded mapping knows" {
+  if @env.get_env_var("OS") == Some("Windows_NT") {
+    guard host_windows_zone_key() is Some(key) else {
+      fail("the Windows time zone has no key name")
+    }
+    guard windows_zone_iana_name(key) is Some(_) else {
+      fail("the Windows zone key name \{key} has no IANA mapping")
+    }
+  }
+}

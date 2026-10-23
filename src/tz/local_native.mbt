@@ -5,6 +5,21 @@
 extern "C" fn read_file_bytes(path : Bytes) -> Bytes = "almanac_read_file"
 
 ///|
+/// The UTF-8 `TimeZoneKeyName` of the Windows dynamic time zone, or
+/// `Bytes::default()` if it could not be read or the host is not Windows.
+extern "C" fn windows_zone_key_name_bytes() -> Bytes = "almanac_windows_zone_key_name"
+
+///|
+fn host_windows_zone_key() -> String? {
+  let bytes = windows_zone_key_name_bytes()
+  if bytes.length() == 0 {
+    None
+  } else {
+    Some(@utf8.decode_lossy(bytes))
+  }
+}
+
+///|
 fn read_host_file(path : String) -> Bytes? {
   let bytes = read_file_bytes(@utf8.encode(path) + b"\x00")
   if bytes.length() == 0 {
@@ -16,14 +31,15 @@ fn read_host_file(path : String) -> Bytes? {
 
 ///|
 /// The host's configured local time zone, or `None` if it could not be
-/// determined. Reads live OS state (`$TZ`, `/etc/localtime`), so it is not a
-/// pure function of its arguments; the `$TZ` precedence rules it applies are
-/// described on `Local`.
+/// determined. Reads live OS state (`$TZ`, `/etc/localtime`, on Windows the
+/// zone key name), so it is not a pure function of its arguments; the `$TZ`
+/// precedence rules it applies are described on `Local`.
 pub fn Local::new() -> Local? {
   Local::resolve(
     @env.get_env_var("TZ"),
     read_host_file,
     zoneinfo_dirs=zoneinfo_dirs(@env.get_env_var("ZONEINFO")),
+    windows_zone_key=host_windows_zone_key(),
   )
 }
 
