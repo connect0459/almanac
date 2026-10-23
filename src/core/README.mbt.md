@@ -436,7 +436,7 @@ test {
 }
 ```
 
-`Period` implements `Eq`, `Hash`, `Default` and `Show`, but not `Compare`: whether one month is shorter than 30 days depends on the date. `Show` renders in the ISO 8601 date-based duration style (`P1Y2M3D`), omitting zero components; the zero period is `P0D`. A negative component keeps its own `-` (`P-1Y3D`): that per-component sign is an extension beyond ISO 8601, and `parse_iso8601_duration` does not read the output back. `Add`, `Sub` and `Neg` are not implemented, so that no operation can abort on overflow; use the `checked_*` methods.
+`Period` implements `Eq`, `Hash`, `Default` and `Show`, but not `Compare`: whether one month is shorter than 30 days depends on the date. `Show` renders in the ISO 8601 date-based duration style (`P1Y2M3D`), omitting zero components; the zero period is `P0D`. A negative component keeps its own `-` (`P-1Y3D`): that per-component sign is an extension beyond ISO 8601, which `format`'s `parse_iso8601_period` reads back. `Add`, `Sub` and `Neg` are not implemented, so that no operation can abort on overflow; use the `checked_*` methods.
 
 ---
 
