@@ -18,9 +18,10 @@ pub struct NaiveWeek {
 }
 
 ///|
+#derive(@debug.Debug)
 priv struct NaiveWeekDebugView {
   first_day : Int64
-} derive(@debug.Debug)
+}
 
 ///|
 pub impl @debug.Debug for NaiveWeek with fn to_repr(self) {

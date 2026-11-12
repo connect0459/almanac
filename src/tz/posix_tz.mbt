@@ -1,6 +1,7 @@
 ///|
 /// A date rule from a POSIX TZ string's DST transition rule, in one of the
 /// three POSIX date formats.
+#derive(Eq, Hash, @debug.Debug)
 priv enum RuleDate {
   /// `Jn`: the `n`-th day of the year, `1..=365`. February 29 is never
   /// counted, even in a leap year.
@@ -11,11 +12,12 @@ priv enum RuleDate {
   /// `Mm.w.d`: the `w`-th occurrence of weekday `d` (`0` = Sunday) in
   /// month `m` (`w = 5` means "the last occurrence").
   MonthWeekDay(Int32, Int32, Int32)
-} derive(Eq, Hash, @debug.Debug)
+}
 
 ///|
 /// A POSIX TZ string's DST transition rule: when daylight saving starts
 /// and ends, and at what local time of day.
+#derive(Eq, Hash, @debug.Debug)
 priv struct DstRule {
   start : RuleDate
   /// Seconds after local midnight of `start`'s date, in standard time
@@ -25,19 +27,20 @@ priv struct DstRule {
   /// Seconds after local midnight of `end`'s date, in daylight time (the
   /// time in effect immediately before this transition).
   end_time : Int32
-} derive(Eq, Hash, @debug.Debug)
+}
 
 ///|
 /// A parsed POSIX TZ string (the format used in a TZif footer and the
 /// `TZ` environment variable), used to extrapolate offsets for instants
 /// past a TZif file's last recorded transition.
+#derive(Eq, Hash, @debug.Debug)
 pub struct PosixTz {
   priv std_offset : Int32
   priv std_name : String
   priv dst_offset : Int32?
   priv dst_name : String?
   priv rule : DstRule?
-} derive(Eq, Hash, @debug.Debug)
+}
 
 ///|
 pub extend PosixTz with Eq::{equal}

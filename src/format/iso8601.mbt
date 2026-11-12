@@ -1,6 +1,7 @@
 ///|
 /// The shapes `parse_iso8601` distinguishes: which of a date, a time of day
 /// and an offset the text carried.
+#derive(Eq, @debug.Debug)
 pub(all) enum Iso8601 {
   /// A date and a time of day with an offset: an instant.
   Zoned(@tz.DateTime[@tz.FixedOffset])
@@ -10,7 +11,7 @@ pub(all) enum Iso8601 {
   DateOnly(@core.NaiveDate)
   /// A time of day alone.
   TimeOnly(@core.NaiveTime)
-} derive(Eq, @debug.Debug)
+}
 
 ///|
 pub extend Iso8601 with Eq::{equal}

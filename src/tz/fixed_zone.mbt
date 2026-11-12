@@ -5,10 +5,11 @@
 /// that same offset text.
 ///
 /// Two zones are equal only when both the name and the offset are equal.
+#derive(Eq, Hash, @debug.Debug)
 pub struct FixedZone {
   priv name : String
   priv offset : FixedOffset
-} derive(Eq, Hash, @debug.Debug)
+}
 
 ///|
 pub extend FixedZone with Eq::{equal}

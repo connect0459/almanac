@@ -1,6 +1,7 @@
 ///|
 /// The part of a cron expression that `Cron::parse` rejected: one of the six
 /// time fields, the number of fields, or the `@` shorthand.
+#derive(Eq, @debug.Debug)
 pub(all) enum CronField {
   Second
   Minute
@@ -10,7 +11,7 @@ pub(all) enum CronField {
   DayOfWeek
   FieldCount
   Shorthand
-} derive(Eq, @debug.Debug)
+}
 
 ///|
 pub extend CronField with Eq::{equal}
@@ -23,9 +24,10 @@ pub extend CronField with @debug.Debug::{to_repr}
 
 ///|
 /// The failure of `Cron::parse`, carrying the field that could not be read.
+#derive(Eq, @debug.Debug)
 pub suberror CronError {
   InvalidField(CronField)
-} derive(Eq, @debug.Debug)
+}
 
 ///|
 pub extend CronError with Eq::{equal}

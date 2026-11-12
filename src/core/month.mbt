@@ -1,5 +1,6 @@
 ///|
 /// A month of the year.
+#derive(Eq, Compare, Hash, @debug.Debug)
 pub(all) enum Month {
   Jan
   Feb
@@ -13,7 +14,7 @@ pub(all) enum Month {
   Oct
   Nov
   Dec
-} derive(Eq, Compare, Hash, @debug.Debug)
+}
 
 ///|
 pub extend Month with Eq::{equal}

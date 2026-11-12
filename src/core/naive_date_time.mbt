@@ -1,9 +1,10 @@
 ///|
 /// A date and time of day, without a time zone.
+#derive(Eq, Compare, Hash, @debug.Debug)
 pub struct NaiveDateTime {
   priv date : NaiveDate
   priv time : NaiveTime
-} derive(Eq, Compare, Hash, @debug.Debug)
+}
 
 ///|
 pub extend NaiveDateTime with Eq::{equal}

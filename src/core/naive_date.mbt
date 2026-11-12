@@ -3,9 +3,10 @@
 ///
 /// Internally represented as a day count relative to the Unix epoch
 /// (`1970-01-01` is day `0`).
+#derive(Eq, Compare, Hash, @debug.Debug)
 pub struct NaiveDate {
   priv days : Int32
-} derive(Eq, Compare, Hash, @debug.Debug)
+}
 
 ///|
 pub extend NaiveDate with Eq::{equal}

@@ -5,11 +5,12 @@
 /// amounts to in days depends on the date it is applied to. Components are
 /// kept as given and carry independent signs, so `months=14` and
 /// `years=1, months=2` are distinct values.
+#derive(Eq, Hash, @debug.Debug)
 pub struct Period {
   priv years : Int32
   priv months : Int32
   priv days : Int32
-} derive(Eq, Hash, @debug.Debug)
+}
 
 ///|
 pub extend Period with Eq::{equal, not_equal}

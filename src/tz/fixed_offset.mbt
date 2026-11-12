@@ -3,9 +3,10 @@
 ///
 /// Represented as the signed number of seconds added to UTC to obtain the
 /// local time, within `±23:59:59` (`±86399` seconds).
+#derive(Eq, Hash, @debug.Debug)
 pub struct FixedOffset {
   priv local_minus_utc : Int32
-} derive(Eq, Hash, @debug.Debug)
+}
 
 ///|
 pub extend FixedOffset with Eq::{equal}

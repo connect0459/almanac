@@ -6,9 +6,10 @@
 ///
 /// Sets have no total order: the bit layout is a representation detail and
 /// the meaningful relation is `is_subset`.
+#derive(Eq, Hash, @debug.Debug)
 pub struct WeekdaySet {
   priv bits : Int32
-} derive(Eq, Hash, @debug.Debug)
+}
 
 ///|
 pub extend WeekdaySet with Eq::{equal}
