@@ -12,11 +12,12 @@
 /// components, as `DateTime::from_ymd_hms` and `DateTime::with_*` do; a
 /// caller that must tell the two apart validates the components first with
 /// `NaiveDate::from_ymd` and `NaiveTime::from_hms`.
+#derive(Eq, @debug.Debug)
 pub(all) enum MappedLocalTime[T] {
   Single(T)
   Ambiguous(T, T)
   Absent
-} derive(Eq, @debug.Debug)
+}
 
 ///|
 pub extend MappedLocalTime with Eq::{equal}

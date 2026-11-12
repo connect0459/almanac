@@ -2,10 +2,11 @@
 /// A year split around the Common Era: whether it is in the Common Era
 /// (`is_ce`, years `1` and later) and the positive number of the year within
 /// that era, so year `0` is `1` BCE. See `NaiveDate::year_ce`.
+#derive(Eq, Hash, @debug.Debug)
 pub struct YearCe {
   priv is_ce : Bool
   priv year : Int32
-} derive(Eq, Hash, @debug.Debug)
+}
 
 ///|
 pub extend YearCe with Eq::{equal, not_equal}
@@ -31,10 +32,11 @@ pub fn YearCe::year(self : YearCe) -> Int32 {
 ///|
 /// An hour on a 12-hour clock: whether it is PM (`is_pm`) and the hour,
 /// `1..=12`, where midnight and noon read `12`. See `NaiveTime::hour12`.
+#derive(Eq, Hash, @debug.Debug)
 pub struct ClockHour12 {
   priv is_pm : Bool
   priv hour : Int32
-} derive(Eq, Hash, @debug.Debug)
+}
 
 ///|
 pub extend ClockHour12 with Eq::{equal, not_equal}

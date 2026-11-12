@@ -121,6 +121,7 @@ pub fn[Tz] to_utc_time(@tz.DateTime[Tz]) -> String raise FormatError
 pub fn tokenize(String, locale? : Locale) -> Array[Item] raise FormatError
 
 // Errors
+#derive(Eq, @debug.Debug)
 pub suberror FormatError {
   UnknownSpecifier(Char)
   TrailingPercent
@@ -138,7 +139,7 @@ pub suberror FormatError {
   InputMismatch
   InputTooShort
   TrailingInput
-} derive(Eq, @debug.Debug)
+}
 pub fn FormatError::equal(Self, Self) -> Bool
 pub fn FormatError::not_equal(Self, Self) -> Bool
 pub fn FormatError::output(Self, &Logger) -> Unit
@@ -146,12 +147,13 @@ pub fn FormatError::to_repr(Self) -> @debug.Repr
 pub fn FormatError::to_string(Self) -> String
 pub impl Show for FormatError
 
+#derive(Eq, @debug.Debug)
 pub(all) suberror LocaleError {
   InvalidMonthNames
   InvalidWeekdayNames
   InvalidAmPmNames
   InvalidPattern(String)
-} derive(Eq, @debug.Debug)
+}
 pub fn LocaleError::equal(Self, Self) -> Bool
 pub fn LocaleError::not_equal(Self, Self) -> Bool
 pub fn LocaleError::output(Self, &Logger) -> Unit
@@ -160,6 +162,7 @@ pub fn LocaleError::to_string(Self) -> String
 pub impl Show for LocaleError
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) enum Fixed {
   LongWeekdayName
   ShortWeekdayName
@@ -173,21 +176,23 @@ pub(all) enum Fixed {
   TimezoneOffsetColonSeconds
   TimezoneOffsetColonHours
   TimezoneOffsetPermissive
-} derive(Eq, @debug.Debug)
+}
 pub fn Fixed::equal(Self, Self) -> Bool
 pub fn Fixed::not_equal(Self, Self) -> Bool
 pub fn Fixed::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub(all) enum Iso8601 {
   Zoned(@tz.DateTime[@tz.FixedOffset])
   Local(@core.NaiveDateTime)
   DateOnly(@core.NaiveDate)
   TimeOnly(@core.NaiveTime)
-} derive(Eq, @debug.Debug)
+}
 pub fn Iso8601::equal(Self, Self) -> Bool
 pub fn Iso8601::not_equal(Self, Self) -> Bool
 pub fn Iso8601::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub(all) enum Item {
   Literal(String)
   Numeric(Numeric)
@@ -195,7 +200,7 @@ pub(all) enum Item {
   Rfc3339
   Rfc2822
   PaddedNumeric(Numeric, PadMode)
-} derive(Eq, @debug.Debug)
+}
 pub fn Item::equal(Self, Self) -> Bool
 pub fn Item::not_equal(Self, Self) -> Bool
 pub fn Item::to_repr(Self) -> @debug.Repr
@@ -213,6 +218,7 @@ pub fn Locale::time_format(Self) -> String
 pub fn Locale::time_format_12h(Self) -> String
 pub fn Locale::weekday_name(Self, @core.Weekday, short? : Bool) -> String
 
+#derive(Eq, @debug.Debug)
 pub(all) enum Numeric {
   Year
   Month
@@ -243,23 +249,25 @@ pub(all) enum Numeric {
   DotNanosecond3
   DotNanosecond6
   DotNanosecond9
-} derive(Eq, @debug.Debug)
+}
 pub fn Numeric::equal(Self, Self) -> Bool
 pub fn Numeric::not_equal(Self, Self) -> Bool
 pub fn Numeric::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub(all) enum PadMode {
   NoPad
   ZeroPad
   SpacePad
-} derive(Eq, @debug.Debug)
+}
 pub fn PadMode::equal(Self, Self) -> Bool
 pub fn PadMode::not_equal(Self, Self) -> Bool
 pub fn PadMode::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub struct Parsed {
   // private fields
-} derive(Eq, @debug.Debug)
+}
 pub fn Parsed::equal(Self, Self) -> Bool
 pub fn Parsed::new() -> Self
 pub fn Parsed::not_equal(Self, Self) -> Bool
@@ -295,13 +303,14 @@ pub fn Parsed::utc_offset(Self) -> Int32?
 pub fn Parsed::with_default_year(Self, Int32) -> Self
 pub fn Parsed::zone_name(Self) -> String?
 
+#derive(Eq, @debug.Debug)
 pub(all) enum SecondsFormat {
   Secs
   Millis
   Micros
   Nanos
   Auto
-} derive(Eq, @debug.Debug)
+}
 pub fn SecondsFormat::equal(Self, Self) -> Bool
 pub fn SecondsFormat::not_equal(Self, Self) -> Bool
 pub fn SecondsFormat::to_repr(Self) -> @debug.Repr

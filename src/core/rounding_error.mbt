@@ -1,6 +1,7 @@
 ///|
 /// The reason a `round`, `round_up` or `truncate` call could not produce a
 /// result.
+#derive(Eq, @debug.Debug)
 pub(all) enum RoundingError {
   /// The granularity is zero or negative.
   InvalidGranularity
@@ -10,7 +11,7 @@ pub(all) enum RoundingError {
   MixedGranularity
   /// The rounded value would leave the representable range of the type.
   OutOfRange
-} derive(Eq, @debug.Debug)
+}
 
 ///|
 pub extend RoundingError with Eq::{equal}

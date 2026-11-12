@@ -18,10 +18,11 @@ const ITER_BOUND_DAYS : Int32 = 100_000_000
 /// does not advance it by itself but returns an `Iter` that shares its
 /// state, and the method that creates it (`NaiveDate::iter_days`) returns a fresh iterator on
 /// every call, leaving the date unchanged.
+#derive(@debug.Debug)
 pub struct NaiveDateDaysIterator {
   priv mut value : NaiveDate
   priv mut end : NaiveDate
-} derive(@debug.Debug)
+}
 
 ///|
 pub extend NaiveDateDaysIterator with @debug.Debug::{to_repr}
@@ -85,10 +86,11 @@ pub fn NaiveDateDaysIterator::iter(
 /// does not advance it by itself but returns an `Iter` that shares its
 /// state, and the method that creates it (`NaiveDate::iter_weeks`) returns a fresh iterator on
 /// every call, leaving the date unchanged.
+#derive(@debug.Debug)
 pub struct NaiveDateWeeksIterator {
   priv mut value : NaiveDate
   priv mut end : NaiveDate
-} derive(@debug.Debug)
+}
 
 ///|
 pub extend NaiveDateWeeksIterator with @debug.Debug::{to_repr}

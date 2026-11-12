@@ -18,6 +18,7 @@ pub struct Locale {
 
 ///|
 /// Why `Locale::new` rejected its arguments.
+#derive(Eq, @debug.Debug)
 pub(all) suberror LocaleError {
   /// The month names are not twelve non-empty names per form, or one name
   /// belongs to two different months.
@@ -30,7 +31,7 @@ pub(all) suberror LocaleError {
   /// A layout is empty, is not a valid format string, or uses `%x`, `%X`,
   /// `%c` or `%r`, which would make it expand into itself.
   InvalidPattern(String)
-} derive(Eq, @debug.Debug)
+}
 
 ///|
 pub extend LocaleError with Eq::{equal}

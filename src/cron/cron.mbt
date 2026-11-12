@@ -9,6 +9,7 @@
 ///
 /// A fire time inside a spring-forward gap does not exist and is skipped. A
 /// fire time inside a fall-back fold fires once, at the earlier occurrence.
+#derive(Eq, Hash, @debug.Debug)
 pub struct Cron {
   priv seconds : Int64
   priv minutes : Int64
@@ -18,7 +19,7 @@ pub struct Cron {
   priv weekdays : Int64
   priv day_star : Bool
   priv weekday_star : Bool
-} derive(Eq, Hash, @debug.Debug)
+}
 
 ///|
 pub extend Cron with Eq::{equal}

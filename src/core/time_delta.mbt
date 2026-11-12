@@ -19,10 +19,11 @@ const MIN_SECS : Int64 = -9_223_372_036_854_774L
 /// Internally represented as whole seconds plus a non-negative nanosecond
 /// remainder (`0..=999_999_999`); the sign of the duration is carried
 /// entirely by the seconds component.
+#derive(Eq, Compare, Hash, @debug.Debug)
 pub struct TimeDelta {
   priv seconds : Int64
   priv nanoseconds : Int32
-} derive(Eq, Compare, Hash, @debug.Debug)
+}
 
 ///|
 pub extend TimeDelta with Eq::{equal}

@@ -8,10 +8,11 @@
 /// Identity is the UTC instant: `Eq`, `Hash` and `Compare` all ignore the
 /// zone value, so the same instant expressed in different zones is equal,
 /// hashes alike and compares as `0`.
+#derive(@debug.Debug)
 pub struct DateTime[Tz] {
   priv datetime : @core.NaiveDateTime
   priv tz : Tz
-} derive(@debug.Debug)
+}
 
 ///|
 pub impl[Tz] Eq for DateTime[Tz] with fn equal(self, other) {

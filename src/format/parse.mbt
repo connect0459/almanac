@@ -5,6 +5,7 @@
 /// afterward whether enough fields were populated, and whether they agree
 /// with each other. Opaque: the same `Parsed` can be resolved several ways
 /// (`to_date`, `to_time`, ...) without re-parsing.
+#derive(Eq, @debug.Debug)
 pub struct Parsed {
   priv year : Int32?
   priv month : Int32?
@@ -53,7 +54,7 @@ pub struct Parsed {
   /// Only the date-time resolvers use it (see `resolve_at_timestamp`);
   /// `to_date`/`to_time` ignore it.
   priv timestamp : Int64?
-} derive(Eq, @debug.Debug)
+}
 
 ///|
 /// The UTC offset, in seconds, that a `%z`-family specifier read, or `None`

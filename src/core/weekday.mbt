@@ -5,6 +5,7 @@
 /// `number_from_monday`, `number_from_sunday`, `num_days_from_monday`, or
 /// `num_days_from_sunday` to get a day-of-week number in a specific
 /// counting convention.
+#derive(Eq, Hash, @debug.Debug)
 pub(all) enum Weekday {
   Mon
   Tue
@@ -13,7 +14,7 @@ pub(all) enum Weekday {
   Fri
   Sat
   Sun
-} derive(Eq, Hash, @debug.Debug)
+}
 
 ///|
 pub extend Weekday with Eq::{equal}

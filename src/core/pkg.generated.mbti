@@ -11,9 +11,10 @@ pub fn is_leap_year(Int32) -> Bool
 // Errors
 
 // Types and methods
+#derive(Eq, Hash, @debug.Debug)
 pub struct ClockHour12 {
   // private fields
-} derive(Eq, Hash, @debug.Debug)
+}
 pub fn ClockHour12::equal(Self, Self) -> Bool
 pub fn ClockHour12::hash(Self) -> Int32
 pub fn ClockHour12::hash_combine(Self, Hasher) -> Unit
@@ -22,9 +23,10 @@ pub fn ClockHour12::is_pm(Self) -> Bool
 pub fn ClockHour12::not_equal(Self, Self) -> Bool
 pub fn ClockHour12::to_repr(Self) -> @debug.Repr
 
+#derive(Compare, Eq, Hash, @debug.Debug)
 pub struct IsoWeek {
   // private fields
-} derive(Compare, Eq, Hash, @debug.Debug)
+}
 pub fn IsoWeek::compare(Self, Self) -> Int32
 pub fn IsoWeek::equal(Self, Self) -> Bool
 pub fn IsoWeek::hash(Self) -> Int32
@@ -42,6 +44,7 @@ pub fn IsoWeek::week0(Self) -> Int32
 pub fn IsoWeek::year(Self) -> Int32
 pub impl Show for IsoWeek
 
+#derive(Compare, Eq, Hash, @debug.Debug)
 pub(all) enum Month {
   Jan
   Feb
@@ -55,7 +58,7 @@ pub(all) enum Month {
   Oct
   Nov
   Dec
-} derive(Compare, Eq, Hash, @debug.Debug)
+}
 pub fn Month::add_months(Self, Int32) -> Self
 pub fn Month::compare(Self, Self) -> Int32
 pub fn Month::equal(Self, Self) -> Bool
@@ -78,9 +81,10 @@ pub fn Month::to_repr(Self) -> @debug.Repr
 pub fn Month::to_string(Self) -> String
 pub impl Show for Month
 
+#derive(Compare, Eq, Hash, @debug.Debug)
 pub struct NaiveDate {
   // private fields
-} derive(Compare, Eq, Hash, @debug.Debug)
+}
 pub fn NaiveDate::abs_diff_days(Self, Self) -> Int64
 pub fn NaiveDate::add_days(Self, Int32) -> Self
 pub fn NaiveDate::add_months(Self, Int32) -> Self
@@ -163,18 +167,20 @@ pub impl Datelike for NaiveDate
 pub impl Default for NaiveDate
 pub impl Show for NaiveDate
 
+#derive(@debug.Debug)
 pub struct NaiveDateDaysIterator {
   // private fields
-} derive(@debug.Debug)
+}
 pub fn NaiveDateDaysIterator::iter(Self) -> Iter[NaiveDate]
 pub fn NaiveDateDaysIterator::length(Self) -> Int32
 pub fn NaiveDateDaysIterator::next(Self) -> NaiveDate?
 pub fn NaiveDateDaysIterator::next_back(Self) -> NaiveDate?
 pub fn NaiveDateDaysIterator::to_repr(Self) -> @debug.Repr
 
+#derive(Compare, Eq, Hash, @debug.Debug)
 pub struct NaiveDateTime {
   // private fields
-} derive(Compare, Eq, Hash, @debug.Debug)
+}
 pub fn NaiveDateTime::add_days(Self, Int32) -> Self
 pub fn NaiveDateTime::add_months(Self, Int32) -> Self
 pub fn NaiveDateTime::add_period(Self, Period) -> Self
@@ -276,18 +282,20 @@ pub impl Timelike for NaiveDateTime
 pub impl Default for NaiveDateTime
 pub impl Show for NaiveDateTime
 
+#derive(@debug.Debug)
 pub struct NaiveDateWeeksIterator {
   // private fields
-} derive(@debug.Debug)
+}
 pub fn NaiveDateWeeksIterator::iter(Self) -> Iter[NaiveDate]
 pub fn NaiveDateWeeksIterator::length(Self) -> Int32
 pub fn NaiveDateWeeksIterator::next(Self) -> NaiveDate?
 pub fn NaiveDateWeeksIterator::next_back(Self) -> NaiveDate?
 pub fn NaiveDateWeeksIterator::to_repr(Self) -> @debug.Repr
 
+#derive(Compare, Eq, Hash, @debug.Debug)
 pub struct NaiveTime {
   // private fields
-} derive(Compare, Eq, Hash, @debug.Debug)
+}
 pub fn NaiveTime::compare(Self, Self) -> Int32
 pub fn NaiveTime::default() -> Self
 pub fn NaiveTime::equal(Self, Self) -> Bool
@@ -353,9 +361,10 @@ pub impl Eq for NaiveWeek
 pub impl Hash for NaiveWeek
 pub impl @debug.Debug for NaiveWeek
 
+#derive(Eq, Hash, @debug.Debug)
 pub struct Period {
   // private fields
-} derive(Eq, Hash, @debug.Debug)
+}
 pub fn Period::checked_add(Self, Self) -> Self?
 pub fn Period::checked_mul(Self, Int32) -> Self?
 pub fn Period::checked_neg(Self) -> Self?
@@ -377,11 +386,12 @@ pub fn Period::zero() -> Self
 pub impl Default for Period
 pub impl Show for Period
 
+#derive(Eq, @debug.Debug)
 pub(all) enum RoundingError {
   InvalidGranularity
   MixedGranularity
   OutOfRange
-} derive(Eq, @debug.Debug)
+}
 pub fn RoundingError::equal(Self, Self) -> Bool
 pub fn RoundingError::not_equal(Self, Self) -> Bool
 pub fn RoundingError::output(Self, &Logger) -> Unit
@@ -389,9 +399,10 @@ pub fn RoundingError::to_repr(Self) -> @debug.Repr
 pub fn RoundingError::to_string(Self) -> String
 pub impl Show for RoundingError
 
+#derive(Compare, Eq, Hash, @debug.Debug)
 pub struct TimeDelta {
   // private fields
-} derive(Compare, Eq, Hash, @debug.Debug)
+}
 pub fn TimeDelta::abs(Self) -> Self
 pub fn TimeDelta::add(Self, Self) -> Self
 pub fn TimeDelta::as_hours_double(Self) -> Double
@@ -456,6 +467,7 @@ pub impl Neg for TimeDelta
 pub impl Show for TimeDelta
 pub impl Sub for TimeDelta
 
+#derive(Eq, Hash, @debug.Debug)
 pub(all) enum Weekday {
   Mon
   Tue
@@ -464,7 +476,7 @@ pub(all) enum Weekday {
   Fri
   Sat
   Sun
-} derive(Eq, Hash, @debug.Debug)
+}
 pub fn Weekday::add_days(Self, Int32) -> Self
 pub fn Weekday::days_since(Self, Self) -> Int32
 pub fn Weekday::equal(Self, Self) -> Bool
@@ -488,9 +500,10 @@ pub fn Weekday::to_repr(Self) -> @debug.Repr
 pub fn Weekday::to_string(Self) -> String
 pub impl Show for Weekday
 
+#derive(Eq, Hash, @debug.Debug)
 pub struct WeekdaySet {
   // private fields
-} derive(Eq, Hash, @debug.Debug)
+}
 pub fn WeekdaySet::all() -> Self
 pub fn WeekdaySet::contains(Self, Weekday) -> Bool
 pub fn WeekdaySet::default() -> Self
@@ -523,18 +536,20 @@ pub fn WeekdaySet::union(Self, Self) -> Self
 pub impl Default for WeekdaySet
 pub impl Show for WeekdaySet
 
+#derive(@debug.Debug)
 pub struct WeekdaySetIterator {
   // private fields
-} derive(@debug.Debug)
+}
 pub fn WeekdaySetIterator::iter(Self) -> Iter[Weekday]
 pub fn WeekdaySetIterator::length(Self) -> Int32
 pub fn WeekdaySetIterator::next(Self) -> Weekday?
 pub fn WeekdaySetIterator::next_back(Self) -> Weekday?
 pub fn WeekdaySetIterator::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, Hash, @debug.Debug)
 pub struct YearCe {
   // private fields
-} derive(Eq, Hash, @debug.Debug)
+}
 pub fn YearCe::equal(Self, Self) -> Bool
 pub fn YearCe::hash(Self) -> Int32
 pub fn YearCe::hash_combine(Self, Hasher) -> Unit

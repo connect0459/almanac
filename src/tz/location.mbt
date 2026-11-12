@@ -7,11 +7,12 @@
 /// `name()`, so a zone reached through an alias, or built without a name,
 /// is a different `Location` from the canonical one even when it resolves
 /// identically.
+#derive(Eq, Hash, @debug.Debug)
 pub struct Location {
   priv tzif : TzifData
   priv posix_tz : PosixTz?
   priv name : String?
-} derive(Eq, Hash, @debug.Debug)
+}
 
 ///|
 pub extend Location with Eq::{equal}
@@ -301,10 +302,11 @@ pub fn Location::type_at(
 /// the local time type `type_at` reports is in effect from `start`
 /// (inclusive) until `end` (exclusive). `None` on either side means
 /// unbounded in that direction.
+#derive(Eq, Hash, @debug.Debug)
 pub struct TransitionBounds {
   priv start : @core.NaiveDateTime?
   priv end : @core.NaiveDateTime?
-} derive(Eq, Hash, @debug.Debug)
+}
 
 ///|
 pub extend TransitionBounds with Eq::{equal}

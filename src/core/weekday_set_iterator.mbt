@@ -9,10 +9,11 @@
 /// does not advance it by itself but returns an `Iter` that shares its
 /// state, and the method that creates it (`WeekdaySet::iter_from`) returns a fresh iterator on
 /// every call, leaving the set unchanged.
+#derive(@debug.Debug)
 pub struct WeekdaySetIterator {
   priv mut remaining : WeekdaySet
   priv start : Weekday
-} derive(@debug.Debug)
+}
 
 ///|
 pub extend WeekdaySetIterator with @debug.Debug::{to_repr}

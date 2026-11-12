@@ -1,4 +1,5 @@
 ///|
+#derive(Eq, Debug)
 struct DateFacts {
   year : Int32
   month : @core.Month
@@ -14,7 +15,7 @@ struct DateFacts {
   num_days_in_month : Int32
   leap_year : Bool
   iso_week : @core.IsoWeek
-} derive(Eq, Debug)
+}
 
 ///|
 fn[T : @core.Datelike] date_facts(value : T) -> DateFacts {
@@ -37,6 +38,7 @@ fn[T : @core.Datelike] date_facts(value : T) -> DateFacts {
 }
 
 ///|
+#derive(Eq, Debug)
 struct TimeFacts {
   hour : Int32
   hour12 : @core.ClockHour12
@@ -44,7 +46,7 @@ struct TimeFacts {
   second : Int32
   nanosecond : Int32
   num_seconds_from_midnight : Int32
-} derive(Eq, Debug)
+}
 
 ///|
 fn[T : @core.Timelike] time_facts(value : T) -> TimeFacts {

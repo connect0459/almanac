@@ -1,5 +1,6 @@
 ///|
 /// A format-string or parse-input error raised by the `format` package.
+#derive(Eq, @debug.Debug)
 pub suberror FormatError {
   UnknownSpecifier(Char)
   TrailingPercent
@@ -52,7 +53,7 @@ pub suberror FormatError {
   /// `"2024-03-05 rest"` against `%F`); the `_and_remainder` and
   /// `parse_items_and_remainder` functions return that tail instead.
   TrailingInput
-} derive(Eq, @debug.Debug)
+}
 
 ///|
 pub extend FormatError with Eq::{equal}

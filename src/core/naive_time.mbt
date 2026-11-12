@@ -5,10 +5,11 @@
 /// a nanosecond component. The nanosecond component is normally
 /// `0..=999_999_999`, but may reach `1_999_999_999` to represent a leap
 /// second at `second() == 59` (see `nanosecond`).
+#derive(Eq, Compare, Hash, @debug.Debug)
 pub struct NaiveTime {
   priv secs : Int32
   priv frac : Int32
-} derive(Eq, Compare, Hash, @debug.Debug)
+}
 
 ///|
 pub extend NaiveTime with Eq::{equal}

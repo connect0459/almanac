@@ -1,10 +1,11 @@
 ///|
 /// An ISO 8601 week date's year and week number. The ISO year may differ
 /// from the calendar year of any date that falls in it (see `NaiveDate::iso_week`).
+#derive(Eq, Compare, Hash, @debug.Debug)
 pub struct IsoWeek {
   priv year : Int32
   priv week : Int32
-} derive(Eq, Compare, Hash, @debug.Debug)
+}
 
 ///|
 pub extend IsoWeek with Eq::{equal}

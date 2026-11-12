@@ -1,11 +1,12 @@
 ///|
 /// One local time type entry from a TZif file: a UTC offset, whether it
 /// observes daylight saving, and its abbreviation (e.g. `"EST"`, `"EDT"`).
+#derive(Eq, Hash, @debug.Debug)
 pub struct LocalTimeType {
   priv utc_offset : Int32
   priv is_dst : Bool
   priv abbreviation : String
-} derive(Eq, Hash, @debug.Debug)
+}
 
 ///|
 pub extend LocalTimeType with Eq::{equal}
@@ -63,13 +64,14 @@ pub fn LocalTimeType::abbreviation(self : LocalTimeType) -> String {
 /// ascending. `posix_tz` is the POSIX TZ footer, parsed, present only in
 /// version 2 and later files, used to extrapolate offsets past the last
 /// recorded transition.
+#derive(Eq, Hash, @debug.Debug)
 pub struct TzifData {
   priv transitions : Array[Int64]
   priv transition_types : Array[Int32]
   priv local_time_types : Array[LocalTimeType]
   priv leap_seconds : Array[(Int64, Int32)]
   priv posix_tz : PosixTz?
-} derive(Eq, Hash, @debug.Debug)
+}
 
 ///|
 pub extend TzifData with Eq::{equal}

@@ -271,6 +271,7 @@ fn format_fraction_auto(nanos : Int32) -> String {
 
 ///|
 /// How many fractional-second digits `to_rfc3339_opts` renders.
+#derive(Eq, @debug.Debug)
 pub(all) enum SecondsFormat {
   /// No fractional part.
   Secs
@@ -283,7 +284,7 @@ pub(all) enum SecondsFormat {
   /// The fewest of 3, 6 or 9 digits that represent the value exactly, or
   /// none when it is a whole second: the rendering of `to_rfc3339`.
   Auto
-} derive(Eq, @debug.Debug)
+}
 
 ///|
 pub extend SecondsFormat with Eq::{equal}

@@ -2,6 +2,7 @@
 /// A numeric field. Most render at a fixed zero-padded width; `Hour12Blank`,
 /// `HourBlank` and `DayBlank` space-pad instead, and `Timestamp` renders unpadded (a signed count of
 /// seconds, not a calendar component).
+#derive(Eq, @debug.Debug)
 pub(all) enum Numeric {
   Year
   Month
@@ -67,7 +68,7 @@ pub(all) enum Numeric {
   DotNanosecond6
   /// `%.9f`: like `DotNanosecond3` with nine digits (nanoseconds).
   DotNanosecond9
-} derive(Eq, @debug.Debug)
+}
 
 ///|
 pub extend Numeric with Eq::{equal}
@@ -81,6 +82,7 @@ pub extend Numeric with @debug.Debug::{to_repr}
 ///|
 /// A non-numeric field resolved by name (weekday/month names, timezone
 /// name/offset, am/pm marker).
+#derive(Eq, @debug.Debug)
 pub(all) enum Fixed {
   LongWeekdayName
   ShortWeekdayName
@@ -109,7 +111,7 @@ pub(all) enum Fixed {
   /// allowed (or omitted) between the hour and minute digits. No
   /// seconds component.
   TimezoneOffsetPermissive
-} derive(Eq, @debug.Debug)
+}
 
 ///|
 pub extend Fixed with Eq::{equal}
@@ -130,11 +132,12 @@ pub extend Fixed with @debug.Debug::{to_repr}
 /// reads one to the field's width in digits, greedily, and `SpacePad` a
 /// leading blank or zero; `ZeroPad` keeps the field's own default reading.
 /// A value rendered with a flag reads back under the same flag.
+#derive(Eq, @debug.Debug)
 pub(all) enum PadMode {
   NoPad
   ZeroPad
   SpacePad
-} derive(Eq, @debug.Debug)
+}
 
 ///|
 pub extend PadMode with Eq::{equal}
@@ -152,6 +155,7 @@ pub extend PadMode with @debug.Debug::{to_repr}
 /// Equality is structural, that is, of the specifier as written: `%H` and `%0H`
 /// render alike but are different items (`Numeric(Hour)` versus
 /// `PaddedNumeric(Hour, ZeroPad)`).
+#derive(Eq, @debug.Debug)
 pub(all) enum Item {
   Literal(String)
   Numeric(Numeric)
@@ -172,7 +176,7 @@ pub(all) enum Item {
   /// family (`%f`/`%.f`/`%3f`/`%6f`) and `%s` (`Timestamp`), which have no
   /// natural fixed width to override.
   PaddedNumeric(Numeric, PadMode)
-} derive(Eq, @debug.Debug)
+}
 
 ///|
 pub extend Item with Eq::{equal}
