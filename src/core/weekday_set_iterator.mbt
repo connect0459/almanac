@@ -67,7 +67,7 @@ pub fn WeekdaySetIterator::length(self : WeekdaySetIterator) -> Int32 {
 /// adapters such as `map` and `take`. The `Iter` shares this iterator's
 /// state, as for `NaiveDateDaysIterator::iter`.
 pub fn WeekdaySetIterator::iter(self : WeekdaySetIterator) -> Iter[Weekday] {
-  Iter::new(() => self.next(), size_hint=self.length())
+  Iter(() => self.next(), size_hint=self.length())
 }
 
 ///|
