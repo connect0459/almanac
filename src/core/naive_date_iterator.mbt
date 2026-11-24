@@ -74,7 +74,7 @@ pub fn NaiveDateDaysIterator::length(self : NaiveDateDaysIterator) -> Int32 {
 pub fn NaiveDateDaysIterator::iter(
   self : NaiveDateDaysIterator,
 ) -> Iter[NaiveDate] {
-  Iter::new(() => self.next(), size_hint=self.length())
+  Iter(() => self.next(), size_hint=self.length())
 }
 
 ///|
@@ -144,5 +144,5 @@ pub fn NaiveDateWeeksIterator::length(self : NaiveDateWeeksIterator) -> Int32 {
 pub fn NaiveDateWeeksIterator::iter(
   self : NaiveDateWeeksIterator,
 ) -> Iter[NaiveDate] {
-  Iter::new(() => self.next(), size_hint=self.length())
+  Iter(() => self.next(), size_hint=self.length())
 }

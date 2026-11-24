@@ -236,7 +236,7 @@ pub fn tokenize(
               | DotNanosecond3
               | DotNanosecond6
               | DotNanosecond9
-              | Timestamp
+              | Timestamp,
             ) => raise UnknownSpecifier(chars[i + 1])
             Numeric(kind) => items.push(PaddedNumeric(kind, mode))
             _ => raise UnknownSpecifier(chars[i + 1])
