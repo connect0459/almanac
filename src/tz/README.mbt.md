@@ -41,7 +41,7 @@ test {
 }
 ```
 
-`DateTime::round`/`truncate` operate on the underlying UTC instant, not the offset-shifted local presentation — truncating to an hour boundary in UTC can still leave a non-zero local minute under a non-whole-hour `FixedOffset`:
+`DateTime::round`/`truncate` operate on the underlying UTC instant, not the offset-shifted local reading. Truncating to an hour boundary in UTC can still leave a nonzero local minute under a `FixedOffset` that is not a whole number of hours:
 
 ```mbt check
 ///|
@@ -103,9 +103,9 @@ To refresh it, take `common/supplemental/windowsZones.xml` from a CLDR release a
 
 ### `TimeZone` trait
 
-Implemented by `Utc`, `FixedOffset`, `FixedZone`, `Location`, and `PosixTz`. The trait is readonly: other packages can use `Tz : TimeZone` as a bound but cannot implement it, so these are the only zones. `DateTime[Tz]::offset`/`naive_local` require `Tz : TimeZone`.
+Implemented by `Utc`, `FixedOffset`, `FixedZone`, `Location`, and `PosixTz`. The trait is `readonly`: other packages can use `Tz : TimeZone` as a bound but cannot implement it, so these are the only zones. `DateTime[Tz]::offset`/`naive_local` require `Tz : TimeZone`.
 
-Zone names have two roles with two spellings: `name()` (on `Location` and `FixedZone`) is the identifier that distinguishes the zone, such as the IANA id `"Asia/Tokyo"`, while `zone_name` (on every `TimeZone`, and on `DateTime`) is the name in effect at an instant, such as the abbreviation `"JST"` or `"EDT"`, `"UTC"`, or a bare `FixedOffset`'s offset text. `DateTime::timezone()` returns the zone value itself, as `with_timezone` takes one.
+Zone names have two roles, with two spellings: `name()` (on `Location` and `FixedZone`) is the identifier that distinguishes the zone, such as the IANA id `"Asia/Tokyo"`, while `zone_name` (on every `TimeZone`, and on `DateTime`) is the name in effect at an instant, such as the abbreviation `"JST"` or `"EDT"`, `"UTC"`, or a bare `FixedOffset`'s offset text. `DateTime::timezone()` returns the zone value itself, as `with_timezone` takes one.
 
 Every `NaiveDateTime` argument is a UTC reading except the one taken by `offset_from_local`, which is a local (wall-clock) reading. The type does not tell them apart, so pass `DateTime::naive_utc()` for the former and `DateTime::naive_local()` for the latter. To build a `DateTime` from either reading, use `DateTime::from_utc`/`DateTime::from_local`.
 

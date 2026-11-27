@@ -69,7 +69,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 #### Time zones (`connect0459/almanac/tz`)
 
-- `Local` on the `js`, `wasm` and `wasm-gc` backends, in addition to native; on native it honours colon-prefixed and absolute-path `TZ` values
+- `Local` on the `js`, `wasm` and `wasm-gc` backends, in addition to native; on native it honors colon-prefixed and absolute-path `TZ` values
 - `Location::load_system`, `Location::zone_names` and `Location::tzdata_version`; native targets also read `ZONEINFO` and the system zoneinfo directory
 - `Location::load` memoizes each zone name
 - An unnamed `FixedZone` renders its offset text as the abbreviation, and `%Z` reads that text back

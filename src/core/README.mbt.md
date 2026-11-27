@@ -66,7 +66,7 @@ test {
 }
 ```
 
-The same epoch anchor applies to multi-day granularities: multiples are counted from `1970-01-01 00:00:00`, not from the start of a week, month or year, so seven-day buckets begin on a Thursday (the weekday of the epoch). Callers who want Monday-based weeks, or any other calendar boundary, should compute it from the date (for example with `NaiveDate::week`) instead of from `truncate`:
+The same epoch anchor applies to multi-day granularities: multiples are counted from `1970-01-01 00:00:00`, not from the start of a week, month or year, so seven-day buckets begin on a Thursday (the weekday of the epoch). To get Monday-based weeks or any other calendar boundary, compute it from the date (for example with `NaiveDate::week`) instead of using `truncate`:
 
 ```mbt check
 ///|
@@ -368,7 +368,7 @@ A signed duration, precise to the nanosecond. Constructors and checked arithmeti
 | `TimeDelta::milliseconds(Int64)` | `-> Self?` | Whole milliseconds |
 | `TimeDelta::microseconds(Int64)` | `-> Self?` | Whole microseconds |
 | `TimeDelta::nanoseconds(Int64)` | `-> Self?` | Whole nanoseconds |
-| `TimeDelta::of(weeks?, days?, hours?, minutes?, seconds?, milliseconds?, microseconds?, nanoseconds?)` | `-> Self?` | Labelled units, each an `Int64` defaulting to `0` and of either sign (`of(hours=1L, minutes=30L)`); `None` if a component or the total is out of range |
+| `TimeDelta::of(weeks?, days?, hours?, minutes?, seconds?, milliseconds?, microseconds?, nanoseconds?)` | `-> Self?` | Labeled units, each an `Int64` defaulting to `0` and of either sign (`of(hours=1L, minutes=30L)`); `None` if a component or the total is out of range |
 | `TimeDelta::new(Int64, Int)` | `-> Self?` | Whole seconds plus a nanosecond remainder in `0..=999_999_999` (the sign lives in the seconds: `new(-1, 500_000_000)` is minus half a second); `None` if the remainder is out of range or the result is out of range |
 | `TimeDelta::from_seconds_double(Double)` | `-> Self?` | From fractional seconds, rounded to the nearest nanosecond (an exact half-nanosecond tie goes away from zero, so `0.3` is exactly 300 000 000 ns); `None` for NaN, an infinity or an out-of-range value. Nanosecond precision holds only while the whole-second part is below about 9 million seconds, a `Double` limit |
 | `TimeDelta::zero()` | `-> Self` | The zero-length duration |
@@ -405,7 +405,7 @@ A signed duration, precise to the nanosecond. Constructors and checked arithmeti
 | `truncate(TimeDelta)` | `-> Result[Self, RoundingError]` | Truncate toward zero to the nearest multiple of a granularity; same granularity restriction as `round` |
 | `round_up(TimeDelta)` | `-> Result[Self, RoundingError]` | Round up (toward positive infinity) to a multiple of a granularity: unchanged if already a multiple, otherwise the next one above (for a negative duration that is toward zero, equal to `truncate`); `Err` with the same reasons as `round` |
 
-`TimeDelta` also implements `Eq`, `Compare` (`<`/`<=`/`>`/`>=` via `compare`) and `Show`. `Show` renders compactly: a leading `-` for a negative value, then hours/minutes/seconds (`1h2m3.5s`) with hours as the largest unit (never days) and trailing fractional zeros trimmed; units between the largest and the seconds are kept even when zero (`1h0m0s`); a duration under one second uses `ns`/`us`/`ms` (`1.5ms`); zero is `0s`. `format`'s `parse_duration` reads this form back.
+`TimeDelta` also implements `Eq`, `Compare` (`<`/`<=`/`>`/`>=` via `compare`) and `Show`. `Show` renders compactly: a leading `-` for a negative value, then hours/minutes/seconds (`1h2m3.5s`) with hours as the largest unit (never days) and trailing fractional zeros trimmed; units between the largest and the seconds are kept even when zero (`1h0m0s`); a duration under one second uses `ns`/`us`/`ms` (`1.5ms`); zero is `0s`. `format`'s `parse_duration` parses this form back.
 
 ---
 
@@ -436,7 +436,7 @@ test {
 }
 ```
 
-`Period` implements `Eq`, `Hash`, `Default` and `Show`, but not `Compare`: whether one month is shorter than 30 days depends on the date. `Show` renders in the ISO 8601 date-based duration style (`P1Y2M3D`), omitting zero components; the zero period is `P0D`. A negative component keeps its own `-` (`P-1Y3D`): that per-component sign is an extension beyond ISO 8601, which `format`'s `parse_iso8601_period` reads back. `Add`, `Sub` and `Neg` are not implemented, so that no operation can abort on overflow; use the `checked_*` methods.
+`Period` implements `Eq`, `Hash`, `Default` and `Show`, but not `Compare`: whether one month is shorter than 30 days depends on the date. `Show` renders in the ISO 8601 date-based duration style (`P1Y2M3D`), omitting zero components; the zero period is `P0D`. A negative component keeps its own `-` (`P-1Y3D`): that per-component sign is an extension beyond ISO 8601, which `format`'s `parse_iso8601_period` parses back. `Add`, `Sub` and `Neg` are not implemented, so that no operation can abort on overflow; use the `checked_*` methods.
 
 ---
 

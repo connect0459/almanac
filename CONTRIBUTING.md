@@ -35,11 +35,7 @@ pre-commit run --all-files
 | `moon info` | Regenerate `.mbti` interface files |
 | `just verify` | Run the full CI-equivalent check locally |
 
-The pre-commit hooks enforce formatting and lint checks on every commit. To run them manually across all files:
-
-```sh
-pre-commit run --all-files
-```
+The pre-commit hooks enforce formatting and lint checks on every commit.
 
 Before opening a pull request, run the full verification suite:
 
@@ -47,7 +43,7 @@ Before opening a pull request, run the full verification suite:
 just verify
 ```
 
-This mirrors the CI matrix: it checks all four backends (`js`, `wasm`,
+This mirrors the CI matrix and checks all four backends (`js`, `wasm`,
 `wasm-gc`, `native`).
 
 ## Testing guidelines
@@ -58,7 +54,7 @@ This project follows **Red → Green → Refactor** (Detroit-school TDD):
 - Use real objects; mocks are only permitted at external boundaries.
 - Test names describe **what business rule** is verified, not how.
 
-Run tests across all backends to confirm cross-target compatibility:
+To confirm cross-target compatibility, run the tests on every backend:
 
 ```sh
 moon test --target js
@@ -93,12 +89,12 @@ tidy(tz): name the seconds-per-day constant
 1. Fork the repository and create a branch: `feat/xxx`, `fix/xxx`, `docs/xxx`.
 2. Follow the Red → Green → Refactor cycle.
 3. Run `just verify` and commit any resulting diffs.
-4. If the change touches the public API, update documentation so it reflects the new behaviour:
-   - **Per-package `README.mbt.md`** — the sole documentation source for each public package; update the API reference tables, key types, or examples as needed.
+4. If the change touches the public API, update documentation so it reflects the new behavior:
+   - **Per-package `README.mbt.md`** — the sole documentation source for each public package; update the API reference tables, key types, and examples as needed.
    - Run `moon info` and verify the `.mbti` diff is expected (it is the authoritative formal spec for signatures).
-5. Open a pull request — the CI matrix tests `js`, `wasm`, `wasm-gc`, and `native`.
+5. Open a pull request. CI tests `js`, `wasm`, `wasm-gc`, and `native`.
 
-Do not edit `CHANGELOG.md` in regular pull requests. Changelog entries are written all at once in the Release PR.
+Do not edit `CHANGELOG.md` in regular pull requests. Changelog entries are written together in the Release PR.
 
 ## Code style
 

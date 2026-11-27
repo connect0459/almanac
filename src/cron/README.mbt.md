@@ -8,13 +8,13 @@ Cron schedules evaluated against zoned datetimes. Import `connect0459/almanac/cr
 | :--- | :--- |
 | `Cron` | A parsed schedule of whole-second instants. An immutable value with private fields; implements `Eq`, `Hash` and `Debug`. It has no `Show`, since the original text is not kept |
 | `CronError` | The `suberror` raised by `Cron::parse`: `InvalidField(CronField)` |
-| `CronField` | The part that could not be read: `Second`, `Minute`, `Hour`, `DayOfMonth`, `Month`, `DayOfWeek`, `FieldCount` or `Shorthand`. A `pub(all)` enum, so a new variant is a breaking change |
+| `CronField` | The part that could not be parsed: `Second`, `Minute`, `Hour`, `DayOfMonth`, `Month`, `DayOfWeek`, `FieldCount` or `Shorthand`. A `pub(all)` enum, so a new variant is a breaking change |
 
 ## Key functions
 
 | Function | Signature | Description |
 | :--- | :--- | :--- |
-| `Cron::parse(String)` | `-> Cron raise CronError` | Reads five fields (`minute hour day-of-month month day-of-week`), six with seconds in front, or a shorthand. Raises `InvalidField` naming the first field that cannot be read |
+| `Cron::parse(String)` | `-> Cron raise CronError` | Parses five fields (`minute hour day-of-month month day-of-week`), six fields with seconds first, or a shorthand. Raises `InvalidField` naming the first field that cannot be parsed |
 | `Cron::matches(Cron, DateTime[Tz])` *(Tz : TimeZone)* | `-> Bool` | Whether the instant is a fire time, judged by the wall clock of the value's own zone |
 | `Cron::next(Cron, DateTime[Tz])` *(Tz : TimeZone)* | `-> DateTime[Tz]?` | The first fire time strictly after the given instant, in the same zone, with a whole-second time |
 
@@ -31,7 +31,7 @@ Fields are separated by runs of spaces or tabs. A five-field expression fires at
 | month | `1..=12` | `JAN`..`DEC` |
 | day of week | `0..=7` (`0` and `7` are Sunday), `?` | `SUN`..`SAT` |
 
-Each field is a comma list of `*`, `n`, `a-b`, `*/n` and `a-b/n` (`n` in a step is at least `1`); names are case-insensitive and may form ranges. `?` is `*` and is accepted only in the two day fields. `a/n` and ranges that wrap (`5-1`) are rejected. The shorthands, matched in either case, are `@yearly` or `@annually` (`0 0 1 1 *`), `@monthly` (`0 0 1 * *`), `@weekly` (`0 0 * * 0`), `@daily` or `@midnight` (`0 0 * * *`) and `@hourly` (`0 * * * *`).
+Each field is a comma list of `*`, `n`, `a-b`, `*/n` and `a-b/n` (`n` in a step is at least `1`); names are case-insensitive and may form ranges. `?` is equivalent to `*` and is accepted only in the two day fields. `a/n` and ranges that wrap (`5-1`) are rejected. The shorthands, matched in either case, are `@yearly` or `@annually` (`0 0 1 1 *`), `@monthly` (`0 0 1 * *`), `@weekly` (`0 0 * * 0`), `@daily` or `@midnight` (`0 0 * * *`) and `@hourly` (`0 * * * *`).
 
 ## Day-of-month and day-of-week
 
@@ -41,11 +41,11 @@ When both day fields are restricted, a day matches if **either** does: `0 0 13 *
 
 `matches` and `next` read the wall clock of the zone carried by the `DateTime`, so `0 9 * * *` means 09:00 in that zone.
 
-- A fire time inside a spring-forward gap does not exist and is skipped.
+- A fire time inside a spring-forward gap does not exist, so it is skipped.
 - A fire time inside a fall-back fold fires once, at the earlier occurrence; `matches` is `false` for the later one, and `next` never returns an instant at or before its argument.
 - A fractional second of the argument is ignored by `matches`, and `next` returns the first fire time after it.
 
-`next` searches the 400 years after the argument, the cycle of the Gregorian calendar, and returns `None` when an expression names no day in it (`0 0 30 2 *`) or the search leaves the representable dates.
+`next` searches the 400 years after the argument (one full Gregorian cycle) and returns `None` when no day in that span matches the expression (`0 0 30 2 *`) or the search leaves the representable dates.
 
 ## Example
 
