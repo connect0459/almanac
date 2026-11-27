@@ -54,7 +54,7 @@ test {
 }
 ```
 
-A local reading can fall in a DST gap or fold, so constructors from local components return a `MappedLocalTime` that you reduce with `single`, `earliest` or `latest`.
+A local time can fall in a DST gap or fold, so constructors that take local components return a `MappedLocalTime` that you reduce with `single`, `earliest` or `latest`.
 
 ## Compatibility
 

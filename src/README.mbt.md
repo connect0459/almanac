@@ -1,6 +1,6 @@
 # `connect0459/almanac` (root package)
 
-A thin entry point over the packages below. Importing this package alone gives the everyday date, time, duration and zoned-datetime types; the functions and the rest of each API live in the packages that define them.
+A thin entry point over the packages below. Importing this package alone gives you the everyday date, time, duration and zoned datetime types; the functions and the rest of each API live in the packages that define them.
 
 | Package | Import | Contents |
 | :--- | :--- | :--- |
@@ -31,7 +31,7 @@ test {
 
 ## Package aliases
 
-A package imported as `connect0459/almanac/core` is referred to as `@core` by default. That is also the name of the standard library's `moonbitlang/core`, so a project that mentions both can give this one its own alias in `moon.pkg`:
+A package imported as `connect0459/almanac/core` is referred to as `@core` by default. That is also the name of the standard library's `moonbitlang/core`, so a project that uses both can give this one its own alias in `moon.pkg`:
 
 ```text
 import {
